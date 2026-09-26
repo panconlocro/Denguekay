@@ -1,0 +1,8 @@
+data/bronze/
+data/silver/
+data/gold/
+models/*.pkl
+models/*.joblib
+__pycache__/
+*.ipynb_checkpoints/
+.env
