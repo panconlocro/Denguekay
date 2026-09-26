@@ -1,0 +1,15 @@
+# Config central del proyecto.
+# No pongas datos sensibles acá si el repo es público — para IDs de Drive
+# no hay problema (no dan acceso, solo identifican el archivo, y los Excel
+# ya son compartidos con el equipo), pero si prefieres, muévelos a un .env.
+
+drive:
+  # ID del archivo de Google Drive (no de la carpeta).
+  # Se obtiene del link: drive.google.com/file/d/<ESTE_ID>/view
+  epi_file_id: "1vSPn8SqR4ioz-uDj7HKmem6mgWexin8V"
+  socio_file_id: "1x4NoX2vJEs_g3SQyZkfFFwvxTbXO4OBn"
+
+meteo:
+  fecha_inicio: "2017-01-01"
+  fecha_fin: "2025-12-31"
+  batch_size: 20
