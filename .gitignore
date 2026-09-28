@@ -7,5 +7,6 @@ __pycache__/
 *.ipynb_checkpoints/
 .env
 .venv
-data/
 .DS_Store
+trazabilidad_scraper_dengue_piura_2025/
+trazabilidad_scraper_dengue_piura_2025.zip

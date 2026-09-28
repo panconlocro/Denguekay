@@ -23,7 +23,8 @@ tesis-dengue-piura/
 │   ├── processing/
 │   ├── validation/
 │   ├── modeling/
-│   └── utils/
+│   ├── utils/
+│   └── update_dataset_module.py
 │
 ├── notebooks/
 ├── great_expectations/
@@ -56,7 +57,7 @@ Nada de limpieza, nada de validación. Un subfolder por fuente:
 bronze/
 ├── meteo/cache_meteo/       # un parquet por distrito, tal cual responde Open-Meteo
 ├── socio/                   # el Excel del censo/proyecciones, sin tocar
-└── epi/                     # Excel o scrape crudo de la Sala Situacional MINSA
+└── epi/                     # Excel y respuestas crudas de la Sala Situacional MINSA
 ```
 **Va acá:** cualquier archivo nuevo que baje de una API, scraping o que alguien te pase como fuente original. Si dudas si algo es "bronze", pregúntate: ¿esto es exactamente lo que devolvió la fuente, sin que yo lo haya tocado? Si sí, es bronze.
 
@@ -65,7 +66,8 @@ bronze/
 silver/
 ├── meteo_semanal_distrital.csv
 ├── socio_anual.csv
-└── epi_piura_semanal.csv
+├── epi_piura_semanal.csv
+└── epi_sala_semanal.csv       # exportación normalizada por ejecución
 ```
 Acá ya pasaron por: normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Todavía **no están mergeados entre sí**.
 
@@ -96,7 +98,7 @@ Una función (o archivo) por fuente de datos externa.
 ingestion/
 ├── fetch_openmeteo.py         # descarga clima de Open-Meteo
 ├── fetch_distritos_gadm.py    # descarga límites distritales + centroides
-└── scrape_minsa_dengue.py     # scraping de la Sala Situacional (pendiente)
+└── scrape_minsa_dengue.py     # extracción semanal de la Sala Situacional
 ```
 **Va acá:** cualquier función que hable con una API, descargue un archivo, o haga scraping. Regla práctica: si la función usa `requests`, `BeautifulSoup`, o un SDK de algún servicio externo, va acá.
 
@@ -106,7 +108,8 @@ Transformación y merge de datos ya descargados.
 processing/
 ├── agregacion_semanal.py      # diario -> semanal por distrito
 ├── socio_interpolacion.py     # interpolación 2017-2025
-└── merge_datasets.py          # merges meteo+socio, +epi
+├── epi_sala.py                # normalización y conciliación de la Sala
+└── merge_datasets.py          # merges y relleno selectivo
 ```
 **Va acá:** funciones de limpieza, agregación, interpolación, joins. Si el modelo nuevo necesita, por ejemplo, calcular lags (temperatura de la semana -1, -2, -3), esa función va en un archivo nuevo acá, ej. `processing/features_lag.py`.
 
@@ -114,7 +117,8 @@ processing/
 Suites de Great Expectations (o los `assert` livianos, según lo que decidamos usar).
 ```
 validation/
-└── expectations_meteo.py
+├── expectations_meteo.py
+└── expectations_gold.py       # cobertura y validación del dataset del modelo
 ```
 **Va acá:** cualquier función `validar_*()` que revise rangos, nulos, duplicados, conteos esperados. Un archivo por dataset que valides (`expectations_socio.py`, `expectations_epi.py`, `expectations_gold.py`).
 
@@ -145,17 +149,24 @@ notebooks/
 ├── 02_ingesta_meteo.ipynb
 ├── 03_bronze_to_silver_meteo.ipynb
 ├── 04_ingesta_socio.ipynb
-├── 05_gold_merge_meteo_socio.ipynb
-├── 06_gold_merge_epi.ipynb
-├── 07_eda.ipynb
-├── 08_validacion_ge.ipynb
-├── 09_actualizacion_incremental.ipynb   # pendiente de diseño
-└── 10_entrenamiento_modelo.ipynb        # pendiente
+├── 05_bronze_to_silver_socio.ipynb
+├── 06_ingesta_epi.ipynb
+├── 07_bronze_to_silver_epi.ipynb
+├── 08_gold_merge_meteo_socio.ipynb
+└── 09_gold_merge_epi.ipynb
 ```
 
 **Va acá:** cualquier notebook nuevo, con un número que refleje en qué paso del pipeline entra. Si agregas un paso intermedio, usa notación tipo `04b_` en vez de renumerar todo lo que sigue.
 
 Cada notebook debería poder leerse como una bitácora corta: "cargo tal cosa → llamo tal función de `src/` → guardo el resultado → imprimo una verificación". Si un notebook empieza a crecer con lógica pesada pegada en las celdas, esa lógica probablemente debería moverse a `src/`.
+
+Para actualizaciones incrementales del dataset ya consolidado, usar
+`python -m src.update_dataset_module --input ... --output ...`. El módulo
+detecta componentes incompletos por `ubigeo`/año/semana y llama solo a las
+fuentes necesarias. El CSV lateral `<dataset>.coverage.csv` diferencia un
+cero epidemiológico ya verificado de un cero en una fila nueva sin cobertura.
+El notebook 09 reconstruye la base histórica y delega la salida final a este
+módulo.
 
 ---
 
@@ -172,6 +183,8 @@ Cada notebook debería poder leerse como una bitácora corta: "cargo tal cosa �
 data/bronze/
 data/silver/
 data/gold/
+trazabilidad_scraper_dengue_piura_2025/
+trazabilidad_scraper_dengue_piura_2025.zip
 models/*.pkl
 models/*.joblib
 __pycache__/
@@ -204,5 +217,6 @@ __pycache__/
 
 ## 8. Pendientes conocidos (no perder de vista)
 
-- **`socio_interpolacion.py`**: para las variables con un solo año censal (solo 2017 o solo 2025), el código actual las deja constantes en todo el rango 2017-2025. Falta decidir si se excluyen del dataset final o se mantienen así documentado como supuesto metodológico.
-- **Actualización incremental (2026+)**: falta diseñar `scrape_minsa_dengue.py`, el notebook `09_actualizacion_incremental.ipynb`, y sobre todo cómo extender la data sociodemográfica más allá de 2025 (no hay censo nuevo para interpolar contra).
+- **Variables con un solo año censal**: `socio_interpolacion.py` las excluye del dataset final; solo interpola fracciones con valores en ambos extremos, 2017 y 2025.
+- **Actualización 2026+**: el actualizador extrapola las fracciones desde esos extremos y acota sus valores a `[0, 1]`; extrapola población con la misma pendiente. Es un supuesto metodológico hasta contar con nuevas proyecciones.
+- **Semanas de la Sala fuera del calendario del modelo**: se conservan en `data/silver/epi_sala_semanal.csv` y se reportan, sin asignar sus casos a otra semana.

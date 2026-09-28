@@ -66,9 +66,12 @@ def cargar_diario_desde_cache(n_distritos_esperado: int) -> pd.DataFrame:
     return diario
 
 
-def agregar_a_semanal(diario: pd.DataFrame, distritos: pd.DataFrame) -> pd.DataFrame:
+def agregar_a_semanal(
+    diario: pd.DataFrame, distritos: pd.DataFrame, *, include_id: bool = False,
+) -> pd.DataFrame:
     """Agrega el clima diario a semanal y le pega nombre/lat/lon de cada distrito."""
     diario = diario.copy()
+    diario["time"] = pd.to_datetime(diario["time"])
     diario["semana_inicio"] = diario["time"].dt.to_period("W-SAT").dt.start_time
 
     semanal = (
@@ -87,7 +90,8 @@ def agregar_a_semanal(diario: pd.DataFrame, distritos: pd.DataFrame) -> pd.DataF
     semanal["semana"] = iso.dt.isocalendar().week.values
 
     final = semanal.merge(distritos, on="id_distrito", how="left")
-    final = final[COLUMNAS_FINALES].sort_values(["distrito", "semana_inicio"])
+    columns = (["id_distrito"] if include_id else []) + COLUMNAS_FINALES
+    final = final[columns].sort_values(["distrito", "semana_inicio"])
     return final
 
 

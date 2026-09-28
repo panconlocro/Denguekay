@@ -28,19 +28,31 @@ class LimiteAPI(Exception):
     """Límite horario o diario de Open-Meteo alcanzado: no tiene sentido reintentar ahora."""
 
 
-def fetch_district(lat: float, lon: float, retries: int = 4) -> pd.DataFrame:
-    """Descarga el clima diario 2017-2025 para un punto (lat, lon)."""
+def fetch_district(
+    lat: float, lon: float, retries: int = 4, *,
+    start_date: str = START, end_date: str = END,
+) -> pd.DataFrame:
+    """Descarga clima diario para un punto y rango inclusivo de fechas."""
     params = {
         "latitude": lat, "longitude": lon,
-        "start_date": START, "end_date": END,
+        "start_date": start_date, "end_date": end_date,
         "daily": ",".join(DAILY_VARS),
         "timezone": "America/Lima",
     }
-    for _ in range(retries):
-        r = requests.get(URL, params=params, timeout=90)
+    for attempt in range(retries):
+        try:
+            r = requests.get(URL, params=params, timeout=90)
+        except requests.RequestException as exc:
+            if attempt == retries - 1:
+                raise RuntimeError(f"Open-Meteo request failed for {lat}, {lon}, {start_date} to {end_date}: {exc}") from exc
+            time.sleep(5)
+            continue
 
         if r.status_code == 200:
-            return pd.DataFrame(r.json()["daily"])
+            daily = r.json().get("daily")
+            if not isinstance(daily, dict) or "time" not in daily:
+                raise RuntimeError(f"Open-Meteo response missing daily data for {lat}, {lon}")
+            return pd.DataFrame(daily)
 
         if r.status_code == 429:
             es_json = r.headers.get("content-type", "").startswith("application/json")

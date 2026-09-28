@@ -26,6 +26,9 @@ BRONZE_METEO = BRONZE / "meteo"
 CACHE_METEO = BRONZE_METEO / "cache_meteo"   # antes: Drive -> ahora local
 BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
+BRONZE_SALA = BRONZE_EPI / "sala"
+SILVER_SALA = SILVER / "epi_sala_semanal.csv"
+UBIGEO_CATALOG = REFERENCE / "catalogo_ubigeos_piura.csv"
 
 MODELS = ROOT / "models"
 

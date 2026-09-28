@@ -12,12 +12,22 @@ sección 8.
 """
 
 import re
+import logging
+from pathlib import Path
 
 import pandas as pd
 
 from src.utils.keys import normalizar
 
 ANIOS = list(range(2017, 2026))
+SOCIO_COLUMNS = [
+    "poblacion", "fraccion_rural", "fraccion_mujeres", "fraccion_menores_15",
+    "fraccion_sin_seguro", "fraccion_analfabeta_15_mas", "fraccion_pared_precaria",
+    "fraccion_piso_tierra", "fraccion_agua_red", "fraccion_agua_cisterna",
+    "fraccion_desague_red", "fraccion_sin_saneamiento", "fraccion_alumbrado_red",
+    "fraccion_hogares_refrigeradora", "fraccion_hogares_celular",
+    "fraccion_hogares_lena",
+]
 
 # Distrito con nombre repetido en el Excel original (ver limpiar_duplicados)
 FIX_DISTRITO_DUPLICADO = {52: "SALITRAL_S"}
@@ -113,3 +123,61 @@ def construir_socio_anual(df_pob: pd.DataFrame) -> pd.DataFrame:
     socio_anual = pd.concat(frames, axis=1).reset_index()
     print(socio_anual.shape)  # esperado: 65 distritos x 9 años = 585 filas
     return socio_anual
+
+
+def generar_socio_para_claves(
+    keys: set[tuple[str, int]], silver_path: Path, bronze_path: Path,
+    *, prefer_bronze: bool = False,
+) -> pd.DataFrame:
+    """Return only requested UBIGEO-years; extrapolate beyond 2025 if needed."""
+    if not keys:
+        return pd.DataFrame(columns=["ubigeo", "anio", *SOCIO_COLUMNS])
+    if prefer_bronze:
+        if not bronze_path.exists():
+            raise FileNotFoundError(f"Required raw demographic source is unavailable: {bronze_path}")
+        source = construir_socio_anual(limpiar_duplicados(cargar_crudo(bronze_path)))
+    elif silver_path.exists():
+        source = pd.read_csv(silver_path, dtype={"ubigeo": "string"})
+    elif bronze_path.exists():
+        source = construir_socio_anual(limpiar_duplicados(cargar_crudo(bronze_path)))
+    else:
+        raise FileNotFoundError(f"Required demographic source is unavailable: {silver_path} or {bronze_path}")
+    missing_columns = set(["ubigeo", "anio", *SOCIO_COLUMNS]) - set(source)
+    if missing_columns:
+        raise ValueError(f"Demographic source lacks columns: {sorted(missing_columns)}")
+    source = source.copy()
+    source["ubigeo"] = source["ubigeo"].astype("string").str.zfill(6)
+    source["anio"] = source["anio"].astype(int)
+    if source.duplicated(["ubigeo", "anio"]).any():
+        raise ValueError("Demographic source contains duplicate UBIGEO-years")
+    indexed = source.set_index(["ubigeo", "anio"])
+    result = []
+    for ubigeo, year in sorted(keys):
+        if year <= 2025:
+            if (ubigeo, year) not in indexed.index:
+                raise ValueError(f"Demographic source has no district-year: {ubigeo}, {year}")
+            values = indexed.loc[(ubigeo, year), SOCIO_COLUMNS].to_dict()
+        else:
+            if (ubigeo, 2017) not in indexed.index or (ubigeo, 2025) not in indexed.index:
+                raise ValueError(f"Demographic endpoints missing for {ubigeo}")
+            first = indexed.loc[(ubigeo, 2017), SOCIO_COLUMNS]
+            last = indexed.loc[(ubigeo, 2025), SOCIO_COLUMNS]
+            values = {}
+            for column in SOCIO_COLUMNS:
+                estimate = float(last[column]) + (year - 2025) * (float(last[column]) - float(first[column])) / 8
+                if column.startswith("fraccion_"):
+                    capped = min(1.0, max(0.0, estimate))
+                    if capped != estimate:
+                        logging.info(
+                            "Clamped demographic value: district=%s period=%s variable=%s original=%s final=%s",
+                            ubigeo, year, column, estimate, capped,
+                        )
+                    values[column] = capped
+                else:
+                    values[column] = int(round(estimate))
+                    if values[column] <= 0:
+                        raise ValueError(f"Projected population is nonpositive: {ubigeo}, {year}")
+        if any(pd.isna(values[column]) for column in SOCIO_COLUMNS):
+            raise ValueError(f"Demographic source has missing values: {ubigeo}, {year}")
+        result.append({"ubigeo": ubigeo, "anio": year, **values})
+    return pd.DataFrame(result)

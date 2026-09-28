@@ -5,3 +5,4 @@ pyarrow
 gdown
 pyyaml
 openpyxl
+websockets>=14,<17

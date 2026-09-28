@@ -25,3 +25,8 @@ def separar_camel(s: str) -> str:
     cada mayúscula que sigue a una minúscula.
     """
     return re.sub(r"(?<=[a-záéíóú])(?=[A-ZÁÉÍÓÚ])", " ", s)
+
+
+def normalizar_sala(s: str) -> str:
+    """Normalize Sala labels, including its PARIÐAS spelling."""
+    return normalizar(str(s).replace("Ð", "Ñ"))
