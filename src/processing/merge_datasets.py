@@ -32,7 +32,25 @@ def merge_meteo_socio(meteo: pd.DataFrame, socio_anual: pd.DataFrame) -> pd.Data
 def merge_con_epi(dataset_final: pd.DataFrame, df_casos: pd.DataFrame) -> pd.DataFrame:
     """Cruza casos históricos; deja nulos los años aún no cubiertos por la fuente."""
     dataset_final = dataset_final.copy()
-    dataset_final["ubigeo"] = dataset_final["ubigeo"].astype(int)
+    df_casos = df_casos.copy()
+
+    # ubigeo es un código de 6 dígitos (con ceros a la izquierda), no una
+    # cantidad -- mismo criterio que fill_component()/epi_sala.py/expectations_gold.py.
+    # Castear a int aquí rompía con IntCastingNaNError apenas quedaba un solo
+    # distrito sin match en el merge anterior (meteo+socio), y de paso perdía
+    # los ceros a la izquierda si algún ubigeo llegaba ya como int.
+    dataset_final["ubigeo"] = dataset_final["ubigeo"].astype("string").str.zfill(6)
+    df_casos["ubigeo"] = df_casos["ubigeo"].astype("string").str.zfill(6)
+
+    sin_ubigeo = dataset_final[dataset_final["ubigeo"].isna()]
+    if len(sin_ubigeo) > 0:
+        distritos_afectados = sorted(sin_ubigeo["distrito_key"].unique())
+        raise ValueError(
+            f"{len(sin_ubigeo)} filas de dataset_final no tienen ubigeo (no encontraron "
+            f"match sociodemográfico en el merge anterior). Distrito_key involucrados: "
+            f"{distritos_afectados}. Corre diagnosticar_distritos_sin_match(meteo, socio_anual) "
+            f"para ver a qué se debe el desfase de nombres y corrígelo antes de este merge."
+        )
 
     dataset_modelo = dataset_final.merge(df_casos, on=["ubigeo", "anio", "semana"], how="left")
     covered_years = set(pd.to_numeric(df_casos["anio"], errors="raise").astype(int))

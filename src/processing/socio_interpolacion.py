@@ -44,6 +44,9 @@ def limpiar_duplicados(df_pob: pd.DataFrame) -> pd.DataFrame:
     un sufijo _S para desambiguar).
     """
     df_pob = df_pob.copy()
+    # Mismo criterio que en epi_sala.py / fill_component(): ubigeo como string
+    # de 6 dígitos, nunca int, para no perder ceros a la izquierda.
+    df_pob["ubigeo"] = df_pob["ubigeo"].astype("string").str.zfill(6)
     df_pob["distrito_key"] = df_pob["distrito"].apply(normalizar)
     df_pob = df_pob.drop(columns=["pob_censada_2025_consulta", "fraccion_mujeres_2025_consulta"])
 
