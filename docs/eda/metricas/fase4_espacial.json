@@ -1,0 +1,345 @@
+{
+  "horizonte_semanas": 4,
+  "k_vecinos": 5,
+  "semana_corte_temporada": 35,
+  "distancia_vecino_mas_cercano_km_mediana_min_max": [
+    12.3,
+    4.9,
+    43.1
+  ],
+  "distancia_k_vecinos_km_mediana": 19.7,
+  "incidencia_acumulada_por_provincia": {
+    "Piura": 9919.0,
+    "Morropón": 9721.0,
+    "Talara": 9305.0,
+    "Paita": 9091.0,
+    "Sullana": 8610.0,
+    "Sechura": 6908.0,
+    "Ayabaca": 694.0,
+    "Huancabamba": 330.0
+  },
+  "incidencia_acumulada_rango_dentro_de_provincia": {
+    "Piura": [
+      1725.0,
+      16323.0
+    ],
+    "Morropón": [
+      121.0,
+      19110.0
+    ],
+    "Talara": [
+      2979.0,
+      10510.0
+    ],
+    "Paita": [
+      5235.0,
+      17020.0
+    ],
+    "Sullana": [
+      2293.0,
+      12458.0
+    ],
+    "Sechura": [
+      6021.0,
+      13561.0
+    ],
+    "Ayabaca": [
+      0.0,
+      4995.0
+    ],
+    "Huancabamba": [
+      25.0,
+      2153.0
+    ]
+  },
+  "incidencia_acumulada_mediana_sierra_vs_resto": [
+    41.0,
+    7365.0
+  ],
+  "r2_provincia_log_incidencia": 0.671,
+  "r2_provincia_log_incidencia_solo_costa": 0.177,
+  "moran": {
+    "todos_knn3": {
+      "I": 0.756,
+      "esperado": -0.016,
+      "p_valor": 0.001
+    },
+    "todos_knn5": {
+      "I": 0.693,
+      "esperado": -0.016,
+      "p_valor": 0.001
+    },
+    "todos_knn8": {
+      "I": 0.608,
+      "esperado": -0.016,
+      "p_valor": 0.001
+    },
+    "todos_inverso_distancia": {
+      "I": 0.272,
+      "esperado": -0.016,
+      "p_valor": 0.001
+    },
+    "costa_knn5": {
+      "I": 0.333,
+      "esperado": -0.022,
+      "p_valor": 0.002
+    },
+    "temporada_2017_knn5": {
+      "I": 0.39,
+      "esperado": -0.016,
+      "p_valor": 0.001
+    },
+    "temporada_2022_knn5": {
+      "I": 0.515,
+      "esperado": -0.016,
+      "p_valor": 0.001
+    },
+    "temporada_2023_knn5": {
+      "I": 0.658,
+      "esperado": -0.016,
+      "p_valor": 0.001
+    },
+    "temporada_2024_knn5": {
+      "I": 0.644,
+      "esperado": -0.016,
+      "p_valor": 0.001
+    },
+    "temporada_2025_knn5": {
+      "I": 0.589,
+      "esperado": -0.016,
+      "p_valor": 0.001
+    }
+  },
+  "n_distritos_activos": 31,
+  "spearman_pares_bruta_p25_mediana_p75": [
+    0.56,
+    0.62,
+    0.68
+  ],
+  "spearman_pares_residual_p25_mediana_p75": [
+    -0.18,
+    0.06,
+    0.25
+  ],
+  "rho_similitud_vs_distancia_bruta": -0.466,
+  "rho_similitud_vs_distancia_residual": -0.101,
+  "residual_mediana_pares_hasta_30km_vs_mas_de_30km": [
+    0.22,
+    0.05
+  ],
+  "n_pares_hasta_30km": 55,
+  "mantel_residual_vs_distancia": {
+    "rho": -0.10149033021907987,
+    "p_valor": 0.072
+  },
+  "mantel_bruta_vs_distancia": {
+    "rho": -0.4656104541526829,
+    "p_valor": 0.001
+  },
+  "distritos_actividad_continua_excluidos": [
+    "Piura",
+    "Castilla",
+    "Catacaos",
+    "Tambo Grande",
+    "Veintiséis de Octubre",
+    "Chulucanas",
+    "Sullana"
+  ],
+  "mantel_residual_vs_distancia_sin_continuos": {
+    "rho": -0.39545611506685124,
+    "p_valor": 0.001
+  },
+  "residual_mediana_hasta_30km_vs_mas_sin_continuos": [
+    0.21,
+    0.07
+  ],
+  "grupos_residuales_por_provincia": {
+    "1": {
+      "Morropón": 1,
+      "Piura": 5,
+      "Sullana": 1
+    },
+    "2": {
+      "Paita": 1,
+      "Piura": 1,
+      "Sechura": 1,
+      "Sullana": 1,
+      "Talara": 1
+    },
+    "3": {
+      "Sullana": 2
+    },
+    "4": {
+      "Morropón": 5,
+      "Paita": 1,
+      "Piura": 3,
+      "Sechura": 2,
+      "Sullana": 3,
+      "Talara": 3
+    }
+  },
+  "propagacion": {
+    "2017": {
+      "distritos_con_arranque": 38,
+      "distritos_con_D1_en_las_primeras_8_semanas": 18,
+      "primeros": [
+        "Colan",
+        "Querecotillo"
+      ],
+      "semana_inicio_min_mediana_max": [
+        9,
+        14.0,
+        21
+      ],
+      "semana_inicio_p25_p75": [
+        12.0,
+        16.0
+      ],
+      "rho_inicio_vs_distancia_a_primeros": 0.459,
+      "p_valor": 0.0037,
+      "focos_alternativos_n": 6,
+      "rho_con_focos_alternativos_min_max": [
+        -0.036,
+        0.442
+      ],
+      "rho_con_primer_D1": 0.272,
+      "p_valor_con_primer_D1": 0.0463
+    },
+    "2023": {
+      "distritos_con_arranque": 51,
+      "distritos_con_D1_en_las_primeras_8_semanas": 8,
+      "primeros": [
+        "La Matanza"
+      ],
+      "semana_inicio_min_mediana_max": [
+        3,
+        27.0,
+        45
+      ],
+      "semana_inicio_p25_p75": [
+        22.0,
+        31.5
+      ],
+      "rho_inicio_vs_distancia_a_primeros": 0.133,
+      "p_valor": 0.3523,
+      "focos_alternativos_n": 3,
+      "rho_con_focos_alternativos_min_max": [
+        -0.144,
+        0.126
+      ],
+      "rho_con_primer_D1": 0.388,
+      "p_valor_con_primer_D1": 0.0037
+    },
+    "2024": {
+      "distritos_con_arranque": 26,
+      "distritos_con_D1_en_las_primeras_8_semanas": 43,
+      "primeros": [
+        "Las Lomas"
+      ],
+      "semana_inicio_min_mediana_max": [
+        6,
+        23.0,
+        38
+      ],
+      "semana_inicio_p25_p75": [
+        20.0,
+        26.0
+      ],
+      "rho_inicio_vs_distancia_a_primeros": -0.249,
+      "p_valor": 0.2206,
+      "focos_alternativos_n": 3,
+      "rho_con_focos_alternativos_min_max": [
+        -0.405,
+        0.222
+      ],
+      "rho_con_primer_D1": 0.249,
+      "p_valor_con_primer_D1": 0.0749
+    }
+  },
+  "arranques_estratificados": [
+    {
+      "estrato": "0 %",
+      "vecino": 0,
+      "prob": 0.001866368047779022,
+      "n": 10716,
+      "arranques": 20
+    },
+    {
+      "estrato": "0-5 %",
+      "vecino": 0,
+      "prob": 0.007601520304060812,
+      "n": 4999,
+      "arranques": 38
+    },
+    {
+      "estrato": "0-5 %",
+      "vecino": 1,
+      "prob": 0.015193370165745856,
+      "n": 724,
+      "arranques": 11
+    },
+    {
+      "estrato": "5-15 %",
+      "vecino": 0,
+      "prob": 0.01166489925768823,
+      "n": 2829,
+      "arranques": 33
+    },
+    {
+      "estrato": "5-15 %",
+      "vecino": 1,
+      "prob": 0.034129692832764506,
+      "n": 879,
+      "arranques": 30
+    },
+    {
+      "estrato": "> 15 %",
+      "vecino": 0,
+      "prob": 0.0213078618662748,
+      "n": 1361,
+      "arranques": 29
+    },
+    {
+      "estrato": "> 15 %",
+      "vecino": 1,
+      "prob": 0.06480117820324006,
+      "n": 1358,
+      "arranques": 88
+    }
+  ],
+  "rr_mh_vecino_con_D1_t_menos_4": 2.82,
+  "arranques_por_temporada_candidatas": {
+    "2017": 40,
+    "2018": 16,
+    "2019": 1,
+    "2020": 4,
+    "2021": 26,
+    "2022": 43,
+    "2023": 58,
+    "2024": 31,
+    "2025": 25,
+    "2026": 5
+  },
+  "rr_mh_dejando_una_temporada_afuera": {
+    "2017": 3.1,
+    "2018": 3.04,
+    "2021": 2.62,
+    "2022": 2.99,
+    "2023": 2.7,
+    "2024": 2.46,
+    "2025": 2.89
+  },
+  "rr_mh_ic95_bootstrap_temporadas": [
+    1.87,
+    4.29
+  ],
+  "rr_mh_candidatas_definidas_en_t_menos_4": 3.46,
+  "n_candidatas_y_positivos_definidas_en_t_menos_4": [
+    22685,
+    490
+  ],
+  "rr_crudo_vecino": 7.23,
+  "n_candidatas_arranque": 22866,
+  "n_arranques": 249,
+  "pct_arranques_con_vecino_D1": 51.8
+}

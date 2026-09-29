@@ -1,0 +1,641 @@
+{
+  "n_distritos": 65,
+  "n_distritos_costa": 47,
+  "n_distritos_calidos_temp_ge_20": 44,
+  "costa_por_provincia_no_calidos": [
+    "Chalaco",
+    "Salitral (Morropón)",
+    "Santa Catalina de Mossa",
+    "Santo Domingo",
+    "Yamango"
+  ],
+  "sierra_por_provincia_calidos": [
+    "Paimas",
+    "Suyo"
+  ],
+  "cambio_2017_2025": {
+    "rural": {
+      "mediana_2017": 0.23,
+      "mediana_2025": 0.167,
+      "rango_iqr_2017": 0.97,
+      "cambio_mediano": 0.0,
+      "spearman_2017_vs_2025": 0.971
+    },
+    "mujeres": {
+      "mediana_2017": 0.497,
+      "mediana_2025": 0.499,
+      "rango_iqr_2017": 0.011,
+      "cambio_mediano": -0.0,
+      "spearman_2017_vs_2025": 0.686
+    },
+    "menores_15": {
+      "mediana_2017": 0.305,
+      "mediana_2025": 0.26,
+      "rango_iqr_2017": 0.052,
+      "cambio_mediano": -0.045,
+      "spearman_2017_vs_2025": 0.934
+    },
+    "sin_seguro": {
+      "mediana_2017": 0.157,
+      "mediana_2025": 0.018,
+      "rango_iqr_2017": 0.095,
+      "cambio_mediano": -0.135,
+      "spearman_2017_vs_2025": 0.859
+    },
+    "analfabeta_15_mas": {
+      "mediana_2017": 0.098,
+      "mediana_2025": 0.077,
+      "rango_iqr_2017": 0.113,
+      "cambio_mediano": -0.017,
+      "spearman_2017_vs_2025": 0.985
+    },
+    "pared_precaria": {
+      "mediana_2017": 0.673,
+      "mediana_2025": 0.574,
+      "rango_iqr_2017": 0.465,
+      "cambio_mediano": -0.054,
+      "spearman_2017_vs_2025": 0.98
+    },
+    "piso_tierra": {
+      "mediana_2017": 0.667,
+      "mediana_2025": 0.593,
+      "rango_iqr_2017": 0.429,
+      "cambio_mediano": -0.065,
+      "spearman_2017_vs_2025": 0.979
+    },
+    "agua_red": {
+      "mediana_2017": 0.774,
+      "mediana_2025": 0.738,
+      "rango_iqr_2017": 0.287,
+      "cambio_mediano": -0.005,
+      "spearman_2017_vs_2025": 0.578
+    },
+    "agua_cisterna": {
+      "mediana_2017": 0.006,
+      "mediana_2025": 0.023,
+      "rango_iqr_2017": 0.047,
+      "cambio_mediano": 0.005,
+      "spearman_2017_vs_2025": 0.828
+    },
+    "desague_red": {
+      "mediana_2017": 0.362,
+      "mediana_2025": 0.455,
+      "rango_iqr_2017": 0.52,
+      "cambio_mediano": 0.019,
+      "spearman_2017_vs_2025": 0.961
+    },
+    "sin_saneamiento": {
+      "mediana_2017": 0.138,
+      "mediana_2025": 0.126,
+      "rango_iqr_2017": 0.218,
+      "cambio_mediano": -0.008,
+      "spearman_2017_vs_2025": 0.897
+    },
+    "alumbrado_red": {
+      "mediana_2017": 0.85,
+      "mediana_2025": 0.865,
+      "rango_iqr_2017": 0.116,
+      "cambio_mediano": 0.024,
+      "spearman_2017_vs_2025": 0.788
+    },
+    "hogares_refrigeradora": {
+      "mediana_2017": 0.263,
+      "mediana_2025": 0.39,
+      "rango_iqr_2017": 0.323,
+      "cambio_mediano": 0.067,
+      "spearman_2017_vs_2025": 0.958
+    },
+    "hogares_celular": {
+      "mediana_2017": 0.707,
+      "mediana_2025": 0.922,
+      "rango_iqr_2017": 0.176,
+      "cambio_mediano": 0.205,
+      "spearman_2017_vs_2025": 0.838
+    },
+    "hogares_lena": {
+      "mediana_2017": 0.537,
+      "mediana_2025": 0.503,
+      "rango_iqr_2017": 0.644,
+      "cambio_mediano": -0.041,
+      "spearman_2017_vs_2025": 0.976
+    }
+  },
+  "variables_orden_distrital_estable_rho_ge_0_9": [
+    "rural",
+    "menores_15",
+    "analfabeta_15_mas",
+    "pared_precaria",
+    "piso_tierra",
+    "desague_red",
+    "hogares_refrigeradora",
+    "hogares_lena"
+  ],
+  "variables_orden_distrital_inestable_rho_lt_0_8": [
+    "mujeres",
+    "agua_red",
+    "alumbrado_red"
+  ],
+  "cambio_mediano_sin_seguro": -0.135,
+  "pares_abs_rho_ge_0_85": [
+    [
+      "analfabeta_15_mas",
+      "pared_precaria",
+      0.87
+    ],
+    [
+      "analfabeta_15_mas",
+      "piso_tierra",
+      0.92
+    ],
+    [
+      "analfabeta_15_mas",
+      "desague_red",
+      -0.86
+    ],
+    [
+      "analfabeta_15_mas",
+      "hogares_refrigeradora",
+      -0.91
+    ],
+    [
+      "analfabeta_15_mas",
+      "hogares_celular",
+      -0.9
+    ],
+    [
+      "analfabeta_15_mas",
+      "hogares_lena",
+      0.89
+    ],
+    [
+      "pared_precaria",
+      "piso_tierra",
+      0.88
+    ],
+    [
+      "pared_precaria",
+      "hogares_refrigeradora",
+      -0.89
+    ],
+    [
+      "pared_precaria",
+      "hogares_celular",
+      -0.86
+    ],
+    [
+      "pared_precaria",
+      "hogares_lena",
+      0.87
+    ],
+    [
+      "piso_tierra",
+      "desague_red",
+      -0.89
+    ],
+    [
+      "piso_tierra",
+      "hogares_refrigeradora",
+      -0.95
+    ],
+    [
+      "piso_tierra",
+      "hogares_celular",
+      -0.92
+    ],
+    [
+      "piso_tierra",
+      "hogares_lena",
+      0.95
+    ],
+    [
+      "desague_red",
+      "hogares_refrigeradora",
+      0.87
+    ],
+    [
+      "desague_red",
+      "hogares_celular",
+      0.89
+    ],
+    [
+      "desague_red",
+      "hogares_lena",
+      -0.87
+    ],
+    [
+      "hogares_refrigeradora",
+      "hogares_celular",
+      0.92
+    ],
+    [
+      "hogares_refrigeradora",
+      "hogares_lena",
+      -0.96
+    ],
+    [
+      "hogares_celular",
+      "hogares_lena",
+      -0.89
+    ]
+  ],
+  "vif_2017": {
+    "rural": 5.2,
+    "mujeres": 1.7,
+    "menores_15": 3.1,
+    "sin_seguro": 5.4,
+    "analfabeta_15_mas": 6.7,
+    "pared_precaria": 18.4,
+    "piso_tierra": 33.2,
+    "agua_red": 3.1,
+    "agua_cisterna": 2.0,
+    "desague_red": 10.5,
+    "sin_saneamiento": 3.9,
+    "alumbrado_red": 4.5,
+    "hogares_refrigeradora": 20.3,
+    "hogares_celular": 7.8,
+    "hogares_lena": 22.6
+  },
+  "n_variables_vif_mayor_10": 5,
+  "varianza_explicada_cp": {
+    "CP1": 0.613,
+    "CP2": 0.124,
+    "CP3": 0.073
+  },
+  "cargas_cp1": {
+    "piso_tierra": -0.315,
+    "hogares_lena": -0.313,
+    "analfabeta_15_mas": -0.301,
+    "pared_precaria": -0.301,
+    "rural": -0.252,
+    "sin_saneamiento": -0.228,
+    "menores_15": -0.182,
+    "mujeres": 0.047,
+    "agua_cisterna": 0.16,
+    "agua_red": 0.215,
+    "alumbrado_red": 0.237,
+    "sin_seguro": 0.24,
+    "desague_red": 0.302,
+    "hogares_celular": 0.308,
+    "hogares_refrigeradora": 0.315
+  },
+  "cargas_cp2": {
+    "alumbrado_red": -0.389,
+    "agua_red": -0.244,
+    "pared_precaria": -0.215,
+    "rural": -0.162,
+    "hogares_lena": -0.069,
+    "piso_tierra": -0.051,
+    "desague_red": -0.001,
+    "analfabeta_15_mas": 0.002,
+    "hogares_celular": 0.032,
+    "hogares_refrigeradora": 0.065,
+    "mujeres": 0.268,
+    "sin_seguro": 0.297,
+    "sin_saneamiento": 0.383,
+    "agua_cisterna": 0.401,
+    "menores_15": 0.487
+  },
+  "spearman_con_log_incidencia": {
+    "rural": {
+      "rho_todos": -0.741,
+      "ic_inf_todos": -0.845,
+      "ic_sup_todos": -0.575,
+      "rho_costa": -0.434,
+      "ic_inf_costa": -0.669,
+      "ic_sup_costa": -0.138,
+      "rho_costa_2025": -0.324,
+      "rho_calidos": -0.401,
+      "ic_inf_calidos": -0.644,
+      "ic_sup_calidos": -0.112
+    },
+    "hogares_lena": {
+      "rho_todos": -0.736,
+      "ic_inf_todos": -0.844,
+      "ic_sup_todos": -0.554,
+      "rho_costa": -0.384,
+      "ic_inf_costa": -0.629,
+      "ic_sup_costa": -0.083,
+      "rho_costa_2025": -0.332,
+      "rho_calidos": -0.331,
+      "ic_inf_calidos": -0.576,
+      "ic_sup_calidos": -0.06
+    },
+    "pared_precaria": {
+      "rho_todos": -0.682,
+      "ic_inf_todos": -0.812,
+      "ic_sup_todos": -0.486,
+      "rho_costa": -0.289,
+      "ic_inf_costa": -0.571,
+      "ic_sup_costa": 0.05,
+      "rho_costa_2025": -0.285,
+      "rho_calidos": -0.225,
+      "ic_inf_calidos": -0.524,
+      "ic_sup_calidos": 0.107
+    },
+    "piso_tierra": {
+      "rho_todos": -0.68,
+      "ic_inf_todos": -0.809,
+      "ic_sup_todos": -0.5,
+      "rho_costa": -0.344,
+      "ic_inf_costa": -0.595,
+      "ic_sup_costa": -0.04,
+      "rho_costa_2025": -0.33,
+      "rho_calidos": -0.305,
+      "ic_inf_calidos": -0.571,
+      "ic_sup_calidos": 0.007
+    },
+    "analfabeta_15_mas": {
+      "rho_todos": -0.617,
+      "ic_inf_todos": -0.768,
+      "ic_sup_todos": -0.407,
+      "rho_costa": -0.24,
+      "ic_inf_costa": -0.518,
+      "ic_sup_costa": 0.082,
+      "rho_costa_2025": -0.259,
+      "rho_calidos": -0.192,
+      "ic_inf_calidos": -0.501,
+      "ic_sup_calidos": 0.124
+    },
+    "sin_saneamiento": {
+      "rho_todos": -0.475,
+      "ic_inf_todos": -0.661,
+      "ic_sup_todos": -0.251,
+      "rho_costa": -0.265,
+      "ic_inf_costa": -0.512,
+      "ic_sup_costa": 0.003,
+      "rho_costa_2025": -0.337,
+      "rho_calidos": -0.33,
+      "ic_inf_calidos": -0.575,
+      "ic_sup_calidos": -0.029
+    },
+    "menores_15": {
+      "rho_todos": -0.383,
+      "ic_inf_todos": -0.6,
+      "ic_sup_todos": -0.153,
+      "rho_costa": -0.165,
+      "ic_inf_costa": -0.43,
+      "ic_sup_costa": 0.102,
+      "rho_costa_2025": -0.116,
+      "rho_calidos": -0.363,
+      "ic_inf_calidos": -0.567,
+      "ic_sup_calidos": -0.11
+    },
+    "mujeres": {
+      "rho_todos": 0.157,
+      "ic_inf_todos": -0.105,
+      "ic_sup_todos": 0.384,
+      "rho_costa": 0.252,
+      "ic_inf_costa": -0.04,
+      "ic_sup_costa": 0.496,
+      "rho_costa_2025": 0.233,
+      "rho_calidos": 0.335,
+      "ic_inf_calidos": 0.042,
+      "ic_sup_calidos": 0.59
+    },
+    "poblacion": {
+      "rho_todos": 0.241,
+      "ic_inf_todos": -0.0,
+      "ic_sup_todos": 0.448,
+      "rho_costa": 0.171,
+      "ic_inf_costa": -0.114,
+      "ic_sup_costa": 0.421,
+      "rho_costa_2025": 0.196,
+      "rho_calidos": 0.102,
+      "ic_inf_calidos": -0.198,
+      "ic_sup_calidos": 0.39
+    },
+    "alumbrado_red": {
+      "rho_todos": 0.449,
+      "ic_inf_todos": 0.221,
+      "ic_sup_todos": 0.665,
+      "rho_costa": 0.314,
+      "ic_inf_costa": 0.063,
+      "ic_sup_costa": 0.539,
+      "rho_costa_2025": 0.124,
+      "rho_calidos": 0.37,
+      "ic_inf_calidos": 0.12,
+      "ic_sup_calidos": 0.562
+    },
+    "sin_seguro": {
+      "rho_todos": 0.491,
+      "ic_inf_todos": 0.258,
+      "ic_sup_todos": 0.68,
+      "rho_costa": 0.051,
+      "ic_inf_costa": -0.273,
+      "ic_sup_costa": 0.366,
+      "rho_costa_2025": 0.05,
+      "rho_calidos": -0.063,
+      "ic_inf_calidos": -0.352,
+      "ic_sup_calidos": 0.249
+    },
+    "agua_cisterna": {
+      "rho_todos": 0.552,
+      "ic_inf_todos": 0.322,
+      "ic_sup_todos": 0.727,
+      "rho_costa": 0.163,
+      "ic_inf_costa": -0.161,
+      "ic_sup_costa": 0.467,
+      "rho_costa_2025": 0.316,
+      "rho_calidos": 0.121,
+      "ic_inf_calidos": -0.211,
+      "ic_sup_calidos": 0.434
+    },
+    "agua_red": {
+      "rho_todos": 0.604,
+      "ic_inf_todos": 0.422,
+      "ic_sup_todos": 0.751,
+      "rho_costa": 0.357,
+      "ic_inf_costa": 0.057,
+      "ic_sup_costa": 0.609,
+      "rho_costa_2025": 0.259,
+      "rho_calidos": 0.3,
+      "ic_inf_calidos": 0.007,
+      "ic_sup_calidos": 0.547
+    },
+    "hogares_celular": {
+      "rho_todos": 0.633,
+      "ic_inf_todos": 0.435,
+      "ic_sup_todos": 0.78,
+      "rho_costa": 0.322,
+      "ic_inf_costa": -0.007,
+      "ic_sup_costa": 0.597,
+      "rho_costa_2025": 0.24,
+      "rho_calidos": 0.313,
+      "ic_inf_calidos": -0.016,
+      "ic_sup_calidos": 0.615
+    },
+    "desague_red": {
+      "rho_todos": 0.708,
+      "ic_inf_todos": 0.546,
+      "ic_sup_todos": 0.807,
+      "rho_costa": 0.421,
+      "ic_inf_costa": 0.11,
+      "ic_sup_costa": 0.657,
+      "rho_costa_2025": 0.421,
+      "rho_calidos": 0.408,
+      "ic_inf_calidos": 0.121,
+      "ic_sup_calidos": 0.66
+    },
+    "CP1": {
+      "rho_todos": 0.727,
+      "ic_inf_todos": 0.546,
+      "ic_sup_todos": 0.838,
+      "rho_costa": 0.386,
+      "ic_inf_costa": 0.069,
+      "ic_sup_costa": 0.632,
+      "rho_costa_2025": 0.375,
+      "rho_calidos": 0.355,
+      "ic_inf_calidos": 0.051,
+      "ic_sup_calidos": 0.626
+    },
+    "hogares_refrigeradora": {
+      "rho_todos": 0.731,
+      "ic_inf_todos": 0.544,
+      "ic_sup_todos": 0.849,
+      "rho_costa": 0.375,
+      "ic_inf_costa": 0.051,
+      "ic_sup_costa": 0.633,
+      "rho_costa_2025": 0.309,
+      "rho_calidos": 0.328,
+      "ic_inf_calidos": 0.018,
+      "ic_sup_calidos": 0.609
+    }
+  },
+  "variables_ic_costa_excluye_0": [
+    "rural",
+    "hogares_lena",
+    "piso_tierra",
+    "alumbrado_red",
+    "agua_red",
+    "desague_red",
+    "CP1",
+    "hogares_refrigeradora"
+  ],
+  "variables_ic_calidos_excluye_0": [
+    "rural",
+    "hogares_lena",
+    "sin_saneamiento",
+    "menores_15",
+    "mujeres",
+    "alumbrado_red",
+    "agua_red",
+    "desague_red",
+    "CP1",
+    "hogares_refrigeradora"
+  ],
+  "cp1_costa_rho_sin_cada_temporada": {
+    "2017": 0.309,
+    "2023": 0.501,
+    "2024": 0.295
+  },
+  "n_distritos_costa_y_calidos": 42,
+  "cp1_rho_por_definicion_de_zona": {
+    "costa_provincia": {
+      "rho": 0.386,
+      "ic95_inf": 0.069,
+      "ic95_sup": 0.632
+    },
+    "calidos_temp_ge_20": {
+      "rho": 0.355,
+      "ic95_inf": 0.051,
+      "ic95_sup": 0.626
+    },
+    "costa_y_calidos": {
+      "rho": 0.277,
+      "ic95_inf": -0.061,
+      "ic95_sup": 0.56,
+      "n": 42
+    }
+  },
+  "mediana_abs_rho_todos_vs_costa": [
+    0.617,
+    0.314
+  ],
+  "cp1_vs_incidencia_por_temporada_costa": {
+    "2017": {
+      "rho": 0.276,
+      "ic95_inf": -0.021,
+      "ic95_sup": 0.534,
+      "n": 47,
+      "distritos_costa_en_cero": 3,
+      "parcial": true
+    },
+    "2018": {
+      "rho": 0.233,
+      "ic95_inf": -0.087,
+      "ic95_sup": 0.528,
+      "n": 47,
+      "distritos_costa_en_cero": 11,
+      "parcial": false
+    },
+    "2019": {
+      "rho": 0.458,
+      "ic95_inf": 0.185,
+      "ic95_sup": 0.669,
+      "n": 47,
+      "distritos_costa_en_cero": 33,
+      "parcial": false
+    },
+    "2020": {
+      "rho": 0.252,
+      "ic95_inf": -0.087,
+      "ic95_sup": 0.534,
+      "n": 47,
+      "distritos_costa_en_cero": 30,
+      "parcial": false
+    },
+    "2021": {
+      "rho": 0.194,
+      "ic95_inf": -0.106,
+      "ic95_sup": 0.487,
+      "n": 47,
+      "distritos_costa_en_cero": 13,
+      "parcial": false
+    },
+    "2022": {
+      "rho": 0.062,
+      "ic95_inf": -0.246,
+      "ic95_sup": 0.356,
+      "n": 47,
+      "distritos_costa_en_cero": 4,
+      "parcial": false
+    },
+    "2023": {
+      "rho": 0.207,
+      "ic95_inf": -0.129,
+      "ic95_sup": 0.497,
+      "n": 47,
+      "distritos_costa_en_cero": 0,
+      "parcial": false
+    },
+    "2024": {
+      "rho": 0.375,
+      "ic95_inf": 0.082,
+      "ic95_sup": 0.617,
+      "n": 47,
+      "distritos_costa_en_cero": 0,
+      "parcial": false
+    },
+    "2025": {
+      "rho": 0.146,
+      "ic95_inf": -0.161,
+      "ic95_sup": 0.437,
+      "n": 47,
+      "distritos_costa_en_cero": 6,
+      "parcial": false
+    }
+  },
+  "phi_sobredispersion_costa": 587.4,
+  "pct_distritos_costa_fuera_998_ajustado_sobredispersion": 2.1,
+  "tasa_anual_costa_por_100k": 1174.3,
+  "pct_distritos_costa_fuera_limite_998": 97.9,
+  "spearman_poblacion_vs_log_incidencia": {
+    "todos": 0.241,
+    "costa": 0.171
+  },
+  "poblacion_media_min_mediana_max": [
+    1249,
+    11717,
+    192874
+  ]
+}

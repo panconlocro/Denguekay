@@ -1,0 +1,389 @@
+{
+  "n_filas": 30485,
+  "n_columnas": 35,
+  "n_distritos": 65,
+  "semanas_por_distrito": 469,
+  "fecha_inicio": "2017-01-01",
+  "fecha_fin": "2025-12-21",
+  "problemas_validar_panel": 0,
+  "llaves_duplicadas": 0,
+  "filas_no_domingo": 0,
+  "semanas_por_anio": {
+    "2017": 52,
+    "2018": 52,
+    "2019": 52,
+    "2020": 53,
+    "2021": 52,
+    "2022": 52,
+    "2023": 52,
+    "2024": 52,
+    "2025": 52
+  },
+  "filas_calendario_distinto_mmwr": 0,
+  "distritos_por_provincia": {
+    "Ayabaca": 10,
+    "Huancabamba": 8,
+    "Morropón": 10,
+    "Paita": 7,
+    "Piura": 10,
+    "Sechura": 6,
+    "Sullana": 8,
+    "Talara": 6
+  },
+  "primera_semana_regla_pipeline_difiere_mmwr": "2025-12-28",
+  "semanas_2017_2026_regla_pipeline_difiere_mmwr": 53,
+  "inicios_tramos_divergencia_pipeline_mmwr_hasta_2040": [
+    "2025-12-28",
+    "2031-12-28",
+    "2036-12-28"
+  ],
+  "anios_con_s53_en_excel_2000_2024": [
+    2003,
+    2008,
+    2009,
+    2014,
+    2020
+  ],
+  "anios_con_s53_segun_mmwr_2000_2024": [
+    2003,
+    2008,
+    2014,
+    2020
+  ],
+  "nulos_totales": 0,
+  "filas_duplicadas": 0,
+  "pares_columnas_identicas": [
+    [
+      "precip_total_mm",
+      "lluvia_total_mm"
+    ]
+  ],
+  "ubigeo_dtype": "string",
+  "ubigeo_6_digitos": true,
+  "meteo_silver_filas_sin_par": 0,
+  "meteo_silver_celdas_distintas": 0,
+  "socio_silver_filas_sin_par": 0,
+  "socio_silver_celdas_distintas": 0,
+  "distritos_con_sufijo_en_nombre": [
+    "Salitral_s"
+  ],
+  "distrito_key_meteo_silver_distinta_del_integrado": [
+    "EL CARMENDELA FRONTERA",
+    "SAN MIGUELDE EL FAIQUE"
+  ],
+  "prop_ceros_precip": 0.2794,
+  "prop_ceros_casos": 0.7793,
+  "violaciones_reglas_consistencia": {
+    "temp_min > temp_media": 0,
+    "temp_media > temp_max": 0,
+    "hum_rel_media fuera de [0, 100]": 0,
+    "precip_total_mm < 0": 0,
+    "lluvia_total_mm > precip_total_mm": 0,
+    "viento_max < 0": 0,
+    "radiacion_total < 0": 0,
+    "et0_total < 0": 0,
+    "poblacion <= 0": 0,
+    "alguna fraccion_* fuera de [0, 1]": 0,
+    "agua_red + agua_cisterna > 1": 0,
+    "desague_red + sin_saneamiento > 1": 0,
+    "casos_Dengue negativo o no entero": 0
+  },
+  "distrito_anios_socio_con_variacion_intra_anual": 0,
+  "rangos": {
+    "temp_min": [
+      -2.3,
+      24.5
+    ],
+    "temp_media": [
+      4.53,
+      29.63
+    ],
+    "temp_max": [
+      7.6,
+      39.7
+    ],
+    "hum_rel_media": [
+      39.29,
+      97.57
+    ],
+    "precip_total_mm": [
+      0.0,
+      706.3
+    ],
+    "viento_max": [
+      5.3,
+      42.7
+    ],
+    "radiacion_total": [
+      66.82,
+      194.22
+    ],
+    "et0_total": [
+      7.84,
+      48.8
+    ]
+  },
+  "max_desvio_recta_fracciones": 1.1102230246251565e-16,
+  "max_desvio_recta_poblacion_hab": 13295.875,
+  "crec_pob_2018_mediana_pct": 6.8,
+  "crec_pob_2018_min_pct": 1.27,
+  "crec_pob_2018_max_pct": 13.09,
+  "crec_pob_2019_2025_mediana_pct": 0.67,
+  "crec_pob_2019_2025_max_abs_pct": 3.53,
+  "distritos_crec_2018_mayor_que_todo_2019_2025": 65,
+  "distritos_crec_2018_mayor_que_toda_variacion_abs_2019_2025": 63,
+  "distritos_excepcion_magnitud": [
+    "Chalaco",
+    "Sicchez"
+  ],
+  "pob_regional_2017": 1856809,
+  "pob_regional_2018": 2013517,
+  "pob_regional_2025": 2195231,
+  "crec_pob_regional_2018_pct": 8.44,
+  "distritos_con_algun_anio_de_caida_pob": 20,
+  "pares_distritos_serie_climatica_identica": {
+    "Montero – Sicchez": [
+      "precip_total_mm",
+      "viento_max",
+      "radiacion_total"
+    ],
+    "Amotape – Tamarindo": [
+      "temp_media",
+      "temp_max",
+      "temp_min",
+      "precip_total_mm",
+      "hum_rel_media",
+      "viento_max",
+      "radiacion_total"
+    ],
+    "Los Organos – Mancora": [
+      "precip_total_mm",
+      "viento_max",
+      "radiacion_total"
+    ],
+    "Bellavista de la Union – Rinconada Llicuar": [
+      "temp_media",
+      "temp_max",
+      "temp_min",
+      "precip_total_mm",
+      "hum_rel_media",
+      "viento_max",
+      "radiacion_total"
+    ]
+  },
+  "n_distritos_en_pares_clima_identico": 8,
+  "distancia_km_pares_clima_identico": {
+    "Montero – Sicchez": 10.6,
+    "Amotape – Tamarindo": 4.9,
+    "Los Organos – Mancora": 8.1,
+    "Bellavista de la Union – Rinconada Llicuar": 7.3
+  },
+  "n_variables_identicas_por_par": {
+    "Montero – Sicchez": 3,
+    "Amotape – Tamarindo": 7,
+    "Los Organos – Mancora": 3,
+    "Bellavista de la Union – Rinconada Llicuar": 7
+  },
+  "extremos_por_variable_y_anio": {
+    "temp_media": {
+      "2017": 0,
+      "2018": 0,
+      "2019": 0,
+      "2020": 0,
+      "2021": 0,
+      "2022": 0,
+      "2023": 0,
+      "2024": 0,
+      "2025": 0
+    },
+    "temp_max": {
+      "2017": 0,
+      "2018": 0,
+      "2019": 0,
+      "2020": 0,
+      "2021": 0,
+      "2022": 0,
+      "2023": 0,
+      "2024": 0,
+      "2025": 0
+    },
+    "temp_min": {
+      "2017": 0,
+      "2018": 0,
+      "2019": 0,
+      "2020": 0,
+      "2021": 0,
+      "2022": 0,
+      "2023": 0,
+      "2024": 0,
+      "2025": 0
+    },
+    "hum_rel_media": {
+      "2017": 97,
+      "2018": 5,
+      "2019": 2,
+      "2020": 3,
+      "2021": 1,
+      "2022": 1,
+      "2023": 66,
+      "2024": 7,
+      "2025": 2
+    },
+    "viento_max": {
+      "2017": 7,
+      "2018": 0,
+      "2019": 1,
+      "2020": 0,
+      "2021": 0,
+      "2022": 0,
+      "2023": 15,
+      "2024": 1,
+      "2025": 2
+    },
+    "radiacion_total": {
+      "2017": 0,
+      "2018": 0,
+      "2019": 0,
+      "2020": 0,
+      "2021": 0,
+      "2022": 0,
+      "2023": 0,
+      "2024": 0,
+      "2025": 0
+    },
+    "et0_total": {
+      "2017": 0,
+      "2018": 0,
+      "2019": 0,
+      "2020": 0,
+      "2021": 0,
+      "2022": 0,
+      "2023": 0,
+      "2024": 2,
+      "2025": 1
+    },
+    "precip_total_mm (> p99 del distrito)": {
+      "2017": 207,
+      "2018": 2,
+      "2019": 21,
+      "2020": 0,
+      "2021": 3,
+      "2022": 3,
+      "2023": 80,
+      "2024": 2,
+      "2025": 7
+    }
+  },
+  "hum_extremas_total": 184,
+  "hum_extremas_pct_en_2017_2023": 88.6,
+  "precip_p99_pct_en_2017_2023": 88.3,
+  "temp_semanas_extremas_z5": 0,
+  "pct_filas_panel_en_2017_2023": 22.2,
+  "precip_max_mm": 706.3,
+  "precip_max_distrito": "Salitral",
+  "precip_max_provincia": "Morropón",
+  "precip_max_ubigeo": "200406",
+  "precip_max_semana": "2017-03-05",
+  "precip_max_mediana_65_distritos_misma_semana_mm": 256.1,
+  "precip_max_distritos_sobre_400mm_misma_semana": 15,
+  "precip_max_segundo_valor_mismo_distrito_mm": 583.9,
+  "precip_media_anual_regional_mm": {
+    "2017": 1827.0,
+    "2018": 674.0,
+    "2019": 961.0,
+    "2020": 633.0,
+    "2021": 636.0,
+    "2022": 613.0,
+    "2023": 1441.0,
+    "2024": 675.0,
+    "2025": 947.0
+  },
+  "temp_media_min_c": 4.53,
+  "temp_media_min_distrito": "El Carmen de la Frontera",
+  "temp_media_min_semana": "2021-08-01",
+  "temp_min_esa_semana_c": 0.4,
+  "temp_media_min_z_robusto_en_su_distrito": -2.94,
+  "el_carmen_temp_media_promedio_c": 6.96,
+  "el_carmen_temp_media_p5_p95_c": [
+    5.28,
+    8.24
+  ],
+  "el_carmen_semanas_temp_min_bajo_0c": 24,
+  "huancabamba_temp_media_promedio_por_distrito_c": {
+    "El Carmen de la Frontera": 6.96,
+    "Huancabamba": 11.47,
+    "Sondor": 15.51,
+    "Huarmaca": 15.65,
+    "Sondorillo": 16.26,
+    "Lalaquiz": 17.51,
+    "San Miguel de el Faique": 19.15,
+    "Canchaque": 19.7
+  },
+  "el_carmen_casos_total": 5,
+  "temp_min_global_c": -2.3,
+  "temp_min_global_distrito": "El Carmen de la Frontera",
+  "temp_min_global_semana": "2022-10-30",
+  "el_carmen_semanas_hum_extrema": 13,
+  "excel_filas_piura_2017_2024": 6300,
+  "excel_filas_con_cero_casos": 0,
+  "excel_filas_sin_par_en_panel": 0,
+  "excel_filas_con_casos_distintos": 0,
+  "panel_filas_positivas_2017_2024": 6300,
+  "panel_filas_cero_2017_2024": 20805,
+  "sala_filas": 3445,
+  "sala_semanas_max": 53,
+  "sala_filas_con_casos_distintos_al_panel": 0,
+  "sala_filas_fuera_del_panel": 65,
+  "sala_casos_fuera_del_panel": 3,
+  "sala_semanas_fuera_del_panel": [
+    53
+  ],
+  "sala_semana53_distritos_no_observados": 62,
+  "casos_panel_2025": 1114,
+  "casos_por_anio": {
+    "2017": 44275,
+    "2018": 525,
+    "2019": 70,
+    "2020": 125,
+    "2021": 4072,
+    "2022": 12151,
+    "2023": 79304,
+    "2024": 32246,
+    "2025": 1114
+  },
+  "casos_total": 173882,
+  "cobertura_filas": 30485,
+  "cobertura_fuentes": {
+    "verified": 30485
+  },
+  "cobertura_filas_con_casos_distintos": 0,
+  "distritos_nunca_en_excel": [
+    "200204 Lagunas",
+    "200205 Montero",
+    "200209 Sicchez"
+  ],
+  "validate_complete": "sin errores",
+  "media_semanal_ultimas8_2024": 72.9,
+  "media_semanal_primeras8_2025": 45.9,
+  "razon_media_8sem_inicio_sobre_fin_por_transicion": {
+    "2017->2018": 0.67,
+    "2018->2019": 0.27,
+    "2019->2020": 5.2,
+    "2020->2021": 4.78,
+    "2021->2022": 3.17,
+    "2022->2023": 7.17,
+    "2023->2024": 2.84,
+    "2024->2025": 0.63
+  },
+  "prop_distrito_semanas_con_casos_por_anio": {
+    "2017": 0.355,
+    "2018": 0.067,
+    "2019": 0.016,
+    "2020": 0.025,
+    "2021": 0.17,
+    "2022": 0.291,
+    "2023": 0.538,
+    "2024": 0.403,
+    "2025": 0.127
+  }
+}

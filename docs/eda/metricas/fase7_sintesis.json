@@ -1,0 +1,316 @@
+{
+  "cifras_clave": {
+    "panel_filas": 30485,
+    "calendario_diverge_desde": "2025-12-28",
+    "casos_S53_2025_fuera": 3,
+    "columnas_identicas": [
+      [
+        "precip_total_mm",
+        "lluvia_total_mm"
+      ]
+    ],
+    "crec_pob_2017_2018_mediana_pct": 6.8,
+    "crec_pob_2019_2025_mediana_pct": 0.67,
+    "distritos_nunca_en_excel": [
+      "200204 Lagunas",
+      "200205 Montero",
+      "200209 Sicchez"
+    ],
+    "casos_2025": 1114,
+    "distritos_clima_compartido": 8,
+    "pct_ceros": 77.93,
+    "varianza_sobre_media": 360.1,
+    "distritos_50pct_casos": 5,
+    "pct_casos_2017_2023_2024": 89.6,
+    "anios_pre2017_mas_5000_casos": [
+      2001,
+      2010,
+      2015,
+      2016
+    ],
+    "pct_positivos_D1": 13.37,
+    "pct_positivos_D4": 2.48,
+    "D3_pct_canal_en_cero": 73.9,
+    "semana_valle": 35,
+    "acf_r4_sin_nivel": 0.643,
+    "acf_r8_sin_nivel": 0.29,
+    "f1_persistencia_D1": 0.735,
+    "pct_positivos_que_son_arranques": 6.1,
+    "temporadas_menos_50_D1": [
+      2019,
+      2020,
+      2026
+    ],
+    "min_casos_entre_picos_2023_2024": 141,
+    "moran_knn5": 0.693,
+    "moran_costa": 0.333,
+    "rr_vecino_arranque": 2.82,
+    "rr_vecino_ic95": [
+      1.87,
+      4.29
+    ],
+    "rr_vecino_t4": 3.46,
+    "mantel_residual_p": 0.072,
+    "temp_media_bruta_vs_anomalia": [
+      0.332,
+      0.02
+    ],
+    "rho_humedad_v48": 0.285,
+    "rho_precip_v48": 0.273,
+    "clima_ic_excluye_0": [
+      "precip_total_mm",
+      "hum_rel_media"
+    ],
+    "parcial_humedad": 0.12,
+    "parcial_precip": 0.161,
+    "clima_arranques_ic_excluye_0": [],
+    "var_cp1_socio": 0.613,
+    "rho_cp1_costa_provincia": 0.386,
+    "rho_cp1_costa_calidos": 0.277,
+    "ic_cp1_costa_calidos": [
+      -0.061,
+      0.56
+    ],
+    "socio_orden_inestable": [
+      "mujeres",
+      "agua_red",
+      "alumbrado_red"
+    ],
+    "rho_cp1_todos_los_distritos": 0.727
+  },
+  "tabla_decisiones": [
+    {
+      "prioridad": "A",
+      "tipo": "DATOS",
+      "fase": 1,
+      "hallazgo": "Calendario del pipeline diverge de MMWR",
+      "cifra_clave": "desde 2025-12-28; 3 casos de 2025-S53 fuera",
+      "recomendacion": "Corregir la regla de semana antes de actualizar a 2026"
+    },
+    {
+      "prioridad": "A",
+      "tipo": "DATOS",
+      "fase": 1,
+      "hallazgo": "2025 viene de otra fuente (posible subregistro)",
+      "cifra_clave": "1114 casos en 2025",
+      "recomendacion": "No usar 2025 como temporada comparable sin advertencia; decidir su uso"
+    },
+    {
+      "prioridad": "A",
+      "tipo": "OBJ",
+      "fase": 2,
+      "hallazgo": "Objetivo con muchos ceros y sobredisperso",
+      "cifra_clave": "77.93 % ceros; varianza/media = 360.1",
+      "recomendacion": "Conteo con población como exposición (NB/ceros inflados) o clasificación binaria; no Poisson simple"
+    },
+    {
+      "prioridad": "A",
+      "tipo": "OBJ",
+      "fase": 2,
+      "hallazgo": "Las definiciones de brote difieren en desbalance y sentido",
+      "cifra_clave": "D1 = 13.37 % positivos; D4 = 2.48 %; D3 con canal en 0 en 73.9 %",
+      "recomendacion": "Elegir con el asesor: nivel (D1/D3 corregido) o arranque (D4)"
+    },
+    {
+      "prioridad": "A",
+      "tipo": "VAL",
+      "fase": 3,
+      "hallazgo": "Persistencia a 4 semanas es una línea base exigente",
+      "cifra_clave": "F1 D1 = 0.735",
+      "recomendacion": "Todo modelo se compara contra la persistencia a 4 semanas; métricas por temporada y aparte en arranques"
+    },
+    {
+      "prioridad": "A",
+      "tipo": "VAL",
+      "fase": 3,
+      "hallazgo": "Pocas temporadas con brotes; 2023 y 2024 conectadas",
+      "cifra_clave": "temporadas con < 50 positivos D1: [2019, 2020, 2026]; mínimo entre picos 2023-24: 141 casos/sem",
+      "recomendacion": "Origen móvil por temporada (corte en la semana 35), sin partición aleatoria, con margen ≥ horizonte + rezago máximo"
+    },
+    {
+      "prioridad": "A",
+      "tipo": "FE",
+      "fase": 3,
+      "hallazgo": "Rezagos útiles a horizonte 4",
+      "cifra_clave": "ACF sin nivel: r4 = 0.643, r8 = 0.29",
+      "recomendacion": "Rezago 4-5 de casos + resúmenes del nivel reciente; nunca rezagos < 4"
+    },
+    {
+      "prioridad": "A",
+      "tipo": "FE",
+      "fase": 4,
+      "hallazgo": "Vecinos con brote en t-4 se asocian a más arranques",
+      "cifra_clave": "RR MH = 2.82 (IC95 % [1.87, 4.29]); con candidatas en t-4: 3.46",
+      "recomendacion": "Incluir estado rezagado (≥ 4) de vecinos; definir k/radio en FE"
+    },
+    {
+      "prioridad": "B",
+      "tipo": "DATOS",
+      "fase": 1,
+      "hallazgo": "Salto de población 2017→2018",
+      "cifra_clave": "mediana +6.8 % vs +0.67 %/año después",
+      "recomendacion": "Confirmar la fuente de 2017 antes de usar tasas"
+    },
+    {
+      "prioridad": "B",
+      "tipo": "ASESOR",
+      "fase": 2,
+      "hallazgo": "Hay temporadas grandes antes de 2017 en el Excel",
+      "cifra_clave": "años pre-2017 con > 5 000 casos: [2001, 2010, 2015, 2016]",
+      "recomendacion": "Evaluar ampliar el panel hacia atrás"
+    },
+    {
+      "prioridad": "B",
+      "tipo": "FE",
+      "fase": 4,
+      "hallazgo": "Autocorrelación espacial positiva",
+      "cifra_clave": "I de Moran = 0.693 (solo costa 0.333)",
+      "recomendacion": "Modelo global con nivel propio del distrito; validación por tiempo, no por distrito"
+    },
+    {
+      "prioridad": "B",
+      "tipo": "FE",
+      "fase": 5,
+      "hallazgo": "Clima: solo humedad y precipitación robustas",
+      "cifra_clave": "rho ventana 4-8: humedad 0.285, precip 0.273; parcial | casos t-4: 0.12, 0.161",
+      "recomendacion": "Anomalías rezagadas (ventana 4-8) de humedad y precipitación; climatología solo con entrenamiento"
+    },
+    {
+      "prioridad": "B",
+      "tipo": "FE",
+      "fase": 5,
+      "hallazgo": "Temperatura media/máxima = calendario",
+      "cifra_clave": "rho temp_media bruta vs anomalía: [0.332, 0.02]",
+      "recomendacion": "No usar temperatura cruda como señal de clima; la semana epidemiológica ya aporta calendario"
+    },
+    {
+      "prioridad": "B",
+      "tipo": "FE",
+      "fase": 6,
+      "hallazgo": "Sociodemografía = un eje urbano, débil dentro de la zona cálida",
+      "cifra_clave": "CP1 = 0.613 de la varianza; rho costa y cálidos = 0.277 (IC [-0.061, 0.56])",
+      "recomendacion": "A lo sumo el CP1 (o 2-3 variables) fijado en 2017, como rasgo estático; o descartarla"
+    },
+    {
+      "prioridad": "C",
+      "tipo": "DATOS",
+      "fase": 1,
+      "hallazgo": "lluvia_total_mm ≡ precip_total_mm",
+      "cifra_clave": "[['precip_total_mm', 'lluvia_total_mm']]",
+      "recomendacion": "Usar solo precip_total_mm"
+    },
+    {
+      "prioridad": "C",
+      "tipo": "DATOS",
+      "fase": 1,
+      "hallazgo": "Tres distritos nunca aparecen en el Excel",
+      "cifra_clave": "['200204 Lagunas', '200205 Montero', '200209 Sicchez']",
+      "recomendacion": "Decidir exclusión o tratarlos como sin casos"
+    },
+    {
+      "prioridad": "C",
+      "tipo": "DATOS",
+      "fase": 6,
+      "hallazgo": "Orden distrital inestable 2017→2025 en algunas fracciones",
+      "cifra_clave": "['mujeres', 'agua_red', 'alumbrado_red']",
+      "recomendacion": "Revisar la fuente socio de cada año"
+    }
+  ],
+  "n_decisiones_por_prioridad": {
+    "A": 8,
+    "B": 6,
+    "C": 3
+  },
+  "variables": [
+    {
+      "variable": "casos_Dengue (rezagos ≥ 4)",
+      "recomendacion": "Mantener y transformar",
+      "motivo": "Predictor más fuerte; log1p o conteo con exposición"
+    },
+    {
+      "variable": "semana epidemiológica",
+      "recomendacion": "Mantener",
+      "motivo": "Estacionalidad clara (valle en la semana 35)"
+    },
+    {
+      "variable": "estado de vecinos (rezago ≥ 4)",
+      "recomendacion": "Construir (FE)",
+      "motivo": "RR de arranque ≈ 2.82"
+    },
+    {
+      "variable": "hum_rel_media",
+      "recomendacion": "Transformar",
+      "motivo": "Anomalía rezagada 4-8; asociación robusta"
+    },
+    {
+      "variable": "precip_total_mm",
+      "recomendacion": "Transformar",
+      "motivo": "Anomalía rezagada 4-8; asociación robusta"
+    },
+    {
+      "variable": "temp_min",
+      "recomendacion": "Opcional",
+      "motivo": "Asociación dependiente de 2024; no robusta"
+    },
+    {
+      "variable": "temp_media, temp_max",
+      "recomendacion": "Descartar como clima",
+      "motivo": "Solo aportan calendario"
+    },
+    {
+      "variable": "radiacion_total, et0_total, viento_max",
+      "recomendacion": "Descartar (redundantes)",
+      "motivo": "Redundantes con humedad; IC incluye 0"
+    },
+    {
+      "variable": "lluvia_total_mm",
+      "recomendacion": "Descartar",
+      "motivo": "Idéntica a precip_total_mm"
+    },
+    {
+      "variable": "15 fraccion_*",
+      "recomendacion": "Reducir",
+      "motivo": "CP1 o 2-3 variables, fijadas en 2017; asociación débil dentro de la zona cálida"
+    },
+    {
+      "variable": "poblacion",
+      "recomendacion": "Mantener como exposición",
+      "motivo": "Denominador u offset; revisar el salto 2017→2018"
+    },
+    {
+      "variable": "lat, lon",
+      "recomendacion": "Uso indirecto",
+      "motivo": "Para definir vecinos; no como predictor directo"
+    }
+  ],
+  "riesgos": [
+    {
+      "riesgo": "Fuga de información (leakage)",
+      "evidencia": "Rezagos < horizonte; climatologías, perfiles, percentiles o escaladores con todo el periodo; sociodemografía interpolada hacia 2025; población proyectada; partición aleatoria"
+    },
+    {
+      "riesgo": "Dependencia de pocos brotes",
+      "evidencia": "89.6 % de los casos en 2017, 2023 y 2024"
+    },
+    {
+      "riesgo": "Subregistro 2025",
+      "evidencia": "1114 casos, otra fuente"
+    },
+    {
+      "riesgo": "Sobredispersión y ceros",
+      "evidencia": "77.93 % ceros; varianza/media 360.1"
+    },
+    {
+      "riesgo": "Desbalance de clases",
+      "evidencia": "D1 13.37 %, D4 2.48 % de positivos"
+    },
+    {
+      "riesgo": "Clima de baja resolución",
+      "evidencia": "8 distritos comparten serie climática con un vecino"
+    },
+    {
+      "riesgo": "Concentración espacial",
+      "evidencia": "5 distritos suman el 50 % de los casos"
+    }
+  ]
+}
