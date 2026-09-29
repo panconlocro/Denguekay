@@ -1,4 +1,4 @@
-"""Schema, coverage, and value checks for the district-week model dataset."""
+"""Schema, coverage, and value checks for the integrated district-week dataset (silver/integrado)."""
 
 import csv
 from pathlib import Path

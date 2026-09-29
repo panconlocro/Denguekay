@@ -15,7 +15,8 @@ tesis-dengue-piura/
 ├── data/
 │   ├── bronze/
 │   ├── silver/
-│   ├── gold/
+│   │   └── integrado/     # merges entre fuentes, sin features
+│   ├── gold/              # solo dataset con feature engineering (vacío por ahora)
 │   └── reference/
 │
 ├── src/
@@ -61,25 +62,30 @@ bronze/
 ```
 **Va acá:** cualquier archivo nuevo que baje de una API, scraping o que alguien te pase como fuente original. Si dudas si algo es "bronze", pregúntate: ¿esto es exactamente lo que devolvió la fuente, sin que yo lo haya tocado? Si sí, es bronze.
 
-### `data/silver/` — limpio, normalizado, **un dataset por fuente**
+### `data/silver/` — limpio, normalizado e integrado (sin feature engineering)
+Silver tiene dos niveles:
 ```
 silver/
-├── meteo_semanal_distrital.csv
+├── meteo_semanal_distrital.csv     # por fuente
 ├── socio_anual.csv
 ├── epi_piura_semanal.csv
-└── epi_sala_semanal.csv       # exportación normalizada por ejecución
+├── epi_sala_semanal.csv            # exportación normalizada por ejecución
+└── integrado/                      # fuentes silver unidas entre sí
+    ├── meteo_socio_piura_2017_2025.csv                   # meteo + socio
+    ├── meteo_socio_epi_base_piura_2017_2025.csv          # + epi histórico (entrada del actualizador)
+    ├── meteo_socio_epi_piura_2017_2025.csv               # + epi completado por el actualizador
+    └── meteo_socio_epi_piura_2017_2025.coverage.csv      # cobertura de casos verificados
 ```
-Acá ya pasaron por: normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Todavía **no están mergeados entre sí**.
+**Por fuente (raíz de `silver/`):** ya pasaron por normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Es la salida de cualquier notebook `0X_bronze_to_silver_*`. Si agregas una fuente nueva (ej. datos de un hospital, otro sensor climático), su versión limpia va acá con su propio nombre de archivo.
 
-**Va acá:** la salida de cualquier notebook `0X_bronze_to_silver_*`. Si agregas una fuente nueva (ej. datos de un hospital, otro sensor climático), su versión limpia va acá con su propio nombre de archivo.
+**`silver/integrado/`:** el resultado de cualquier merge entre fuentes silver (notebooks `08_silver_merge_*` y `09_silver_merge_*`, y el actualizador `src/update_dataset_module.py`). Siguen siendo datos limpios sin features derivadas, por eso **no van en gold**. Si agregas una versión nueva (ej. extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`meteo_socio_epi_piura_2017_2026.csv`) para poder comparar versiones.
 
-### `data/gold/` — listo para modelar
+### `data/gold/` — solo el dataset con feature engineering
 ```
 gold/
-├── dataset_final_piura_2017_2025.csv     # meteo + socio
-└── dataset_modelo_piura_2017_2025.csv    # meteo + socio + epi (el que usa el modelo)
+└── .gitkeep     # vacío por ahora: aún no hacemos feature engineering
 ```
-**Va acá:** el resultado de cualquier merge entre fuentes silver. Si agregas una versión nueva (ej. con features adicionales, o extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`dataset_modelo_piura_2017_2026.csv`) para poder comparar versiones del dataset.
+**Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
 
 ### `data/reference/` — catálogos que casi no cambian
 ```
@@ -118,9 +124,9 @@ Suites de Great Expectations (o los `assert` livianos, según lo que decidamos u
 ```
 validation/
 ├── expectations_meteo.py
-└── expectations_gold.py       # cobertura y validación del dataset del modelo
+└── expectations_integrado.py  # cobertura y validación del dataset integrado (silver/integrado)
 ```
-**Va acá:** cualquier función `validar_*()` que revise rangos, nulos, duplicados, conteos esperados. Un archivo por dataset que valides (`expectations_socio.py`, `expectations_epi.py`, `expectations_gold.py`).
+**Va acá:** cualquier función `validar_*()` que revise rangos, nulos, duplicados, conteos esperados. Un archivo por dataset que valides (`expectations_socio.py`, `expectations_epi.py`, `expectations_integrado.py`).
 
 ### `src/modeling/` *(la vamos a necesitar pronto)*
 ```
@@ -152,8 +158,8 @@ notebooks/
 ├── 05_bronze_to_silver_socio.ipynb
 ├── 06_ingesta_epi.ipynb
 ├── 07_bronze_to_silver_epi.ipynb
-├── 08_gold_merge_meteo_socio.ipynb
-└── 09_gold_merge_epi.ipynb
+├── 08_silver_merge_meteo_socio.ipynb
+└── 09_silver_merge_epi.ipynb
 ```
 
 **Va acá:** cualquier notebook nuevo, con un número que refleje en qué paso del pipeline entra. Si agregas un paso intermedio, usa notación tipo `04b_` en vez de renumerar todo lo que sigue.
@@ -182,7 +188,8 @@ módulo.
 ```gitignore
 data/bronze/
 data/silver/
-data/gold/
+data/gold/*
+!data/gold/.gitkeep
 trazabilidad_scraper_dengue_piura_2025/
 trazabilidad_scraper_dengue_piura_2025.zip
 models/*.pkl
@@ -192,7 +199,7 @@ __pycache__/
 .env
 ```
 
-`data/reference/` **no** está en esta lista a propósito — esa sí se versiona porque es chica y todos la necesitan para reproducir el pipeline sin tener que descargar nada primero.
+`data/gold/.gitkeep` se versiona solo para que la carpeta vacía exista en todos los clones. `data/reference/` **no** está en esta lista a propósito — esa sí se versiona porque es chica y todos la necesitan para reproducir el pipeline sin tener que descargar nada primero.
 
 ---
 
@@ -208,7 +215,8 @@ __pycache__/
 | Notebook que orquesta un paso del pipeline | `notebooks/`, numerado |
 | Dato tal cual vino de la fuente | `data/bronze/<fuente>/` |
 | Dato limpio de una sola fuente | `data/silver/` |
-| Dataset final para modelar | `data/gold/` |
+| Merge de varias fuentes silver (sin features) | `data/silver/integrado/` |
+| Dataset con feature engineering, listo para modelar | `data/gold/` |
 | Catálogo chico que casi no cambia | `data/reference/` (sí se sube a Git) |
 | Modelo entrenado | `models/` |
 | Documento de tesis / explicación de arquitectura | `docs/` |

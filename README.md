@@ -2,7 +2,8 @@
 
 ## Actualización selectiva del dataset
 
-El dataset del modelo tiene una fila por `ubigeo`, `anio` y `semana`. El
+El dataset integrado (`data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv`)
+tiene una fila por `ubigeo`, `anio` y `semana`. El
 actualizador inspecciona sus filas, completa únicamente los componentes
 faltantes y conserva los valores históricos ya poblados. Los datos de clima
 proceden de Open-Meteo; los demográficos, del Excel y la tabla anual local;
@@ -12,8 +13,8 @@ Instala las dependencias con `./run_setup.sh`. Desde la raíz del repositorio:
 
 ```bash
 .venv/bin/python -m src.update_dataset_module \
-  --input data/gold/dataset_modelo_piura_2017_2025.csv \
-  --output data/gold/dataset_modelo_piura_2017_2025.csv \
+  --input data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv \
+  --output data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv \
   --dry-run
 ```
 

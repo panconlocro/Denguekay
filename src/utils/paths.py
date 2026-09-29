@@ -18,7 +18,7 @@ DATA = ROOT / "data"
 
 BRONZE = DATA / "bronze"
 SILVER = DATA / "silver"
-GOLD = DATA / "gold"
+GOLD = DATA / "gold"   # solo el dataset con feature engineering (vacío por ahora)
 REFERENCE = DATA / "reference"
 
 # Subcarpetas de bronze por fuente
@@ -28,6 +28,15 @@ BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
 BRONZE_SALA = BRONZE_EPI / "sala"
 SILVER_SALA = SILVER / "epi_sala_semanal.csv"
+
+# Silver integrado: fuentes silver ya unidas entre sí (meteo + socio + epi),
+# todavía SIN feature engineering. Gold queda reservado para el dataset con
+# features listo para el modelo.
+SILVER_INTEGRADO_DIR = SILVER / "integrado"
+SILVER_METEO_SOCIO = SILVER_INTEGRADO_DIR / "meteo_socio_piura_2017_2025.csv"
+SILVER_INTEGRADO_BASE = SILVER_INTEGRADO_DIR / "meteo_socio_epi_base_piura_2017_2025.csv"
+SILVER_INTEGRADO = SILVER_INTEGRADO_DIR / "meteo_socio_epi_piura_2017_2025.csv"
+
 UBIGEO_CATALOG = REFERENCE / "catalogo_ubigeos_piura.csv"
 
 MODELS = ROOT / "models"
@@ -35,5 +44,5 @@ MODELS = ROOT / "models"
 
 def asegurar_carpetas() -> None:
     """Crea todas las carpetas de datos si no existen (bronze/silver/gold/reference/models)."""
-    for carpeta in (CACHE_METEO, BRONZE_SOCIO, BRONZE_EPI, SILVER, GOLD, REFERENCE, MODELS):
+    for carpeta in (CACHE_METEO, BRONZE_SOCIO, BRONZE_EPI, SILVER, SILVER_INTEGRADO_DIR, GOLD, REFERENCE, MODELS):
         carpeta.mkdir(parents=True, exist_ok=True)

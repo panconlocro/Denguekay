@@ -12,7 +12,7 @@ from src.ingestion.scrape_minsa_dengue import observed_weekly_points
 from src.processing.epi_sala import normalize_sala_records
 from src.processing.socio_interpolacion import SOCIO_COLUMNS, generar_socio_para_claves
 from src.update_dataset_module import run_weather, update_dataset
-from src.validation.expectations_gold import WEATHER_COLUMNS, coverage_path, prepare_dataset
+from src.validation.expectations_integrado import WEATHER_COLUMNS, coverage_path, prepare_dataset
 
 
 CODE = "200502"

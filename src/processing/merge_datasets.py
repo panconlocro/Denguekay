@@ -1,6 +1,7 @@
 """
-Silver -> Gold: mergea meteo + socio, y luego + epi, para producir los
-datasets finales que consume el modelo.
+Silver por fuente -> Silver integrado: mergea meteo + socio, y luego + epi.
+El resultado todavía no tiene feature engineering, por eso vive en
+data/silver/integrado/ y no en gold.
 """
 
 import pandas as pd
@@ -35,7 +36,7 @@ def merge_con_epi(dataset_final: pd.DataFrame, df_casos: pd.DataFrame) -> pd.Dat
     df_casos = df_casos.copy()
 
     # ubigeo es un código de 6 dígitos (con ceros a la izquierda), no una
-    # cantidad -- mismo criterio que fill_component()/epi_sala.py/expectations_gold.py.
+    # cantidad -- mismo criterio que fill_component()/epi_sala.py/expectations_integrado.py.
     # Castear a int aquí rompía con IntCastingNaNError apenas quedaba un solo
     # distrito sin match en el merge anterior (meteo+socio), y de paso perdía
     # los ceros a la izquierda si algún ubigeo llegaba ya como int.

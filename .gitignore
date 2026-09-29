@@ -1,6 +1,7 @@
 data/bronze/
 data/silver/
-data/gold/
+data/gold/*
+!data/gold/.gitkeep
 models/*.pkl
 models/*.joblib
 __pycache__/

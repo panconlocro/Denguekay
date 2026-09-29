@@ -22,8 +22,8 @@ from src.processing.agregacion_semanal import agregar_a_semanal
 from src.processing.epi_sala import load_ubigeo_catalog, normalize_sala_records, upsert_sala_silver
 from src.processing.merge_datasets import fill_component
 from src.processing.socio_interpolacion import SOCIO_COLUMNS, generar_socio_para_claves
-from src.utils.paths import BRONZE_SALA, BRONZE_SOCIO, GOLD, REFERENCE, SILVER, SILVER_SALA, UBIGEO_CATALOG
-from src.validation.expectations_gold import (
+from src.utils.paths import BRONZE_SALA, BRONZE_SOCIO, REFERENCE, SILVER, SILVER_SALA, UBIGEO_CATALOG
+from src.validation.expectations_integrado import (
     KEY, WEATHER_COLUMNS, coverage_path, detect_missing_components,
     load_case_coverage, prepare_dataset, trusted_baseline_coverage,
     validate_complete, validate_geography,
