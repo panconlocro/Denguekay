@@ -137,7 +137,13 @@ Funciones reutilizables del análisis exploratorio (solo lectura sobre `data/`).
 ```
 eda/
 ├── carga.py      # cargar_integrado(): lee silver/integrado, valida el panel, ubigeo como string
-└── estilo.py     # estilo de gráficos, guardar_figura(), guardar_metricas()
+├── estilo.py     # estilo de gráficos, guardar_figura(), guardar_metricas()
+├── calidad.py    # chequeos de integridad: calendario MMWR, reglas de consistencia, extremos (fase 1)
+├── objetivo.py   # concentración, episodios y definiciones candidatas de brote, solo en memoria (fase 2)
+├── temporal.py   # autocorrelación, perfil estacional, temporadas y líneas base ingenuas (fase 3)
+├── espacial.py   # distancias entre centroides, pesos espaciales, I de Moran, estado rezagado de vecinos (fase 4)
+├── clima.py      # anomalías climáticas, correlación con rezagos y bootstrap por bloques (fase 5)
+└── socio.py      # VIF, componentes principales, Spearman con bootstrap y límites de embudo (fase 6)
 ```
 **Va acá:** helpers de carga, estadística y gráficos que se repiten entre notebooks de EDA (ej. correlación cruzada con rezagos, climatología y anomalías, curvas de concentración). **No va acá:** nada que construya features para el modelo (eso es `src/modeling/features.py`) ni nada que escriba en `data/`.
 
@@ -202,7 +208,7 @@ módulo.
 
 - **`models/`**: modelos entrenados serializados (`.pkl`, `.joblib`, checkpoints). No se sube a Git si pesan mucho — mismo criterio que `data/`.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
-- **`docs/eda/`**: salidas del EDA, también versionadas (texto y figuras chicas): `hallazgos.md` (conclusiones por fase), `informe_eda.md` (síntesis final), `figuras/<fase>/` (PNG) y `metricas/<fase>.json` (cifras citadas en los hallazgos).
+- **`docs/eda/`**: salidas del EDA, también versionadas (texto y figuras chicas): `hallazgos.md` (conclusiones por fase), `informe_eda.md` (síntesis final), `problemas_y_decisiones.md` (problemas de datos y decisiones pendientes, consolidados al cierre del EDA), `figuras/<fase>/` (PNG) y `metricas/<fase>.json` (cifras citadas en los hallazgos).
 
 ---
 
