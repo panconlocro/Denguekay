@@ -11,3 +11,4 @@ __pycache__/
 .DS_Store
 trazabilidad_scraper_dengue_piura_2025/
 trazabilidad_scraper_dengue_piura_2025.zip
+.claude/settings.local.json

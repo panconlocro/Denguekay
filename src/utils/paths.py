@@ -41,6 +41,12 @@ UBIGEO_CATALOG = REFERENCE / "catalogo_ubigeos_piura.csv"
 
 MODELS = ROOT / "models"
 
+# Salidas del EDA (versionadas en Git: son texto y figuras chicas, no datos)
+DOCS = ROOT / "docs"
+EDA_DOCS = DOCS / "eda"
+EDA_FIGURAS = EDA_DOCS / "figuras"
+EDA_METRICAS = EDA_DOCS / "metricas"
+
 
 def asegurar_carpetas() -> None:
     """Crea todas las carpetas de datos si no existen (bronze/silver/gold/reference/models)."""

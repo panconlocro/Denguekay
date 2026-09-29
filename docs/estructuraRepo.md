@@ -7,6 +7,8 @@ Esta guía explica cómo está organizado el repo y **dónde va cada archivo nue
 ```
 tesis-dengue-piura/
 ├── README.md
+├── CLAUDE.md                  # contexto y reglas para Claude Code
+├── .claude/                   # skills, subagentes y permisos de Claude Code
 ├── .gitignore
 ├── environment.yml            # o requirements.txt
 ├── config/
@@ -23,6 +25,7 @@ tesis-dengue-piura/
 │   ├── ingestion/
 │   ├── processing/
 │   ├── validation/
+│   ├── eda/
 │   ├── modeling/
 │   ├── utils/
 │   └── update_dataset_module.py
@@ -31,6 +34,7 @@ tesis-dengue-piura/
 ├── great_expectations/
 ├── models/
 └── docs/
+    └── eda/
 ```
 
 ---
@@ -128,6 +132,15 @@ validation/
 ```
 **Va acá:** cualquier función `validar_*()` que revise rangos, nulos, duplicados, conteos esperados. Un archivo por dataset que valides (`expectations_socio.py`, `expectations_epi.py`, `expectations_integrado.py`).
 
+### `src/eda/`
+Funciones reutilizables del análisis exploratorio (solo lectura sobre `data/`).
+```
+eda/
+├── carga.py      # cargar_integrado(): lee silver/integrado, valida el panel, ubigeo como string
+└── estilo.py     # estilo de gráficos, guardar_figura(), guardar_metricas()
+```
+**Va acá:** helpers de carga, estadística y gráficos que se repiten entre notebooks de EDA (ej. correlación cruzada con rezagos, climatología y anomalías, curvas de concentración). **No va acá:** nada que construya features para el modelo (eso es `src/modeling/features.py`) ni nada que escriba en `data/`.
+
 ### `src/modeling/` *(la vamos a necesitar pronto)*
 ```
 modeling/
@@ -159,8 +172,17 @@ notebooks/
 ├── 06_ingesta_epi.ipynb
 ├── 07_bronze_to_silver_epi.ipynb
 ├── 08_silver_merge_meteo_socio.ipynb
-└── 09_silver_merge_epi.ipynb
+├── 09_silver_merge_epi.ipynb
+├── 10_eda_integridad_calidad.ipynb
+├── 11_eda_variable_objetivo.ipynb
+├── 12_eda_temporal.ipynb
+├── 13_eda_espacial.ipynb
+├── 14_eda_clima.ipynb
+├── 15_eda_sociodemografico.ipynb
+└── 16_eda_sintesis.ipynb
 ```
+
+Los notebooks `10`–`16` son el EDA (Hito 2, Data Understanding) y **leen** `silver/integrado/`; no escriben en `data/`. El feature engineering, cuando se haga, va en notebooks con número posterior al 16.
 
 **Va acá:** cualquier notebook nuevo, con un número que refleje en qué paso del pipeline entra. Si agregas un paso intermedio, usa notación tipo `04b_` en vez de renumerar todo lo que sigue.
 
@@ -180,6 +202,7 @@ módulo.
 
 - **`models/`**: modelos entrenados serializados (`.pkl`, `.joblib`, checkpoints). No se sube a Git si pesan mucho — mismo criterio que `data/`.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
+- **`docs/eda/`**: salidas del EDA, también versionadas (texto y figuras chicas): `hallazgos.md` (conclusiones por fase), `informe_eda.md` (síntesis final), `figuras/<fase>/` (PNG) y `metricas/<fase>.json` (cifras citadas en los hallazgos).
 
 ---
 
@@ -218,6 +241,9 @@ __pycache__/
 | Merge de varias fuentes silver (sin features) | `data/silver/integrado/` |
 | Dataset con feature engineering, listo para modelar | `data/gold/` |
 | Catálogo chico que casi no cambia | `data/reference/` (sí se sube a Git) |
+| Función reutilizable de análisis exploratorio | `src/eda/` |
+| Notebook de EDA | `notebooks/`, rango `10_eda_*` a `16_eda_*` |
+| Figura, cifra o conclusión del EDA | `docs/eda/` |
 | Modelo entrenado | `models/` |
 | Documento de tesis / explicación de arquitectura | `docs/` |
 

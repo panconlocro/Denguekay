@@ -6,3 +6,10 @@ gdown
 pyyaml
 openpyxl
 websockets>=14,<17
+matplotlib
+seaborn
+scipy
+statsmodels
+ipykernel
+nbformat
+nbconvert
