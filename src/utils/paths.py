@@ -18,7 +18,8 @@ DATA = ROOT / "data"
 
 BRONZE = DATA / "bronze"
 SILVER = DATA / "silver"
-GOLD = DATA / "gold"   # solo el dataset con feature engineering (vacío por ahora)
+SILVER_EPI_HISTORICO = SILVER / "epi_piura_semanal.csv"
+GOLD = DATA / "gold"   # datasets derivados por horizonte y manifiesto de linaje
 REFERENCE = DATA / "reference"
 
 # Subcarpetas de bronze por fuente

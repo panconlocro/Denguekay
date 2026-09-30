@@ -1,0 +1,624 @@
+{
+  "fuente": "meteo_socio_epi_piura_2017_2025.csv",
+  "sha256_fuente": "a0c4bb4497eeba0156c8ba581f3a6a64b13c42195606d57c3acc4a8ea0eb7a4e",
+  "regla_brote": {
+    "metodo": "misma semana epidemiológica de años previos; media + multiplicador * DE muestral; desigualdad estricta",
+    "multiplicador": 1.5,
+    "anios_previos": 5,
+    "minimo_casos": 2,
+    "fuente_historia": "epi_piura_semanal.csv",
+    "sha256_fuente_historia": "b3955bdd2c0caedf60a3987021a9f6fd67b9f7e63ec855d1db8a15cc4d09023a",
+    "ausencia_historica": "sin registro tratado como cero, no cero notificado",
+    "semana_53": "se suma a semana 52 para la referencia"
+  },
+  "horizontes": {
+    "2": {
+      "filas": 30485,
+      "distritos": 65,
+      "semanas_por_distrito": 469,
+      "filas_con_ventanas_completas": 30095,
+      "filas_sin_ventanas_completas": 390,
+      "columnas": 48,
+      "candidatas": 34,
+      "filas_candidatas_completas": 30095,
+      "familias": {
+        "historia": [
+          "casos_lag_2",
+          "casos_lag_3",
+          "casos_media_4_h2",
+          "casos_semanas_positivas_4_h2"
+        ],
+        "calendario": [
+          "semana_epi_seno",
+          "semana_epi_coseno"
+        ],
+        "vecinos": [
+          "vecinos_media_casos_knn5_h2",
+          "vecinos_frac_con_casos_knn5_h2"
+        ],
+        "jerarquia": [
+          "provincia_otros_casos_h2",
+          "provincia_otros_frac_con_casos_h2",
+          "region_otros_casos_h2",
+          "region_otros_frac_con_casos_h2"
+        ],
+        "clima": [
+          "hum_rel_media_media5_h2",
+          "precip_total_mm_media5_h2"
+        ],
+        "socio_2017": [
+          "fraccion_rural_2017",
+          "fraccion_menores_15_2017",
+          "fraccion_desague_red_2017",
+          "log_poblacion_censo_2017"
+        ],
+        "socio_anual_reconstruida": [
+          "fraccion_rural_anual",
+          "fraccion_mujeres_anual",
+          "fraccion_menores_15_anual",
+          "fraccion_sin_seguro_anual",
+          "fraccion_analfabeta_15_mas_anual",
+          "fraccion_pared_precaria_anual",
+          "fraccion_piso_tierra_anual",
+          "fraccion_agua_red_anual",
+          "fraccion_agua_cisterna_anual",
+          "fraccion_desague_red_anual",
+          "fraccion_sin_saneamiento_anual",
+          "fraccion_alumbrado_red_anual",
+          "fraccion_hogares_refrigeradora_anual",
+          "fraccion_hogares_celular_anual",
+          "fraccion_hogares_lena_anual",
+          "log_poblacion_anual"
+        ]
+      },
+      "nulos_por_familia": {
+        "historia": 325,
+        "calendario": 0,
+        "vecinos": 130,
+        "jerarquia": 130,
+        "clima": 390,
+        "socio_2017": 0,
+        "socio_anual_reconstruida": 0
+      },
+      "positivos_brote": 3002,
+      "positivos_por_anio": {
+        "2017": 520,
+        "2018": 5,
+        "2019": 0,
+        "2020": 2,
+        "2021": 213,
+        "2022": 354,
+        "2023": 1402,
+        "2024": 503,
+        "2025": 3
+      }
+    },
+    "4": {
+      "filas": 30485,
+      "distritos": 65,
+      "semanas_por_distrito": 469,
+      "filas_con_ventanas_completas": 29965,
+      "filas_sin_ventanas_completas": 520,
+      "columnas": 48,
+      "candidatas": 34,
+      "filas_candidatas_completas": 29965,
+      "familias": {
+        "historia": [
+          "casos_lag_4",
+          "casos_lag_5",
+          "casos_media_4_h4",
+          "casos_semanas_positivas_4_h4"
+        ],
+        "calendario": [
+          "semana_epi_seno",
+          "semana_epi_coseno"
+        ],
+        "vecinos": [
+          "vecinos_media_casos_knn5_h4",
+          "vecinos_frac_con_casos_knn5_h4"
+        ],
+        "jerarquia": [
+          "provincia_otros_casos_h4",
+          "provincia_otros_frac_con_casos_h4",
+          "region_otros_casos_h4",
+          "region_otros_frac_con_casos_h4"
+        ],
+        "clima": [
+          "hum_rel_media_media5_h4",
+          "precip_total_mm_media5_h4"
+        ],
+        "socio_2017": [
+          "fraccion_rural_2017",
+          "fraccion_menores_15_2017",
+          "fraccion_desague_red_2017",
+          "log_poblacion_censo_2017"
+        ],
+        "socio_anual_reconstruida": [
+          "fraccion_rural_anual",
+          "fraccion_mujeres_anual",
+          "fraccion_menores_15_anual",
+          "fraccion_sin_seguro_anual",
+          "fraccion_analfabeta_15_mas_anual",
+          "fraccion_pared_precaria_anual",
+          "fraccion_piso_tierra_anual",
+          "fraccion_agua_red_anual",
+          "fraccion_agua_cisterna_anual",
+          "fraccion_desague_red_anual",
+          "fraccion_sin_saneamiento_anual",
+          "fraccion_alumbrado_red_anual",
+          "fraccion_hogares_refrigeradora_anual",
+          "fraccion_hogares_celular_anual",
+          "fraccion_hogares_lena_anual",
+          "log_poblacion_anual"
+        ]
+      },
+      "nulos_por_familia": {
+        "historia": 455,
+        "calendario": 0,
+        "vecinos": 260,
+        "jerarquia": 260,
+        "clima": 520,
+        "socio_2017": 0,
+        "socio_anual_reconstruida": 0
+      },
+      "positivos_brote": 3002,
+      "positivos_por_anio": {
+        "2017": 520,
+        "2018": 5,
+        "2019": 0,
+        "2020": 2,
+        "2021": 213,
+        "2022": 354,
+        "2023": 1402,
+        "2024": 503,
+        "2025": 3
+      }
+    }
+  },
+  "columnas_no_predictoras": [
+    "casos_Dengue",
+    "brote",
+    "umbral_brote_casos",
+    "ubigeo",
+    "anio",
+    "semana",
+    "provincia",
+    "distrito",
+    "distrito_key",
+    "semana_inicio",
+    "origen_inicio",
+    "origen_cierre",
+    "socio_2017_disponible_al_origen",
+    "socio_fracciones_interpoladas_con_2025"
+  ],
+  "ablaciones_ridge_conteos": {
+    "clima": {
+      "2": {
+        "historia_calendario_clima": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": 0.099015,
+            "2023": -0.379445,
+            "2024": 0.101046,
+            "2025": -0.002592
+          }
+        }
+      },
+      "4": {
+        "historia_calendario_clima": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 3,
+          "delta_mae_casos_por_temporada": {
+            "2022": 0.114219,
+            "2023": -0.575038,
+            "2024": -0.09452,
+            "2025": -0.007717
+          }
+        }
+      }
+    },
+    "sociodemografia": {
+      "2": {
+        "mas_15_fracciones_anuales": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 1,
+          "delta_mae_casos_por_temporada": {
+            "2022": 0.00243,
+            "2023": 0.070944,
+            "2024": -0.01806,
+            "2025": 0.021042
+          }
+        },
+        "mas_clima": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": 0.099015,
+            "2023": -0.379445,
+            "2024": 0.101046,
+            "2025": -0.002592
+          }
+        },
+        "mas_clima_poblacion_y_eje": {
+          "referencia": "mas_clima",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": 0.009102,
+            "2023": 0.048937,
+            "2024": -0.013614,
+            "2025": -0.000103
+          }
+        },
+        "mas_clima_poblacion_y_eje_anual": {
+          "referencia": "mas_clima",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 1,
+          "delta_mae_casos_por_temporada": {
+            "2022": 0.008641,
+            "2023": 0.033269,
+            "2024": -0.012055,
+            "2025": 0.002463
+          }
+        },
+        "mas_eje_urbano_2017": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 3,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.00101,
+            "2023": 0.016771,
+            "2024": -0.017093,
+            "2025": -0.000165
+          }
+        },
+        "mas_eje_urbano_anual": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.000582,
+            "2023": 0.017811,
+            "2024": -0.012426,
+            "2025": 0.001767
+          }
+        },
+        "mas_poblacion_2017": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 3,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.005561,
+            "2023": 0.038988,
+            "2024": -0.017274,
+            "2025": -0.00039
+          }
+        },
+        "mas_poblacion_anual": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 3,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.006153,
+            "2023": 0.028392,
+            "2024": -0.019448,
+            "2025": -9.2e-05
+          }
+        },
+        "mas_poblacion_y_eje": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 3,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.005751,
+            "2023": 0.047142,
+            "2024": -0.028481,
+            "2025": -0.000531
+          }
+        },
+        "mas_poblacion_y_eje_anual": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.006004,
+            "2023": 0.037781,
+            "2024": -0.026885,
+            "2025": 0.001235
+          }
+        },
+        "mas_tres_fracciones_2017": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.000184,
+            "2023": 0.034925,
+            "2024": -0.002417,
+            "2025": 0.000339
+          }
+        },
+        "mas_tres_fracciones_anuales": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 1,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.000611,
+            "2023": 0.022003,
+            "2024": 0.000565,
+            "2025": 0.004796
+          }
+        }
+      },
+      "4": {
+        "mas_15_fracciones_anuales": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 1,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.011109,
+            "2023": 0.024651,
+            "2024": 0.028236,
+            "2025": 0.057268
+          }
+        },
+        "mas_clima": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 3,
+          "delta_mae_casos_por_temporada": {
+            "2022": 0.114219,
+            "2023": -0.575038,
+            "2024": -0.09452,
+            "2025": -0.007717
+          }
+        },
+        "mas_clima_poblacion_y_eje": {
+          "referencia": "mas_clima",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": 0.004824,
+            "2023": -0.004673,
+            "2024": -0.077979,
+            "2025": 0.002715
+          }
+        },
+        "mas_clima_poblacion_y_eje_anual": {
+          "referencia": "mas_clima",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": 0.004592,
+            "2023": -0.027354,
+            "2024": -0.079393,
+            "2025": 0.008339
+          }
+        },
+        "mas_eje_urbano_2017": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.002872,
+            "2023": 0.002889,
+            "2024": -0.036544,
+            "2025": 0.000497
+          }
+        },
+        "mas_eje_urbano_anual": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.001972,
+            "2023": 0.003983,
+            "2024": -0.029583,
+            "2025": 0.004905
+          }
+        },
+        "mas_poblacion_2017": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 3,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.014081,
+            "2023": 0.002107,
+            "2024": -0.05405,
+            "2025": -0.000557
+          }
+        },
+        "mas_poblacion_anual": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 3,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.013782,
+            "2023": -0.008452,
+            "2024": -0.05634,
+            "2025": 0.000224
+          }
+        },
+        "mas_poblacion_y_eje": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.014597,
+            "2023": 0.006614,
+            "2024": -0.074578,
+            "2025": 0.000254
+          }
+        },
+        "mas_poblacion_y_eje_anual": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 3,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.013729,
+            "2023": -0.00241,
+            "2024": -0.071674,
+            "2025": 0.004449
+          }
+        },
+        "mas_tres_fracciones_2017": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.002523,
+            "2023": 0.018639,
+            "2024": -0.026522,
+            "2025": 0.001441
+          }
+        },
+        "mas_tres_fracciones_anuales": {
+          "referencia": "historia_calendario",
+          "temporadas": [
+            2022,
+            2023,
+            2024,
+            2025
+          ],
+          "cortes_con_menor_mae": 2,
+          "delta_mae_casos_por_temporada": {
+            "2022": -0.001798,
+            "2023": 0.002868,
+            "2024": -0.019786,
+            "2025": 0.011962
+          }
+        }
+      }
+    }
+  }
+}

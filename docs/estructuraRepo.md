@@ -8,7 +8,9 @@ Esta guía explica cómo está organizado el repo y **dónde va cada archivo nue
 tesis-dengue-piura/
 ├── README.md
 ├── CLAUDE.md                  # contexto y reglas para Claude Code
-├── .claude/                   # skills, subagentes y permisos de Claude Code
+├── _claude_setup/             # configuración versionada para Claude Code
+├── AGENTS.md                  # contexto y reglas para Codex
+├── .codex/skills/             # workflows de Codex (feature engineering)
 ├── .gitignore
 ├── environment.yml            # o requirements.txt
 ├── config/
@@ -18,7 +20,7 @@ tesis-dengue-piura/
 │   ├── bronze/
 │   ├── silver/
 │   │   └── integrado/     # merges entre fuentes, sin features
-│   ├── gold/              # solo dataset con feature engineering (vacío por ahora)
+│   ├── gold/              # dos datasets por horizonte y manifiesto de fase 6
 │   └── reference/
 │
 ├── src/
@@ -34,7 +36,8 @@ tesis-dengue-piura/
 ├── great_expectations/
 ├── models/
 └── docs/
-    └── eda/
+    ├── eda/
+    └── feature_engineering/   # plan, evidencia, decisiones y PDF de referencia
 ```
 
 ---
@@ -87,9 +90,14 @@ silver/
 ### `data/gold/` — solo el dataset con feature engineering
 ```
 gold/
-└── .gitkeep     # vacío por ahora: aún no hacemos feature engineering
+├── .gitkeep
+├── meteo_socio_epi_piura_2017_2025_h2_gold.csv
+├── meteo_socio_epi_piura_2017_2025_h4_gold.csv
+└── manifest_fase6.json
 ```
 **Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
+
+El plan de construcción está en `docs/feature_engineering/plan.md`. La entrada silver se conserva sin modificar; la fase 6 aprobada genera y valida las dos salidas gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene candidatos y la etiqueta `brote` (media histórica + 1,5 DE), sin estadísticas predictoras aprendidas con datos de prueba. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
 
 ### `data/reference/` — catálogos que casi no cambian
 ```
@@ -128,7 +136,8 @@ Suites de Great Expectations (o los `assert` livianos, según lo que decidamos u
 ```
 validation/
 ├── expectations_meteo.py
-└── expectations_integrado.py  # cobertura y validación del dataset integrado (silver/integrado)
+├── expectations_integrado.py  # cobertura y validación del dataset integrado (silver/integrado)
+└── contrato_pronostico.py     # origen temporal y disponibilidad al pronosticar
 ```
 **Va acá:** cualquier función `validar_*()` que revise rangos, nulos, duplicados, conteos esperados. Un archivo por dataset que valides (`expectations_socio.py`, `expectations_epi.py`, `expectations_integrado.py`).
 
@@ -147,14 +156,22 @@ eda/
 ```
 **Va acá:** helpers de carga, estadística y gráficos que se repiten entre notebooks de EDA (ej. correlación cruzada con rezagos, climatología y anomalías, curvas de concentración). **No va acá:** nada que construya features para el modelo (eso es `src/modeling/features.py`) ni nada que escriba en `data/`.
 
-### `src/modeling/` *(la vamos a necesitar pronto)*
+### `src/modeling/`
 ```
 modeling/
-├── features.py         # construcción de features finales para el modelo
-├── train.py             # entrenamiento (XGBoost, etc.)
-└── evaluate.py           # métricas, validación cruzada
+├── __init__.py
+├── historia_calendario.py   # candidatos causales de historia propia y calendario (fase 2)
+├── vecinos_jerarquia.py     # contexto espacial y provincial/regional rezagado (fase 3)
+├── clima.py                 # ventanas climáticas y climatología ajustada por corte (fase 4)
+├── diagnostico.py           # ridge fijo compartido en ablaciones exploratorias
+├── diagnostico_clima.py     # ablación temporal exploratoria del clima (fase 4)
+├── sociodemografia.py       # referencia 2017, demografía anual y eje urbano por fold (fase 5)
+├── diagnostico_socio.py     # ablación temporal exploratoria de variantes fijas y anuales (fase 5)
+├── etiqueta_brote.py        # regla de semana elevada con historia previa
+├── features.py             # integración y validación de gold para h=2/4 (fase 6)
+└── contrato_xgboost.py     # candidatos, exclusiones y auditoría de traspaso (fase 7)
 ```
-**Va acá:** todo lo relacionado a entrenar y evaluar modelos. Cuando prueben un modelo nuevo (ej. otro algoritmo, otra arquitectura), la función de entrenamiento va en `train.py` o en un archivo nuevo si es sustancialmente distinta (`train_xgboost.py`, `train_lstm.py`), pero la lógica compartida (split train/test, métricas) se queda en un solo lugar para no repetirla.
+**Va acá:** el feature engineering para el modelo y todo lo relacionado con entrenamiento y evaluación. `features.py` integra los candidatos de fase 6; `train.py` y `evaluate.py` son módulos previstos para fases posteriores. Cuando prueben un modelo nuevo (ej. otro algoritmo, otra arquitectura), la función de entrenamiento va en `train.py` o en un archivo nuevo si es sustancialmente distinta (`train_xgboost.py`, `train_lstm.py`), pero la lógica compartida (split train/test, métricas) se queda en un solo lugar para no repetirla.
 
 ### `src/utils/`
 Funciones chicas que usa más de un módulo.
@@ -185,10 +202,17 @@ notebooks/
 ├── 13_eda_espacial.ipynb
 ├── 14_eda_clima.ipynb
 ├── 15_eda_sociodemografico.ipynb
-└── 16_eda_sintesis.ipynb
+├── 16_eda_sintesis.ipynb
+├── 17_fe_contrato_objetivo.ipynb
+├── 18_fe_historia_calendario.ipynb
+├── 19_fe_vecinos_jerarquia.ipynb
+├── 20_fe_clima.ipynb
+├── 21_fe_sociodemografia.ipynb
+├── 22_fe_integracion.ipynb
+└── 23_fe_sintesis.ipynb
 ```
 
-Los notebooks `10`–`16` son el EDA (Hito 2, Data Understanding) y **leen** `silver/integrado/`; no escriben en `data/`. El feature engineering, cuando se haga, va en notebooks con número posterior al 16.
+Los notebooks `10`–`16` son el EDA (Hito 2, Data Understanding) y **leen** `silver/integrado/`; no escriben en `data/`. El notebook `17` audita el contrato temporal y el objetivo de la primera fase de feature engineering. El `18` construye y compara historia propia y calendario en memoria para la segunda fase. El `19` construye y audita vecinos y contexto provincial/regional rezagado. El `20` construye ventanas climáticas y compara su aporte en cortes temporales, con climatologías ajustadas antes de cada prueba. El `21` compara rasgos fijos de 2017 y anuales reconstruidos, con CP1 ajustado por fold. El `22` genera y valida gold por horizonte. El `23` audita los archivos persistidos, sintetiza variables y entrega el contrato de modelado sin entrenar XGBoost. El plan y los criterios de cierre están en `docs/feature_engineering/plan.md`.
 
 **Va acá:** cualquier notebook nuevo, con un número que refleje en qué paso del pipeline entra. Si agregas un paso intermedio, usa notación tipo `04b_` en vez de renumerar todo lo que sigue.
 
@@ -209,6 +233,7 @@ módulo.
 - **`models/`**: modelos entrenados serializados (`.pkl`, `.joblib`, checkpoints). No se sube a Git si pesan mucho — mismo criterio que `data/`.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
 - **`docs/eda/`**: salidas del EDA, también versionadas (texto y figuras chicas): `hallazgos.md` (conclusiones por fase), `informe_eda.md` (síntesis final), `problemas_y_decisiones.md` (problemas de datos y decisiones pendientes, consolidados al cierre del EDA), `figuras/<fase>/` (PNG) y `metricas/<fase>.json` (cifras citadas en los hallazgos).
+- **`docs/feature_engineering/`**: plan de fases, informes, `metricas/<fase>.json` y `figuras/<fase>/` sobre las variables del modelo; se versiona. Su subcarpeta `references/` conserva el PDF de investigación aportado por Rosa para futuras sesiones. La skill local `.codex/skills/feature-engineering-dengue/` y `AGENTS.md` describen el flujo de Codex. Ninguno contiene datos generados del panel.
 
 ---
 
@@ -252,6 +277,8 @@ __pycache__/
 | Figura, cifra o conclusión del EDA | `docs/eda/` |
 | Modelo entrenado | `models/` |
 | Documento de tesis / explicación de arquitectura | `docs/` |
+| Plan y hallazgos de feature engineering | `docs/feature_engineering/` |
+| Instrucciones de Codex y skill local | `AGENTS.md` y `.codex/skills/` |
 
 ---
 

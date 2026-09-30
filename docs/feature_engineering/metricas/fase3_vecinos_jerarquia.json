@@ -1,0 +1,110 @@
+{
+  "entrada": "data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv",
+  "filas_panel": 30485,
+  "horizontes": [
+    2,
+    4
+  ],
+  "vecindad": {
+    "distritos": 65,
+    "provincias": 8,
+    "vecinos_por_distrito": 5,
+    "distancia_arista_mediana_km": 19.68,
+    "distancia_arista_min_km": 4.95,
+    "distancia_arista_max_km": 55.89,
+    "autopeso_max": 0.0
+  },
+  "cobertura_features": {
+    "2": {
+      "filas": 30485,
+      "con_contexto": 30355,
+      "sin_origen": 130
+    },
+    "4": {
+      "filas": 30485,
+      "con_contexto": 30225,
+      "sin_origen": 260
+    }
+  },
+  "correlaciones_descriptivas": {
+    "2": {
+      "filas": 30355,
+      "rho_spearman": {
+        "historia_propia": 0.7785,
+        "vecinos_media_casos": 0.6207,
+        "vecinos_frac_con_casos": 0.6171,
+        "provincia_otros_casos": 0.5703,
+        "region_otros_casos": 0.4743
+      }
+    },
+    "4": {
+      "filas": 30225,
+      "rho_spearman": {
+        "historia_propia": 0.7426,
+        "vecinos_media_casos": 0.613,
+        "vecinos_frac_con_casos": 0.6076,
+        "provincia_otros_casos": 0.562,
+        "region_otros_casos": 0.4688
+      }
+    }
+  },
+  "sensibilidad_spearman_vs_knn5": {
+    "2": {
+      "knn3": 0.872,
+      "knn8": 0.8881,
+      "knn5_inversa": 0.9986,
+      "inversa_todos": 0.7166
+    },
+    "4": {
+      "knn3": 0.8721,
+      "knn8": 0.8882,
+      "knn5_inversa": 0.9986,
+      "inversa_todos": 0.7169
+    }
+  },
+  "ejemplo": {
+    "ubigeo_objetivo": "200101",
+    "anio_objetivo": 2023,
+    "semana_objetivo": 20,
+    "semana_origen_h4": "2023-04-16",
+    "casos_objetivo": 1527,
+    "vecinos": [
+      {
+        "ubigeo": "200115",
+        "peso": 0.2,
+        "distancia_km": 10.27,
+        "casos_origen": 66
+      },
+      {
+        "ubigeo": "200606",
+        "peso": 0.2,
+        "distancia_km": 13.56,
+        "casos_origen": 17
+      },
+      {
+        "ubigeo": "200104",
+        "peso": 0.2,
+        "distancia_km": 17.84,
+        "casos_origen": 274
+      },
+      {
+        "ubigeo": "200602",
+        "peso": 0.2,
+        "distancia_km": 21.32,
+        "casos_origen": 18
+      },
+      {
+        "ubigeo": "200505",
+        "peso": 0.2,
+        "distancia_km": 26.95,
+        "casos_origen": 71
+      }
+    ]
+  },
+  "convenciones": {
+    "corte": "t-h; fecha real de publicación no registrada",
+    "vecino_activo": "casos_Dengue > 0; no equivale a D1",
+    "provincia_y_region": "excluyen al distrito objetivo",
+    "geografia": "centroides del integrado, sin polígonos ni movilidad"
+  }
+}

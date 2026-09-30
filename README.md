@@ -1,5 +1,48 @@
 # Denguekay
 
+## Feature engineering con Codex
+
+Las instrucciones locales de Codex están en `AGENTS.md` y la skill
+`.codex/skills/feature-engineering-dengue/SKILL.md`. El plan por fases,
+fundado en el EDA y contrastado con la investigación guardada en
+`docs/feature_engineering/references/investigacion_series_epidemiologicas.pdf`, está en
+`docs/feature_engineering/plan.md`. Cada fase requiere revisión de resultados
+y aprobación de Rosa antes de iniciar la siguiente. El primer modelo previsto
+es XGBoost, con anticipación mínima de dos semanas y objetivo principal de cuatro;
+cada horizonte se evaluará por separado. El dataset integrado de `data/silver/integrado/` es la entrada sin
+features y `data/gold/` contiene la salida validada de la fase 6.
+
+Las fases 1–7 ya tienen notebooks ejecutados (`17`–`23`) e informes en
+`docs/feature_engineering/`. La [fase 4](docs/feature_engineering/fase4_clima.md)
+prueba ventanas climáticas causales. La [fase 5](docs/feature_engineering/fase5_sociodemografia.md)
+compara demografía fija y anual reconstruida. La [fase 6](docs/feature_engineering/fase6_integracion.md)
+integra candidatos para `h=2` y `h=4`, y conserva un manifiesto de linaje.
+La [fase 7](docs/feature_engineering/fase7_sintesis_traspaso.md) audita los gold,
+enumera las variables candidatas y documenta el contrato para el primer XGBoost;
+el modelado espera revisión. Ambos gold incluyen `brote`, definido como
+semana distrital con casos por encima de la media de esa semana en los cinco
+años previos + **1,5 DE**, con un mínimo provisional de **2 casos**;
+[la sensibilidad](docs/feature_engineering/revision_definicion_brote.md)
+documenta el efecto de exigir 1 o 5 casos.
+
+Para regenerar los dos CSV de `data/gold/` desde el silver completo:
+
+```bash
+.venv/bin/jupyter nbconvert --to notebook --execute --inplace notebooks/22_fe_integracion.ipynb
+```
+
+El gold conserva `casos_Dengue` como conteo junto a la etiqueta `brote` y su
+umbral auditable. Al entrenar, se deben excluir de los predictores
+`casos_Dengue`, `brote` y `umbral_brote_casos`. La partición final y las
+transformaciones ajustadas por fold (PCA y anomalías climáticas) siguen
+pendientes de la fase de modelado.
+
+Para reproducir la auditoría de traspaso después de generar gold:
+
+```bash
+.venv/bin/jupyter nbconvert --to notebook --execute --inplace notebooks/23_fe_sintesis.ipynb
+```
+
 ## Actualización selectiva del dataset
 
 El dataset integrado (`data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv`)
@@ -55,6 +98,9 @@ modelo. La trazabilidad original está en el archivo local
 La documentación de esa extracción señala una discrepancia no resuelta:
 otro panel registró 12 067 casos para semanas 1–52 de 2025. El actualizador
 usa la serie de la Sala para las nuevas consultas, sin mezclar ambos conteos.
+Para la tesis, Rosa confirmó que los casos de la Sala son una fuente de verdad
+válida; el cambio de procedencia se registra y no determina por sí solo el
+corte de entrenamiento o prueba.
 
 Los valores demográficos de 2017–2025 se conservan. Para filas nuevas de
 2026 en adelante, se extrapola la tendencia de los extremos 2017 y 2025;
