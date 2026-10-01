@@ -1,5 +1,7 @@
 # Inventario del entrenamiento para migrar los experimentos a MLflow
 
+> **Actualización (1 de octubre de 2026):** la migración descrita aquí ya se implementó, junto con validaciones de Great Expectations. Ver [MLflow y Great Expectations en el entrenamiento](mlflow_great_expectations.md). Este inventario se conserva como registro del estado previo.
+
 **Estado al 30 de septiembre de 2026.** Este documento identifica los archivos que hoy preparan, ejecutan y documentan los experimentos. Es un mapa de migración; **MLflow todavía no está integrado**. La prohibición de MLflow en `CLAUDE.md` corresponde al flujo anterior de EDA; la decisión actual del equipo de migrar el entrenamiento prevalece para esta etapa.
 
 ## 1. En qué quedó el entrenamiento

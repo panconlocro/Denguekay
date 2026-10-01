@@ -21,8 +21,10 @@ from src.modeling.train import (
     SEMANA_INICIO_TEMPORADA, columnas_variantes, evaluar_fold, predecir_fold,
     preparar_gold, separar_anio_calendario, separar_temporada,
 )
+from src.modeling.seguimiento_mlflow import registrar_o_avisar
 from src.utils.paths import DOCS, GOLD, MODELS, SILVER_INTEGRADO
 from src.validation.contrato_pronostico import CLAVE
+from src.validation.calidad_gx import validar_entradas_modelado
 
 
 TEMPORADAS = (2021, 2022, 2023, 2024)
@@ -99,12 +101,17 @@ def ejecutar_validacion_temporal_compacta(
     *, gold_dir: Path = GOLD,
     salida_dir: Path = MODELS / "experimentos" / "validacion_temporal_compacta",
     metricas_path: Path = DOCS / "modeling" / "metricas" / "validacion_temporal_compacta.json",
-    auditar: bool = True,
+    auditar: bool = True, validar_datos: bool = True,
+    registrar_mlflow: bool = True,
 ) -> dict:
     """Entrena matrices predefinidas con calibración cronológica por temporada."""
     gold_dir, salida_dir, metricas_path = map(Path, (gold_dir, salida_dir, metricas_path))
     if auditar:
         auditar_traspaso(gold_dir=gold_dir)
+    # Calidad de datos (Great Expectations) antes de entrenar; falla si gold/silver
+    # incumplen su suite. El resumen se adjunta al run de MLflow.
+    calidad = (validar_entradas_modelado(gold_dir=gold_dir, silver_path=None)
+               if validar_datos else None)
     manifiesto_path = gold_dir / "manifest_fase6.json"
     manifiesto = json.loads(manifiesto_path.read_text(encoding="utf-8"))
     if manifiesto["regla_brote"]["minimo_casos"] != MINIMO_CASOS_BROTE:
@@ -211,6 +218,10 @@ def ejecutar_validacion_temporal_compacta(
     metricas_path.parent.mkdir(parents=True, exist_ok=True)
     pd.concat(predicciones, ignore_index=True).to_csv(salida_dir / "predicciones_por_bloque.csv", index=False)
     metricas_path.write_text(json.dumps(reporte, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if registrar_mlflow:
+        registrar_o_avisar(
+            "validacion_temporal_compacta", reporte, metricas_path=metricas_path, salida_dir=salida_dir,
+            gold_dir=gold_dir, calidad_datos=calidad)
     return reporte
 
 
@@ -222,8 +233,13 @@ def main() -> None:
                         default=MODELS / "experimentos" / "validacion_temporal_compacta")
     parser.add_argument("--metricas", type=Path,
                         default=DOCS / "modeling" / "metricas" / "validacion_temporal_compacta.json")
+    parser.add_argument("--sin-validacion-datos", action="store_true",
+                        help="No ejecutar las suites de Great Expectations")
+    parser.add_argument("--sin-mlflow", action="store_true",
+                        help="No registrar la corrida en MLflow")
     args = parser.parse_args()
     reporte = ejecutar_validacion_temporal_compacta(
+        validar_datos=not args.sin_validacion_datos, registrar_mlflow=not args.sin_mlflow,
         gold_dir=args.gold_dir, salida_dir=args.salida_dir, metricas_path=args.metricas)
     print(f"Métricas: {args.metricas}")
     for h, bloque in reporte["horizontes"].items():

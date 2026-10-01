@@ -34,8 +34,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.981476263899629,
-      "mae_log1p": 0.25337943124399964
+      "mae_casos": 1.9814762638996188,
+      "mae_log1p": 0.253379431243999
     },
     {
       "horizonte": 2,
@@ -45,8 +45,8 @@
       "modelo": "mas_poblacion_2017",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.9759156435473832,
-      "mae_log1p": 0.251666779266745
+      "mae_casos": 1.9759156435473735,
+      "mae_log1p": 0.2516667792667444
     },
     {
       "horizonte": 2,
@@ -56,8 +56,8 @@
       "modelo": "mas_tres_fracciones_2017",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.981292538716149,
-      "mae_log1p": 0.25238588149388386
+      "mae_casos": 1.9812925387161389,
+      "mae_log1p": 0.25238588149388325
     },
     {
       "horizonte": 2,
@@ -67,8 +67,8 @@
       "modelo": "mas_eje_urbano_2017",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.9804660909859608,
-      "mae_log1p": 0.2525909713897274
+      "mae_casos": 1.9804660909859513,
+      "mae_log1p": 0.2525909713897268
     },
     {
       "horizonte": 2,
@@ -78,8 +78,8 @@
       "modelo": "mas_poblacion_y_eje",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.9757249395339795,
-      "mae_log1p": 0.2512654687821789
+      "mae_casos": 1.9757249395339698,
+      "mae_log1p": 0.25126546878217826
     },
     {
       "horizonte": 2,
@@ -89,8 +89,8 @@
       "modelo": "mas_clima",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 2.0804915954654497,
-      "mae_log1p": 0.2543210386506518
+      "mae_casos": 2.080491595465434,
+      "mae_log1p": 0.2543210386506508
     },
     {
       "horizonte": 2,
@@ -100,8 +100,8 @@
       "modelo": "mas_clima_poblacion_y_eje",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 2.0895933683043006,
-      "mae_log1p": 0.25360161075412446
+      "mae_casos": 2.0895933683042864,
+      "mae_log1p": 0.25360161075412346
     },
     {
       "horizonte": 2,
@@ -111,8 +111,8 @@
       "modelo": "mas_poblacion_anual",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.9753233562130654,
-      "mae_log1p": 0.251729435918663
+      "mae_casos": 1.9753233562130563,
+      "mae_log1p": 0.25172943591866237
     },
     {
       "horizonte": 2,
@@ -122,8 +122,8 @@
       "modelo": "mas_tres_fracciones_anuales",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.9808647712174154,
-      "mae_log1p": 0.2528574017156581
+      "mae_casos": 1.9808647712174057,
+      "mae_log1p": 0.2528574017156575
     },
     {
       "horizonte": 2,
@@ -133,8 +133,8 @@
       "modelo": "mas_eje_urbano_anual",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.9808942761559933,
-      "mae_log1p": 0.2529616324451545
+      "mae_casos": 1.9808942761559833,
+      "mae_log1p": 0.2529616324451539
     },
     {
       "horizonte": 2,
@@ -144,8 +144,8 @@
       "modelo": "mas_15_fracciones_anuales",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.983905853875477,
-      "mae_log1p": 0.24771092842830267
+      "mae_casos": 1.9839058538754601,
+      "mae_log1p": 0.24771092842830236
     },
     {
       "horizonte": 2,
@@ -155,8 +155,8 @@
       "modelo": "mas_poblacion_y_eje_anual",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.9754727283331588,
-      "mae_log1p": 0.2515645878987484
+      "mae_casos": 1.975472728333149,
+      "mae_log1p": 0.25156458789874775
     },
     {
       "horizonte": 2,
@@ -166,8 +166,8 @@
       "modelo": "mas_clima_poblacion_y_eje_anual",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 2.0891328181216413,
-      "mae_log1p": 0.25389869008812177
+      "mae_casos": 2.089132818121627,
+      "mae_log1p": 0.2538986900881209
     },
     {
       "horizonte": 2,
@@ -188,8 +188,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.509496618958785,
-      "mae_log1p": 0.3382938555424371
+      "mae_casos": 11.509496618958908,
+      "mae_log1p": 0.3382938555424387
     },
     {
       "horizonte": 2,
@@ -199,8 +199,8 @@
       "modelo": "mas_poblacion_2017",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.548484711437627,
-      "mae_log1p": 0.3371374981776816
+      "mae_casos": 11.54848471143776,
+      "mae_log1p": 0.33713749817768324
     },
     {
       "horizonte": 2,
@@ -210,8 +210,8 @@
       "modelo": "mas_tres_fracciones_2017",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.544421153443484,
-      "mae_log1p": 0.3367107340460291
+      "mae_casos": 11.544421153443619,
+      "mae_log1p": 0.33671073404603064
     },
     {
       "horizonte": 2,
@@ -221,8 +221,8 @@
       "modelo": "mas_eje_urbano_2017",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.526267283012697,
-      "mae_log1p": 0.33707827710615723
+      "mae_casos": 11.52626728301283,
+      "mae_log1p": 0.3370782771061589
     },
     {
       "horizonte": 2,
@@ -232,8 +232,8 @@
       "modelo": "mas_poblacion_y_eje",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.556638705522609,
-      "mae_log1p": 0.3363679339782056
+      "mae_casos": 11.55663870552275,
+      "mae_log1p": 0.33636793397820725
     },
     {
       "horizonte": 2,
@@ -243,8 +243,8 @@
       "modelo": "mas_clima",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.130052007197405,
-      "mae_log1p": 0.33496889763229537
+      "mae_casos": 11.130052007197536,
+      "mae_log1p": 0.3349688976322967
     },
     {
       "horizonte": 2,
@@ -254,8 +254,8 @@
       "modelo": "mas_clima_poblacion_y_eje",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.178989159341585,
-      "mae_log1p": 0.33235924748212764
+      "mae_casos": 11.178989159341745,
+      "mae_log1p": 0.3323592474821284
     },
     {
       "horizonte": 2,
@@ -265,8 +265,8 @@
       "modelo": "mas_poblacion_anual",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.537888602793098,
-      "mae_log1p": 0.3370097897735924
+      "mae_casos": 11.537888602793238,
+      "mae_log1p": 0.3370097897735941
     },
     {
       "horizonte": 2,
@@ -276,8 +276,8 @@
       "modelo": "mas_tres_fracciones_anuales",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.531500068116566,
-      "mae_log1p": 0.33724919099451395
+      "mae_casos": 11.531500068116697,
+      "mae_log1p": 0.33724919099451556
     },
     {
       "horizonte": 2,
@@ -287,8 +287,8 @@
       "modelo": "mas_eje_urbano_anual",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.527307418231906,
-      "mae_log1p": 0.3375081285203325
+      "mae_casos": 11.52730741823204,
+      "mae_log1p": 0.3375081285203341
     },
     {
       "horizonte": 2,
@@ -298,8 +298,8 @@
       "modelo": "mas_15_fracciones_anuales",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.580440855250743,
-      "mae_log1p": 0.336747147134622
+      "mae_casos": 11.580440855250938,
+      "mae_log1p": 0.33674714713462633
     },
     {
       "horizonte": 2,
@@ -309,8 +309,8 @@
       "modelo": "mas_poblacion_y_eje_anual",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.54727753403263,
-      "mae_log1p": 0.33653864539175843
+      "mae_casos": 11.547277534032766,
+      "mae_log1p": 0.3365386453917601
     },
     {
       "horizonte": 2,
@@ -320,8 +320,8 @@
       "modelo": "mas_clima_poblacion_y_eje_anual",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.163321419387252,
-      "mae_log1p": 0.33235894533403526
+      "mae_casos": 11.163321419387406,
+      "mae_log1p": 0.33235894533403704
     },
     {
       "horizonte": 2,
@@ -342,8 +342,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.895831931615344,
-      "mae_log1p": 0.37054362175528816
+      "mae_casos": 4.895831931615418,
+      "mae_log1p": 0.37054362175528927
     },
     {
       "horizonte": 2,
@@ -353,8 +353,8 @@
       "modelo": "mas_poblacion_2017",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.878558414547927,
-      "mae_log1p": 0.367725646112517
+      "mae_casos": 4.878558414548003,
+      "mae_log1p": 0.3677256461125183
     },
     {
       "horizonte": 2,
@@ -364,8 +364,8 @@
       "modelo": "mas_tres_fracciones_2017",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.893414808120303,
-      "mae_log1p": 0.3672987805600398
+      "mae_casos": 4.893414808120378,
+      "mae_log1p": 0.3672987805600413
     },
     {
       "horizonte": 2,
@@ -375,8 +375,8 @@
       "modelo": "mas_eje_urbano_2017",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.8787387413273215,
-      "mae_log1p": 0.3678842600191146
+      "mae_casos": 4.878738741327396,
+      "mae_log1p": 0.36788426001911595
     },
     {
       "horizonte": 2,
@@ -386,8 +386,8 @@
       "modelo": "mas_poblacion_y_eje",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.867351369625509,
-      "mae_log1p": 0.36593904030038504
+      "mae_casos": 4.867351369625586,
+      "mae_log1p": 0.36593904030038665
     },
     {
       "horizonte": 2,
@@ -397,8 +397,8 @@
       "modelo": "mas_clima",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.996877663828944,
-      "mae_log1p": 0.3693949178369243
+      "mae_casos": 4.9968776638289985,
+      "mae_log1p": 0.3693949178369252
     },
     {
       "horizonte": 2,
@@ -408,8 +408,8 @@
       "modelo": "mas_clima_poblacion_y_eje",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.98326391786653,
-      "mae_log1p": 0.36383235244055706
+      "mae_casos": 4.983263917866578,
+      "mae_log1p": 0.3638323524405554
     },
     {
       "horizonte": 2,
@@ -419,8 +419,8 @@
       "modelo": "mas_poblacion_anual",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.876383444416012,
-      "mae_log1p": 0.3675555181327049
+      "mae_casos": 4.8763834444160885,
+      "mae_log1p": 0.3675555181327062
     },
     {
       "horizonte": 2,
@@ -430,8 +430,8 @@
       "modelo": "mas_tres_fracciones_anuales",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.896396609014638,
-      "mae_log1p": 0.3690100077737174
+      "mae_casos": 4.896396609014711,
+      "mae_log1p": 0.3690100077737187
     },
     {
       "horizonte": 2,
@@ -441,8 +441,8 @@
       "modelo": "mas_eje_urbano_anual",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.883405634006328,
-      "mae_log1p": 0.3686868482304801
+      "mae_casos": 4.883405634006402,
+      "mae_log1p": 0.3686868482304814
     },
     {
       "horizonte": 2,
@@ -452,8 +452,8 @@
       "modelo": "mas_15_fracciones_anuales",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.877772082100611,
-      "mae_log1p": 0.37596518206518736
+      "mae_casos": 4.877772082100726,
+      "mae_log1p": 0.37596518206518004
     },
     {
       "horizonte": 2,
@@ -463,8 +463,8 @@
       "modelo": "mas_poblacion_y_eje_anual",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.868947187873975,
-      "mae_log1p": 0.36638276607015613
+      "mae_casos": 4.868947187874057,
+      "mae_log1p": 0.36638276607015774
     },
     {
       "horizonte": 2,
@@ -474,8 +474,8 @@
       "modelo": "mas_clima_poblacion_y_eje_anual",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.984822278875988,
-      "mae_log1p": 0.36415184409256557
+      "mae_casos": 4.984822278876038,
+      "mae_log1p": 0.3641518440925667
     },
     {
       "horizonte": 2,
@@ -496,8 +496,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4589258755820305,
-      "mae_log1p": 0.18102177304282335
+      "mae_casos": 0.4589258755820275,
+      "mae_log1p": 0.1810217730428214
     },
     {
       "horizonte": 2,
@@ -507,8 +507,8 @@
       "modelo": "mas_poblacion_2017",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4585359845968987,
-      "mae_log1p": 0.17975552506886386
+      "mae_casos": 0.4585359845968956,
+      "mae_log1p": 0.1797555250688622
     },
     {
       "horizonte": 2,
@@ -518,8 +518,8 @@
       "modelo": "mas_tres_fracciones_2017",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.45926537546186397,
-      "mae_log1p": 0.18064259647194336
+      "mae_casos": 0.4592653754618609,
+      "mae_log1p": 0.18064259647194147
     },
     {
       "horizonte": 2,
@@ -529,8 +529,8 @@
       "modelo": "mas_eje_urbano_2017",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.458760406365925,
-      "mae_log1p": 0.18062947800594234
+      "mae_casos": 0.4587604063659219,
+      "mae_log1p": 0.18062947800594045
     },
     {
       "horizonte": 2,
@@ -540,8 +540,8 @@
       "modelo": "mas_poblacion_y_eje",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4583944369396758,
-      "mae_log1p": 0.1795037225803513
+      "mae_casos": 0.45839443693967297,
+      "mae_log1p": 0.17950372258034963
     },
     {
       "horizonte": 2,
@@ -551,8 +551,8 @@
       "modelo": "mas_clima",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4563335716405988,
-      "mae_log1p": 0.1799425225753562
+      "mae_casos": 0.4563335716405946,
+      "mae_log1p": 0.17994252257535395
     },
     {
       "horizonte": 2,
@@ -562,8 +562,8 @@
       "modelo": "mas_clima_poblacion_y_eje",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.456230546194341,
-      "mae_log1p": 0.17909726413030308
+      "mae_casos": 0.4562305461943384,
+      "mae_log1p": 0.1790972641303017
     },
     {
       "horizonte": 2,
@@ -573,8 +573,8 @@
       "modelo": "mas_poblacion_anual",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4588338312938941,
-      "mae_log1p": 0.1798946999050748
+      "mae_casos": 0.458833831293891,
+      "mae_log1p": 0.17989469990507306
     },
     {
       "horizonte": 2,
@@ -584,8 +584,8 @@
       "modelo": "mas_tres_fracciones_anuales",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.46372208976950124,
-      "mae_log1p": 0.18413267308364312
+      "mae_casos": 0.4637220897694977,
+      "mae_log1p": 0.18413267308364073
     },
     {
       "horizonte": 2,
@@ -595,8 +595,8 @@
       "modelo": "mas_eje_urbano_anual",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4606926790612676,
-      "mae_log1p": 0.18221103024649812
+      "mae_casos": 0.4606926790612641,
+      "mae_log1p": 0.1822110302464958
     },
     {
       "horizonte": 2,
@@ -606,8 +606,8 @@
       "modelo": "mas_15_fracciones_anuales",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4799677703994292,
-      "mae_log1p": 0.19548007341039544
+      "mae_casos": 0.4799677703994321,
+      "mae_log1p": 0.1954800734103975
     },
     {
       "horizonte": 2,
@@ -617,8 +617,8 @@
       "modelo": "mas_poblacion_y_eje_anual",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4601605021191559,
-      "mae_log1p": 0.180830580547451
+      "mae_casos": 0.46016050211915266,
+      "mae_log1p": 0.18083058054744905
     },
     {
       "horizonte": 2,
@@ -628,8 +628,8 @@
       "modelo": "mas_clima_poblacion_y_eje_anual",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.45879609420874484,
-      "mae_log1p": 0.18101957209661465
+      "mae_casos": 0.45879609420874184,
+      "mae_log1p": 0.1810195720966127
     },
     {
       "horizonte": 4,
@@ -650,8 +650,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.5348376639645718,
-      "mae_log1p": 0.3164150715627013
+      "mae_casos": 2.5348376639645602,
+      "mae_log1p": 0.3164150715627005
     },
     {
       "horizonte": 4,
@@ -661,8 +661,8 @@
       "modelo": "mas_poblacion_2017",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.520756399786196,
-      "mae_log1p": 0.31265313620867974
+      "mae_casos": 2.520756399786184,
+      "mae_log1p": 0.3126531362086788
     },
     {
       "horizonte": 4,
@@ -672,8 +672,8 @@
       "modelo": "mas_tres_fracciones_2017",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.532314387216694,
-      "mae_log1p": 0.3141659643213992
+      "mae_casos": 2.532314387216684,
+      "mae_log1p": 0.3141659643213983
     },
     {
       "horizonte": 4,
@@ -683,8 +683,8 @@
       "modelo": "mas_eje_urbano_2017",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.531965941258773,
-      "mae_log1p": 0.31464701756105473
+      "mae_casos": 2.531965941258762,
+      "mae_log1p": 0.3146470175610538
     },
     {
       "horizonte": 4,
@@ -694,8 +694,8 @@
       "modelo": "mas_poblacion_y_eje",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.52024092142321,
-      "mae_log1p": 0.3117325215574356
+      "mae_casos": 2.5202409214231984,
+      "mae_log1p": 0.31173252155743447
     },
     {
       "horizonte": 4,
@@ -705,8 +705,8 @@
       "modelo": "mas_clima",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.649056828212917,
-      "mae_log1p": 0.3178575291096682
+      "mae_casos": 2.649056828212916,
+      "mae_log1p": 0.31785752910966775
     },
     {
       "horizonte": 4,
@@ -716,7 +716,7 @@
       "modelo": "mas_clima_poblacion_y_eje",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.65388072409818,
+      "mae_casos": 2.6538807240981797,
       "mae_log1p": 0.31520585564303133
     },
     {
@@ -727,8 +727,8 @@
       "modelo": "mas_poblacion_anual",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.5210557429312503,
-      "mae_log1p": 0.3128147725633653
+      "mae_casos": 2.5210557429312397,
+      "mae_log1p": 0.3128147725633644
     },
     {
       "horizonte": 4,
@@ -738,8 +738,8 @@
       "modelo": "mas_tres_fracciones_anuales",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.533039678878434,
-      "mae_log1p": 0.31496795173502246
+      "mae_casos": 2.5330396788784237,
+      "mae_log1p": 0.31496795173502157
     },
     {
       "horizonte": 4,
@@ -749,8 +749,8 @@
       "modelo": "mas_eje_urbano_anual",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.532866050637022,
-      "mae_log1p": 0.31537870469464957
+      "mae_casos": 2.5328660506370113,
+      "mae_log1p": 0.31537870469464874
     },
     {
       "horizonte": 4,
@@ -760,8 +760,8 @@
       "modelo": "mas_15_fracciones_anuales",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.523728911520315,
-      "mae_log1p": 0.3028765278935694
+      "mae_casos": 2.5237289115203003,
+      "mae_log1p": 0.302876527893568
     },
     {
       "horizonte": 4,
@@ -771,8 +771,8 @@
       "modelo": "mas_poblacion_y_eje_anual",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.5211084719174774,
-      "mae_log1p": 0.31237352620226916
+      "mae_casos": 2.5211084719174663,
+      "mae_log1p": 0.3123735262022681
     },
     {
       "horizonte": 4,
@@ -782,8 +782,8 @@
       "modelo": "mas_clima_poblacion_y_eje_anual",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.6536483776747923,
-      "mae_log1p": 0.3157384116920763
+      "mae_casos": 2.6536483776747914,
+      "mae_log1p": 0.3157384116920759
     },
     {
       "horizonte": 4,
@@ -804,8 +804,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.42071954242307,
-      "mae_log1p": 0.4612603471894834
+      "mae_casos": 15.42071954242311,
+      "mae_log1p": 0.46126034718948433
     },
     {
       "horizonte": 4,
@@ -815,8 +815,8 @@
       "modelo": "mas_poblacion_2017",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.422826398438914,
-      "mae_log1p": 0.4578061883010956
+      "mae_casos": 15.422826398438957,
+      "mae_log1p": 0.45780618830109643
     },
     {
       "horizonte": 4,
@@ -826,8 +826,8 @@
       "modelo": "mas_tres_fracciones_2017",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.43935885287412,
-      "mae_log1p": 0.45682697212338697
+      "mae_casos": 15.439358852874168,
+      "mae_log1p": 0.45682697212338774
     },
     {
       "horizonte": 4,
@@ -837,8 +837,8 @@
       "modelo": "mas_eje_urbano_2017",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.423608739421358,
-      "mae_log1p": 0.4578084874721552
+      "mae_casos": 15.423608739421404,
+      "mae_log1p": 0.45780848747215613
     },
     {
       "horizonte": 4,
@@ -848,8 +848,8 @@
       "modelo": "mas_poblacion_y_eje",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.42733388913808,
-      "mae_log1p": 0.4557515778936272
+      "mae_casos": 15.427333889138128,
+      "mae_log1p": 0.45575157789362813
     },
     {
       "horizonte": 4,
@@ -859,8 +859,8 @@
       "modelo": "mas_clima",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 14.84568123239167,
-      "mae_log1p": 0.45266938475940405
+      "mae_casos": 14.845681232391723,
+      "mae_log1p": 0.452669384759405
     },
     {
       "horizonte": 4,
@@ -870,8 +870,8 @@
       "modelo": "mas_clima_poblacion_y_eje",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 14.841007915557665,
-      "mae_log1p": 0.4451832983005078
+      "mae_casos": 14.841007915557704,
+      "mae_log1p": 0.44518329830050646
     },
     {
       "horizonte": 4,
@@ -881,8 +881,8 @@
       "modelo": "mas_poblacion_anual",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.41226796381546,
-      "mae_log1p": 0.45751674430477984
+      "mae_casos": 15.412267963815504,
+      "mae_log1p": 0.45751674430478084
     },
     {
       "horizonte": 4,
@@ -892,8 +892,8 @@
       "modelo": "mas_tres_fracciones_anuales",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.423587144907403,
-      "mae_log1p": 0.45768394137255236
+      "mae_casos": 15.423587144907453,
+      "mae_log1p": 0.4576839413725532
     },
     {
       "horizonte": 4,
@@ -903,8 +903,8 @@
       "modelo": "mas_eje_urbano_anual",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.424702614679596,
-      "mae_log1p": 0.4586608527327578
+      "mae_casos": 15.424702614679646,
+      "mae_log1p": 0.45866085273275875
     },
     {
       "horizonte": 4,
@@ -914,8 +914,8 @@
       "modelo": "mas_15_fracciones_anuales",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.445370290055811,
-      "mae_log1p": 0.45610422619308105
+      "mae_casos": 15.445370290055862,
+      "mae_log1p": 0.4561042261930842
     },
     {
       "horizonte": 4,
@@ -925,8 +925,8 @@
       "modelo": "mas_poblacion_y_eje_anual",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.418309687264303,
-      "mae_log1p": 0.45607849882002166
+      "mae_casos": 15.418309687264346,
+      "mae_log1p": 0.4560784988200227
     },
     {
       "horizonte": 4,
@@ -936,8 +936,8 @@
       "modelo": "mas_clima_poblacion_y_eje_anual",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 14.81832757350478,
-      "mae_log1p": 0.4450574906076458
+      "mae_casos": 14.818327573504837,
+      "mae_log1p": 0.4450574906076465
     },
     {
       "horizonte": 4,
@@ -958,8 +958,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.776391799016085,
-      "mae_log1p": 0.4673036102399959
+      "mae_casos": 6.776391799016152,
+      "mae_log1p": 0.46730361023999767
     },
     {
       "horizonte": 4,
@@ -969,8 +969,8 @@
       "modelo": "mas_poblacion_2017",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.722341797568122,
-      "mae_log1p": 0.46058523019221687
+      "mae_casos": 6.722341797568196,
+      "mae_log1p": 0.460585230192219
     },
     {
       "horizonte": 4,
@@ -980,8 +980,8 @@
       "modelo": "mas_tres_fracciones_2017",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.749869962641571,
-      "mae_log1p": 0.460068640617725
+      "mae_casos": 6.749869962641641,
+      "mae_log1p": 0.46006864061772706
     },
     {
       "horizonte": 4,
@@ -991,8 +991,8 @@
       "modelo": "mas_eje_urbano_2017",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.739847685201254,
-      "mae_log1p": 0.46134033343389197
+      "mae_casos": 6.739847685201325,
+      "mae_log1p": 0.4613403334338942
     },
     {
       "horizonte": 4,
@@ -1002,8 +1002,8 @@
       "modelo": "mas_poblacion_y_eje",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.701813792879902,
-      "mae_log1p": 0.4566750165450991
+      "mae_casos": 6.701813792879974,
+      "mae_log1p": 0.45667501654510145
     },
     {
       "horizonte": 4,
@@ -1013,8 +1013,8 @@
       "modelo": "mas_clima",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.681872296486312,
-      "mae_log1p": 0.46069678136282444
+      "mae_casos": 6.681872296486347,
+      "mae_log1p": 0.4606967813628258
     },
     {
       "horizonte": 4,
@@ -1024,8 +1024,8 @@
       "modelo": "mas_clima_poblacion_y_eje",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.6038931517675925,
-      "mae_log1p": 0.44755965169303286
+      "mae_casos": 6.603893151767644,
+      "mae_log1p": 0.44755965169303485
     },
     {
       "horizonte": 4,
@@ -1035,8 +1035,8 @@
       "modelo": "mas_poblacion_anual",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.720051749268257,
-      "mae_log1p": 0.4602286547947268
+      "mae_casos": 6.72005174926833,
+      "mae_log1p": 0.46022865479472913
     },
     {
       "horizonte": 4,
@@ -1046,8 +1046,8 @@
       "modelo": "mas_tres_fracciones_anuales",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.756606276564293,
-      "mae_log1p": 0.4636525297396451
+      "mae_casos": 6.756606276564363,
+      "mae_log1p": 0.46365252973964743
     },
     {
       "horizonte": 4,
@@ -1057,8 +1057,8 @@
       "modelo": "mas_eje_urbano_anual",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.746809050174833,
-      "mae_log1p": 0.46295310801987943
+      "mae_casos": 6.746809050174904,
+      "mae_log1p": 0.4629531080198816
     },
     {
       "horizonte": 4,
@@ -1068,8 +1068,8 @@
       "modelo": "mas_15_fracciones_anuales",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.804627892300434,
-      "mae_log1p": 0.4788264403419561
+      "mae_casos": 6.8046278923005366,
+      "mae_log1p": 0.4788264403419563
     },
     {
       "horizonte": 4,
@@ -1079,8 +1079,8 @@
       "modelo": "mas_poblacion_y_eje_anual",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.704718126652227,
-      "mae_log1p": 0.4575251111045397
+      "mae_casos": 6.704718126652301,
+      "mae_log1p": 0.45752511110454197
     },
     {
       "horizonte": 4,
@@ -1090,8 +1090,8 @@
       "modelo": "mas_clima_poblacion_y_eje_anual",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.602479242698089,
-      "mae_log1p": 0.44800798644082535
+      "mae_casos": 6.6024792426981165,
+      "mae_log1p": 0.44800798644082573
     },
     {
       "horizonte": 4,
@@ -1112,8 +1112,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5341368075545774,
-      "mae_log1p": 0.2160974947897749
+      "mae_casos": 0.5341368075545738,
+      "mae_log1p": 0.21609749478977391
     },
     {
       "horizonte": 4,
@@ -1123,8 +1123,8 @@
       "modelo": "mas_poblacion_2017",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.533579479938674,
-      "mae_log1p": 0.2130486683262694
+      "mae_casos": 0.5335794799386699,
+      "mae_log1p": 0.21304866832626843
     },
     {
       "horizonte": 4,
@@ -1134,8 +1134,8 @@
       "modelo": "mas_tres_fracciones_2017",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.535577590337008,
-      "mae_log1p": 0.21522481862110748
+      "mae_casos": 0.5355775903370044,
+      "mae_log1p": 0.21522481862110646
     },
     {
       "horizonte": 4,
@@ -1145,8 +1145,8 @@
       "modelo": "mas_eje_urbano_2017",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5346341676593348,
-      "mae_log1p": 0.2152544323012826
+      "mae_casos": 0.534634167659331,
+      "mae_log1p": 0.21525443230128158
     },
     {
       "horizonte": 4,
@@ -1156,8 +1156,8 @@
       "modelo": "mas_poblacion_y_eje",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5343905527358417,
-      "mae_log1p": 0.21257853523106693
+      "mae_casos": 0.5343905527358379,
+      "mae_log1p": 0.21257853523106604
     },
     {
       "horizonte": 4,
@@ -1167,8 +1167,8 @@
       "modelo": "mas_clima",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5264200687106768,
-      "mae_log1p": 0.2121374647564986
+      "mae_casos": 0.5264200687106732,
+      "mae_log1p": 0.21213746475649742
     },
     {
       "horizonte": 4,
@@ -1178,8 +1178,8 @@
       "modelo": "mas_clima_poblacion_y_eje",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5291347745372386,
-      "mae_log1p": 0.2098636982363243
+      "mae_casos": 0.5291347745372411,
+      "mae_log1p": 0.20986369823632567
     },
     {
       "horizonte": 4,
@@ -1189,8 +1189,8 @@
       "modelo": "mas_poblacion_anual",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5343611626954167,
-      "mae_log1p": 0.21330809592531197
+      "mae_casos": 0.5343611626954131,
+      "mae_log1p": 0.21330809592531105
     },
     {
       "horizonte": 4,
@@ -1200,8 +1200,8 @@
       "modelo": "mas_tres_fracciones_anuales",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5460983504885963,
-      "mae_log1p": 0.2227997146495744
+      "mae_casos": 0.5460983504885916,
+      "mae_log1p": 0.22279971464957288
     },
     {
       "horizonte": 4,
@@ -1211,8 +1211,8 @@
       "modelo": "mas_eje_urbano_anual",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5390417338802741,
-      "mae_log1p": 0.21863636833698014
+      "mae_casos": 0.5390417338802702,
+      "mae_log1p": 0.218636368336979
     },
     {
       "horizonte": 4,
@@ -1222,8 +1222,8 @@
       "modelo": "mas_15_fracciones_anuales",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5914046720516353,
-      "mae_log1p": 0.24947047572038034
+      "mae_casos": 0.5914046720516108,
+      "mae_log1p": 0.2494704757203713
     },
     {
       "horizonte": 4,
@@ -1233,8 +1233,8 @@
       "modelo": "mas_poblacion_y_eje_anual",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5385855121080315,
-      "mae_log1p": 0.2154235237163464
+      "mae_casos": 0.5385855121080275,
+      "mae_log1p": 0.21542352371634546
     },
     {
       "horizonte": 4,
@@ -1244,8 +1244,8 @@
       "modelo": "mas_clima_poblacion_y_eje_anual",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5347586979541339,
-      "mae_log1p": 0.21368966133843492
+      "mae_casos": 0.534758697954131,
+      "mae_log1p": 0.2136896613384342
     }
   ],
   "ajustes_pca": [
@@ -1254,56 +1254,56 @@
       "temporada": 2022,
       "corte_ajuste": "2021-08-21",
       "distritos_ajuste": 65,
-      "varianza_explicada_cp1": 0.6133608857089918
+      "varianza_explicada_cp1": 0.613360885708992
     },
     {
       "horizonte": 2,
       "temporada": 2023,
       "corte_ajuste": "2022-08-20",
       "distritos_ajuste": 65,
-      "varianza_explicada_cp1": 0.6133608857089918
+      "varianza_explicada_cp1": 0.613360885708992
     },
     {
       "horizonte": 2,
       "temporada": 2024,
       "corte_ajuste": "2023-08-19",
       "distritos_ajuste": 65,
-      "varianza_explicada_cp1": 0.6133608857089918
+      "varianza_explicada_cp1": 0.613360885708992
     },
     {
       "horizonte": 2,
       "temporada": 2025,
       "corte_ajuste": "2024-08-17",
       "distritos_ajuste": 65,
-      "varianza_explicada_cp1": 0.6133608857089918
+      "varianza_explicada_cp1": 0.613360885708992
     },
     {
       "horizonte": 4,
       "temporada": 2022,
       "corte_ajuste": "2021-08-07",
       "distritos_ajuste": 65,
-      "varianza_explicada_cp1": 0.6133608857089918
+      "varianza_explicada_cp1": 0.613360885708992
     },
     {
       "horizonte": 4,
       "temporada": 2023,
       "corte_ajuste": "2022-08-06",
       "distritos_ajuste": 65,
-      "varianza_explicada_cp1": 0.6133608857089918
+      "varianza_explicada_cp1": 0.613360885708992
     },
     {
       "horizonte": 4,
       "temporada": 2024,
       "corte_ajuste": "2023-08-05",
       "distritos_ajuste": 65,
-      "varianza_explicada_cp1": 0.6133608857089918
+      "varianza_explicada_cp1": 0.613360885708992
     },
     {
       "horizonte": 4,
       "temporada": 2025,
       "corte_ajuste": "2024-08-03",
       "distritos_ajuste": 65,
-      "varianza_explicada_cp1": 0.6133608857089918
+      "varianza_explicada_cp1": 0.613360885708992
     }
   ]
 }

@@ -21,8 +21,10 @@ from src.modeling.evaluate import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos,
     seleccionar_umbral_f1,
 )
+from src.modeling.seguimiento_mlflow import registrar_o_avisar
 from src.utils.paths import DOCS, GOLD, MODELS, SILVER_INTEGRADO
 from src.validation.contrato_pronostico import CLAVE
+from src.validation.calidad_gx import validar_entradas_modelado
 
 TEMPORADAS_VALIDACION = (2021, 2022, 2023)
 TEMPORADA_PRUEBA_PRINCIPAL = 2024
@@ -231,7 +233,8 @@ def evaluar_fold(
 def ejecutar_experimento(
     *, gold_dir: Path = GOLD, salida_dir: Path = MODELS / "experimentos",
     metricas_path: Path = DOCS / "modeling" / "metricas" / "primer_xgboost.json",
-    auditar: bool = True,
+    auditar: bool = True, validar_datos: bool = True,
+    registrar_mlflow: bool = True,
 ) -> dict:
     """Entrena ambos enfoques en validación y pruebas temporales predefinidas.
 
@@ -243,6 +246,10 @@ def ejecutar_experimento(
     gold_dir, salida_dir, metricas_path = map(Path, (gold_dir, salida_dir, metricas_path))
     if auditar:
         auditar_traspaso(gold_dir=gold_dir)
+    # Calidad de datos (Great Expectations) antes de entrenar; falla si gold/silver
+    # incumplen su suite. El resumen se adjunta al run de MLflow.
+    calidad = (validar_entradas_modelado(gold_dir=gold_dir, silver_path=None)
+               if validar_datos else None)
     manifiesto = json.loads((gold_dir / "manifest_fase6.json").read_text(encoding="utf-8"))
     if manifiesto["regla_brote"]["minimo_casos"] != MINIMO_CASOS_BROTE:
         raise ValueError("El mínimo de brote del manifiesto difiere del experimento")
@@ -328,6 +335,10 @@ def ejecutar_experimento(
     predicciones = pd.concat(predicciones_guardar, ignore_index=True)
     predicciones.to_csv(salida_dir / "predicciones_por_fold.csv", index=False)
     metricas_path.write_text(json.dumps(resumen, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if registrar_mlflow:
+        registrar_o_avisar(
+            "primer_xgboost", resumen, metricas_path=metricas_path, salida_dir=salida_dir,
+            gold_dir=gold_dir, calidad_datos=calidad)
     return resumen
 
 
@@ -338,8 +349,13 @@ def main() -> None:
     parser.add_argument("--salida-dir", type=Path, default=MODELS / "experimentos")
     parser.add_argument("--metricas", type=Path,
                         default=DOCS / "modeling" / "metricas" / "primer_xgboost.json")
+    parser.add_argument("--sin-validacion-datos", action="store_true",
+                        help="No ejecutar las suites de Great Expectations")
+    parser.add_argument("--sin-mlflow", action="store_true",
+                        help="No registrar la corrida en MLflow")
     args = parser.parse_args()
     resumen = ejecutar_experimento(
+        validar_datos=not args.sin_validacion_datos, registrar_mlflow=not args.sin_mlflow,
         gold_dir=args.gold_dir, salida_dir=args.salida_dir,
         metricas_path=args.metricas,
     )

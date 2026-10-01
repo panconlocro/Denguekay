@@ -33,8 +33,10 @@ tesis-dengue-piura/
 │   └── update_dataset_module.py
 │
 ├── notebooks/
-├── great_expectations/
+├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
+├── mlflow.db                  # tracking de MLflow (generado, no se versiona)
+├── mlartifacts/               # artefactos de MLflow (generado, no se versiona)
 └── docs/
     ├── eda/
     ├── feature_engineering/   # plan, evidencia, decisiones y PDF de referencia
@@ -133,13 +135,16 @@ processing/
 **Va acá:** funciones de limpieza, agregación, interpolación, joins. Si el modelo nuevo necesita, por ejemplo, calcular lags (temperatura de la semana -1, -2, -3), esa función va en un archivo nuevo acá, ej. `processing/features_lag.py`.
 
 ### `src/validation/`
-Suites de Great Expectations (o los `assert` livianos, según lo que decidamos usar).
+Suites de Great Expectations y comprobaciones estrictas (`assert`/`raise`) de los datasets.
 ```
 validation/
 ├── expectations_meteo.py
-├── expectations_integrado.py  # cobertura y validación del dataset integrado (silver/integrado)
+├── expectations_integrado.py  # cobertura y validación del integrado + suite GX silver_integrado
+├── expectations_gold.py       # suite GX gold_h2/gold_h4 (esquema, llave, rangos, sin fuga temporal)
+├── calidad_gx.py              # contexto GX, ejecución de suites, Data Docs y CLI
 └── contrato_pronostico.py     # origen temporal y disponibilidad al pronosticar
 ```
+Las suites se definen en código; `great_expectations/gx/` es el contexto que GX regenera (suites, resultados y Data Docs HTML) y no se versiona. Guía: `docs/modeling/mlflow_great_expectations.md`.
 **Va acá:** cualquier función `validar_*()` que revise rangos, nulos, duplicados, conteos esperados. Un archivo por dataset que valides (`expectations_socio.py`, `expectations_epi.py`, `expectations_integrado.py`).
 
 ### `src/eda/`
@@ -178,9 +183,10 @@ modeling/
 ├── ablacion_sociodemografica.py # compara referencia fija y anual reconstruida
 ├── ablacion_fracciones.py   # criba individualmente 15 fracciones fijas y anuales
 ├── ablacion_poblacion_sin_seguro.py # compara dos rasgos censales solos y juntos
-└── validacion_temporal_compacta.py # calibra umbrales con temporadas previas
+├── validacion_temporal_compacta.py # calibra umbrales con temporadas previas
+└── seguimiento_mlflow.py    # registra cada reporte de experimento en MLflow (runs anidados)
 ```
-**Va acá:** el feature engineering para el modelo y todo lo relacionado con entrenamiento y evaluación. `features.py` integra los candidatos de fase 6; `train.py` entrena los dos primeros objetivos XGBoost, `evaluate.py` contiene métricas compartidas, `ablacion_espacial.py` contrasta vecinos y jerarquía, `ablacion_clima.py` contrasta clima observado y anomalías, `ablacion_sociodemografica.py` compara bloques demográficos, `ablacion_fracciones.py` criba las 15 fracciones una por una, `ablacion_poblacion_sin_seguro.py` compara las dos candidatas fijas por separado y juntas, y `validacion_temporal_compacta.py` calibra umbrales con temporadas previas y compara matrices pequeñas. Cuando prueben un modelo nuevo, la lógica compartida (split train/test, métricas) se conserva en un solo lugar.
+**Va acá:** el feature engineering para el modelo y todo lo relacionado con entrenamiento y evaluación. `features.py` integra los candidatos de fase 6; `train.py` entrena los dos primeros objetivos XGBoost, `evaluate.py` contiene métricas compartidas, `ablacion_espacial.py` contrasta vecinos y jerarquía, `ablacion_clima.py` contrasta clima observado y anomalías, `ablacion_sociodemografica.py` compara bloques demográficos, `ablacion_fracciones.py` criba las 15 fracciones una por una, `ablacion_poblacion_sin_seguro.py` compara las dos candidatas fijas por separado y juntas, y `validacion_temporal_compacta.py` calibra umbrales con temporadas previas y compara matrices pequeñas. Cuando prueben un modelo nuevo, la lógica compartida (split train/test, métricas) se conserva en un solo lugar. `seguimiento_mlflow.py` registra en MLflow el reporte de cualquier experimento con la forma estándar `horizontes → variantes → folds`.
 
 ### `src/utils/`
 Funciones chicas que usa más de un módulo.
@@ -269,7 +275,13 @@ models/experimentos/
 __pycache__/
 *.ipynb_checkpoints/
 .env
+mlflow.db
+mlartifacts/
+mlruns/
+great_expectations/gx/
 ```
+
+`mlflow.db`, `mlartifacts/` y `great_expectations/gx/` se regeneran al correr los experimentos y las validaciones; lo versionado es el código que los produce.
 
 `data/gold/.gitkeep` se versiona solo para que la carpeta vacía exista en todos los clones. `data/reference/` **no** está en esta lista a propósito — esa sí se versiona porque es chica y todos la necesitan para reproducir el pipeline sin tener que descargar nada primero.
 
@@ -294,6 +306,8 @@ __pycache__/
 | Notebook de EDA | `notebooks/`, rango `10_eda_*` a `16_eda_*` |
 | Figura, cifra o conclusión del EDA | `docs/eda/` |
 | Modelo entrenado | `models/` |
+| Suite de Great Expectations | `src/validation/expectations_<dataset>.py` |
+| Registro de experimentos en MLflow | `src/modeling/seguimiento_mlflow.py` (no crear otro tracker) |
 | Documento de tesis / explicación de arquitectura | `docs/` |
 | Plan y hallazgos de feature engineering | `docs/feature_engineering/` |
 | Instrucciones de Codex y skill local | `AGENTS.md` y `.codex/skills/` |

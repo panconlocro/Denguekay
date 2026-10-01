@@ -1,13 +1,13 @@
 {
   "fuente": "meteo_socio_epi_piura_2017_2025.csv",
-  "sha256_fuente": "a0c4bb4497eeba0156c8ba581f3a6a64b13c42195606d57c3acc4a8ea0eb7a4e",
+  "sha256_fuente": "b04dc8c31793a08b417e5bafd9db101f4a18c9299686cb2dd4bfe2e5049b6c88",
   "regla_brote": {
     "metodo": "misma semana epidemiológica de años previos; media + multiplicador * DE muestral; desigualdad estricta",
     "multiplicador": 1.5,
     "anios_previos": 5,
     "minimo_casos": 2,
     "fuente_historia": "epi_piura_semanal.csv",
-    "sha256_fuente_historia": "b3955bdd2c0caedf60a3987021a9f6fd67b9f7e63ec855d1db8a15cc4d09023a",
+    "sha256_fuente_historia": "c4b67ce03d6915d4fcdd98cba7f525daecad34cddeb98cc1816b2d8750c8eda9",
     "ausencia_historica": "sin registro tratado como cero, no cero notificado",
     "semana_53": "se suma a semana 52 para la referencia"
   },

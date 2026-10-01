@@ -170,3 +170,57 @@ def validate_complete(frame: pd.DataFrame, coverage: Coverage) -> None:
     cases = pd.to_numeric(frame["casos_Dengue"])
     if (cases < 0).any() or (cases % 1 != 0).any():
         raise ValueError("Dengue cases must be nonnegative integers")
+
+
+# ---------------------------------------------------------------------------
+# Suite declarativa de Great Expectations para el panel integrado.
+# Complementa (no reemplaza) prepare_dataset/validate_complete: deja un
+# reporte legible en los Data Docs y se adjunta a las corridas de MLflow.
+# GX se importa aquí dentro para no exigirlo al actualizador del dataset.
+# ---------------------------------------------------------------------------
+
+# Caja geográfica aproximada del departamento de Piura (grados decimales).
+LAT_PIURA = (-6.5, -3.5)
+LON_PIURA = (-81.5, -79.0)
+
+
+def expectativas_integrado_gx(ubigeos: list[str]) -> list:
+    """Expectativas de esquema, llave, geografía y rangos físicos del integrado."""
+    import great_expectations as gx
+
+    E = gx.expectations
+    requeridas = CORE_COLUMNS + WEATHER_COLUMNS + SOCIO_COLUMNS + ["casos_Dengue"]
+    exp = [E.ExpectColumnToExist(column=c) for c in requeridas]
+    exp += [
+        E.ExpectTableRowCountToBeBetween(min_value=1),
+        E.ExpectCompoundColumnsToBeUnique(column_list=KEY),
+        E.ExpectColumnValuesToMatchRegex(column="ubigeo", regex=r"^\d{6}$"),
+        E.ExpectColumnValuesToBeInSet(column="ubigeo", value_set=ubigeos),
+        E.ExpectColumnUniqueValueCountToBeBetween(
+            column="ubigeo", min_value=len(ubigeos), max_value=len(ubigeos)),
+        E.ExpectColumnValuesToBeBetween(column="anio", min_value=2017),
+        E.ExpectColumnValuesToBeBetween(column="semana", min_value=1, max_value=53),
+        E.ExpectColumnValuesToBeBetween(column="lat", min_value=LAT_PIURA[0], max_value=LAT_PIURA[1]),
+        E.ExpectColumnValuesToBeBetween(column="lon", min_value=LON_PIURA[0], max_value=LON_PIURA[1]),
+        # Clima semanal: rangos físicamente plausibles, no ajustados a los datos.
+        *(E.ExpectColumnValuesToBeBetween(column=c, min_value=-10, max_value=45)
+          for c in ("temp_media", "temp_max", "temp_min")),
+        E.ExpectColumnPairValuesAToBeGreaterThanB(column_A="temp_max", column_B="temp_min", or_equal=True),
+        E.ExpectColumnPairValuesAToBeGreaterThanB(column_A="temp_max", column_B="temp_media", or_equal=True),
+        E.ExpectColumnPairValuesAToBeGreaterThanB(column_A="temp_media", column_B="temp_min", or_equal=True),
+        E.ExpectColumnValuesToBeBetween(column="precip_total_mm", min_value=0, max_value=1500),
+        E.ExpectColumnValuesToBeBetween(column="lluvia_total_mm", min_value=0, max_value=1500),
+        E.ExpectColumnPairValuesAToBeGreaterThanB(
+            column_A="precip_total_mm", column_B="lluvia_total_mm", or_equal=True),
+        E.ExpectColumnValuesToBeBetween(column="hum_rel_media", min_value=0, max_value=100),
+        E.ExpectColumnValuesToBeBetween(column="viento_max", min_value=0, max_value=200),
+        E.ExpectColumnValuesToBeBetween(column="radiacion_total", min_value=0, max_value=350),
+        E.ExpectColumnValuesToBeBetween(column="et0_total", min_value=0, max_value=100),
+        # Sociodemografía y casos.
+        E.ExpectColumnValuesToBeBetween(column="poblacion", min_value=1),
+        E.ExpectColumnValuesToBeBetween(column="casos_Dengue", min_value=0),
+    ]
+    exp += [E.ExpectColumnValuesToBeBetween(column=c, min_value=0, max_value=1)
+            for c in SOCIO_COLUMNS if c.startswith("fraccion_")]
+    exp += [E.ExpectColumnValuesToNotBeNull(column=c) for c in requeridas]
+    return exp

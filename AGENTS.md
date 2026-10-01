@@ -18,6 +18,12 @@ Proyecto de tesis para pronosticar dengue por distrito y semana epidemiológica 
 - Indexar las filas por semana **objetivo**. Para horizonte `h ∈ {2, 4}`, predecir la semana `t` desde el cierre de `t−h`: los casos, el clima observado y los agregados de vecinos solo pueden usar semanas `≤ t−h`. Verificar esta disponibilidad por fecha real, no solo por nombre de columna. Ajustar climatologías, codificaciones aprendidas, imputaciones y selección de variables únicamente con el entrenamiento de cada corte temporal.
 - Mantener separados los datos faltantes de los ceros epidemiológicos, especialmente en distritos sin notificaciones. Los casos de 2025 de la Sala Situacional son aceptados por el proyecto como fuente válida; conservar su procedencia sin excluirlos por defecto del entrenamiento ni asignarlos automáticamente a prueba. No usar `ubigeo` como número continuo ni presentar asociaciones como efectos causales.
 
+## Seguimiento y calidad de datos
+
+- Los módulos `ejecutar_*` de `src/modeling/` validan gold (y silver cuando lo leen) con Great Expectations antes de entrenar y registran cada corrida en MLflow al terminar. Guía: `docs/modeling/mlflow_great_expectations.md`.
+- Las suites viven en `src/validation/expectations_gold.py` y `expectations_integrado.py`; `great_expectations/gx/`, `mlflow.db` y `mlartifacts/` son generados y no se versionan. Un experimento nuevo debe seguir la forma de reporte existente para registrarse sin cambios en `src/modeling/seguimiento_mlflow.py`.
+- No registrar un modelo final en el Model Registry sin aprobación de Rosa.
+
 ## Comprobación
 
 Usar `.venv/bin/python -m unittest discover -s tests` en macOS si existe el entorno, o el Python del proyecto. El integrado local ya fue comprobado tras ejecutar los notebooks 08 y 09; volver a validar su estado al iniciar cada fase, especialmente si se regenera. No inventar cifras ni afirmar que una validación se ejecutó cuando no fue así.

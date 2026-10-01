@@ -26,7 +26,9 @@ from src.modeling.train import (
     TEMPORADAS_VALIDACION, columnas_variantes, evaluar_fold,
     predecir_fold, separar_anio_calendario, separar_temporada,
 )
+from src.modeling.seguimiento_mlflow import registrar_o_avisar
 from src.utils.paths import DOCS, GOLD, MODELS, SILVER_INTEGRADO
+from src.validation.calidad_gx import validar_entradas_modelado
 
 
 POBLACION = "log_poblacion_censo_2017"
@@ -95,13 +97,18 @@ def ejecutar_ablacion_poblacion_sin_seguro(
     *, silver_path: Path = SILVER_INTEGRADO, gold_dir: Path = GOLD,
     salida_dir: Path = MODELS / "experimentos" / "ablacion_poblacion_sin_seguro",
     metricas_path: Path = DOCS / "modeling" / "metricas" / "ablacion_poblacion_sin_seguro.json",
-    auditar: bool = True,
+    auditar: bool = True, validar_datos: bool = True,
+    registrar_mlflow: bool = True,
 ) -> dict:
     """Evalúa cuatro modelos fijos en los cortes temporales existentes."""
     silver_path, gold_dir, salida_dir, metricas_path = map(
         Path, (silver_path, gold_dir, salida_dir, metricas_path))
     if auditar:
         auditar_traspaso(silver_path=silver_path, gold_dir=gold_dir)
+    # Calidad de datos (Great Expectations) antes de entrenar; falla si gold/silver
+    # incumplen su suite. El resumen se adjunta al run de MLflow.
+    calidad = (validar_entradas_modelado(gold_dir=gold_dir, silver_path=silver_path)
+               if validar_datos else None)
     silver = cargar_integrado(silver_path)
     referencia = referencia_2017(silver)
     manifiesto_path = gold_dir / "manifest_fase6.json"
@@ -215,6 +222,10 @@ def ejecutar_ablacion_poblacion_sin_seguro(
     pd.concat(pred_prueba, ignore_index=True).to_csv(
         salida_dir / "predicciones_prueba.csv", index=False)
     metricas_path.write_text(json.dumps(reporte, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if registrar_mlflow:
+        registrar_o_avisar(
+            "ablacion_poblacion_sin_seguro", reporte, metricas_path=metricas_path, salida_dir=salida_dir,
+            gold_dir=gold_dir, calidad_datos=calidad)
     return reporte
 
 
@@ -227,8 +238,13 @@ def main() -> None:
                         default=MODELS / "experimentos" / "ablacion_poblacion_sin_seguro")
     parser.add_argument("--metricas", type=Path,
                         default=DOCS / "modeling" / "metricas" / "ablacion_poblacion_sin_seguro.json")
+    parser.add_argument("--sin-validacion-datos", action="store_true",
+                        help="No ejecutar las suites de Great Expectations")
+    parser.add_argument("--sin-mlflow", action="store_true",
+                        help="No registrar la corrida en MLflow")
     args = parser.parse_args()
     ejecutar_ablacion_poblacion_sin_seguro(
+        validar_datos=not args.sin_validacion_datos, registrar_mlflow=not args.sin_mlflow,
         silver_path=args.silver, gold_dir=args.gold_dir,
         salida_dir=args.salida_dir, metricas_path=args.metricas)
     print(f"Métricas: {args.metricas}")

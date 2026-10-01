@@ -42,6 +42,12 @@ UBIGEO_CATALOG = REFERENCE / "catalogo_ubigeos_piura.csv"
 
 MODELS = ROOT / "models"
 
+# Seguimiento de experimentos (MLflow) y calidad de datos (Great Expectations).
+# La base SQLite y los artefactos de MLflow son locales y no se versionan.
+MLFLOW_DB = ROOT / "mlflow.db"
+MLFLOW_ARTEFACTOS = ROOT / "mlartifacts"
+GX_DIR = ROOT / "great_expectations"
+
 # Salidas del EDA (versionadas en Git: son texto y figuras chicas, no datos)
 DOCS = ROOT / "docs"
 EDA_DOCS = DOCS / "eda"

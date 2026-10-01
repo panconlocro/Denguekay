@@ -13,3 +13,9 @@ __pycache__/
 trazabilidad_scraper_dengue_piura_2025/
 trazabilidad_scraper_dengue_piura_2025.zip
 .claude/settings.local.json
+# Seguimiento de experimentos (MLflow) y calidad de datos (Great Expectations):
+# se regeneran localmente al correr los módulos; no se versionan.
+mlflow.db
+mlartifacts/
+mlruns/
+great_expectations/gx/

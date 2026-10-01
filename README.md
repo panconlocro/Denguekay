@@ -69,6 +69,19 @@ Para reproducir el primer entrenamiento y evaluación de ambos enfoques:
 .venv/bin/python -m src.modeling.validacion_temporal_compacta
 ```
 
+Cada uno de esos módulos valida antes sus entradas con **Great Expectations**
+y, al terminar, registra la corrida en **MLflow** (`mlflow.db` y `mlartifacts/`
+locales). Para ver y comparar los experimentos:
+
+```bash
+.venv/bin/mlflow ui --backend-store-uri sqlite:///mlflow.db
+.venv/bin/python -m src.validation.calidad_gx   # solo calidad de datos
+```
+
+La guía completa está en
+[docs/modeling/mlflow_great_expectations.md](docs/modeling/mlflow_great_expectations.md).
+Las opciones `--sin-mlflow` y `--sin-validacion-datos` desactivan cada parte.
+
 La prueba principal es la temporada epidemiológica 2024; el año calendario
 2025, con solo tres semanas distritales positivas, se reporta por separado
 como sensibilidad. Las métricas de cada ensayo están en

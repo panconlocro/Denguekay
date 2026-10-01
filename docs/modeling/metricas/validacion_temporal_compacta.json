@@ -29,11 +29,11 @@
     "random_state": 17
   },
   "version_xgboost": "3.4.1",
-  "sha256_manifest_gold": "840c54c8745b5acb7082c1384c5fb6f6cf6025c943f1959a71e02d1cc76dd8ed",
+  "sha256_manifest_gold": "33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57",
   "horizontes": {
     "2": {
       "archivo_gold": "meteo_socio_epi_piura_2017_2025_h2_gold.csv",
-      "sha256_gold": "5bb6540b1e7d1c949299dc4e38d32b5d003abdbc1895c2c940e0db9132d0d88b",
+      "sha256_gold": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3",
       "filas_gold": 30485,
       "filas_excluidas_arranque": 325,
       "filas_comparadas": 30160,
@@ -65,22 +65,22 @@
               "positivos_entrenamiento": 586,
               "regresion": {
                 "conteos": {
-                  "mae": 1.9895787807729801,
-                  "rmse": 8.869356374068063,
-                  "mae_log1p": 0.23248465806225105,
-                  "sesgo_medio": 0.17163520465142054
+                  "mae": 1.9233170948531368,
+                  "rmse": 8.001222494424676,
+                  "mae_log1p": 0.23164769289050052,
+                  "sesgo_medio": 0.09066879714828138
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 252,
-                  "fp": 64,
-                  "fn": 179,
-                  "vn": 2885,
-                  "precision": 0.7974683544303798,
-                  "recall": 0.5846867749419954,
-                  "f1": 0.6746987951807228,
-                  "auprc": 0.7572748309595005
+                  "vp": 246,
+                  "fp": 59,
+                  "fn": 185,
+                  "vn": 2890,
+                  "precision": 0.8065573770491803,
+                  "recall": 0.5707656612529002,
+                  "f1": 0.6684782608695652,
+                  "auprc": 0.7576777425952765
                 }
               },
               "clasificacion": {
@@ -88,16 +88,16 @@
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 252,
+                  "vp": 253,
                   "fp": 303,
-                  "fn": 179,
+                  "fn": 178,
                   "vn": 2646,
-                  "precision": 0.4540540540540541,
-                  "recall": 0.5846867749419954,
-                  "f1": 0.5111561866125761,
-                  "auprc": 0.4563349166503682
+                  "precision": 0.4550359712230216,
+                  "recall": 0.5870069605568445,
+                  "f1": 0.5126646403242148,
+                  "auprc": 0.4649201658466299
                 },
-                "brier": 0.08791144879322825
+                "brier": 0.08683258716451425
               },
               "persistencia": {
                 "conteos": {
@@ -126,7 +126,7 @@
                 "ultima_etiqueta_cerrada": "2021-08-21",
                 "seleccion_umbral": {
                   "umbral": 0.25000000000000006,
-                  "f1_validacion_agregado": 0.47533632286995514
+                  "f1_validacion_agregado": 0.4649122807017544
                 }
               }
             },
@@ -143,39 +143,39 @@
               "positivos_entrenamiento": 1021,
               "regresion": {
                 "conteos": {
-                  "mae": 10.743670121051878,
-                  "rmse": 56.27739312250252,
-                  "mae_log1p": 0.32163822794602825,
-                  "sesgo_medio": -8.353721630238217
+                  "mae": 10.705998810963187,
+                  "rmse": 56.69997558661094,
+                  "mae_log1p": 0.32055138469224453,
+                  "sesgo_medio": -8.353237984035186
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 768,
-                  "fp": 37,
-                  "fn": 271,
-                  "vn": 2304,
-                  "precision": 0.9540372670807453,
-                  "recall": 0.739172281039461,
-                  "f1": 0.8329718004338394,
-                  "auprc": 0.929094877072807
+                  "vp": 767,
+                  "fp": 34,
+                  "fn": 272,
+                  "vn": 2307,
+                  "precision": 0.9575530586766542,
+                  "recall": 0.7382098171318575,
+                  "f1": 0.8336956521739131,
+                  "auprc": 0.9296865189594856
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.17500000000000004,
+                "umbral_probabilidad": 0.12500000000000003,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 898,
-                  "fp": 240,
-                  "fn": 141,
-                  "vn": 2101,
-                  "precision": 0.789103690685413,
-                  "recall": 0.8642925890279115,
-                  "f1": 0.8249885163068443,
-                  "auprc": 0.8802956980055817
+                  "vp": 937,
+                  "fp": 299,
+                  "fn": 102,
+                  "vn": 2042,
+                  "precision": 0.7580906148867314,
+                  "recall": 0.9018286814244466,
+                  "f1": 0.8237362637362637,
+                  "auprc": 0.8804006745370172
                 },
-                "brier": 0.12219892500037596
+                "brier": 0.1223257965118296
               },
               "persistencia": {
                 "conteos": {
@@ -203,8 +203,8 @@
                 "etiquetas_no_disponibles": 65,
                 "ultima_etiqueta_cerrada": "2022-08-20",
                 "seleccion_umbral": {
-                  "umbral": 0.17500000000000004,
-                  "f1_validacion_agregado": 0.5219266714593818
+                  "umbral": 0.12500000000000003,
+                  "f1_validacion_agregado": 0.5216836734693877
                 }
               }
             },
@@ -221,39 +221,39 @@
               "positivos_entrenamiento": 2026,
               "regresion": {
                 "conteos": {
-                  "mae": 5.978440060889756,
-                  "rmse": 24.926921699627954,
-                  "mae_log1p": 0.36020093558631744,
-                  "sesgo_medio": 2.4187435141690186
+                  "mae": 5.780133088282585,
+                  "rmse": 24.22979122840314,
+                  "mae_log1p": 0.357381456536366,
+                  "sesgo_medio": 2.264770333814027
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 652,
-                  "fp": 125,
-                  "fn": 205,
-                  "vn": 2398,
-                  "precision": 0.8391248391248392,
-                  "recall": 0.7607934655775963,
-                  "f1": 0.7980416156670747,
-                  "auprc": 0.861469048384988
+                  "vp": 653,
+                  "fp": 124,
+                  "fn": 204,
+                  "vn": 2399,
+                  "precision": 0.8404118404118404,
+                  "recall": 0.7619603267211202,
+                  "f1": 0.799265605875153,
+                  "auprc": 0.865573199025666
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.17500000000000004,
+                "umbral_probabilidad": 0.22500000000000003,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 794,
-                  "fp": 818,
-                  "fn": 63,
-                  "vn": 1705,
-                  "precision": 0.49255583126550867,
-                  "recall": 0.926487747957993,
-                  "f1": 0.6431753746456055,
-                  "auprc": 0.6667869579396541
+                  "vp": 754,
+                  "fp": 708,
+                  "fn": 103,
+                  "vn": 1815,
+                  "precision": 0.5157318741450069,
+                  "recall": 0.8798133022170361,
+                  "f1": 0.6502802932298405,
+                  "auprc": 0.6630728391793638
                 },
-                "brier": 0.12594327005512526
+                "brier": 0.12631833338383866
               },
               "persistencia": {
                 "conteos": {
@@ -281,8 +281,8 @@
                 "etiquetas_no_disponibles": 65,
                 "ultima_etiqueta_cerrada": "2023-08-19",
                 "seleccion_umbral": {
-                  "umbral": 0.17500000000000004,
-                  "f1_validacion_agregado": 0.7022857142857143
+                  "umbral": 0.22500000000000003,
+                  "f1_validacion_agregado": 0.700516874429918
                 }
               }
             }
@@ -300,10 +300,10 @@
             "positivos_entrenamiento": 2970,
             "regresion": {
               "conteos": {
-                "mae": 0.30530596434499674,
-                "rmse": 1.0635482956650113,
-                "mae_log1p": 0.13384159642809149,
-                "sesgo_medio": 0.09172322341232676
+                "mae": 0.30553436581735616,
+                "rmse": 1.065248493513228,
+                "mae_log1p": 0.1338188663206215,
+                "sesgo_medio": 0.0919191622076771
               },
               "alerta_derivada": {
                 "n": 3380,
@@ -315,24 +315,24 @@
                 "precision": 0.0,
                 "recall": 0.0,
                 "f1": 0.0,
-                "auprc": 0.03190543428721162
+                "auprc": 0.03377961294627961
               }
             },
             "clasificacion": {
-              "umbral_probabilidad": 0.20000000000000007,
+              "umbral_probabilidad": 0.22500000000000003,
               "alerta_directa": {
                 "n": 3380,
                 "positivos": 3,
                 "vp": 1,
-                "fp": 259,
+                "fp": 241,
                 "fn": 2,
-                "vn": 3118,
-                "precision": 0.0038461538461538464,
+                "vn": 3136,
+                "precision": 0.004132231404958678,
                 "recall": 0.3333333333333333,
-                "f1": 0.0076045627376425855,
-                "auprc": 0.00841136095828811
+                "f1": 0.00816326530612245,
+                "auprc": 0.008203149033755628
               },
-              "brier": 0.016433271542519085
+              "brier": 0.01658545993893993
             },
             "persistencia": {
               "conteos": {
@@ -360,8 +360,8 @@
               "etiquetas_no_disponibles": 0,
               "ultima_etiqueta_cerrada": "2024-08-24",
               "seleccion_umbral": {
-                "umbral": 0.20000000000000007,
-                "f1_validacion_agregado": 0.6804936578676722
+                "umbral": 0.22500000000000003,
+                "f1_validacion_agregado": 0.6821705426356589
               }
             }
           }
@@ -395,39 +395,39 @@
               "positivos_entrenamiento": 586,
               "regresion": {
                 "conteos": {
-                  "mae": 1.9577102649320446,
-                  "rmse": 8.486985415925206,
-                  "mae_log1p": 0.23194627633798265,
-                  "sesgo_medio": 0.16179399621705992
+                  "mae": 1.9025026718796556,
+                  "rmse": 7.808433012401958,
+                  "mae_log1p": 0.23133274687212899,
+                  "sesgo_medio": 0.09454363057604775
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 245,
-                  "fp": 60,
-                  "fn": 186,
-                  "vn": 2889,
-                  "precision": 0.8032786885245902,
-                  "recall": 0.568445475638051,
-                  "f1": 0.6657608695652174,
-                  "auprc": 0.7583262162535176
+                  "vp": 250,
+                  "fp": 58,
+                  "fn": 181,
+                  "vn": 2891,
+                  "precision": 0.8116883116883117,
+                  "recall": 0.580046403712297,
+                  "f1": 0.6765899864682002,
+                  "auprc": 0.7602107858823861
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.3000000000000001,
+                "umbral_probabilidad": 0.25000000000000006,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 228,
-                  "fp": 262,
-                  "fn": 203,
-                  "vn": 2687,
-                  "precision": 0.46530612244897956,
-                  "recall": 0.5290023201856149,
-                  "f1": 0.495114006514658,
-                  "auprc": 0.45594598594820124
+                  "vp": 252,
+                  "fp": 299,
+                  "fn": 179,
+                  "vn": 2650,
+                  "precision": 0.4573502722323049,
+                  "recall": 0.5846867749419954,
+                  "f1": 0.5132382892057027,
+                  "auprc": 0.46504112789211804
                 },
-                "brier": 0.08766334631535179
+                "brier": 0.087100296672345
               },
               "persistencia": {
                 "conteos": {
@@ -455,8 +455,8 @@
                 "etiquetas_no_disponibles": 65,
                 "ultima_etiqueta_cerrada": "2021-08-21",
                 "seleccion_umbral": {
-                  "umbral": 0.3000000000000001,
-                  "f1_validacion_agregado": 0.46875
+                  "umbral": 0.25000000000000006,
+                  "f1_validacion_agregado": 0.4594594594594595
                 }
               }
             },
@@ -473,22 +473,22 @@
               "positivos_entrenamiento": 1021,
               "regresion": {
                 "conteos": {
-                  "mae": 10.581197554578718,
-                  "rmse": 55.717601639395646,
-                  "mae_log1p": 0.31991417147011975,
-                  "sesgo_medio": -8.180442503784349
+                  "mae": 10.671628347963381,
+                  "rmse": 56.656258783851804,
+                  "mae_log1p": 0.3200699820499186,
+                  "sesgo_medio": -8.325924651362222
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 770,
-                  "fp": 37,
-                  "fn": 269,
-                  "vn": 2304,
-                  "precision": 0.9541511771995044,
-                  "recall": 0.7410972088546679,
-                  "f1": 0.8342361863488624,
-                  "auprc": 0.928571128218673
+                  "vp": 765,
+                  "fp": 35,
+                  "fn": 274,
+                  "vn": 2306,
+                  "precision": 0.95625,
+                  "recall": 0.7362848893166506,
+                  "f1": 0.831973898858075,
+                  "auprc": 0.9297425081824721
                 }
               },
               "clasificacion": {
@@ -496,16 +496,16 @@
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 923,
-                  "fp": 267,
-                  "fn": 116,
-                  "vn": 2074,
-                  "precision": 0.7756302521008404,
-                  "recall": 0.888354186717998,
-                  "f1": 0.8281740690892777,
-                  "auprc": 0.8806992248083785
+                  "vp": 922,
+                  "fp": 256,
+                  "fn": 117,
+                  "vn": 2085,
+                  "precision": 0.7826825127334465,
+                  "recall": 0.8873917228103946,
+                  "f1": 0.8317546233649076,
+                  "auprc": 0.8814231257827194
                 },
-                "brier": 0.12243547659392877
+                "brier": 0.12251000905679181
               },
               "persistencia": {
                 "conteos": {
@@ -534,7 +534,7 @@
                 "ultima_etiqueta_cerrada": "2022-08-20",
                 "seleccion_umbral": {
                   "umbral": 0.15000000000000002,
-                  "f1_validacion_agregado": 0.5191256830601093
+                  "f1_validacion_agregado": 0.528173794976239
                 }
               }
             },
@@ -551,39 +551,39 @@
               "positivos_entrenamiento": 2026,
               "regresion": {
                 "conteos": {
-                  "mae": 5.681394508402772,
-                  "rmse": 23.639900175899815,
-                  "mae_log1p": 0.3548097644077673,
-                  "sesgo_medio": 2.1815515850891067
+                  "mae": 5.738494680679717,
+                  "rmse": 24.617188982466114,
+                  "mae_log1p": 0.35406632882025724,
+                  "sesgo_medio": 2.262531356131052
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 651,
-                  "fp": 116,
-                  "fn": 206,
-                  "vn": 2407,
-                  "precision": 0.848761408083442,
-                  "recall": 0.7596266044340724,
-                  "f1": 0.8017241379310345,
-                  "auprc": 0.8681679015137542
+                  "vp": 658,
+                  "fp": 120,
+                  "fn": 199,
+                  "vn": 2403,
+                  "precision": 0.8457583547557841,
+                  "recall": 0.7677946324387398,
+                  "f1": 0.8048929663608563,
+                  "auprc": 0.870978200023505
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.17500000000000004,
+                "umbral_probabilidad": 0.15000000000000002,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 790,
-                  "fp": 819,
-                  "fn": 67,
-                  "vn": 1704,
-                  "precision": 0.49098819142324424,
-                  "recall": 0.9218203033838973,
-                  "f1": 0.6407137064071371,
-                  "auprc": 0.6649802169868517
+                  "vp": 811,
+                  "fp": 881,
+                  "fn": 46,
+                  "vn": 1642,
+                  "precision": 0.4793144208037825,
+                  "recall": 0.9463243873978997,
+                  "f1": 0.6363279717536289,
+                  "auprc": 0.6685871122614608
                 },
-                "brier": 0.12551786114986238
+                "brier": 0.1251573663526408
               },
               "persistencia": {
                 "conteos": {
@@ -611,8 +611,8 @@
                 "etiquetas_no_disponibles": 65,
                 "ultima_etiqueta_cerrada": "2023-08-19",
                 "seleccion_umbral": {
-                  "umbral": 0.17500000000000004,
-                  "f1_validacion_agregado": 0.7013509629203795
+                  "umbral": 0.15000000000000002,
+                  "f1_validacion_agregado": 0.7062396466040861
                 }
               }
             }
@@ -630,10 +630,10 @@
             "positivos_entrenamiento": 2970,
             "regresion": {
               "conteos": {
-                "mae": 0.29947866797543643,
-                "rmse": 1.011121163728215,
-                "mae_log1p": 0.13276850386929998,
-                "sesgo_medio": 0.08405822290881873
+                "mae": 0.30104828084041996,
+                "rmse": 1.0232303356281989,
+                "mae_log1p": 0.13291781829999802,
+                "sesgo_medio": 0.08679099697481907
               },
               "alerta_derivada": {
                 "n": 3380,
@@ -645,24 +645,24 @@
                 "precision": 0.0,
                 "recall": 0.0,
                 "f1": 0.0,
-                "auprc": 0.0439205567284385
+                "auprc": 0.03368933257350647
               }
             },
             "clasificacion": {
-              "umbral_probabilidad": 0.20000000000000007,
+              "umbral_probabilidad": 0.22500000000000003,
               "alerta_directa": {
                 "n": 3380,
                 "positivos": 3,
-                "vp": 2,
-                "fp": 260,
-                "fn": 1,
-                "vn": 3117,
-                "precision": 0.007633587786259542,
-                "recall": 0.6666666666666666,
-                "f1": 0.01509433962264151,
-                "auprc": 0.009129089301503095
+                "vp": 1,
+                "fp": 237,
+                "fn": 2,
+                "vn": 3140,
+                "precision": 0.004201680672268907,
+                "recall": 0.3333333333333333,
+                "f1": 0.008298755186721992,
+                "auprc": 0.009147274332257435
               },
-              "brier": 0.016304481576821114
+              "brier": 0.01623643623850214
             },
             "persistencia": {
               "conteos": {
@@ -690,8 +690,8 @@
               "etiquetas_no_disponibles": 0,
               "ultima_etiqueta_cerrada": "2024-08-24",
               "seleccion_umbral": {
-                "umbral": 0.20000000000000007,
-                "f1_validacion_agregado": 0.6818649297223175
+                "umbral": 0.22500000000000003,
+                "f1_validacion_agregado": 0.6799646954986761
               }
             }
           }
@@ -726,39 +726,39 @@
               "positivos_entrenamiento": 586,
               "regresion": {
                 "conteos": {
-                  "mae": 1.8778475097830225,
-                  "rmse": 6.864729566605251,
-                  "mae_log1p": 0.22872236276867403,
-                  "sesgo_medio": 0.02835161670344639
+                  "mae": 1.8896309934062494,
+                  "rmse": 7.044201887885668,
+                  "mae_log1p": 0.22909644971336762,
+                  "sesgo_medio": 0.06508423058486085
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 236,
-                  "fp": 54,
-                  "fn": 195,
-                  "vn": 2895,
-                  "precision": 0.8137931034482758,
-                  "recall": 0.5475638051044084,
-                  "f1": 0.6546463245492372,
-                  "auprc": 0.762565997973463
+                  "vp": 238,
+                  "fp": 53,
+                  "fn": 193,
+                  "vn": 2896,
+                  "precision": 0.8178694158075601,
+                  "recall": 0.5522041763341067,
+                  "f1": 0.6592797783933518,
+                  "auprc": 0.766452013958318
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.22500000000000006,
+                "umbral_probabilidad": 0.20000000000000007,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 298,
-                  "fp": 340,
-                  "fn": 133,
-                  "vn": 2609,
-                  "precision": 0.4670846394984326,
-                  "recall": 0.691415313225058,
-                  "f1": 0.5575304022450889,
-                  "auprc": 0.5589124553682349
+                  "vp": 311,
+                  "fp": 369,
+                  "fn": 120,
+                  "vn": 2580,
+                  "precision": 0.4573529411764706,
+                  "recall": 0.7215777262180975,
+                  "f1": 0.5598559855985599,
+                  "auprc": 0.5450843487758158
                 },
-                "brier": 0.07974522565187456
+                "brier": 0.08037283147676777
               },
               "persistencia": {
                 "conteos": {
@@ -786,8 +786,8 @@
                 "etiquetas_no_disponibles": 65,
                 "ultima_etiqueta_cerrada": "2021-08-21",
                 "seleccion_umbral": {
-                  "umbral": 0.22500000000000006,
-                  "f1_validacion_agregado": 0.5818181818181818
+                  "umbral": 0.20000000000000007,
+                  "f1_validacion_agregado": 0.5895953757225434
                 }
               }
             },
@@ -804,39 +804,39 @@
               "positivos_entrenamiento": 1021,
               "regresion": {
                 "conteos": {
-                  "mae": 10.76596095990836,
-                  "rmse": 55.98927606610272,
-                  "mae_log1p": 0.3285446956555642,
-                  "sesgo_medio": -8.842390970574751
+                  "mae": 10.98093184606219,
+                  "rmse": 56.28615382665872,
+                  "mae_log1p": 0.33334084344083725,
+                  "sesgo_medio": -9.075831286087164
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 755,
-                  "fp": 32,
-                  "fn": 284,
-                  "vn": 2309,
-                  "precision": 0.9593392630241423,
-                  "recall": 0.726660250240616,
-                  "f1": 0.8269441401971522,
-                  "auprc": 0.9310959732281432
+                  "vp": 749,
+                  "fp": 31,
+                  "fn": 290,
+                  "vn": 2310,
+                  "precision": 0.9602564102564103,
+                  "recall": 0.7208854667949952,
+                  "f1": 0.8235294117647058,
+                  "auprc": 0.929063115668808
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.22500000000000006,
+                "umbral_probabilidad": 0.20000000000000007,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 868,
-                  "fp": 196,
-                  "fn": 171,
-                  "vn": 2145,
-                  "precision": 0.8157894736842105,
-                  "recall": 0.8354186717998076,
-                  "f1": 0.8254873989538755,
-                  "auprc": 0.881465904373472
+                  "vp": 894,
+                  "fp": 217,
+                  "fn": 145,
+                  "vn": 2124,
+                  "precision": 0.8046804680468047,
+                  "recall": 0.8604427333974976,
+                  "f1": 0.8316279069767442,
+                  "auprc": 0.8832915720406874
                 },
-                "brier": 0.10265855864902958
+                "brier": 0.10293125983227693
               },
               "persistencia": {
                 "conteos": {
@@ -864,8 +864,8 @@
                 "etiquetas_no_disponibles": 65,
                 "ultima_etiqueta_cerrada": "2022-08-20",
                 "seleccion_umbral": {
-                  "umbral": 0.22500000000000006,
-                  "f1_validacion_agregado": 0.5617433414043583
+                  "umbral": 0.20000000000000007,
+                  "f1_validacion_agregado": 0.5658914728682171
                 }
               }
             },
@@ -882,22 +882,22 @@
               "positivos_entrenamiento": 2026,
               "regresion": {
                 "conteos": {
-                  "mae": 5.50405295294766,
-                  "rmse": 22.498101363764054,
-                  "mae_log1p": 0.3506207958490676,
-                  "sesgo_medio": 1.9719589004803522
+                  "mae": 5.472737288478068,
+                  "rmse": 22.623205165419005,
+                  "mae_log1p": 0.3500334004016551,
+                  "sesgo_medio": 2.0014025744629373
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 651,
-                  "fp": 115,
-                  "fn": 206,
-                  "vn": 2408,
-                  "precision": 0.8498694516971279,
-                  "recall": 0.7596266044340724,
-                  "f1": 0.8022181146025879,
-                  "auprc": 0.8710336797622859
+                  "vp": 648,
+                  "fp": 112,
+                  "fn": 209,
+                  "vn": 2411,
+                  "precision": 0.8526315789473684,
+                  "recall": 0.7561260210035006,
+                  "f1": 0.8014842300556586,
+                  "auprc": 0.8717951540128674
                 }
               },
               "clasificacion": {
@@ -912,9 +912,9 @@
                   "precision": 0.48792270531400966,
                   "recall": 0.9428238039673279,
                   "f1": 0.6430561082371667,
-                  "auprc": 0.7173993783353237
+                  "auprc": 0.7130690922797016
                 },
-                "brier": 0.11971841903754994
+                "brier": 0.11956620457587622
               },
               "persistencia": {
                 "conteos": {
@@ -943,7 +943,7 @@
                 "ultima_etiqueta_cerrada": "2023-08-19",
                 "seleccion_umbral": {
                   "umbral": 0.20000000000000007,
-                  "f1_validacion_agregado": 0.7246204227448645
+                  "f1_validacion_agregado": 0.7279738949866509
                 }
               }
             }
@@ -961,10 +961,10 @@
             "positivos_entrenamiento": 2970,
             "regresion": {
               "conteos": {
-                "mae": 0.3219654616732829,
-                "rmse": 1.1966724620068763,
-                "mae_log1p": 0.13314736761501428,
-                "sesgo_medio": 0.12459926149080619
+                "mae": 0.31750400845989857,
+                "rmse": 1.1551898297461796,
+                "mae_log1p": 0.1325556527781567,
+                "sesgo_medio": 0.11725055875849756
               },
               "alerta_derivada": {
                 "n": 3380,
@@ -976,24 +976,24 @@
                 "precision": 0.0,
                 "recall": 0.0,
                 "f1": 0.0,
-                "auprc": 0.061400923469888985
+                "auprc": 0.06268973891924712
               }
             },
             "clasificacion": {
-              "umbral_probabilidad": 0.2750000000000001,
+              "umbral_probabilidad": 0.25000000000000006,
               "alerta_directa": {
                 "n": 3380,
                 "positivos": 3,
                 "vp": 1,
-                "fp": 108,
+                "fp": 125,
                 "fn": 2,
-                "vn": 3269,
-                "precision": 0.009174311926605505,
+                "vn": 3252,
+                "precision": 0.007936507936507936,
                 "recall": 0.3333333333333333,
-                "f1": 0.017857142857142856,
-                "auprc": 0.009703292388804756
+                "f1": 0.015503875968992248,
+                "auprc": 0.009494631831794775
               },
-              "brier": 0.010035027435803734
+              "brier": 0.010258158831420242
             },
             "persistencia": {
               "conteos": {
@@ -1021,21 +1021,21 @@
               "etiquetas_no_disponibles": 0,
               "ultima_etiqueta_cerrada": "2024-08-24",
               "seleccion_umbral": {
-                "umbral": 0.2750000000000001,
-                "f1_validacion_agregado": 0.6961683756071236
+                "umbral": 0.25000000000000006,
+                "f1_validacion_agregado": 0.6957746478873239
               }
             }
           }
         }
       },
       "seleccion_2022_2023": {
-        "regresion": "base_4",
+        "regresion": "base_6",
         "clasificacion": "base_6_poblacion_2017"
       }
     },
     "4": {
       "archivo_gold": "meteo_socio_epi_piura_2017_2025_h4_gold.csv",
-      "sha256_gold": "01602d436727909b72a6f7d6e1a3ae5e304cde0444c69edae247c52e376b78f5",
+      "sha256_gold": "f9fbed66572e8641eee82ce1a148562f5121cf8dbd111498f73a8aa78f5f19c6",
       "filas_gold": 30485,
       "filas_excluidas_arranque": 455,
       "filas_comparadas": 30030,
@@ -1067,39 +1067,39 @@
               "positivos_entrenamiento": 562,
               "regresion": {
                 "conteos": {
-                  "mae": 3.0858368426061253,
-                  "rmse": 17.585599071795805,
-                  "mae_log1p": 0.2806035801635812,
-                  "sesgo_medio": 0.7591738890452839
+                  "mae": 2.995812309774868,
+                  "rmse": 15.455502479461444,
+                  "mae_log1p": 0.2791582495734271,
+                  "sesgo_medio": 0.7011285207188859
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 431,
                   "vp": 221,
-                  "fp": 64,
+                  "fp": 63,
                   "fn": 210,
-                  "vn": 2885,
-                  "precision": 0.775438596491228,
+                  "vn": 2886,
+                  "precision": 0.778169014084507,
                   "recall": 0.5127610208816705,
-                  "f1": 0.61731843575419,
-                  "auprc": 0.6961886540949506
+                  "f1": 0.6181818181818182,
+                  "auprc": 0.7037092918348069
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.42500000000000016,
+                "umbral_probabilidad": 0.4250000000000001,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 167,
-                  "fp": 184,
-                  "fn": 264,
-                  "vn": 2765,
-                  "precision": 0.4757834757834758,
-                  "recall": 0.3874709976798144,
-                  "f1": 0.42710997442455245,
-                  "auprc": 0.4601437091435362
+                  "vp": 164,
+                  "fp": 183,
+                  "fn": 267,
+                  "vn": 2766,
+                  "precision": 0.47262247838616717,
+                  "recall": 0.3805104408352668,
+                  "f1": 0.42159383033419023,
+                  "auprc": 0.45692731072160375
                 },
-                "brier": 0.08777613497974693
+                "brier": 0.08797419679606096
               },
               "persistencia": {
                 "conteos": {
@@ -1127,8 +1127,8 @@
                 "etiquetas_no_disponibles": 195,
                 "ultima_etiqueta_cerrada": "2021-08-07",
                 "seleccion_umbral": {
-                  "umbral": 0.42500000000000016,
-                  "f1_validacion_agregado": 0.43859649122807015
+                  "umbral": 0.4250000000000001,
+                  "f1_validacion_agregado": 0.43103448275862066
                 }
               }
             },
@@ -1145,39 +1145,39 @@
               "positivos_entrenamiento": 1006,
               "regresion": {
                 "conteos": {
-                  "mae": 14.23976758285095,
-                  "rmse": 68.72358634851194,
-                  "mae_log1p": 0.42264538507256033,
-                  "sesgo_medio": -11.943881948234116
+                  "mae": 14.194753329797246,
+                  "rmse": 69.24560678904997,
+                  "mae_log1p": 0.4209005603726275,
+                  "sesgo_medio": -11.791706193488961
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 668,
+                  "vp": 669,
                   "fp": 30,
-                  "fn": 371,
+                  "fn": 370,
                   "vn": 2311,
-                  "precision": 0.9570200573065902,
-                  "recall": 0.6429258902791145,
-                  "f1": 0.7691421991940126,
-                  "auprc": 0.8867708351561774
+                  "precision": 0.9570815450643777,
+                  "recall": 0.643888354186718,
+                  "f1": 0.7698504027617952,
+                  "auprc": 0.8859004522421979
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.12500000000000003,
+                "umbral_probabilidad": 0.15000000000000002,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 878,
-                  "fp": 291,
-                  "fn": 161,
-                  "vn": 2050,
-                  "precision": 0.7510692899914457,
-                  "recall": 0.8450433108758422,
-                  "f1": 0.7952898550724637,
-                  "auprc": 0.856827884529179
+                  "vp": 858,
+                  "fp": 250,
+                  "fn": 181,
+                  "vn": 2091,
+                  "precision": 0.7743682310469314,
+                  "recall": 0.8257940327237728,
+                  "f1": 0.7992547741034001,
+                  "auprc": 0.8559059002671127
                 },
-                "brier": 0.13900056961660948
+                "brier": 0.13918980787557733
               },
               "persistencia": {
                 "conteos": {
@@ -1205,8 +1205,8 @@
                 "etiquetas_no_disponibles": 195,
                 "ultima_etiqueta_cerrada": "2022-08-06",
                 "seleccion_umbral": {
-                  "umbral": 0.12500000000000003,
-                  "f1_validacion_agregado": 0.5094339622641509
+                  "umbral": 0.15000000000000002,
+                  "f1_validacion_agregado": 0.5161744022503516
                 }
               }
             },
@@ -1223,39 +1223,39 @@
               "positivos_entrenamiento": 1945,
               "regresion": {
                 "conteos": {
-                  "mae": 9.668409590513209,
-                  "rmse": 41.33777670156274,
-                  "mae_log1p": 0.44443377971467896,
-                  "sesgo_medio": 4.395975555699131
+                  "mae": 9.750583601804152,
+                  "rmse": 42.666014263051224,
+                  "mae_log1p": 0.4407706153332833,
+                  "sesgo_medio": 4.475180226610147
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 615,
-                  "fp": 162,
-                  "fn": 242,
-                  "vn": 2361,
-                  "precision": 0.7915057915057915,
-                  "recall": 0.7176196032672112,
-                  "f1": 0.7527539779681762,
-                  "auprc": 0.7655800289883588
+                  "vp": 624,
+                  "fp": 167,
+                  "fn": 233,
+                  "vn": 2356,
+                  "precision": 0.7888748419721872,
+                  "recall": 0.7281213535589265,
+                  "f1": 0.7572815533980582,
+                  "auprc": 0.7674366579132491
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.20000000000000007,
+                "umbral_probabilidad": 0.15000000000000002,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 729,
-                  "fp": 794,
-                  "fn": 128,
-                  "vn": 1729,
-                  "precision": 0.47866053841103084,
-                  "recall": 0.8506417736289381,
-                  "f1": 0.6126050420168068,
-                  "auprc": 0.6098520438334117
+                  "vp": 781,
+                  "fp": 928,
+                  "fn": 76,
+                  "vn": 1595,
+                  "precision": 0.4569923932124049,
+                  "recall": 0.911318553092182,
+                  "f1": 0.6087295401402962,
+                  "auprc": 0.6120429203654276
                 },
-                "brier": 0.13867672864553
+                "brier": 0.13727880609027937
               },
               "persistencia": {
                 "conteos": {
@@ -1283,8 +1283,8 @@
                 "etiquetas_no_disponibles": 195,
                 "ultima_etiqueta_cerrada": "2023-08-05",
                 "seleccion_umbral": {
-                  "umbral": 0.20000000000000007,
-                  "f1_validacion_agregado": 0.6677398583386993
+                  "umbral": 0.15000000000000002,
+                  "f1_validacion_agregado": 0.6700207161882213
                 }
               }
             }
@@ -1302,39 +1302,39 @@
             "positivos_entrenamiento": 2950,
             "regresion": {
               "conteos": {
-                "mae": 0.43518813390948824,
-                "rmse": 1.6671088967307004,
-                "mae_log1p": 0.164362726663644,
-                "sesgo_medio": 0.25156615007373906
+                "mae": 0.43562958554458425,
+                "rmse": 1.6947240402289447,
+                "mae_log1p": 0.16354620053618538,
+                "sesgo_medio": 0.25265523770013987
               },
               "alerta_derivada": {
                 "n": 3380,
                 "positivos": 3,
                 "vp": 0,
-                "fp": 6,
+                "fp": 7,
                 "fn": 3,
-                "vn": 3371,
+                "vn": 3370,
                 "precision": 0.0,
                 "recall": 0.0,
                 "f1": 0.0,
-                "auprc": 0.02445791851963615
+                "auprc": 0.0242862009166357
               }
             },
             "clasificacion": {
-              "umbral_probabilidad": 0.17500000000000004,
+              "umbral_probabilidad": 0.15000000000000002,
               "alerta_directa": {
                 "n": 3380,
                 "positivos": 3,
                 "vp": 1,
-                "fp": 361,
+                "fp": 406,
                 "fn": 2,
-                "vn": 3016,
-                "precision": 0.0027624309392265192,
+                "vn": 2971,
+                "precision": 0.002457002457002457,
                 "recall": 0.3333333333333333,
-                "f1": 0.005479452054794521,
-                "auprc": 0.004448929666882725
+                "f1": 0.004878048780487805,
+                "auprc": 0.004728085394796295
               },
-              "brier": 0.02058836856201376
+              "brier": 0.02031278261669403
             },
             "persistencia": {
               "conteos": {
@@ -1362,8 +1362,8 @@
               "etiquetas_no_disponibles": 0,
               "ultima_etiqueta_cerrada": "2024-08-24",
               "seleccion_umbral": {
-                "umbral": 0.17500000000000004,
-                "f1_validacion_agregado": 0.6527097754516292
+                "umbral": 0.15000000000000002,
+                "f1_validacion_agregado": 0.651419302514193
               }
             }
           }
@@ -1397,39 +1397,39 @@
               "positivos_entrenamiento": 562,
               "regresion": {
                 "conteos": {
-                  "mae": 3.0666723332475296,
-                  "rmse": 17.13040596424124,
-                  "mae_log1p": 0.2799239936565683,
-                  "sesgo_medio": 0.7567941034298126
+                  "mae": 3.036762777912932,
+                  "rmse": 15.727737383371068,
+                  "mae_log1p": 0.28051851836206276,
+                  "sesgo_medio": 0.7096649588352985
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 431,
                   "vp": 217,
-                  "fp": 60,
+                  "fp": 59,
                   "fn": 214,
-                  "vn": 2889,
-                  "precision": 0.7833935018050542,
+                  "vn": 2890,
+                  "precision": 0.7862318840579711,
                   "recall": 0.5034802784222738,
-                  "f1": 0.6129943502824858,
-                  "auprc": 0.7011681329786194
+                  "f1": 0.6138613861386139,
+                  "auprc": 0.6984487074862592
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.4500000000000001,
+                "umbral_probabilidad": 0.4250000000000001,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 152,
-                  "fp": 172,
-                  "fn": 279,
-                  "vn": 2777,
-                  "precision": 0.4691358024691358,
-                  "recall": 0.35266821345707655,
-                  "f1": 0.40264900662251657,
-                  "auprc": 0.4586906132386618
+                  "vp": 165,
+                  "fp": 180,
+                  "fn": 266,
+                  "vn": 2769,
+                  "precision": 0.4782608695652174,
+                  "recall": 0.382830626450116,
+                  "f1": 0.4252577319587629,
+                  "auprc": 0.4559712350246258
                 },
-                "brier": 0.08825374705344856
+                "brier": 0.08807836918114641
               },
               "persistencia": {
                 "conteos": {
@@ -1457,8 +1457,8 @@
                 "etiquetas_no_disponibles": 195,
                 "ultima_etiqueta_cerrada": "2021-08-07",
                 "seleccion_umbral": {
-                  "umbral": 0.4500000000000001,
-                  "f1_validacion_agregado": 0.46296296296296297
+                  "umbral": 0.4250000000000001,
+                  "f1_validacion_agregado": 0.44642857142857145
                 }
               }
             },
@@ -1475,39 +1475,39 @@
               "positivos_entrenamiento": 1006,
               "regresion": {
                 "conteos": {
-                  "mae": 14.17984628155304,
-                  "rmse": 68.36261670034433,
-                  "mae_log1p": 0.42157106144434275,
-                  "sesgo_medio": -12.054189065004804
+                  "mae": 14.193714678141745,
+                  "rmse": 68.7770391766949,
+                  "mae_log1p": 0.4224872448875287,
+                  "sesgo_medio": -11.926175962328172
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 668,
-                  "fp": 31,
-                  "fn": 371,
-                  "vn": 2310,
-                  "precision": 0.9556509298998569,
-                  "recall": 0.6429258902791145,
-                  "f1": 0.7686996547756041,
-                  "auprc": 0.8862566956782475
+                  "vp": 672,
+                  "fp": 29,
+                  "fn": 367,
+                  "vn": 2312,
+                  "precision": 0.9586305278174037,
+                  "recall": 0.6467757459095284,
+                  "f1": 0.7724137931034483,
+                  "auprc": 0.8865975495524168
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.15000000000000002,
+                "umbral_probabilidad": 0.20000000000000007,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 858,
-                  "fp": 248,
-                  "fn": 181,
-                  "vn": 2093,
-                  "precision": 0.7757685352622061,
-                  "recall": 0.8257940327237728,
-                  "f1": 0.8,
-                  "auprc": 0.8565396833559114
+                  "vp": 804,
+                  "fp": 188,
+                  "fn": 235,
+                  "vn": 2153,
+                  "precision": 0.8104838709677419,
+                  "recall": 0.7738209817131858,
+                  "f1": 0.7917282127031019,
+                  "auprc": 0.855839149798902
                 },
-                "brier": 0.13939268949663516
+                "brier": 0.13958853714407737
               },
               "persistencia": {
                 "conteos": {
@@ -1535,8 +1535,8 @@
                 "etiquetas_no_disponibles": 195,
                 "ultima_etiqueta_cerrada": "2022-08-06",
                 "seleccion_umbral": {
-                  "umbral": 0.15000000000000002,
-                  "f1_validacion_agregado": 0.5106382978723404
+                  "umbral": 0.20000000000000007,
+                  "f1_validacion_agregado": 0.5117004680187207
                 }
               }
             },
@@ -1553,22 +1553,22 @@
               "positivos_entrenamiento": 1945,
               "regresion": {
                 "conteos": {
-                  "mae": 9.44348516864399,
-                  "rmse": 40.61975618804459,
-                  "mae_log1p": 0.4413035188378657,
-                  "sesgo_medio": 4.15247153033304
+                  "mae": 9.619909123489192,
+                  "rmse": 42.12410652680996,
+                  "mae_log1p": 0.4413583302857337,
+                  "sesgo_medio": 4.346447526135885
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 614,
-                  "fp": 161,
-                  "fn": 243,
-                  "vn": 2362,
-                  "precision": 0.792258064516129,
-                  "recall": 0.7164527421236873,
-                  "f1": 0.7524509803921569,
-                  "auprc": 0.7695746531426124
+                  "vp": 621,
+                  "fp": 163,
+                  "fn": 236,
+                  "vn": 2360,
+                  "precision": 0.7920918367346939,
+                  "recall": 0.7246207701283547,
+                  "f1": 0.7568555758683729,
+                  "auprc": 0.765868291626393
                 }
               },
               "clasificacion": {
@@ -1576,16 +1576,16 @@
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 763,
-                  "fp": 873,
-                  "fn": 94,
-                  "vn": 1650,
-                  "precision": 0.46638141809290956,
-                  "recall": 0.8903150525087514,
-                  "f1": 0.6121139189731247,
-                  "auprc": 0.6101373267206935
+                  "vp": 768,
+                  "fp": 877,
+                  "fn": 89,
+                  "vn": 1646,
+                  "precision": 0.4668693009118541,
+                  "recall": 0.8961493582263711,
+                  "f1": 0.6139088729016786,
+                  "auprc": 0.6154608042447183
                 },
-                "brier": 0.13701143177255445
+                "brier": 0.13601356478606022
               },
               "persistencia": {
                 "conteos": {
@@ -1614,7 +1614,7 @@
                 "ultima_etiqueta_cerrada": "2023-08-05",
                 "seleccion_umbral": {
                   "umbral": 0.17500000000000004,
-                  "f1_validacion_agregado": 0.6709916589434661
+                  "f1_validacion_agregado": 0.6701538461538461
                 }
               }
             }
@@ -1632,10 +1632,10 @@
             "positivos_entrenamiento": 2950,
             "regresion": {
               "conteos": {
-                "mae": 0.43325040210396626,
-                "rmse": 1.6694841589592848,
-                "mae_log1p": 0.16381324825125065,
-                "sesgo_medio": 0.25049833264780513
+                "mae": 0.43411115749653695,
+                "rmse": 1.678947937731575,
+                "mae_log1p": 0.16331800598316012,
+                "sesgo_medio": 0.25086870185284155
               },
               "alerta_derivada": {
                 "n": 3380,
@@ -1647,7 +1647,7 @@
                 "precision": 0.0,
                 "recall": 0.0,
                 "f1": 0.0,
-                "auprc": 0.03443748197846558
+                "auprc": 0.03396272705052296
               }
             },
             "clasificacion": {
@@ -1656,15 +1656,15 @@
                 "n": 3380,
                 "positivos": 3,
                 "vp": 1,
-                "fp": 346,
+                "fp": 344,
                 "fn": 2,
-                "vn": 3031,
-                "precision": 0.002881844380403458,
+                "vn": 3033,
+                "precision": 0.002898550724637681,
                 "recall": 0.3333333333333333,
-                "f1": 0.005714285714285714,
-                "auprc": 0.005191758687650349
+                "f1": 0.005747126436781609,
+                "auprc": 0.005330975753510965
               },
-              "brier": 0.020163462332635097
+              "brier": 0.020170529605510003
             },
             "persistencia": {
               "conteos": {
@@ -1693,7 +1693,7 @@
               "ultima_etiqueta_cerrada": "2024-08-24",
               "seleccion_umbral": {
                 "umbral": 0.17500000000000004,
-                "f1_validacion_agregado": 0.6533221194280908
+                "f1_validacion_agregado": 0.6537108393365723
               }
             }
           }
@@ -1728,22 +1728,22 @@
               "positivos_entrenamiento": 562,
               "regresion": {
                 "conteos": {
-                  "mae": 2.8938291850689586,
-                  "rmse": 11.773940900572768,
-                  "mae_log1p": 0.2753591037143193,
-                  "sesgo_medio": 0.6462685545692537
+                  "mae": 2.9978145611802387,
+                  "rmse": 12.664038194115333,
+                  "mae_log1p": 0.27807058566428516,
+                  "sesgo_medio": 0.7196543914024145
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 215,
+                  "vp": 206,
                   "fp": 57,
-                  "fn": 216,
+                  "fn": 225,
                   "vn": 2892,
-                  "precision": 0.7904411764705882,
-                  "recall": 0.4988399071925754,
-                  "f1": 0.6116642958748222,
-                  "auprc": 0.6922316519265129
+                  "precision": 0.7832699619771863,
+                  "recall": 0.4779582366589327,
+                  "f1": 0.5936599423631124,
+                  "auprc": 0.6882110365553598
                 }
               },
               "clasificacion": {
@@ -1751,16 +1751,16 @@
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 431,
-                  "vp": 253,
-                  "fp": 278,
-                  "fn": 178,
-                  "vn": 2671,
-                  "precision": 0.4764595103578154,
-                  "recall": 0.5870069605568445,
-                  "f1": 0.525987525987526,
-                  "auprc": 0.5316137984944215
+                  "vp": 258,
+                  "fp": 288,
+                  "fn": 173,
+                  "vn": 2661,
+                  "precision": 0.4725274725274725,
+                  "recall": 0.5986078886310905,
+                  "f1": 0.5281473899692938,
+                  "auprc": 0.5325613306738977
                 },
-                "brier": 0.08365563227280427
+                "brier": 0.08323400348782788
               },
               "persistencia": {
                 "conteos": {
@@ -1789,7 +1789,7 @@
                 "ultima_etiqueta_cerrada": "2021-08-07",
                 "seleccion_umbral": {
                   "umbral": 0.2750000000000001,
-                  "f1_validacion_agregado": 0.46956521739130436
+                  "f1_validacion_agregado": 0.4745762711864407
                 }
               }
             },
@@ -1806,39 +1806,39 @@
               "positivos_entrenamiento": 1006,
               "regresion": {
                 "conteos": {
-                  "mae": 14.429341666483714,
-                  "rmse": 67.49502102948715,
-                  "mae_log1p": 0.4387148273622703,
-                  "sesgo_medio": -12.178824452834395
+                  "mae": 14.400780413588633,
+                  "rmse": 67.71572244924752,
+                  "mae_log1p": 0.4398930608946278,
+                  "sesgo_medio": -12.349131725377957
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 653,
+                  "vp": 657,
                   "fp": 24,
-                  "fn": 386,
+                  "fn": 382,
                   "vn": 2317,
-                  "precision": 0.9645494830132939,
-                  "recall": 0.6284889316650626,
-                  "f1": 0.7610722610722611,
-                  "auprc": 0.8855026051936734
+                  "precision": 0.9647577092511013,
+                  "recall": 0.6323387872954764,
+                  "f1": 0.763953488372093,
+                  "auprc": 0.8853611114491807
                 }
               },
               "clasificacion": {
-                "umbral_probabilidad": 0.20000000000000007,
+                "umbral_probabilidad": 0.17500000000000004,
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 1039,
-                  "vp": 812,
-                  "fp": 187,
-                  "fn": 227,
-                  "vn": 2154,
-                  "precision": 0.8128128128128128,
-                  "recall": 0.7815206929740135,
-                  "f1": 0.7968596663395485,
-                  "auprc": 0.8339908805875028
+                  "vp": 832,
+                  "fp": 213,
+                  "fn": 207,
+                  "vn": 2128,
+                  "precision": 0.7961722488038278,
+                  "recall": 0.8007699711260827,
+                  "f1": 0.7984644913627639,
+                  "auprc": 0.833513651523495
                 },
-                "brier": 0.12783772522506848
+                "brier": 0.12729808085042124
               },
               "persistencia": {
                 "conteos": {
@@ -1866,8 +1866,8 @@
                 "etiquetas_no_disponibles": 195,
                 "ultima_etiqueta_cerrada": "2022-08-06",
                 "seleccion_umbral": {
-                  "umbral": 0.20000000000000007,
-                  "f1_validacion_agregado": 0.5210355987055016
+                  "umbral": 0.17500000000000004,
+                  "f1_validacion_agregado": 0.5253456221198156
                 }
               }
             },
@@ -1884,22 +1884,22 @@
               "positivos_entrenamiento": 1945,
               "regresion": {
                 "conteos": {
-                  "mae": 9.032435095609532,
-                  "rmse": 38.055148390524096,
-                  "mae_log1p": 0.431384098238808,
-                  "sesgo_medio": 3.8094717457712273
+                  "mae": 9.172366424283789,
+                  "rmse": 38.81126990406754,
+                  "mae_log1p": 0.43331501553453355,
+                  "sesgo_medio": 3.9484115243554525
                 },
                 "alerta_derivada": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 620,
-                  "fp": 157,
-                  "fn": 237,
-                  "vn": 2366,
-                  "precision": 0.797940797940798,
-                  "recall": 0.7234539089848308,
-                  "f1": 0.758873929008568,
-                  "auprc": 0.7729459842809072
+                  "vp": 626,
+                  "fp": 161,
+                  "fn": 231,
+                  "vn": 2362,
+                  "precision": 0.795425667090216,
+                  "recall": 0.7304550758459744,
+                  "f1": 0.7615571776155717,
+                  "auprc": 0.7718032371045225
                 }
               },
               "clasificacion": {
@@ -1907,16 +1907,16 @@
                 "alerta_directa": {
                   "n": 3380,
                   "positivos": 857,
-                  "vp": 779,
-                  "fp": 876,
-                  "fn": 78,
-                  "vn": 1647,
-                  "precision": 0.4706948640483384,
-                  "recall": 0.9089848308051341,
-                  "f1": 0.6202229299363057,
-                  "auprc": 0.6516822049173034
+                  "vp": 786,
+                  "fp": 879,
+                  "fn": 71,
+                  "vn": 1644,
+                  "precision": 0.4720720720720721,
+                  "recall": 0.9171528588098017,
+                  "f1": 0.6233148295003965,
+                  "auprc": 0.6507592185421358
                 },
-                "brier": 0.13292521772946458
+                "brier": 0.1326968743360919
               },
               "persistencia": {
                 "conteos": {
@@ -1945,7 +1945,7 @@
                 "ultima_etiqueta_cerrada": "2023-08-05",
                 "seleccion_umbral": {
                   "umbral": 0.20000000000000007,
-                  "f1_validacion_agregado": 0.6794663195574357
+                  "f1_validacion_agregado": 0.6804791194561347
                 }
               }
             }
@@ -1963,22 +1963,22 @@
             "positivos_entrenamiento": 2950,
             "regresion": {
               "conteos": {
-                "mae": 0.5096746514993582,
-                "rmse": 2.3026107692264772,
-                "mae_log1p": 0.16685589932807807,
-                "sesgo_medio": 0.34303531931126324
+                "mae": 0.5076146884110636,
+                "rmse": 2.3228786796414793,
+                "mae_log1p": 0.16584841327926608,
+                "sesgo_medio": 0.3404358937873639
               },
               "alerta_derivada": {
                 "n": 3380,
                 "positivos": 3,
                 "vp": 0,
-                "fp": 5,
+                "fp": 6,
                 "fn": 3,
-                "vn": 3372,
+                "vn": 3371,
                 "precision": 0.0,
                 "recall": 0.0,
                 "f1": 0.0,
-                "auprc": 0.03616048081801506
+                "auprc": 0.03435377486207372
               }
             },
             "clasificacion": {
@@ -1993,9 +1993,9 @@
                 "precision": 0.0,
                 "recall": 0.0,
                 "f1": 0.0,
-                "auprc": 0.0059686286707494665
+                "auprc": 0.0058589600462347555
               },
-              "brier": 0.015312113040619363
+              "brier": 0.015011664005449147
             },
             "persistencia": {
               "conteos": {
@@ -2024,7 +2024,7 @@
               "ultima_etiqueta_cerrada": "2024-08-24",
               "seleccion_umbral": {
                 "umbral": 0.2750000000000001,
-                "f1_validacion_agregado": 0.6621973929236499
+                "f1_validacion_agregado": 0.6622148024485254
               }
             }
           }

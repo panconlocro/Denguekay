@@ -34,8 +34,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.981476263899629,
-      "mae_log1p": 0.25337943124399964
+      "mae_casos": 1.9814762638996188,
+      "mae_log1p": 0.253379431243999
     },
     {
       "horizonte": 2,
@@ -45,8 +45,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 2.0804915954654497,
-      "mae_log1p": 0.2543210386506518
+      "mae_casos": 2.080491595465434,
+      "mae_log1p": 0.2543210386506508
     },
     {
       "horizonte": 2,
@@ -67,8 +67,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.509496618958785,
-      "mae_log1p": 0.3382938555424371
+      "mae_casos": 11.509496618958908,
+      "mae_log1p": 0.3382938555424387
     },
     {
       "horizonte": 2,
@@ -78,8 +78,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.130052007197405,
-      "mae_log1p": 0.33496889763229537
+      "mae_casos": 11.130052007197536,
+      "mae_log1p": 0.3349688976322967
     },
     {
       "horizonte": 2,
@@ -100,8 +100,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.895831931615344,
-      "mae_log1p": 0.37054362175528816
+      "mae_casos": 4.895831931615418,
+      "mae_log1p": 0.37054362175528927
     },
     {
       "horizonte": 2,
@@ -111,8 +111,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.996877663828944,
-      "mae_log1p": 0.3693949178369243
+      "mae_casos": 4.9968776638289985,
+      "mae_log1p": 0.3693949178369252
     },
     {
       "horizonte": 2,
@@ -133,8 +133,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4589258755820305,
-      "mae_log1p": 0.18102177304282335
+      "mae_casos": 0.4589258755820275,
+      "mae_log1p": 0.1810217730428214
     },
     {
       "horizonte": 2,
@@ -144,8 +144,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4563335716405988,
-      "mae_log1p": 0.1799425225753562
+      "mae_casos": 0.4563335716405946,
+      "mae_log1p": 0.17994252257535395
     },
     {
       "horizonte": 4,
@@ -166,8 +166,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.5348376639645718,
-      "mae_log1p": 0.3164150715627013
+      "mae_casos": 2.5348376639645602,
+      "mae_log1p": 0.3164150715627005
     },
     {
       "horizonte": 4,
@@ -177,8 +177,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.649056828212917,
-      "mae_log1p": 0.3178575291096682
+      "mae_casos": 2.649056828212916,
+      "mae_log1p": 0.31785752910966775
     },
     {
       "horizonte": 4,
@@ -199,8 +199,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.42071954242307,
-      "mae_log1p": 0.4612603471894834
+      "mae_casos": 15.42071954242311,
+      "mae_log1p": 0.46126034718948433
     },
     {
       "horizonte": 4,
@@ -210,8 +210,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 14.84568123239167,
-      "mae_log1p": 0.45266938475940405
+      "mae_casos": 14.845681232391723,
+      "mae_log1p": 0.452669384759405
     },
     {
       "horizonte": 4,
@@ -232,8 +232,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.776391799016085,
-      "mae_log1p": 0.4673036102399959
+      "mae_casos": 6.776391799016152,
+      "mae_log1p": 0.46730361023999767
     },
     {
       "horizonte": 4,
@@ -243,8 +243,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.681872296486312,
-      "mae_log1p": 0.46069678136282444
+      "mae_casos": 6.681872296486347,
+      "mae_log1p": 0.4606967813628258
     },
     {
       "horizonte": 4,
@@ -265,8 +265,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5341368075545774,
-      "mae_log1p": 0.2160974947897749
+      "mae_casos": 0.5341368075545738,
+      "mae_log1p": 0.21609749478977391
     },
     {
       "horizonte": 4,
@@ -276,8 +276,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5264200687106768,
-      "mae_log1p": 0.2121374647564986
+      "mae_casos": 0.5264200687106732,
+      "mae_log1p": 0.21213746475649742
     }
   ],
   "resultados_con_temp_min": [
@@ -300,8 +300,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 1.981476263899629,
-      "mae_log1p": 0.25337943124399964
+      "mae_casos": 1.9814762638996188,
+      "mae_log1p": 0.253379431243999
     },
     {
       "horizonte": 2,
@@ -311,8 +311,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 15340,
       "n_prueba": 3380,
-      "mae_casos": 2.0738973200221986,
-      "mae_log1p": 0.260167675442791
+      "mae_casos": 2.0738973200221844,
+      "mae_log1p": 0.2601676754427899
     },
     {
       "horizonte": 2,
@@ -333,8 +333,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.509496618958785,
-      "mae_log1p": 0.3382938555424371
+      "mae_casos": 11.509496618958908,
+      "mae_log1p": 0.3382938555424387
     },
     {
       "horizonte": 2,
@@ -344,8 +344,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 18720,
       "n_prueba": 3380,
-      "mae_casos": 11.315516647699074,
-      "mae_log1p": 0.3399522760300348
+      "mae_casos": 11.315516647699228,
+      "mae_log1p": 0.33995227603003664
     },
     {
       "horizonte": 2,
@@ -366,8 +366,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 4.895831931615344,
-      "mae_log1p": 0.37054362175528816
+      "mae_casos": 4.895831931615418,
+      "mae_log1p": 0.37054362175528927
     },
     {
       "horizonte": 2,
@@ -377,8 +377,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 22100,
       "n_prueba": 3380,
-      "mae_casos": 5.00659834839776,
-      "mae_log1p": 0.36715286650609436
+      "mae_casos": 5.006598348397815,
+      "mae_log1p": 0.3671528665060952
     },
     {
       "horizonte": 2,
@@ -399,8 +399,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4589258755820305,
-      "mae_log1p": 0.18102177304282335
+      "mae_casos": 0.4589258755820275,
+      "mae_log1p": 0.1810217730428214
     },
     {
       "horizonte": 2,
@@ -410,8 +410,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 25480,
       "n_prueba": 3380,
-      "mae_casos": 0.4541901281911861,
-      "mae_log1p": 0.17827625854767015
+      "mae_casos": 0.45419012819118115,
+      "mae_log1p": 0.17827625854766738
     },
     {
       "horizonte": 4,
@@ -432,8 +432,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.5348376639645718,
-      "mae_log1p": 0.3164150715627013
+      "mae_casos": 2.5348376639645602,
+      "mae_log1p": 0.3164150715627005
     },
     {
       "horizonte": 4,
@@ -443,8 +443,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 15080,
       "n_prueba": 3380,
-      "mae_casos": 2.6535210542866285,
-      "mae_log1p": 0.32588437795184344
+      "mae_casos": 2.653521054286624,
+      "mae_log1p": 0.3258843779518428
     },
     {
       "horizonte": 4,
@@ -465,8 +465,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 15.42071954242307,
-      "mae_log1p": 0.4612603471894834
+      "mae_casos": 15.42071954242311,
+      "mae_log1p": 0.46126034718948433
     },
     {
       "horizonte": 4,
@@ -476,8 +476,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 18460,
       "n_prueba": 3380,
-      "mae_casos": 14.974107947096462,
-      "mae_log1p": 0.45986980942346695
+      "mae_casos": 14.97410794709653,
+      "mae_log1p": 0.4598698094234681
     },
     {
       "horizonte": 4,
@@ -498,8 +498,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.776391799016085,
-      "mae_log1p": 0.4673036102399959
+      "mae_casos": 6.776391799016152,
+      "mae_log1p": 0.46730361023999767
     },
     {
       "horizonte": 4,
@@ -509,8 +509,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 21840,
       "n_prueba": 3380,
-      "mae_casos": 6.681989089860449,
-      "mae_log1p": 0.4553925079239034
+      "mae_casos": 6.681989089860478,
+      "mae_log1p": 0.4553925079239044
     },
     {
       "horizonte": 4,
@@ -531,8 +531,8 @@
       "modelo": "historia_calendario",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5341368075545774,
-      "mae_log1p": 0.2160974947897749
+      "mae_casos": 0.5341368075545738,
+      "mae_log1p": 0.21609749478977391
     },
     {
       "horizonte": 4,
@@ -542,8 +542,8 @@
       "modelo": "historia_calendario_clima",
       "n_entrenamiento": 25220,
       "n_prueba": 3380,
-      "mae_casos": 0.5221232700990174,
-      "mae_log1p": 0.2090101899692686
+      "mae_casos": 0.5221232700990133,
+      "mae_log1p": 0.20901018996926712
     }
   ]
 }
