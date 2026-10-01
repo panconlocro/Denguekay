@@ -1,6 +1,6 @@
 # Matrices compactas y validación temporal progresiva
 
-**Estado:** experimento ejecutado para h=2 y h=4. El [módulo](../../src/modeling/validacion_temporal_compacta.py), el [notebook 30](../../notebooks/30_modelado_validacion_temporal_compacta.ipynb) y las [métricas completas](metricas/validacion_temporal_compacta.json) permiten reproducir las cifras. Las predicciones por distrito-semana quedan en `models/experimentos/validacion_temporal_compacta/`, fuera de Git. Silver y gold permanecieron como entradas.
+**Estado:** experimento ejecutado para h=2 y h=4. El [módulo](../../src/modeling/validacion_temporal_compacta.py), el [notebook 30](../../notebooks/30_modelado_validacion_temporal_compacta.ipynb) y las [métricas completas](metricas/validacion_temporal_compacta.json) permiten reproducir las cifras. Las predicciones por distrito-semana quedan en `models/experimentos/validacion_temporal_compacta/`, fuera de Git. Silver y gold permanecieron como entradas. Las cifras son las del JSON actual, generado con GPU (`device="cuda"`); en otro equipo pueden variar en decimales y, en la regresión, también la matriz elegida (ver [reproducibilidad entre equipos](primer_xgboost.md#reproducibilidad-entre-equipos)).
 
 ## Pregunta y matrices predefinidas
 
@@ -26,26 +26,28 @@ La elección de matriz por objetivo y horizonte utilizó únicamente el **F1 med
 
 | Horizonte / objetivo | Variante | F1 medio 2022–2023 | F1 temporada 2024 | F1 calendario 2025 |
 |---|---|---:|---:|---:|
-| h=2, regresión + regla | **`base_4`** | **0,754** | 0,798 | 0,000 |
-| h=2, regresión + regla | `base_6` | 0,750 | 0,802 | 0,000 |
-| h=2, regresión + regla | `base_6_poblacion_2017` | 0,741 | 0,802 | 0,000 |
-| h=2, clasificación | `base_4` | 0,668 | 0,643 | 0,008 |
-| h=2, clasificación | `base_6` | 0,662 | 0,641 | 0,015 |
-| h=2, clasificación | **`base_6_poblacion_2017`** | **0,692** | 0,643 | 0,018 |
-| h=4, regresión + regla | **`base_4`** | **0,693** | 0,753 | 0,000 |
-| h=4, regresión + regla | `base_6` | 0,691 | 0,752 | 0,000 |
-| h=4, regresión + regla | `base_6_poblacion_2017` | 0,686 | 0,759 | 0,000 |
-| h=4, clasificación | `base_4` | 0,611 | 0,613 | 0,005 |
-| h=4, clasificación | `base_6` | 0,601 | 0,612 | 0,006 |
-| h=4, clasificación | **`base_6_poblacion_2017`** | **0,661** | **0,620** | 0,000 |
+| h=2, regresión + regla | `base_4` | 0,753 | 0,799 | 0,000 |
+| h=2, regresión + regla | **`base_6`** | **0,757** | 0,802 | 0,000 |
+| h=2, regresión + regla | `base_6_poblacion_2017` | 0,748 | 0,807 | 0,000 |
+| h=2, clasificación | `base_4` | 0,670 | 0,643 | 0,007 |
+| h=2, clasificación | `base_6` | 0,661 | 0,639 | 0,008 |
+| h=2, clasificación | **`base_6_poblacion_2017`** | **0,695** | 0,645 | 0,017 |
+| h=4, regresión + regla | `base_4` | 0,692 | 0,754 | 0,000 |
+| h=4, regresión + regla | **`base_6`** | **0,693** | 0,758 | 0,000 |
+| h=4, regresión + regla | `base_6_poblacion_2017` | 0,676 | 0,760 | 0,000 |
+| h=4, clasificación | `base_4` | 0,613 | 0,613 | 0,006 |
+| h=4, clasificación | `base_6` | 0,615 | 0,612 | 0,006 |
+| h=4, clasificación | **`base_6_poblacion_2017`** | **0,660** | **0,617** | 0,000 |
 
-La matriz seleccionada para **clasificación h=4** acertó **779 de 857** semanas positivas de la temporada 2024 y produjo **876 falsos avisos**. La regresión h=4 con `base_4` obtuvo F1 **0,753**, frente a **0,733** de persistencia, pero su MAE de casos fue **9,668** frente a **7,85** de persistencia. La mejora de alerta no equivale a una mejora del conteo. En h=2, la regresión seleccionada obtuvo F1 **0,798**, prácticamente igual a persistencia (**0,798**), y también mayor MAE de casos (**5,978** frente a **4,96**).
+En regresión, `base_6` superó a `base_4` por apenas **0,004 (h=2)** y **0,001 (h=4)** de F1 medio; en la versión anterior de este informe, calculada en otro equipo, la elegida era `base_4` en ambos horizontes. Ambas matrices deben tratarse como empatadas. En clasificación, la ventaja de `base_6_poblacion_2017` es mayor (**0,024** en h=2 y **0,045** en h=4) y se mantuvo entre equipos.
 
-El F1 de la clasificación h=4 con población fue **0,526 en 2022** y **0,797 en 2023**. El promedio favorece a esa matriz, pero la diferencia entre temporadas impide tratarla como una mejora estable. En 2025, la regresión de las tres matrices no acertó ninguna de las tres semanas positivas para ambos horizontes; la clasificación h=4 seleccionada tampoco acertó una y emitió **158 falsos avisos**. Los casos de Sala Situacional de 2025 siguen siendo una fuente válida; el bajo número de positivos limita la comparación de alertas.
+La matriz seleccionada para **clasificación h=4** acertó **793 de 857** semanas positivas de la temporada 2024 y produjo **922 falsos avisos**. La regresión h=4 con `base_6` obtuvo F1 **0,758**, frente a **0,733** de persistencia, pero su MAE de casos fue **9,401** frente a **7,848** de persistencia. La mejora de alerta no equivale a una mejora del conteo. En h=2, la regresión seleccionada obtuvo F1 **0,802**, apenas por encima de persistencia (**0,798**), y también mayor MAE de casos (**5,639** frente a **4,956**).
+
+El F1 de la clasificación h=4 con población fue **0,523 en 2022** y **0,798 en 2023**. El promedio favorece a esa matriz, pero la diferencia entre temporadas impide tratarla como una mejora estable. En 2025, la regresión de las tres matrices no acertó ninguna de las tres semanas positivas para ambos horizontes; la clasificación h=4 seleccionada tampoco acertó una y emitió **203 falsos avisos**. Los casos de Sala Situacional de 2025 siguen siendo una fuente válida; el bajo número de positivos limita la comparación de alertas.
 
 ## Decisión provisional y límites
 
-Para continuar con un conjunto compacto, la **regresión de cuatro variables** y la **clasificación de seis más población fija de 2017** son las candidatas elegidas por el criterio cronológico predefinido, en ambos horizontes. No hay una ganancia suficientemente estable para declarar un modelo operativo: las diferencias de F1 entre matrices son pequeñas, 2024 ya se había examinado en ensayos anteriores, y la selección original de familias usó parte de las mismas temporadas. Esta evaluación corrige la reutilización de etiquetas para calibrar el umbral de cada bloque, pero **no convierte 2024 en un test virgen ni elimina el sesgo de selección previo**.
+Para continuar con un conjunto compacto, la **regresión de seis variables** (`base_6`, prácticamente empatada con `base_4`) y la **clasificación de seis más población fija de 2017** son las candidatas elegidas por el criterio cronológico predefinido, en ambos horizontes. Si se prefiere la matriz más corta ante un empate, `base_4` es igual de defendible para regresión. No hay una ganancia suficientemente estable para declarar un modelo operativo: las diferencias de F1 entre matrices son pequeñas, 2024 ya se había examinado en ensayos anteriores, y la selección original de familias usó parte de las mismas temporadas. Esta evaluación corrige la reutilización de etiquetas para calibrar el umbral de cada bloque, pero **no convierte 2024 en un test virgen ni elimina el sesgo de selección previo**.
 
 El mínimo de dos casos para `brote`, el costo de falsos avisos, los ceros sin registro, la fecha real de disponibilidad de población/casos y el calendario 2025-S53 siguen abiertos. La siguiente etapa, si Rosa la aprueba, sería acordar un criterio operativo de alerta y diseñar una evaluación realmente independiente antes de ajustar hiperparámetros o desplegarla.
 

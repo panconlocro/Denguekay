@@ -170,18 +170,24 @@ Cualquiera de los siete módulos sirve de ejemplo.
 
 - **Sin Model Registry todavía.** Cuando el equipo apruebe un modelo final, el paso natural es registrarlo con `mlflow.xgboost.log_model(...)` y `mlflow.register_model(...)`. No se implementó porque no hay modelo aprobado y porque 2024 ya se consultó varias veces: no es un test independiente.
 - **Experimentos históricos.** Los resultados anteriores a esta integración siguen en `docs/modeling/metricas/*.json`. No se importaron a MLflow para no presentarlos como si se hubieran ejecutado con él. Al volver a correr los módulos, quedan registrados.
-- **Reproducibilidad entre equipos.** En el mismo equipo, dos corridas dan métricas idénticas. Sin embargo, al ejecutar `train` en el entorno Linux usado para esta integración, con la misma versión de XGBoost (3.4.1), algunas métricas difirieron de los JSON versionados; por ejemplo, el umbral de `h=2 / historia_4_mas_2` fue 0,150 en vez de 0,175. La causa más probable son diferencias numéricas entre arquitecturas de CPU, pero no se verificó. Esas diferencias alcanzaron para cambiar **6 elecciones de variante** respecto de los JSON versionados:
+- **Reproducibilidad entre equipos.** En el mismo equipo, dos corridas dan métricas idénticas. Entre equipos no. `config/config.yaml` deja `device: auto`: XGBoost usa la GPU NVIDIA (CUDA) si existe y la CPU si no; en una Mac con Apple Silicon entrena en CPU. GPU y CPU no suman en el mismo orden al construir los histogramas, y también se observaron diferencias entre dos CPU distintas. El número de hilos no cambia resultados. Los JSON actuales de `docs/modeling/metricas/` se generaron en el equipo de Rosa con GPU (`device="cuda"`, `n_jobs=12`), y los informes de `docs/modeling/` citan esas cifras. Con la misma versión de XGBoost (3.4.1) se compararon tres corridas: la que respaldaba la versión anterior de los informes (CPU), una corrida en el entorno Linux de esta integración (CPU) y la actual (GPU). Las diferencias movieron métricas en milésimas, desplazaron algunos umbrales de probabilidad un paso de la rejilla (por ejemplo, `h=2 / historia_4_mas_2` dio 0,150 en Linux y 0,175 en las otras dos) y cambiaron estas elecciones de variante:
 
-  | Experimento | h | Elección | JSON versionado | Corrida en Linux |
-  |---|---|---|---|---|
-  | `ablacion_sociodemografica` | 4 | fija · regresión | `fija_tres` | `base_6` |
-  | `ablacion_fracciones` | 2 | anual · regresión | `anual__fraccion_rural` | `anual__fraccion_analfabeta_15_mas` |
-  | `ablacion_fracciones` | 2 | fija · clasificación | `fija__fraccion_sin_saneamiento` | `fija__fraccion_sin_seguro` |
-  | `ablacion_fracciones` | 4 | anual · clasificación | `anual__fraccion_sin_saneamiento` | `anual__fraccion_alumbrado_red` |
-  | `ablacion_fracciones` | 4 | fija · regresión | `fija__fraccion_agua_red` | `fija__fraccion_agua_cisterna` |
-  | `validacion_temporal_compacta` | 4 | regresión | `base_4` | `base_6` |
+  | Experimento | h | Elección | Versión anterior (CPU) | Linux (CPU) | JSON actual (GPU) |
+  |---|---|---|---|---|---|
+  | `ablacion_espacial` | 2 | regresión | `mas_ambos` | `mas_ambos` | `mas_jerarquia` |
+  | `ablacion_sociodemografica` | 2 | fija · regresión | `fija_tres` | `fija_tres` | `fija_poblacion` |
+  | `ablacion_sociodemografica` | 4 | fija · regresión | `fija_tres` | `base_6` | `fija_tres` |
+  | `ablacion_fracciones` | 2 | fija · regresión | `fija__fraccion_rural` | `fija__fraccion_rural` | `fija__fraccion_mujeres` |
+  | `ablacion_fracciones` | 2 | anual · regresión | `anual__fraccion_rural` | `anual__fraccion_analfabeta_15_mas` | `anual__fraccion_hogares_celular` |
+  | `ablacion_fracciones` | 2 | fija · clasificación | `fija__fraccion_sin_saneamiento` | `fija__fraccion_sin_seguro` | `fija__fraccion_sin_seguro` |
+  | `ablacion_fracciones` | 2 | anual · clasificación | `anual__fraccion_hogares_lena` | `anual__fraccion_hogares_lena` | `anual__fraccion_alumbrado_red` |
+  | `ablacion_fracciones` | 4 | fija · regresión | `fija__fraccion_agua_red` | `fija__fraccion_agua_cisterna` | `fija__fraccion_agua_cisterna` |
+  | `ablacion_fracciones` | 4 | anual · regresión | `anual__fraccion_hogares_celular` | `anual__fraccion_hogares_celular` | `anual__fraccion_mujeres` |
+  | `ablacion_fracciones` | 4 | anual · clasificación | `anual__fraccion_sin_saneamiento` | `anual__fraccion_alumbrado_red` | `anual__fraccion_sin_saneamiento` |
+  | `validacion_temporal_compacta` | 2 | regresión | `base_4` | `base_4` | `base_6` |
+  | `validacion_temporal_compacta` | 4 | regresión | `base_4` | `base_6` | `base_6` |
 
-  Esto es una **observación**, no una conclusión: indica que, en esos casos, las variantes en competencia están separadas por menos que la variación numérica entre equipos. Antes de fijar variables para el modelo final, convendría repetir las comparaciones con varias semillas o entre equipos y tratar como empate las diferencias de ese tamaño. Por eso cada run guarda las etiquetas `plataforma`, `python` y `version.*`. Al comparar runs de Rosa y de Nicolás, revisar primero esas etiquetas.
+  La columna Linux solo registró las elecciones que diferían de la versión anterior; en las demás filas se asume que coincidía con ella. Esto es una **observación**, no una conclusión: en esos casos las variantes en competencia están separadas por menos que la variación numérica entre equipos (en el cribado de fracciones, a menudo por menos de 0,002 de F1 medio). Las elecciones de **clasificación h=4** que sostienen las decisiones principales (población fija de 2017; `sin_seguro` como mejor fracción fija; ninguna variante espacial ni climática; `base_6 + población` en la validación progresiva) fueron las mismas en las tres corridas; solo cambió, en Linux, la del carril anual retrospectivo del cribado. Antes de fijar variables para el modelo final, convendría repetir las comparaciones con varias semillas o entre equipos y tratar como empate las diferencias de ese tamaño. Por eso cada run guarda las etiquetas `plataforma`, `python` y `version.*`, y el JSON guarda `parametros.device`. Al comparar runs de Rosa y de Nicolás, revisar primero esas etiquetas. Para reproducir en CPU las condiciones de otro equipo, cambiar `device: cpu` en `config/config.yaml`.
 - **Tiempo extra.** La validación de GX añade unos 8 s por corrida. El registro en MLflow tarda unos pocos segundos; el caso más grande, `ablacion_fracciones`, genera 269 runs en unos 13 s.
 - **Espacio.** Cada ejecución copia predicciones y modelos a `mlartifacts/`. Una ronda completa de los siete módulos generó 553 runs, unos 21 MB de base SQLite y unos 130 MB de artefactos; la mayor parte corresponde a las predicciones de `ablacion_fracciones`. Para liberar espacio, borrar runs viejos en la interfaz y luego ejecutar `mlflow gc --backend-store-uri sqlite:///mlflow.db`.
 - **Telemetría.** MLflow 3 envía estadísticas de uso anónimas. Para desactivarlo, definir la variable de entorno `MLFLOW_DISABLE_TELEMETRY=true`.

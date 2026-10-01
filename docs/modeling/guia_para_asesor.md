@@ -1,7 +1,7 @@
 # Entrenamiento y evaluación temporal del primer XGBoost para dengue en Piura
 
-**Documento para reunión con el asesor · 30 de septiembre de 2026**  
-**Estado:** experimentos exploratorios completados para `h=2` y `h=4`; no hay un modelo operativo ni un test final independiente. Para el origen de las variables y la construcción de gold, ver [la guía de feature engineering](../feature_engineering/guia_para_asesor.md).
+**Documento para reunión con el asesor · 30 de septiembre de 2026 (cifras actualizadas el 1 de octubre de 2026)**  
+**Estado:** experimentos exploratorios completados para `h=2` y `h=4`; no hay un modelo operativo ni un test final independiente. Todas las cifras proceden de los JSON actuales de `docs/modeling/metricas/`, generados con GPU NVIDIA (`device="cuda"`); en otro equipo los decimales pueden variar (ver la sección 9). Para el origen de las variables y la construcción de gold, ver [la guía de feature engineering](../feature_engineering/guia_para_asesor.md).
 
 ## 1. Qué problema aprende el modelo
 
@@ -45,8 +45,9 @@ La configuración en `src/modeling/train.py` es una **base fijada manualmente pa
 | `min_child_weight` | 5 | Exige evidencia mínima para dividir un nodo. |
 | `reg_lambda` | 5,0 | Penalización L2 sobre hojas. |
 | `tree_method` | `hist` | Método de construcción de árboles. |
-| `n_jobs` | 2 | Hilos. |
-| `random_state` | 17 | Semilla reproducible. |
+| `random_state` | 17 | Semilla reproducible dentro de un mismo equipo. |
+| `device` | `auto` (`cuda` en los JSON actuales) | GPU NVIDIA si existe; si no, CPU. No es un hiperparámetro del modelo. |
+| `n_jobs` | `auto` (12 en los JSON actuales) | Hilos de CPU; no cambia los resultados. |
 
 Regresión: `objective=reg:squarederror` sobre `log1p(casos)`. Clasificación: `objective=binary:logistic`, `eval_metric=logloss`. La versión registrada es **XGBoost 3.4.1**. No se aplicó un offset poblacional automático, ponderación de clases ni calibración probabilística adicional. La fracción de población que se prueba más adelante es **una variable predictora**, no un denominador de tasa.
 
@@ -86,16 +87,16 @@ Estos resultados usan el diseño inicial: umbral de clasificación elegido con v
 
 | Horizonte y método, temporada 2024 | MAE casos | VP | FP | Precisión | Recall | F1 | AUPRC |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| h=2, regresión + regla | 5,68 | 651 | 116 | 0,849 | 0,760 | **0,802** | 0,868 |
-| h=2, clasificación directa | — | 790 | 819 | 0,491 | **0,922** | 0,641 | 0,665 |
+| h=2, regresión + regla | 5,64 | 656 | 123 | 0,842 | 0,765 | **0,802** | 0,871 |
+| h=2, clasificación directa | — | 789 | 823 | 0,489 | **0,921** | 0,639 | 0,668 |
 | h=2, persistencia + regla | **4,96** | 690 | 183 | 0,790 | 0,805 | 0,798 | 0,843 |
-| h=4, regresión + regla | 9,44 | 614 | 161 | 0,792 | 0,716 | **0,752** | 0,770 |
-| h=4, clasificación directa | — | **763** | 873 | 0,466 | **0,890** | 0,612 | 0,610 |
+| h=4, regresión + regla | 9,40 | 623 | 164 | 0,792 | 0,727 | **0,758** | 0,770 |
+| h=4, clasificación directa | — | **762** | 873 | 0,466 | **0,889** | 0,612 | 0,609 |
 | h=4, persistencia + regla | **7,85** | 634 | 240 | 0,725 | 0,740 | 0,733 | 0,746 |
 
-La clasificación directa detecta más semanas elevadas, pero genera muchos más falsos avisos. La regresión seguida de la regla ofrece una alerta más precisa; en **MAE de casos** todavía queda por detrás de persistencia para ambos horizontes. La mejora h=2 de F1 de regresión frente a persistencia es **0,004**, pequeña. El umbral de probabilidad de la base de seis fue **0,175** para h=2 y h=4, no 0,5.
+La clasificación directa detecta más semanas elevadas, pero genera muchos más falsos avisos. La regresión seguida de la regla ofrece una alerta más precisa; en **MAE de casos** todavía queda por detrás de persistencia para ambos horizontes. La mejora de F1 de regresión frente a persistencia es **0,004** en h=2 y **0,025** en h=4, pequeña. El umbral de probabilidad fue **0,175** para h=2 y h=4, no 0,5.
 
-En **calendario 2025** hubo solo **3 semanas positivas**. Con h=4, regresión detectó **0** y produjo **5 FP**; clasificación detectó **1** y produjo **346 FP**. Con h=2, regresión detectó **0** con **3 FP**; clasificación **2** con **287 FP**. Es un año válido, pero cada acierto altera el recall en un tercio; no permite una estimación estable del sistema de alertas. La base de cuatro variables dio cifras próximas a las seis y no se declaró una ganadora en este primer ensayo.
+En **calendario 2025** hubo solo **3 semanas positivas**. Con h=4, regresión detectó **0** y produjo **5 FP**; clasificación detectó **1** y produjo **349 FP**. Con h=2, regresión detectó **0** con **3 FP**; clasificación **2** con **282 FP**. Es un año válido, pero cada acierto altera el recall en un tercio; no permite una estimación estable del sistema de alertas. La base de cuatro variables dio cifras próximas a las seis y no se declaró una ganadora en este primer ensayo.
 
 ## 7. Ablaciones: qué se añadió, qué mejoró y qué empeoró
 
@@ -103,23 +104,23 @@ Cada ablación conserva hiperparámetros y compara variantes **en las mismas fil
 
 ### 7.1 Espacio: vecinos y contexto provincia/región
 
-Se agregó a `base_6` por separado: dos variables de cinco vecinos, cuatro del resto de provincia/región, o las seis juntas. El EDA mostraba asociación espacial, pero para el clasificador **h=4** el F1 medio de validación pasó de **0,561** (base) a **0,557** (+vecinos), **0,534** (+jerarquía) o **0,529** (+ambos): empeoró en las tres opciones. En regresión h=4, +jerarquía subió de **0,571 a 0,585** en validación, pero en 2024 bajó de **0,752 a 0,750** de F1 y su MAE pasó de **9,44 a 12,20**. Para h=2, +jerarquía en clasificación elevó F1 de validación apenas **0,594→0,598**, mientras en 2024 bajó **0,641→0,637** y produjo 75 FP adicionales. **Lectura:** el contexto espacial no mostró una ganancia robusta para la alerta principal; su correlación descriptiva no equivale a valor incremental.
+Se agregó a `base_6` por separado: dos variables de cinco vecinos, cuatro del resto de provincia/región, o las seis juntas. El EDA mostraba asociación espacial, pero para el clasificador **h=4** el F1 medio de validación pasó de **0,555** (base) a **0,554** (+vecinos), **0,537** (+jerarquía) o **0,543** (+ambos): empeoró en las tres opciones. En regresión h=4, +jerarquía subió de **0,567 a 0,586** en validación, pero en 2024 bajó de **0,758 a 0,751** de F1 y su MAE pasó de **9,40 a 11,28**. Para h=2, +jerarquía en clasificación elevó F1 de validación **0,592→0,604** y en 2024 **0,639→0,648**, con 26 VP y 20 FP adicionales, aunque su AUPRC bajó **0,668→0,636**. **Lectura:** el contexto espacial no mostró una ganancia robusta para la alerta principal h=4; su correlación descriptiva no equivale a valor incremental. La señal h=2 es pequeña y procede de un bloque ya inspeccionado.
 
 ### 7.2 Clima: humedad y precipitación
 
-Se agregaron a `base_6` las medias observadas de cinco semanas, anomalías de esas mismas variables ajustadas por fold, o ambas. Sobre filas con clima completo, la clasificación **h=4** tuvo F1 medio de **0,555** en la base, **0,497** con clima observado, **0,456** con anomalías y **0,470** con ambos. La regresión h=4 pasó de **0,575** a **0,556 / 0,547 / 0,555**. Para h=2, clasificación pasó de **0,594** a **0,540 / 0,492 / 0,490**. **Lectura:** en el ridge exploratorio de FE el clima había ayudado algunos conteos, pero en esta configuración XGBoost ninguna variante climática ganó en F1 de alerta; no se incorporó por defecto. El retraso real de publicación de Open-Meteo sigue pendiente.
+Se agregaron a `base_6` las medias observadas de cinco semanas, anomalías de esas mismas variables ajustadas por fold, o ambas. Sobre filas con clima completo, la clasificación **h=4** tuvo F1 medio de **0,557** en la base, **0,493** con clima observado, **0,460** con anomalías y **0,460** con ambos. La regresión h=4 pasó de **0,567** a **0,554 / 0,547 / 0,548**. Para h=2, clasificación pasó de **0,592** a **0,534 / 0,494 / 0,518**. **Lectura:** en el ridge exploratorio de FE el clima había ayudado algunos conteos, pero en esta configuración XGBoost ninguna variante climática ganó en F1 de alerta; no se incorporó por defecto. El retraso real de publicación de Open-Meteo sigue pendiente.
 
 ### 7.3 Sociodemografía: referencia fija frente a reconstrucción anual
 
-Se añadieron a `base_6` población fija de 2017, tres fracciones fijas (rural, menores de 15, desagüe), un eje PCA fijo y combinaciones; también versiones anuales reconstruidas. En clasificación **h=4**, población fija elevó el F1 medio de **0,561 a 0,584** y en 2024 de **0,612 a 0,620**: **779 VP y 876 FP** frente a **763 VP y 873 FP** de la base. En h=2, clasificación pasó de **0,594 a 0,650** en validación, pero en 2024 solo de **0,641 a 0,643**. La regresión con tres fracciones fijas redujo MAE de h=4 en 2024 de **9,443 a 9,073**, pero su F1 bajó de **0,752 a 0,749**.
+Se añadieron a `base_6` población fija de 2017, tres fracciones fijas (rural, menores de 15, desagüe), un eje PCA fijo y combinaciones; también versiones anuales reconstruidas. En clasificación **h=4**, población fija elevó el F1 medio de **0,555 a 0,584** y en 2024 de **0,612 a 0,622**: **764 VP y 835 FP** frente a **762 VP y 873 FP** de la base. En h=2, clasificación pasó de **0,592 a 0,655** en validación, pero en 2024 solo de **0,639 a 0,645**. La regresión con tres fracciones fijas, elegida en h=4, apenas redujo el MAE de 2024 (**9,401 a 9,349**) y su F1 bajó de **0,758 a 0,751**. En h=2, la regresión fija elegida fue población, por solo 0,001 sobre las tres fracciones.
 
-La población anual elevó el F1 medio retrospectivo de clasificación h=4 a **0,600**, pero en 2024 dio **0,609**, por debajo de la población fija (**0,620**), con **971 FP**. Las 15 fracciones anuales juntas dieron **0,556** en validación h=4, por debajo de la base. **Lectura:** población fija quedó como candidata pequeña para clasificación; las series 2018–2024 usan el extremo 2025 y no son una simulación histórica en tiempo real.
+La población anual elevó el F1 medio retrospectivo de clasificación h=4 a **0,599**, pero en 2024 dio **0,611**, por debajo de la población fija (**0,622**), con **969 FP**. Las 15 fracciones anuales juntas dieron **0,547** en validación h=4, por debajo de la base. **Lectura:** población fija quedó como candidata pequeña para clasificación; las series 2018–2024 usan el extremo 2025 y no son una simulación histórica en tiempo real.
 
 ### 7.4 Cribado de las 15 fracciones y prueba condicional
 
-Cada fracción de 2017 y cada fracción anual se añadió **una por vez** a `base_6`, sin población. Para clasificación h=4, la mejor fija por F1 de validación fue `fraccion_sin_seguro_2017`: **0,586** frente a **0,561** de base; en 2024 tuvo **0,621**, **754 VP** y **818 FP**. Es una alerta con **menos avisos falsos, pero también menos aciertos** que la de población fija: esta última tuvo **0,620**, **779 VP** y **876 FP**. Las 30 búsquedas individuales sobre pocas temporadas pueden inflar el mejor resultado.
+Cada fracción de 2017 y cada fracción anual se añadió **una por vez** a `base_6`, sin población. Para clasificación h=4, la mejor fija por F1 de validación fue `fraccion_sin_seguro_2017`: **0,589** frente a **0,555** de base; en 2024 tuvo **0,621**, **738 VP** y **780 FP**. Es una alerta con **menos avisos falsos, pero también menos aciertos** que la de población fija: esta última tuvo **0,622**, **764 VP** y **835 FP**. Las 30 búsquedas individuales sobre pocas temporadas pueden inflar el mejor resultado. Además, en seis de las ocho elecciones del cribado la ganadora supera a la segunda por menos de 0,002 de F1, y esas ganadoras cambiaron respecto de una corrida anterior en otro equipo; la elección de clasificación h=4 (`sin_seguro`) sí se mantuvo.
 
-Para saber si `sin_seguro` aportaba *además* de la población fija se predefinieron cuatro variantes: base, +población, +sin seguro y +ambas. En clasificación h=4, sumar ambas dio **0,587** de F1 medio frente a **0,584** con población sola; en 2024 **bajó de 0,620 a 0,618**, mantuvo **779 VP** y añadió **11 FP** (887 frente a 876). **Lectura:** no hay evidencia convincente de aporte incremental de `sin_seguro` sobre población en este modelo; tampoco es una afirmación causal sobre cobertura de seguro.
+Para saber si `sin_seguro` aportaba *además* de la población fija se predefinieron cuatro variantes: base, +población, +sin seguro y +ambas. En clasificación h=4, sumar ambas dio **0,584** de F1 medio, empatada con población sola (**0,584**), y fue peor en dos de las tres temporadas de validación. En 2024 **subió de 0,622 a 0,626**, con **765 VP** (uno más) y **824 FP** (11 menos), pero su AUPRC bajó de **0,653 a 0,644**. **Lectura:** no hay evidencia convincente de aporte incremental de `sin_seguro` sobre población en este modelo; tampoco es una afirmación causal sobre cobertura de seguro.
 
 ### 7.5 Cierre de matrices pequeñas con evaluación progresiva
 
@@ -127,18 +128,18 @@ Se predefinieron `base_4`, `base_6` y `base_6 + log_poblacion_censo_2017`. A dif
 
 | Horizonte / objetivo | Matriz elegida en 2022–2023 | F1 medio 2022–2023 | F1 en 2024 | Referencia útil |
 |---|---|---:|---:|---|
-| h=2, regresión + regla | `base_4` | 0,754 | 0,798 | Persistencia F1 0,798 |
-| h=2, clasificación | `base_6 + población 2017` | 0,692 | 0,643 | 808 VP, 848 FP en 2024 |
-| h=4, regresión + regla | `base_4` | 0,693 | 0,753 | Persistencia F1 0,733 |
-| h=4, clasificación | `base_6 + población 2017` | 0,661 | 0,620 | 779 VP, 876 FP en 2024 |
+| h=2, regresión + regla | `base_6` | 0,757 | 0,802 | Persistencia F1 0,798 |
+| h=2, clasificación | `base_6 + población 2017` | 0,695 | 0,645 | 811 VP, 847 FP en 2024 |
+| h=4, regresión + regla | `base_6` | 0,693 | 0,758 | Persistencia F1 0,733 |
+| h=4, clasificación | `base_6 + población 2017` | 0,660 | 0,617 | 793 VP, 922 FP en 2024 |
 
-La clasificación h=4 con población obtuvo F1 **0,526 en 2022** y **0,797 en 2023**: el promedio favorable es inestable entre temporadas. En 2024 su **precisión fue 0,471** (menos de la mitad de sus 1 655 alertas acertaron) y su **recall 0,909** (779 de 857 semanas elevadas detectadas). La regresión h=4 de cuatro variables produjo **615 VP y 162 FP** y F1 **0,753**, pero MAE de **9,668** frente a **7,848** de persistencia. Ninguna de las regresiones compactas detectó las tres positivas de 2025; el clasificador h=4 elegido tampoco, y emitió **158 FP**. Estos ensayos no establecen todavía un modelo final.
+En regresión, `base_6` y `base_4` quedaron prácticamente empatadas (diferencia de **0,004** en h=2 y **0,001** en h=4); en una corrida anterior en otro equipo ganaba `base_4`. La clasificación h=4 con población obtuvo F1 **0,523 en 2022** y **0,798 en 2023**: el promedio favorable es inestable entre temporadas. En 2024 su **precisión fue 0,462** (menos de la mitad de sus 1 715 alertas acertaron) y su **recall 0,925** (793 de 857 semanas elevadas detectadas). La regresión h=4 de seis variables produjo **623 VP y 164 FP** y F1 **0,758**, pero MAE de **9,401** frente a **7,848** de persistencia. Ninguna de las regresiones compactas detectó las tres positivas de 2025; el clasificador h=4 elegido tampoco, y emitió **203 FP**. Estos ensayos no establecen todavía un modelo final.
 
 ## 8. Qué se puede afirmar ante el asesor y qué falta
 
 **Hallazgo sólido dentro del experimento:** los predictores usan semanas que terminan como máximo en el origen; el mismo panel y los mismos cortes permiten comparaciones pareadas; la persistencia es un comparador exigente; añadir todas las familias de gold no mejoró automáticamente XGBoost. Para la alerta h=4, la población fija de 2017 es la única adición pequeña con señal favorable en clasificación, pero su ventaja es modesta y varía por temporada. La regresión y la clasificación producen compromisos distintos entre semanas detectadas y falsos avisos.
 
-**Límites del rendimiento:** 2024 se ha inspeccionado en varias decisiones y ya no es un test independiente; el brote 2023–2024 atraviesa la frontera entre temporadas; 2025 contiene solo tres etiquetas positivas; los hiperparámetros son fijos y la regla de brote y umbral de F1 son provisionales. La disponibilidad real de publicación, el significado de ceros sin notificación, el calendario S53/2026 y la procedencia temporal de proyecciones siguen abiertos. Las métricas no prueban que el modelo sirva ya como alerta operativa ni que alguna fracción social o climática cause dengue.
+**Límites del rendimiento:** 2024 se ha inspeccionado en varias decisiones y ya no es un test independiente; las métricas varían en decimales entre equipos (GPU frente a CPU) y eso basta para cambiar las elecciones de variante más ajustadas; el brote 2023–2024 atraviesa la frontera entre temporadas; 2025 contiene solo tres etiquetas positivas; los hiperparámetros son fijos y la regla de brote y umbral de F1 son provisionales. La disponibilidad real de publicación, el significado de ceros sin notificación, el calendario S53/2026 y la procedencia temporal de proyecciones siguen abiertos. Las métricas no prueban que el modelo sirva ya como alerta operativa ni que alguna fracción social o climática cause dengue.
 
 **Decisiones útiles en la reunión:** (1) cuál es el costo aceptable de falsos avisos por semana elevada detectada; (2) si la etiqueta media + 1,5 DE y mínimo 2 responde al uso previsto; (3) cómo obtener una evaluación futura genuinamente independiente antes de afinar hiperparámetros; (4) si se quiere priorizar calidad del conteo, sensibilidad de alerta o ambas con métricas separadas. El siguiente paso técnico solo debería fijarse después de ese acuerdo.
 
@@ -149,3 +150,4 @@ La clasificación h=4 con población obtuvo F1 **0,526 en 2022** y **0,797 en 20
 - Notebooks de orquestación: `24` (base), `25` (espacio), `26` (clima), `27` (socio), `28` (fracciones), `29` (población + sin seguro), `30` (validación progresiva).
 - Informes con cifras completas: [primer XGBoost](primer_xgboost.md), [espacio](ablacion_espacial.md), [clima](ablacion_clima.md), [sociodemografía](ablacion_sociodemografica.md), [fracciones](ablacion_fracciones.md), [comparación condicional](ablacion_poblacion_sin_seguro.md) y [evaluación progresiva](validacion_temporal_compacta.md). Los JSON están en `docs/modeling/metricas/`.
 - Comprobación: `.venv/bin/python -m unittest discover -s tests` y auditoría de linaje con `src.modeling.contrato_xgboost.auditar_traspaso()`.
+- **Reproducibilidad entre equipos:** con `device: auto` en `config/config.yaml`, el entrenamiento usa la GPU NVIDIA si existe y la CPU si no (por ejemplo, en una Mac). En un mismo equipo dos corridas dan métricas idénticas; entre equipos cambian decimales, a veces un umbral de probabilidad y, cuando dos variantes se separan por milésimas, la variante elegida. Las conclusiones principales para h=4 (población fija como candidata de clasificación, sin aporte convincente de `sin_seguro` encima de ella, ninguna ganancia robusta de clima ni espacio) se mantuvieron. Al comparar resultados de Rosa y Nicolás, revisar primero `parametros.device` en el JSON o las etiquetas `plataforma` y `version.*` en MLflow. Detalle en [primer XGBoost](primer_xgboost.md#reproducibilidad-entre-equipos) y [MLflow](mlflow_great_expectations.md).

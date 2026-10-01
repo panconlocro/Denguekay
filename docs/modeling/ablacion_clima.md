@@ -1,6 +1,6 @@
 # Inclusión de variables climáticas — segundo bloque de ablación
 
-**Estado:** ejecutado para h=2 y h=4, con regresión de casos y clasificación directa. El módulo [`src/modeling/ablacion_clima.py`](../../src/modeling/ablacion_clima.py) reutiliza el entrenamiento y las métricas del [primer XGBoost](primer_xgboost.md); el [notebook 26](../../notebooks/26_modelado_ablacion_clima.ipynb) lo orquesta. Las [métricas completas](metricas/ablacion_clima.json) guardan cortes, columnas, umbrales y hashes. Modelos y predicciones por fila quedan en `models/experimentos/ablacion_clima/`, fuera de Git.
+**Estado:** ejecutado para h=2 y h=4, con regresión de casos y clasificación directa. El módulo [`src/modeling/ablacion_clima.py`](../../src/modeling/ablacion_clima.py) reutiliza el entrenamiento y las métricas del [primer XGBoost](primer_xgboost.md); el [notebook 26](../../notebooks/26_modelado_ablacion_clima.ipynb) lo orquesta. Las [métricas completas](metricas/ablacion_clima.json) guardan cortes, columnas, umbrales y hashes. Modelos y predicciones por fila quedan en `models/experimentos/ablacion_clima/`, fuera de Git. Las cifras son las del JSON actual, generado con GPU (`device="cuda"`); en otro equipo pueden variar en decimales (ver [reproducibilidad entre equipos](primer_xgboost.md#reproducibilidad-entre-equipos)).
 
 ## Motivo y variables
 
@@ -23,16 +23,16 @@ Se mantuvieron hiperparámetros y cortes del primer XGBoost. Los modelos se entr
 
 | Horizonte | Variante | F1 medio, regresión + regla | F1 medio, clasificación |
 |---|---:|---:|---:|
-| h=2 | Base de seis | **0,663** | **0,594** |
-| h=2 | + Clima observado | 0,646 | 0,540 |
-| h=2 | + Anomalías | 0,642 | 0,492 |
-| h=2 | + Ambos | 0,634 | 0,490 |
-| h=4 | Base de seis | **0,575** | **0,555** |
-| h=4 | + Clima observado | 0,556 | 0,497 |
-| h=4 | + Anomalías | 0,547 | 0,456 |
-| h=4 | + Ambos | 0,555 | 0,470 |
+| h=2 | Base de seis | **0,667** | **0,592** |
+| h=2 | + Clima observado | 0,643 | 0,534 |
+| h=2 | + Anomalías | 0,637 | 0,494 |
+| h=2 | + Ambos | 0,627 | 0,518 |
+| h=4 | Base de seis | **0,567** | **0,557** |
+| h=4 | + Clima observado | 0,554 | 0,493 |
+| h=4 | + Anomalías | 0,547 | 0,460 |
+| h=4 | + Ambos | 0,548 | 0,460 |
 
-La base ganó las cuatro selecciones. Las anomalías se calcularon correctamente por fold, pero en esta configuración no aportaron F1 incremental. No se usaron 2024 ni 2025 para escoger variables.
+La base ganó las cuatro selecciones, con margen amplio (al menos **0,012** de F1 medio en regresión y **0,057** en clasificación). La caída de la clasificación se concentra en la temporada 2021: en h=4, la base obtuvo **0,339** y las variantes climáticas entre **0,091 y 0,174**. Las anomalías se calcularon correctamente por fold, pero en esta configuración no aportaron F1 incremental. No se usaron 2024 ni 2025 para escoger variables.
 
 ## Contraste de la variante elegida
 
@@ -40,10 +40,10 @@ Como ninguna variante climática ganó en validación, **solo la base** se ejecu
 
 | Bloque | Horizonte | Regresión: F1 / VP / FP / MAE de casos | Clasificación: F1 / VP / FP |
 |---|---:|---:|---:|
-| Temporada 2024, 857 positivas | h=2 | 0,803 / 654 / 118 / 5,612 | 0,634 / 806 / 881 |
-| Temporada 2024, 857 positivas | h=4 | 0,756 / 618 / 160 / 9,460 | 0,611 / 764 / 880 |
-| Calendario 2025, 3 positivas | h=2 | 0,000 / 0 / 3 / 0,301 | 0,012 / 2 / 327 |
-| Calendario 2025, 3 positivas | h=4 | 0,000 / 0 / 5 / 0,427 | 0,006 / 1 / 349 |
+| Temporada 2024, 857 positivas | h=2 | 0,803 / 656 / 121 / 5,680 | 0,634 / 807 / 882 |
+| Temporada 2024, 857 positivas | h=4 | 0,754 / 617 / 163 / 9,446 | 0,611 / 760 / 871 |
+| Calendario 2025, 3 positivas | h=2 | 0,000 / 0 / 3 / 0,300 | 0,012 / 2 / 327 |
+| Calendario 2025, 3 positivas | h=4 | 0,000 / 0 / 5 / 0,429 | 0,006 / 1 / 348 |
 
 ## Interpretación y límites
 
