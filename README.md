@@ -18,8 +18,21 @@ prueba ventanas climáticas causales. La [fase 5](docs/feature_engineering/fase5
 compara demografía fija y anual reconstruida. La [fase 6](docs/feature_engineering/fase6_integracion.md)
 integra candidatos para `h=2` y `h=4`, y conserva un manifiesto de linaje.
 La [fase 7](docs/feature_engineering/fase7_sintesis_traspaso.md) audita los gold,
-enumera las variables candidatas y documenta el contrato para el primer XGBoost;
-el modelado espera revisión. Ambos gold incluyen `brote`, definido como
+enumera las variables candidatas y documenta el contrato para el primer XGBoost.
+El [primer experimento](docs/modeling/primer_xgboost.md) compara regresión de casos
+y clasificación directa, con cortes temporales para ambos horizontes. La
+[ablación espacial](docs/modeling/ablacion_espacial.md) prueba por separado
+vecinos y jerarquía, y la [ablación climática](docs/modeling/ablacion_clima.md)
+compara medias observadas y anomalías ajustadas por corte, conservando F1 como
+criterio provisional. La [ablación sociodemográfica](docs/modeling/ablacion_sociodemografica.md)
+separa rasgos censales fijos de estimaciones anuales reconstruidas; el
+[cribado individual de fracciones](docs/modeling/ablacion_fracciones.md)
+compara las 15 por separado. La [comparación condicional](docs/modeling/ablacion_poblacion_sin_seguro.md)
+evalúa población censal fija y fracción sin seguro, solas y juntas. La
+[validación temporal compacta](docs/modeling/validacion_temporal_compacta.md)
+compara tres matrices pequeñas con umbrales calibrados solo en temporadas anteriores.
+Ambos gold
+incluyen `brote`, definido como
 semana distrital con casos por encima de la media de esa semana en los cinco
 años previos + **1,5 DE**, con un mínimo provisional de **2 casos**;
 [la sensibilidad](docs/feature_engineering/revision_definicion_brote.md)
@@ -32,16 +45,35 @@ Para regenerar los dos CSV de `data/gold/` desde el silver completo:
 ```
 
 El gold conserva `casos_Dengue` como conteo junto a la etiqueta `brote` y su
-umbral auditable. Al entrenar, se deben excluir de los predictores
-`casos_Dengue`, `brote` y `umbral_brote_casos`. La partición final y las
-transformaciones ajustadas por fold (PCA y anomalías climáticas) siguen
-pendientes de la fase de modelado.
+umbral auditable. El entrenamiento excluye de los predictores
+`casos_Dengue`, `brote` y `umbral_brote_casos`. El primer ensayo usa historia
+propia y calendario; vecinos, jerarquía, clima y demografía se compararon en
+bloques separados. Las variantes anuales de demografía son retrospectivas.
 
 Para reproducir la auditoría de traspaso después de generar gold:
 
 ```bash
 .venv/bin/jupyter nbconvert --to notebook --execute --inplace notebooks/23_fe_sintesis.ipynb
 ```
+
+Para reproducir el primer entrenamiento y evaluación de ambos enfoques:
+
+```bash
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m src.modeling.train
+.venv/bin/python -m src.modeling.ablacion_espacial
+.venv/bin/python -m src.modeling.ablacion_clima
+.venv/bin/python -m src.modeling.ablacion_sociodemografica
+.venv/bin/python -m src.modeling.ablacion_fracciones
+.venv/bin/python -m src.modeling.ablacion_poblacion_sin_seguro
+.venv/bin/python -m src.modeling.validacion_temporal_compacta
+```
+
+La prueba principal es la temporada epidemiológica 2024; el año calendario
+2025, con solo tres semanas distritales positivas, se reporta por separado
+como sensibilidad. Las métricas de cada ensayo están en
+`docs/modeling/metricas/`; los modelos y las predicciones están en
+`models/experimentos/`.
 
 ## Actualización selectiva del dataset
 

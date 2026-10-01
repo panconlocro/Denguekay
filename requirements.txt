@@ -13,3 +13,5 @@ statsmodels
 ipykernel
 nbformat
 nbconvert
+xgboost>=3,<4
+scikit-learn>=1.6,<2
