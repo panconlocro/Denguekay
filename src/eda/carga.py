@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 from src.utils.paths import SILVER_INTEGRADO
+from src.utils.calendario import semana_epi_mmwr
 
 OBJETIVO = "casos_Dengue"
 LLAVE = ["ubigeo", "anio", "semana"]
@@ -48,6 +49,13 @@ def validar_panel(df: pd.DataFrame) -> list[str]:
         problemas.append("Los distritos no tienen el mismo número de semanas (panel desbalanceado)")
 
     fechas = pd.to_datetime(df["semana_inicio"])
+    if fechas.isna().any() or fechas.dt.weekday.ne(6).any():
+        problemas.append("semana_inicio debe contener domingos sin fechas faltantes")
+    else:
+        calendario = semana_epi_mmwr(fechas)
+        if (pd.to_numeric(df.anio, errors="coerce").ne(calendario.anio_epi)
+                | pd.to_numeric(df.semana, errors="coerce").ne(calendario.semana_epi)).any():
+            problemas.append("anio/semana no coinciden con el calendario epidemiológico MMWR de semana_inicio")
     for ubigeo, g in df.assign(_f=fechas).groupby("ubigeo"):
         saltos = g["_f"].sort_values().diff().dropna().dt.days
         if not (saltos == 7).all():

@@ -193,9 +193,17 @@ modeling/
 Funciones chicas que usa más de un módulo.
 ```
 utils/
-└── keys.py    # normalizar(), separar_camel(), semana_epi()
+├── keys.py        # normalizar(), separar_camel(), normalizar_sala()
+└── calendario.py  # semana_epi_mmwr(): numeración compartida domingo-sábado
 ```
 **Va acá:** helpers genéricos sin dueño claro — si una función la usan tanto `ingestion/` como `processing/`, vive acá para evitar que ambos la dupliquen.
+
+El calendario de agregación, validación del integrado, carga del EDA y
+preparación del entrenamiento usa `src/utils/calendario.py`. El import
+anterior desde `src/eda/calidad.py` se conserva para los notebooks.
+La auditoría de la corrección y sus límites están en
+`docs/feature_engineering/correccion_calendario.md` y sus cifras en
+`docs/feature_engineering/metricas/correccion_calendario.json`.
 
 ---
 

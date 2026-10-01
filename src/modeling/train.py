@@ -24,6 +24,7 @@ from src.modeling.evaluate import (
 )
 from src.modeling.seguimiento_mlflow import registrar_o_avisar
 from src.utils.paths import DOCS, GOLD, MODELS, SILVER_INTEGRADO
+from src.utils.calendario import semana_epi_mmwr
 from src.validation.contrato_pronostico import CLAVE
 from src.validation.calidad_gx import validar_entradas_modelado
 
@@ -96,6 +97,10 @@ def preparar_gold(gold: pd.DataFrame, horizonte: int) -> tuple[pd.DataFrame, int
         raise ValueError("La etiqueta brote no coincide con la regla de gold")
     if (datos.semana_inicio.dt.weekday != 6).any():
         raise ValueError("semana_inicio debe ser domingo")
+    calendario = semana_epi_mmwr(datos.semana_inicio)
+    if (pd.to_numeric(datos.anio, errors="raise").ne(calendario.anio_epi)
+            | pd.to_numeric(datos.semana, errors="raise").ne(calendario.semana_epi)).any():
+        raise ValueError("anio/semana de gold no coinciden con el calendario epidemiológico MMWR")
     sin_ventana = datos[base_seis].isna().any(axis=1)
     ordenado = datos.sort_values(["ubigeo", "semana_inicio"])
     saltos = ordenado.groupby("ubigeo").semana_inicio.diff().dt.days.dropna()

@@ -1,0 +1,181 @@
+{
+  "fecha_verificacion": "2026-10-01",
+  "panel": {
+    "filas_panel": 30485,
+    "semanas": 469,
+    "distritos": 65,
+    "calendario_inconsistente": 0,
+    "horizontes": {
+      "2": {
+        "filas_gold": 30485,
+        "columnas": 48,
+        "positivos": 3002,
+        "filas_modelables": 30160,
+        "excluidas_arranque": 325,
+        "huella_gold_reconstruido": "481527ab9de12eb296162aae2a02e292de4863c34876b334825988a7808c5da9",
+        "bloques": {
+          "temporada_2021": {
+            "entrenamiento": 11960,
+            "evaluacion": 3445,
+            "corte": "2020-08-15T00:00:00",
+            "huella_entrenamiento": "39597954f7c5857877232ba79ab9225bca78837c94f6f1155ab3e6245a2fa214",
+            "huella_evaluacion": "3d722496506ce9fe259d8855f60a593c679753550ebe305159bf6d9dde7a455f"
+          },
+          "temporada_2022": {
+            "entrenamiento": 15405,
+            "evaluacion": 3380,
+            "corte": "2021-08-21T00:00:00",
+            "huella_entrenamiento": "2db77d55bfe37a6d71047d4341657a79300ce2068a97653345b6b785c65d5222",
+            "huella_evaluacion": "63824605c0fc9a1f3f918c81a452841341a8c8d8ebb4b5b91058c851ec6e3796"
+          },
+          "temporada_2023": {
+            "entrenamiento": 18785,
+            "evaluacion": 3380,
+            "corte": "2022-08-20T00:00:00",
+            "huella_entrenamiento": "51d26443e776a91aaac2ace2f9b77198f729f8d94c03588a59f62b820a2d0d49",
+            "huella_evaluacion": "fcfe707d40fceaafbb8cdf0710af9fae7483ab4ce5b425da42347d8fe2d1ab57"
+          },
+          "temporada_2024": {
+            "entrenamiento": 22165,
+            "evaluacion": 3380,
+            "corte": "2023-08-19T00:00:00",
+            "huella_entrenamiento": "aba78236ab67c092e628c4f753bddff7aca337cb8cc0f3f9bc2682878decb53a",
+            "huella_evaluacion": "bcbfc027ffc43538a5d1ca934bb13aab3d50e88a3536dbc6cd103b237c7bd500"
+          },
+          "calendario_2025": {
+            "entrenamiento": 26715,
+            "evaluacion": 3380,
+            "corte": "2024-12-21T00:00:00",
+            "huella_entrenamiento": "c62e0b5efc1cb5168c0bdac8d7d09e4618ab68253b552190cb24a7707169d479",
+            "huella_evaluacion": "2aa4996697259034a4ffb43d4265280dbd41062492a01892e97bdc1cc0585d40"
+          }
+        }
+      },
+      "4": {
+        "filas_gold": 30485,
+        "columnas": 48,
+        "positivos": 3002,
+        "filas_modelables": 30030,
+        "excluidas_arranque": 455,
+        "huella_gold_reconstruido": "573bd98e31aaa05bd9c0f5ec1b3c50eb6ff522532268546cc538b11aff654dc5",
+        "bloques": {
+          "temporada_2021": {
+            "entrenamiento": 11700,
+            "evaluacion": 3445,
+            "corte": "2020-08-01T00:00:00",
+            "huella_entrenamiento": "939e6a027707c9347483454975760da9be84816ff73c82b5f541fbc7f78db612",
+            "huella_evaluacion": "aacac28c78e96d061590536983c56d7a9fb3c42ff7afcc8617f041326fed5055"
+          },
+          "temporada_2022": {
+            "entrenamiento": 15145,
+            "evaluacion": 3380,
+            "corte": "2021-08-07T00:00:00",
+            "huella_entrenamiento": "85255c4c1053a6192e8661dd47100ba56745d9b8c98484538345ddb5761a1713",
+            "huella_evaluacion": "ded1a8a4c3e08c5080b9a2a10247cbbe6905af9f7f757d3a1b26770a8f80df6c"
+          },
+          "temporada_2023": {
+            "entrenamiento": 18525,
+            "evaluacion": 3380,
+            "corte": "2022-08-06T00:00:00",
+            "huella_entrenamiento": "00ee2b39809c3beca3e9a918e353efc7e8b363a5601db2004b1d110b4952651d",
+            "huella_evaluacion": "dfb317eb110b3bd8872031e382cbae04c2790d7385db4daa90af0dc947d82153"
+          },
+          "temporada_2024": {
+            "entrenamiento": 21905,
+            "evaluacion": 3380,
+            "corte": "2023-08-05T00:00:00",
+            "huella_entrenamiento": "ccfd36038b1efd3131165a8fcdb4d7e7cc49b02abb5e979f1adc9657beaee4de",
+            "huella_evaluacion": "fd982647b2c3a3d0a1d6c081c453d5a288e96e0b22610633c340d3aa89e4ee93"
+          },
+          "calendario_2025": {
+            "entrenamiento": 26455,
+            "evaluacion": 3380,
+            "corte": "2024-12-07T00:00:00",
+            "huella_entrenamiento": "fcdccf7a3b3af308288d3f27f7875b3799cf623e0ca773d12446dca63586b470",
+            "huella_evaluacion": "8fc1402896c5417a469af5415202ae5933de869c7ee4cf73bd8109ab0c422e48"
+          }
+        }
+      }
+    }
+  },
+  "comparacion_antes_despues_identica": true,
+  "hashes_archivos_antes_despues_identicos": true,
+  "archivos_comparados": 18,
+  "sha256_archivos": {
+    "data/gold/.DS_Store": "d65165279105ca6773180500688df4bdc69a2c7b771752f0a46ef120b7fd8ec3",
+    "data/gold/meteo_socio_epi_piura_2017_2025_h2_gold.csv": "5bb6540b1e7d1c949299dc4e38d32b5d003abdbc1895c2c940e0db9132d0d88b",
+    "data/gold/meteo_socio_epi_piura_2017_2025_h4_gold.csv": "01602d436727909b72a6f7d6e1a3ae5e304cde0444c69edae247c52e376b78f5",
+    "data/gold/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/gold/manifest_fase6.json": "840c54c8745b5acb7082c1384c5fb6f6cf6025c943f1959a71e02d1cc76dd8ed",
+    "data/silver/integrado/meteo_socio_epi_piura_2017_2025.coverage.csv": "e85f7e68b1b78ef97bb31aef56247d22b7eebac3cd0e28ba82e980641cacfb67",
+    "data/silver/integrado/meteo_socio_piura_2017_2025.csv": "0ac497f028eb3e1264a3274cfafb3b950bbeb05c28bd35ab2cca7e409cce6259",
+    "data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv": "a0c4bb4497eeba0156c8ba581f3a6a64b13c42195606d57c3acc4a8ea0eb7a4e",
+    "data/silver/integrado/meteo_socio_epi_base_piura_2017_2025.csv": "86efa2454dca6da7f11441f523737a702c31515ab4167931010e67839d4a5d88",
+    "docs/modeling/metricas/ablacion_fracciones.json": "f59d57327095799cdb628c436ab038febe1bc9d2e92dd64642123cc145294821",
+    "docs/modeling/metricas/ablacion_sociodemografica.json": "0a7c72ad61186da3d76ee292f095a75f4a2d85386ad8a570adc7ef41246511f2",
+    "docs/modeling/metricas/validacion_temporal_compacta.json": "8abda45dc7559cbdb21400ebc502980d6a821ee72857fa55cc07f6adffaa9e61",
+    "docs/modeling/metricas/ablacion_clima.json": "4895ffb62faef98f4503bc8f45ea17b84797eda4b8a367758a39a8fc09125c25",
+    "docs/modeling/metricas/ablacion_poblacion_sin_seguro.json": "889a3e79e2cd69df7b3290d7d75dbf4de86cd406ffd75fb265227d2139293f94",
+    "docs/modeling/metricas/ablacion_espacial.json": "952e118a2f3efbc457ae296f19be38700f70edec27a931869f1d6686a732dc32",
+    "docs/modeling/metricas/primer_xgboost.json": "80aab41cf9df7360bc382e2e7284b40b34326249504eaa2ac9bc223d03a525b7",
+    "models/experimentos/validacion_temporal_compacta/predicciones_por_bloque.csv": "8dcebcd3315e6e7e0e6c99aba4168352ebff9ed6fd6c8f9d3609d98be5fed346",
+    "data/silver/epi_sala_semanal.csv": "047a88fc339d7d2db41b187b8e5ba6a5dde42f81515dabcb3eef3b650a41c0c9"
+  },
+  "frontera_2025_2026": [
+    {
+      "semana_inicio": "2025-12-21",
+      "mmwr": "2025-S52",
+      "regla_anterior": "2025-S52"
+    },
+    {
+      "semana_inicio": "2025-12-28",
+      "mmwr": "2025-S53",
+      "regla_anterior": "2026-S01"
+    },
+    {
+      "semana_inicio": "2026-01-04",
+      "mmwr": "2026-S01",
+      "regla_anterior": "2026-S02"
+    },
+    {
+      "semana_inicio": "2026-01-11",
+      "mmwr": "2026-S02",
+      "regla_anterior": "2026-S03"
+    }
+  ],
+  "sala_fuera_panel": {
+    "filas": 65,
+    "casos": 3,
+    "semanas": [
+      {
+        "anio": 2025,
+        "semana": 53
+      }
+    ]
+  },
+  "pruebas": {
+    "dirigidas": 43,
+    "totales": 160,
+    "resultado": "OK",
+    "duracion_suite_segundos": 8.434
+  },
+  "gx": {
+    "silver_integrado": {
+      "evaluadas": 107,
+      "exitosas": 107
+    },
+    "gold_h2": {
+      "evaluadas": 92,
+      "exitosas": 92
+    },
+    "gold_h4": {
+      "evaluadas": 92,
+      "exitosas": 92
+    }
+  },
+  "reentrenamiento_ejecutado": false,
+  "fuentes_oficiales": [
+    "https://stacks.cdc.gov/view/cdc/22305",
+    "https://www.gob.pe/institucion/regiontacna-diresa/informes-publicaciones/7654456-boletin-epidemiologico-semana-n-01-diresa-tacna"
+  ]
+}

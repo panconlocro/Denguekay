@@ -13,16 +13,19 @@ from src.modeling.train import (
     columnas_variantes, predecir_fold, preparar_gold, separar_anio_calendario,
     separar_temporada,
 )
+from src.utils.calendario import semana_epi_mmwr
 
 
 def panel_sintetico(horizonte: int = 2, periods: int = 20) -> pd.DataFrame:
     filas = []
     semanas = pd.date_range("2023-07-02", periods=periods, freq="W-SUN")
+    calendario = semana_epi_mmwr(pd.Series(semanas))
     for ubigeo in ("200101", "200102"):
         for i, fecha in enumerate(semanas):
             casos = 2 if i in (2, 5, 9) else 0
             filas.append({
-                "ubigeo": ubigeo, "anio": int(fecha.year), "semana": int(fecha.isocalendar().week),
+                "ubigeo": ubigeo, "anio": int(calendario.loc[i, "anio_epi"]),
+                "semana": int(calendario.loc[i, "semana_epi"]),
                 "semana_inicio": fecha,
                 "origen_inicio": fecha - pd.Timedelta(weeks=horizonte) if i >= horizonte else pd.NaT,
                 "origen_cierre": fecha - pd.Timedelta(weeks=horizonte) + pd.Timedelta(days=6) if i >= horizonte else pd.NaT,
@@ -82,6 +85,12 @@ class EntrenamientoTests(unittest.TestCase):
         panel = panel_sintetico()
         panel.loc[panel.index[10], "casos_lag_2"] = np.nan
         with self.assertRaisesRegex(ValueError, "fuera del arranque"):
+            preparar_gold(panel, 2)
+
+    def test_gold_con_semana_desplazada_se_rechaza_antes_de_entrenar(self):
+        panel = panel_sintetico()
+        panel["semana"] += 1
+        with self.assertRaisesRegex(ValueError, "MMWR"):
             preparar_gold(panel, 2)
 
     def test_regresion_y_clasificacion_tienen_salida_distinta(self):

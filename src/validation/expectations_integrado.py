@@ -7,6 +7,7 @@ import pandas as pd
 
 from src.processing.socio_interpolacion import SOCIO_COLUMNS
 from src.processing.epi_sala import load_ubigeo_catalog
+from src.utils.calendario import semana_epi_mmwr
 from src.utils.keys import normalizar_sala
 from src.utils.paths import UBIGEO_CATALOG
 
@@ -56,9 +57,9 @@ def prepare_dataset(frame: pd.DataFrame) -> pd.DataFrame:
     dates = pd.to_datetime(frame["semana_inicio"], errors="raise")
     if dates.isna().any() or (dates.dt.weekday != 6).any():
         raise ValueError("semana_inicio must be a Sunday for every row")
-    iso = (dates + pd.Timedelta(days=3)).dt.isocalendar()
-    if (iso.year.astype(int).to_numpy() != frame["anio"].to_numpy()).any() or (iso.week.astype(int).to_numpy() != frame["semana"].to_numpy()).any():
-        raise ValueError("anio/semana differ from the existing Sunday/ISO week convention")
+    calendario = semana_epi_mmwr(dates)
+    if (calendario.anio_epi.to_numpy() != frame["anio"].to_numpy()).any() or (calendario.semana_epi.to_numpy() != frame["semana"].to_numpy()).any():
+        raise ValueError("anio/semana no coinciden con el calendario epidemiológico MMWR de semana_inicio")
     if frame.duplicated(KEY).any():
         raise ValueError("Dataset contains duplicate UBIGEO-year-week rows")
     for column in ("provincia", "distrito", "lat", "lon"):

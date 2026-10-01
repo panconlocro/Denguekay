@@ -1,6 +1,12 @@
 # Problemas de datos y decisiones pendientes — EDA Denguekay
 
-Documento único que reúne todo lo detectado en las fases 1-6 del EDA. **Nada de esto se corrigió**: cada punto trae la evidencia, el impacto y una propuesta; Rosa decide qué hacer y cuándo.
+Documento que reúne lo detectado en las fases 1-6 del EDA. Cada punto conserva la evidencia original, el impacto y una propuesta. El estado de las correcciones posteriores se indica explícitamente; Rosa decide qué hacer y cuándo.
+
+**Actualización del 1 de octubre de 2026:** se corrigió la numeración del
+calendario en el código, sin alterar las entradas ni los resultados
+históricos. La evidencia y los límites están en
+[`correccion_calendario.md`](../feature_engineering/correccion_calendario.md).
+Completar el panel con 2025-S53 sigue pendiente.
 
 Toda cifra está en `docs/eda/metricas/<fase>.json`; entre corchetes va `fase: clave`. El detalle de cada punto está en `docs/eda/hallazgos.md`.
 
@@ -10,7 +16,7 @@ Toda cifra está en `docs/eda/metricas/<fase>.json`; entre corchetes va `fase: c
 
 | # | Problema | Evidencia | Impacto | Propuesta | Dónde se corrige |
 |---|---|---|---|---|---|
-| P1 | La regla de calendario del pipeline (`isocalendar()` de domingo + 3) diverge de la semana epidemiológica MMWR | Diverge desde la semana del 2025-12-28 y quedan fuera 3 casos de 2025-S53 [fase1: `primera_semana_regla_pipeline_difiere_mmwr`, `sala_casos_fuera_del_panel`]. Se repite en tramos futuros [fase1: `inicios_tramos_divergencia_pipeline_mmwr_hasta_2040`] | Hoy mínimo. Al actualizar a 2026, casos y clima quedarían desalineados una semana | Usar la regla MMWR (ver `semana_epi_mmwr()` en `src/eda/calidad.py`) e incorporar 2025-S53. Confirmar antes el calendario oficial de la Sala | `src/processing/agregacion_semanal.py`, `src/validation/expectations_integrado.py`, `src/update_dataset_module.py` |
+| P1 | La regla anterior del pipeline (`isocalendar()` de domingo + 3) diverge de MMWR | Diverge desde 2025-12-28; hay 3 casos de 2025-S53 fuera del panel [fase1: `primera_semana_regla_pipeline_difiere_mmwr`, `sala_casos_fuera_del_panel`] | Sin desplazamiento en el panel actual; habría desalineado casos y clima al ampliar a 2026 | Numeración corregida con el helper MMWR compartido. Incorporar 2025-S53 requiere completar el clima y publicar otra versión; sigue pendiente | `src/utils/calendario.py`, agregación, validaciones, carga y preparación de gold; el actualizador hereda los imports |
 | P2 | 2025 viene de otra fuente (Sala Situacional) y puede tener subregistro | 1 114 casos en 2025 [fase1: `casos_panel_2025`]; no se ve una temporada ese año [fase2: `temporadas`]. La documentación de extracción reporta una discrepancia sin resolver con otro panel (cifra no verificable en el repo) | 2025 no es comparable con los años previos. Afecta la validación | Mantener la advertencia hasta aclarar con DIRESA o la fuente alternativa. Ver decisión D1 | Fuente externa; `src/processing/epi_sala.py` |
 | P3 | Salto de población entre 2017 y 2018 | Mediana +6.8 % en 2017→2018 frente a +0.67 %/año después [fase1: `crec_pob_2018_mediana_pct`, `crec_pob_2019_2025_mediana_pct`] | La tasa de 2017 no es comparable con la de 2023; la razón 2023/2017 pasa de 1.55 a 1.68 según qué población se use [fase2: `razon_2023_sobre_2017_pob_propia`, `razon_2023_sobre_2017_pob_2018`] | Documentar la fuente de cada año (¿censo vs proyección?) y, si son distintas, homogeneizar | `src/processing/socio_interpolacion.py` |
 | P4 | `lluvia_total_mm` es idéntica a `precip_total_mm` | Único par de columnas idénticas [fase1: `pares_columnas_identicas`] | Variable duplicada | Conservar solo `precip_total_mm` | `src/processing/agregacion_semanal.py` o feature engineering |

@@ -8,29 +8,8 @@ tablas o conteos de problemas y no modifican ni corrigen los datos.
 import numpy as np
 import pandas as pd
 
-
-def semana_epi_mmwr(semana_inicio: pd.Series) -> pd.DataFrame:
-    """
-    Año y semana epidemiológica según la regla MMWR (semanas domingo-sábado;
-    la semana 1 es la primera con al menos 4 días en el año nuevo, es decir,
-    la que contiene el primer miércoles del año).
-
-    `semana_inicio` debe ser el domingo de cada semana. Devuelve un DataFrame
-    con columnas `anio_epi` y `semana_epi` alineado al índice de entrada.
-    """
-    fechas = pd.to_datetime(semana_inicio)
-    if (fechas.dt.weekday != 6).any():
-        raise ValueError("semana_inicio debe ser domingo en todas las filas")
-    anio = (fechas + pd.Timedelta(days=3)).dt.year  # año del miércoles de la semana
-    enero_1 = pd.to_datetime(anio.astype(str) + "-01-01")
-    # Domingo de la semana que contiene el 1 de enero; si su miércoles cae en
-    # el año anterior, la semana 1 empieza el domingo siguiente.
-    domingo_0 = enero_1 - pd.to_timedelta((enero_1.dt.weekday + 1) % 7, unit="D")
-    inicio_s1 = domingo_0.where(domingo_0 + pd.Timedelta(days=3) >= enero_1,
-                                domingo_0 + pd.Timedelta(days=7))
-    semana = (fechas - inicio_s1).dt.days // 7 + 1
-    return pd.DataFrame({"anio_epi": anio.astype(int), "semana_epi": semana.astype(int)},
-                        index=semana_inicio.index)
+# Conserva el import utilizado por los notebooks y consumidores anteriores.
+from src.utils.calendario import semana_epi_mmwr
 
 
 def columnas_identicas(df: pd.DataFrame, columnas: list[str] | None = None) -> list[tuple[str, str]]:

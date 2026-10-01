@@ -128,7 +128,7 @@ class UpdateDatasetTests(unittest.TestCase):
         self.write([existing])
         update_dataset(self.path, self.path, providers=self.providers([]))
         new = model_row(1)
-        new.update({"anio": 2026, "semana": 1, "semana_inicio": "2025-12-28", "casos_Dengue": None})
+        new.update({"anio": 2026, "semana": 1, "semana_inicio": "2026-01-04", "casos_Dengue": None})
         for column in WEATHER_COLUMNS + SOCIO_COLUMNS:
             new[column] = None
         self.write([existing, new])
