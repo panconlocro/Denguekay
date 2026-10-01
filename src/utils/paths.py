@@ -14,6 +14,8 @@ from pathlib import Path
 # Raíz del repo (este archivo vive en src/utils/paths.py -> subir 2 niveles)
 ROOT = Path(__file__).resolve().parents[2]
 
+CONFIG = ROOT / "config" / "config.yaml"
+
 DATA = ROOT / "data"
 
 BRONZE = DATA / "bronze"

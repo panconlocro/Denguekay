@@ -74,13 +74,25 @@ y, al terminar, registra la corrida en **MLflow** (`mlflow.db` y `mlartifacts/`
 locales). Para ver y comparar los experimentos:
 
 ```bash
-.venv/bin/mlflow ui --backend-store-uri sqlite:///mlflow.db
+.venv/bin/mlflow ui --backend-store-uri sqlite:///mlflow.db --workers 1
 .venv/bin/python -m src.validation.calidad_gx   # solo calidad de datos
 ```
 
 La guía completa está en
 [docs/modeling/mlflow_great_expectations.md](docs/modeling/mlflow_great_expectations.md).
 Las opciones `--sin-mlflow` y `--sin-validacion-datos` desactivan cada parte.
+
+XGBoost entrena en una GPU NVIDIA (CUDA) si la encuentra y, si no, en CPU con
+todos los núcleos; en Mac siempre usa CPU porque XGBoost no soporta su GPU. Se
+controla en la sección `xgboost` de `config/config.yaml` (`device: auto | cuda | cpu`).
+Para ver qué detecta tu equipo y comparar tiempos:
+
+```bash
+.venv/bin/python -m src.modeling.dispositivo --comparar
+```
+
+El dispositivo queda en los parámetros de cada reporte y en MLflow (`xgb.device`),
+porque entrenar en GPU puede cambiar decimales respecto de CPU.
 
 La prueba principal es la temporada epidemiológica 2024; el año calendario
 2025, con solo tres semanas distritales positivas, se reporta por separado

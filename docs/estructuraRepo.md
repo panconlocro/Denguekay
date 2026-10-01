@@ -176,6 +176,7 @@ modeling/
 ├── etiqueta_brote.py        # regla de semana elevada con historia previa
 ├── features.py              # integración y validación de gold para h=2/4 (fase 6)
 ├── contrato_xgboost.py      # candidatos, exclusiones y auditoría de traspaso (fase 7)
+├── dispositivo.py           # elige GPU NVIDIA (CUDA) o CPU para XGBoost según config.yaml
 ├── evaluate.py              # métricas de conteos y alertas
 ├── train.py                 # cortes temporales y primer XGBoost de ambos objetivos
 ├── ablacion_espacial.py     # compara bloques de vecinos y jerarquía en validación

@@ -17,6 +17,7 @@ from xgboost import XGBClassifier, XGBRegressor, __version__ as XGBOOST_VERSION
 
 from src.eda.temporal import asignar_temporada
 from src.modeling.contrato_xgboost import auditar_traspaso, familias_predictoras
+from src.modeling.dispositivo import configuracion_xgboost
 from src.modeling.evaluate import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos,
     seleccionar_umbral_f1,
@@ -41,8 +42,11 @@ PARAMETROS_BASE = {
     "min_child_weight": 5,
     "reg_lambda": 5.0,
     "tree_method": "hist",
-    "n_jobs": 2,
     "random_state": SEMILLA,
+    # GPU NVIDIA si hay, si no CPU con todos los núcleos (config/config.yaml,
+    # sección xgboost). Los hilos no cambian resultados; la GPU puede cambiar
+    # decimales, por eso "device" queda en los parámetros del reporte.
+    **configuracion_xgboost(),
 }
 
 

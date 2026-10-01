@@ -124,10 +124,10 @@ En el run hijo, cada métrica lleva delante el bloque (`temporada_2022.`, `tempo
 Desde la raíz del repo:
 
 ```powershell
-.\.venv\Scripts\mlflow ui --backend-store-uri sqlite:///mlflow.db
+.\.venv\Scripts\mlflow ui --backend-store-uri sqlite:///mlflow.db --workers 1
 ```
 
-Abrir <http://127.0.0.1:5000>. Para comparar variantes de una ablación: entrar al experimento y filtrar con `tags.nivel = 'variante'`. Luego agregar columnas como `validacion_media.cls_f1` y `validacion_media.reg_f1`, ordenar y seleccionar varias filas para usar *Compare*. Otros filtros útiles: `tags.nivel = 'fold' and tags.bloque = 'temporada_2024'`, o `tags.seleccionada_en_validacion LIKE '%clasificacion%'`.
+Abrir <http://127.0.0.1:5000>. En Windows, `--workers 1` evita el error `WinError 10022` que aparece con los 4 procesos que MLflow usa por defecto; los avisos `WARNING` y `StarletteDeprecationWarning` del arranque son normales. El reporte de Great Expectations se abre con `start great_expectations\gx\uncommitted\data_docs\local_site\index.html`. Para comparar variantes de una ablación: entrar al experimento y filtrar con `tags.nivel = 'variante'`. Luego agregar columnas como `validacion_media.cls_f1` y `validacion_media.reg_f1`, ordenar y seleccionar varias filas para usar *Compare*. Otros filtros útiles: `tags.nivel = 'fold' and tags.bloque = 'temporada_2024'`, o `tags.seleccionada_en_validacion LIKE '%clasificacion%'`.
 
 Desde Python o un notebook:
 

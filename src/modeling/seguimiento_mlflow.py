@@ -25,7 +25,7 @@ Por defecto el almacén es local: ``mlflow.db`` (SQLite) y ``mlartifacts/`` en
 la raíz del repo. Para usar otro servidor basta definir ``MLFLOW_TRACKING_URI``.
 Ver la interfaz con::
 
-    mlflow ui --backend-store-uri sqlite:///mlflow.db
+    mlflow ui --backend-store-uri sqlite:///mlflow.db --workers 1
 """
 
 import json

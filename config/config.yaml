@@ -13,3 +13,10 @@ meteo:
   fecha_inicio: "2017-01-01"
   fecha_fin: "2025-12-31"
   batch_size: 20
+
+xgboost:
+  # auto = GPU NVIDIA (CUDA) si existe; si no, CPU. Opciones: auto | cuda | cpu.
+  # En Mac (Apple Silicon) XGBoost no usa la GPU: auto cae a CPU sin error.
+  device: auto
+  # auto = todos los núcleos de la CPU. No cambia los resultados.
+  n_jobs: auto
