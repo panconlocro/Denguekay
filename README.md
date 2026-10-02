@@ -2,10 +2,10 @@
 
 ## Backend
 
-Las fases 1–2 incorporan el esquema SQLAlchemy/Alembic, la carga validada
-y la publicación de predicciones con XGBoost real. Puede usar PostgreSQL con psycopg 3
+Las fases 1–3 incorporan el esquema SQLAlchemy/Alembic, la carga validada,
+la publicación de predicciones con XGBoost real y la API FastAPI. Puede usar PostgreSQL con psycopg 3
 (incluido Supabase) o SQLite para pruebas. Copia `.env.example` como `.env`,
-configura `DATABASE_URL` y, desde la raíz, ejecuta:
+configura `DATABASE_URL` y una `API_KEY` para escrituras y, desde la raíz, ejecuta:
 
 ```bash
 .venv/bin/python -m pip install -r requirements.txt
@@ -13,6 +13,7 @@ configura `DATABASE_URL` y, desde la raíz, ejecuta:
 .venv/bin/alembic upgrade head
 .venv/bin/python -m src.serving.publicar --horizontes 2 4
 .venv/bin/python -m unittest discover -s tests
+.venv/bin/python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 En Windows usa `.\.venv\Scripts\python.exe` y
@@ -28,10 +29,24 @@ El estado de validación usa las métricas de 2024; 2025 se reporta como
 sensibilidad separada. Las versiones actuales son **experimentales** y el
 corte de datos publicado es **27/12/2025**, sin actualización automática.
 
+La API expone `/api/v1`, `/docs` y `/openapi.json`. Consulta e infiere desde
+la BD sin necesitar `data/`, `models/` ni `mlflow.db`; el pipeline de publicación
+sí necesita las fuentes locales. Sus POST exigen `X-API-Key`, conservan
+historial y reevalúan boosters/vectores almacenados. El CORS está restringido
+al origen configurado. Una versión activa no equivale a promoción a producción.
+
+Si ya tienes la BD poblada, basta configurar `.env` y levantar Uvicorn;
+no necesitas repetir la publicación para consultar o recalcular. Para usar la
+copia local de verificación de fase 3: `DATABASE_URL=sqlite:///models/serving/fase3.sqlite`.
+Exporta ejemplos reales con `.venv/bin/python -m src.api.exportar_openapi`.
+
 Consulta [operación](docs/backend/operacion.md) y
 [cierre de la fase 1](docs/backend/fase1_bd.md) y
-[cierre de la fase 2](docs/backend/fase2_inferencia.md). La API corresponde a
-la fase 3, tras la aprobación de Rosa.
+[cierre de la fase 2](docs/backend/fase2_inferencia.md),
+[cierre de la fase 3](docs/backend/fase3_api.md) y
+[contrato API](docs/backend/contrato_api.md).
+Benchmark, CI y documentación integral corresponden a la fase 4; el despliegue
+en Render/Supabase requiere la aprobación de su fase.
 
 ## Feature engineering con Codex
 

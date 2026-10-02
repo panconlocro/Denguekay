@@ -24,8 +24,11 @@ def serializar_booster(modelo):
 
 @lru_cache(maxsize=8)
 def _cargar_booster(contenido):
-    booster = xgb.Booster()
-    booster.load_model(bytearray(contenido.encode("utf-8")))
+    try:
+        booster = xgb.Booster()
+        booster.load_model(bytearray(contenido.encode("utf-8")))
+    except (ValueError, xgb.core.XGBoostError) as error:
+        raise ValueError("El artefacto XGBoost guardado no se puede cargar; requiere revisión") from error
     # La API puede correr en CPU aunque la versión haya sido entrenada en GPU.
     booster.set_param({"device": "cpu", "nthread": 1})
     return booster

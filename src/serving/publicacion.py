@@ -34,7 +34,8 @@ def guardar_versiones(sesion, preparadas, mlflow_run_id):
     return resultado
 
 
-def activar_versiones_servicio(sesion, versiones, ejecucion_id):
+def activar_versiones_servicio(sesion, versiones, ejecucion_id,
+                              motivo="Publicación batch de una versión de servicio"):
     """Retira la selección previa antes de activar otra, con auditoría de cambio."""
     for (h, tipo, bloque), nueva in versiones.items():
         if bloque != "servicio":
@@ -50,7 +51,7 @@ def activar_versiones_servicio(sesion, versiones, ejecucion_id):
             sesion.flush()
         nueva.activa = True
         sesion.add(ActivacionModelo(version_anterior_id=anterior.id if anterior else None,
-            version_nueva_id=nueva.id, ejecucion_id=ejecucion_id, motivo="Publicación batch de una versión de servicio"))
+            version_nueva_id=nueva.id, ejecucion_id=ejecucion_id, motivo=motivo))
         sesion.flush()
 
 

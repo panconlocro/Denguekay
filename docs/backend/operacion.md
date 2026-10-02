@@ -1,17 +1,19 @@
 # Operación del backend
 
-## Alcance disponible: fases 1–2
+## Alcance disponible: fases 1–3
 
 Esquema relacional, carga validada, versiones XGBoost de servicio y publicación
-batch con historial. La inferencia carga boosters desde la BD. La API y su
-activación/recalculado HTTP corresponden a la fase 3. Se comprobó PostgreSQL
+batch con historial y API FastAPI. La inferencia carga boosters desde la BD;
+activación/recalculado HTTP conservan historial en una transacción. Se comprobó PostgreSQL
 local; no se ha desplegado ni comprobado una conexión a Supabase.
 
 ## Variables de entorno
 
 Copiar `.env.example` como `.env`, ignorado por Git. `DATABASE_URL` es
 obligatoria; las variables del entorno tienen prioridad sobre `.env`.
-`API_KEY` queda reservada para proteger escrituras de la API en la fase 3.
+`API_KEY` protege las escrituras HTTP mediante `X-API-Key`. Configurar una
+clave larga, aleatoria y privada. Si falta, las escrituras devuelven 503;
+si es incorrecta o ausente en la solicitud, 401. No afecta la lectura pública.
 No pegar credenciales en comandos compartidos ni en documentación.
 
 Para PostgreSQL usar el formato
@@ -87,7 +89,7 @@ En `config/config.yaml`, `serving` configura variantes, horizontes, intervalos
 de riesgo, alerta visible, criterio de aceptación y disponibilidad. Horizonte
 3 admite configuración, pero su publicación se rechaza hasta contar con gold
 y contrato. Con `servir_no_validadas: false`, la función de disponibilidad
-rechaza versiones experimentales; los endpoints aplicarán esa regla en fase 3.
+rechaza versiones experimentales y los endpoints aplican esa regla.
 
 La aceptación comprueba **2024** y conserva **2025** como sensibilidad, sin
 promediarlos. Las versiones de servicio conservan el JSON del booster en BD;
@@ -130,8 +132,55 @@ observada; `fecha_actualizacion` es el instante UTC de escritura. Ninguna
 de esas fechas se interpreta como una actualización automática del panel.
 
 Las geometrías se guardan como NULL con un motivo explícito: los archivos
-disponibles contienen centroides. El mapa podrá usar esos puntos en la fase
-3, declarando la ausencia de polígonos.
+disponibles contienen centroides. GeoJSON usa esos puntos como Point,
+declarando la ausencia de polígonos.
+
+## Levantar y comprobar la API
+
+Con `.env` configurado y la BD migrada/poblada, desde la raíz:
+
+```bash
+.venv/bin/python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
+```
+
+En PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
+```
+
+Abrir `/docs` y comprobar `/api/v1/salud` en ese servidor. Las lecturas son
+públicas; en Authorize de Swagger, cargar la clave privada para los POST.
+GET `/api/v1/predicciones?horizonte=2` y `/api/v1/mapa?horizonte=4` devuelven
+el último lote por horizonte, con sus fechas. GET `/api/v1/modelos` identifica
+los IDs reales para detalle y activación. No es necesario reentrenar al
+iniciar la API ni para reevaluar.
+
+Para la copia local ya verificada, usar en `.env`
+`DATABASE_URL=sqlite:///models/serving/fase3.sqlite`; para la original de fase
+2, `sqlite:///models/serving/fase2.sqlite`. Las escrituras modifican la BD
+seleccionada, agregando otra ejecución; no intercambiar URLs sin comprobar
+qué base se está operando. No se creó ni modificó un `.env` con credenciales
+durante la verificación: las ejecuciones usaron variables locales de proceso.
+
+La API requiere sus módulos Python, dependencias y `config/config.yaml`.
+Lee únicamente la BD para servir observaciones, versiones y predicciones;
+no requiere copiar los datasets ni los archivos de boosters a Render.
+`serving.cors_origen` contiene el origen exacto del frontend. La caché de
+lecturas dura diez segundos, comprueba cambios de publicación y se invalida
+al escribir; es local a cada proceso.
+
+La exportación usa la BD seleccionada y no ejecuta escrituras:
+
+```bash
+.venv/bin/python -m src.api.exportar_openapi
+```
+
+En PowerShell sustituir el ejecutable por `.\.venv\Scripts\python.exe`.
+El contrato exportado y los ejemplos se versionan en `docs/backend/openapi.json`.
+No regenerarlo con una BD vacía si se quieren conservar ejemplos de todos
+los recursos. Las fuentes reales y la fecha de corte se conservan en cada
+ejemplo; no usarlo como copia de datos actualizados.
 
 ## Respaldo y reversión
 
@@ -142,7 +191,14 @@ históricos de versiones, predicciones y alertas tienen claves foráneas sin
 borrado en cascada. La migración 0002 conserva la carga previa; su downgrade
 se comprueba solo en una BD temporal vacía, porque 0001 no admite boosters
 históricos nulos. La activación transaccional con auditoría ya existe; su
-exposición HTTP y reevaluación controlada se implementarán en fase 3.
+exposición HTTP y reevaluación controlada están implementadas en fase 3.
+
+Para volver a otra versión usar POST `/api/v1/modelos/{identificador}/activar`
+con la clave: desactiva la previa, valida esquema/corte y reevalúa los vectores
+vigentes. Conserva el historial, registra cambios reales y retira las alertas
+previas del horizonte. Si falta artefacto o existe fuga temporal, responde
+409 y revierte todo. Los históricos sin booster no son candidatos de rollback.
+Esta selección de inferencia no sustituye la aprobación de producción.
 
 Para reproducir la verificación local de SQLite de fase 2, usar
 `DATABASE_URL=sqlite:///models/serving/fase2.sqlite`. Es un archivo físico

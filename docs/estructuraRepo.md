@@ -33,6 +33,7 @@ tesis-dengue-piura/
 │   ├── modeling/
 │   ├── db/                    # ORM, configuración, sesiones y migraciones
 │   ├── serving/               # carga, inferencia real y publicación batch
+│   ├── api/                   # FastAPI, consultas, seguridad y OpenAPI
 │   ├── utils/
 │   └── update_dataset_module.py
 │
@@ -229,7 +230,18 @@ src/serving/
 ├── artefactos.py             # serialización y reevaluación de boosters desde BD
 ├── riesgo.py                 # riesgo visible, alerta y disponibilidad
 ├── publicacion.py            # transacción: versiones, predicciones y alertas
+├── reevaluacion.py           # reevaluación/activación atómica desde BD, sin entrenamiento
 └── publicar.py               # CLI idempotente y runs normales de MLflow
+src/api/
+├── main.py                   # aplicación, ciclo de vida, CORS y tiempo de respuesta
+├── dependencias.py           # sesiones, clave de escritura y caché por revisión de BD
+├── errores.py                # formato uniforme y errores sin secretos ni SQL
+├── esquemas.py               # contrato Pydantic v2 y fechas UTC
+├── consultas.py              # datos/DTO desde BD; series con huecos y calendario MMWR
+├── cache.py                  # TTL de lecturas, capacidad acotada y concurrencia
+├── openapi.py                # especificación con ejemplos leídos de la BD real
+├── exportar_openapi.py       # CLI de exportación; exige conexión real
+└── routers/                  # referencia, datos, vigilancia y modelos
 src/validation/
 └── validacion_modelo.py      # aceptación derivada de métricas por bloque
 tests/
@@ -241,6 +253,7 @@ tests/
 ├── test_serving_politicas.py
 ├── test_serving_protocolo.py
 ├── test_serving_publicacion.py
+├── test_api_backend.py       # HTTP + SQLite migrada + modelos y datos reales
 └── fixtures/backend/         # filas copiadas de gold/Sala, con procedencia
 docs/backend/                 # operación y cierres verificables
 models/serving/               # BD SQLite/cobertura/artefactos locales; no se versionan
@@ -248,7 +261,7 @@ models/serving/               # BD SQLite/cobertura/artefactos locales; no se ve
 └── protocolo_regenerado/     # solo si faltan las predicciones OOS originales
 ```
 
-Las fases 1–2 construyen persistencia, carga e inferencia. La fase 3 añadirá
+Las fases 1–2 construyen persistencia, carga e inferencia. La fase 3 expone
 la API en `src/api/`. El backend
 solo lee `data/`. `carga_datos` audita hashes, GX y corte; `activacion_modelo`
 registra los cambios de versión sin borrar predicciones. Las
@@ -259,6 +272,9 @@ Las fixtures de fase 2 incluyen semanas temporales continuas, una muestra de
 entrenamiento, referencia censal y predicciones OOS con métricas originales;
 `procedencia_fase2.json` documenta su selección. Los cierres de fase 2 y sus
 verificaciones SQLite/PostgreSQL viven en `docs/backend/fase2_*`.
+El contrato y la evidencia de fase 3 viven en `docs/backend/contrato_api.md`,
+`fase3_api.md`, `fase3_verificacion.json` y `openapi.json`. La copia SQLite
+de verificación HTTP queda en `models/serving/fase3.sqlite`, sin versionar.
 
 ---
 
