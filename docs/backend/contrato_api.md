@@ -1,142 +1,68 @@
-# Contrato de la API
+# Contrato de la API (Tabla 2 del documento OE2)
 
-Base: `/api/v1`. Lectura pública de datos agregados por distrito. Escritura
-con `X-API-Key`, definida mediante `API_KEY` en `.env`. CORS permite únicamente
-el origen de `serving.cors_origen`. La especificación [openapi.json](openapi.json)
-incluye esquemas, parámetros, respuestas y ejemplos obtenidos de la BD local
-de verificación, sin datos inventados. `/docs` muestra la documentación interactiva.
+Base: `/api/v1`. Especificación generada: [openapi.json](openapi.json) (con ejemplos de una BD
+real). Lecturas públicas; escrituras con cabecera `X-API-Key`. Detalle de diseño y
+desviaciones: [especificacion_oe2.md](especificacion_oe2.md), [desviaciones_oe2.md](desviaciones_oe2.md).
 
-## Recursos
+## Endpoints de la Tabla 2
 
-| Método y ruta | Filtros o parámetros | Comportamiento |
-|---|---|---|
-| GET `/salud` | — | Conexión real, versiones activas, última ejecución completada y corte |
-| GET `/distritos` | `pagina`, `tamano_pagina` | Catálogo paginado, ubigeo como string |
-| GET `/distritos/{ubigeo}` | Código de seis dígitos | Distrito o 404 |
-| GET `/distritos/geojson` | — | FeatureCollection; centroides Point cuando no hay polígonos |
-| GET `/observaciones` | `ubigeo`, `desde`, `hasta`, paginación | Registros observados y procedencia |
-| GET `/predicciones` | `horizonte` obligatorio; `ubigeo`, `semana`, paginación | Última ejecución vigente del horizonte, sin rescatar resultados sustituidos |
-| GET `/mapa` | `horizonte` obligatorio | Todos los distritos, riesgo o Sin datos, objetivo y leyenda |
-| GET `/series/{ubigeo}` | `horizonte` obligatorio; `desde`, `hasta` | Observado y OOS/vigente, con semanas ausentes explícitas |
-| GET `/tablero` | `horizonte` obligatorio | Indicadores, periodo y cobertura; total regional solo si está completo |
-| GET `/alertas` | `horizonte`, `ubigeo`, `estado`, paginación | Muy alto antes de Alto; conserva alertas retiradas |
-| GET `/alertas/{identificador}` | ID positivo | Indicadores, motivo de retiro y estado experimental/validado |
-| GET `/modelos` | `horizonte`, paginación | Servicio e históricos, selección activa y validación calculada |
-| GET `/modelos/{identificador}` | ID positivo | Métricas por bloque, particiones, columnas, parámetros y reproducibilidad |
-| GET `/modelos/{identificador}/variables` | ID positivo | Gain guardado, rango y advertencia de no causalidad |
-| POST `/modelos/{identificador}/activar` | ID positivo, `X-API-Key` | Selecciona versión compatible y reevalúa en una sola transacción |
-| POST `/predicciones/recalcular` | `horizonte`, `X-API-Key` | Carga boosters de la BD y reevalúa vectores vigentes |
+| Método y ruta | Acceso | HU | Respuesta |
+|---|---|---|---|
+| GET `/salud` | Público | HU0016 | Estado, conexión a la BD, corte de datos y última ejecución exitosa |
+| GET `/distritos` | Público | HU0012–HU0015 | Página de distritos: ubigeo (texto), provincia, centroide, población censo 2017 |
+| GET `/predicciones?horizonte=&ubigeo=&corte=` | Público | HU0010, HU0011 | Predicciones del corte vigente (o de `corte`): probabilidad, nivel, casos estimados, línea base, `experimental` |
+| GET `/series/{ubigeo}?horizonte=&desde=&hasta=` | Público | HU0013 | Semanas continuas con casos observados y la predicción cuyo objetivo es esa semana |
+| GET `/tablero/resumen?horizonte=` | Público | HU0012 | Conteo por nivel, alertas activas, casos estimados regionales (null si falta un distrito) y observados |
+| GET `/mapa-riesgo?horizonte=` | Público | HU0014 | GeoJSON `FeatureCollection` de centroides `Point` con nivel o «Sin datos» y leyenda |
+| GET `/alertas?horizonte=&ubigeo=&nivel=&estado=` | Público | HU0015 | Alertas alto/muy_alto con `cambio`, estado y su predicción |
+| GET `/modelos/activo?horizonte=` | Público | HU0008 | Versión en uso por tarea y horizonte (`seleccion`: activa o experimental) |
+| POST `/admin/inferencias` | `X-API-Key` | HU0009 | Cuerpo `{"horizonte": 2|4, "id_semana_corte": opcional}`; resumen de la ejecución |
+| POST `/admin/modelos/{version}/activar` | `X-API-Key` | HU0009 | Activa `id_version` si cumple umbrales; archiva la anterior |
 
-`desde` y `hasta` son fechas inclusivas `AAAA-MM-DD`. `semana` identifica el
-domingo de inicio de la semana objetivo; no es un número ISO ni una búsqueda
-por la fecha del servidor. Horizonte acepta 2, 3 y 4: sin modelo para h=3 las
-lecturas informan ausencia; las escrituras se rechazan con 409. Paginación:
-`pagina >= 1`, `1 <= tamano_pagina <= 100`; respuesta con `elementos`, `total`,
-`pagina`, `tamano_pagina`, disponibilidad, motivo y fechas. La serie admite
-hasta 1040 semanas por consulta; cubre todas las semanas del intervalo, sin
-paginar su eje temporal. Mapa/GeoJSON contienen el catálogo completo.
+Extensiones (no están en la Tabla 2): GET `/distritos/{ubigeo}`, `/observaciones`,
+`/alertas/{id}`, `/modelos/{id}` y `/modelos/{id}/variables`.
 
-## Identidad, faltantes y fechas
+## Identidad, semanas y faltantes
 
-Cada observación o predicción incluye `ubigeo`, `distrito`, `anio`, `semana_epi`,
-`semana_inicio`, `horizonte`, `tipo_dato`, `estado_validacion`,
-`version_modelo_id`, `fecha_actualizacion` y `fecha_corte_datos`. Una observación
-usa horizonte/version `null` y validación `no_aplica`. En predicciones,
-`version_modelo_id` identifica clasificación; `version_regresion_id` y
-`version_persistencia_id` identifican los otros componentes.
+- `ubigeo` es texto de 6 dígitos. Las semanas son MMWR (domingo a sábado) con
+  `id_semana = anio*100 + semana`; cada respuesta incluye `fecha_inicio` y `fecha_fin`.
+- `semana_corte` es la última semana con datos usada; `semana_objetivo` = corte + h semanas.
+- Un valor ausente es `null` con `disponible: false` y `motivo`; un cero es un dato.
+- `tipo`: `vigente` (último corte publicado por una inferencia operativa) o `retrospectiva`
+  (cortes pasados, incluidas las predicciones OOS del protocolo).
+- **h=3:** no hay modelo. Las lecturas responden 200 con `disponible: false` y motivo
+  «sin modelo para h=3»; `POST /admin/inferencias` responde 409.
 
-Cero casos es una observación disponible. Una ausencia devuelve `null`,
-`disponible: false` y `motivo`. La serie materializa huecos calendáricos en
-memoria; no inserta observaciones ni interpolaciones en la BD. Las listas de
-observaciones/predicciones devuelven solo registros existentes: un filtro sin
-registros tiene lista vacía y motivo. El mapa conserva cada distrito aunque
-no tenga fila, con probabilidad/magnitud nulas y riesgo Sin datos.
+## Riesgo, alertas y modo experimental
 
-La probabilidad y la magnitud tienen disponibilidad independiente en
-`componentes`. Si falta un componente, el otro no se sustituye ni se rellena.
-El tablero añade `observado`: `tipo_dato: observado`, unidad `casos`, última
-semana observada, fecha de carga, cobertura y sumas parciales/regionales. Su
-periodo es independiente de `semana_objetivo` del pronóstico. Los indicadores
-`casos_estimados_*` tienen unidad casos; las probabilidades son proporciones.
-El tablero declara la cobertura de los agregados parciales; `casos_estimados_region`
-es nulo si falta algún distrito. Un conteo real de cero alertas sí puede ser
-cero; si no existe probabilidad para evaluar alertas, el indicador es nulo.
+- `nivel_riesgo` ∈ `bajo|medio|alto|muy_alto` según `parametro_sistema.cortes_riesgo`
+  (0,25 / 0,50 / 0,75); `nivel_riesgo_etiqueta` da el texto legible.
+- Una alerta se genera para `alto` y `muy_alto`; `cambio` compara con la alerta activa del corte
+  anterior (`nueva`, `se_mantiene`, `sube_nivel`, `baja_nivel`). Al llegar otro corte la anterior
+  pasa a `retirada` con `fecha_retiro` y `motivo`.
+- `experimental: true` indica que la versión usada no cumple los umbrales de aceptación (hoy, todas).
+  `alerta_modelo` compara la probabilidad con el umbral F1 de la versión; es independiente de la alerta.
+- `casos_persistencia` es la línea base: casos observados en la semana de corte.
 
-`fecha_corte_datos` proviene de la carga/ejecución. `fecha_actualizacion` es
-el instante de escritura en UTC. Recalcular hoy conserva el corte y objetivo
-originales. Vigente significa última publicación respecto de ese corte;
-no significa que el pronóstico sea vigente respecto de la fecha de hoy.
-La actualización de h=2 no cambia la selección ni las fechas de h=4.
+## Errores
 
-## Modelo experimental y alertas
+Formato uniforme `{"codigo", "mensaje", "detalle"}`, sin SQL ni credenciales.
 
-La aceptación se calcula con las métricas y criterios guardados: 2024 es el
-contraste y 2025 se muestra como sensibilidad separada. Las métricas temporales
-importadas evalúan el protocolo; no se presentan como una evaluación nueva del
-ajuste de servicio. `activa` indica selección para inferencia en la demo y
-no acredita promoción a producción. Las versiones históricas sin booster
-siguen consultables y no son reactivables.
-
-Con `servir_no_validadas: false`, los componentes experimentales se ocultan
-con valores nulos y motivo «Predicción no disponible: modelo no validado».
-También se ocultan sus niveles e indicadores de alertas y se rechazan
-reevaluaciones/activaciones de esas versiones. La demo usa `true`, conforme
-al encargo y a las decisiones aprobadas; sigue pendiente la aceptación antes
-de cualquier promoción prevista en OE2.
-
-La alerta visible usa Alto/Muy alto, desde 0,50 con la configuración aprobada.
-`alerta_modelo` conserva el umbral F1 de la versión. La discrepancia se expone
-sin calibrar ni cambiar probabilidades. Las alertas retrospectivas permanecen
-retiradas y no se presentan como avisos vigentes. Los umbrales, nivel mínimo
-y origen CORS proceden de `config/config.yaml`.
-
-## Escrituras, caché y errores
-
-La API no entrena ni lee gold, silver, reference, boosters locales o MLflow.db.
-La reevaluación valida columnas y ajuste anterior o igual al origen. Solo usa
-vectores vigentes, nunca OOS. Cada POST exitoso crea una ejecución con hashes,
-versiones usadas y duración; mantiene el historial. Activación y predicciones
-se confirman conjuntamente; cualquier fallo las revierte. Una petición de
-activación sobre la versión ya activa reevalúa y registra ejecución sin
-inventar un cambio de selección. El historial de cambios reales está en
-`activacion_modelo`. Repetir un POST solicita otra ejecución auditada; la
-idempotencia del CLI `publicar` se conserva como contrato separado.
-
-La caché tiene TTL de diez segundos y hasta 128 entradas por proceso. Consulta
-la revisión de carga/ejecución/activación antes de usarla y se limpia después
-de escribir. Un acierto no oculta una BD caída. Incluye `X-Cache` HIT/MISS y
-`X-Tiempo-Respuesta-ms`; CORS expone ambas cabeceras al frontend. No sustituye
-el benchmark p50/p95 de la fase 4.
-
-Errores uniformes: `codigo`, `mensaje`, `detalle`. No incluyen contraseñas,
-SQL ni vectores. Códigos HTTP:
-
-| HTTP | Uso |
+| HTTP | Códigos |
 |---|---|
-| 401 | Clave de escritura ausente o incorrecta |
-| 404 | Distrito, modelo, alerta o ruta inexistente |
-| 409 | Sin versión/vectores, artefacto incompatible o falta de aceptación requerida |
-| 422 | Ubigeo inválido, horizonte fuera de rango, fecha inválida, rango o paginación incorrectos |
-| 503 | BD inaccesible/no configurada o clave de escritura sin configurar |
-| 500 | Error interno inesperado, con mensaje público controlado |
+| 401 | `clave_invalida` |
+| 404 | `distrito_no_encontrado`, `alerta_no_encontrada`, `modelo_no_encontrado`, `solicitud_invalida` |
+| 409 | `inferencia_no_disponible`, `artefacto_invalido`, `no_cumple_umbrales`, `ya_activa`, `sin_datos` |
+| 422 | `parametro_invalido`, `rango_invalido` |
+| 503 | `bd_no_disponible`, `escritura_no_configurada` |
 
-## Exportar y comprobar
+## Caché y tiempos
 
-```bash
-.venv/bin/python -m src.api.exportar_openapi
-.venv/bin/python -m unittest discover -s tests -p test_api_backend.py
-```
+Las lecturas se cachean 10 s y se invalidan cuando aparece una ejecución nueva
+(`max(id_ejecucion)`); `Cache-Control: no-cache` la evita. Cabeceras `X-Cache` y
+`X-Tiempo-Respuesta-ms`. Benchmark local (p95): lecturas ≤ 32 ms y inferencia ≈ 3,6 s, en SQLite
+y PostgreSQL ([benchmark_postgresql.json](benchmark_postgresql.json)).
 
-La exportación requiere `DATABASE_URL`, tablas migradas y consulta real exitosa.
-Omite ejemplos de recursos inexistentes; no fabrica versiones ni alertas para
-documentar un endpoint. Los ejemplos de POST vienen de ejecuciones API ya
-guardadas, sin ejecutar escrituras durante la exportación. La documentación
-interactiva sigue accesible si la BD cae, sin ejemplos inventados de respaldo.
+## Regenerar el contrato
 
-Pendientes de las fases siguientes: benchmark SLA reproducible, documentación
-C4/trazabilidad completa, CI y despliegue aprobado en Render/Supabase. Windows
-no se ha ejecutado en este equipo; no hay afirmación de verificación remota.
-
-Para diagnóstico y benchmark se puede enviar `Cache-Control: no-cache` o
-`no-store` en GET: omite la caché de lecturas y devuelve `X-Cache: BYPASS`.
-La verificación de conexión sigue siendo obligatoria.
+`.\.venv\Scripts\python -m src.api.exportar_openapi` (usa `DATABASE_URL`; exige conexión real).

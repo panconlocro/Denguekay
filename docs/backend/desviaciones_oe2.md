@@ -3,7 +3,7 @@
 Fuente de verdad: [`especificacion_oe2.md`](especificacion_oe2.md) y [`ddl_oe2.sql`](ddl_oe2.sql).
 Este archivo registra cada diferencia entre el documento y el código y la decisión
 tomada para el refactor. **Estado: decisiones de la Fase 0 aprobadas por Rosa
-(2026-10-01); Fases 1, 2 y 3 implementadas.**
+(2026-10-01); Fases 1 a 4 implementadas (refactor cerrado).**
 
 Código revisado: `src/db/modelos.py`, migraciones `0001_backend` y `0002_serving`,
 `src/serving/`, `src/api/` y los tests del backend (`test_db_backend`, `test_serving_*`,
@@ -189,12 +189,51 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
 - **Benchmark:** la activación no se mide (cambia el estado y hoy responde 409 por diseño); el
   reporte declara la cobertura incompleta.
 
-## 7. Cambios pendientes en el documento OE2
+## 6d. Notas de la Fase 4 (cierre TB1)
 
-Se completará en la Fase 4. Por ahora:
-- Permisos ampliados de `rol_api` y `rol_pipeline` (f), incluido `importancia_variable`.
-- `bloque` en la semilla `umbrales_aceptacion`.
-- Clave `seleccion_experimental` (mientras dure la desviación temporal).
-- Índice de idempotencia sobre `ejecucion.detalle->>'huella'`.
-- Extensiones: `importancia_variable`, `alerta.motivo`, `version_modelo.reproducibilidad`,
-  endpoints extra y campo `experimental` en la API.
+- **Prueba de humo:** la `DATABASE_URL` de `.env` (BD `denguekay`) rechazó la autenticación
+  («password authentication failed for user denguekay»); según lo acordado, la prueba se hizo en
+  `denguekay_pruebas` (PostgreSQL 18.6 local). Evidencia en `evidencia/evidencia_tb1.md`.
+- **`test_seguimiento_mlflow`:** fallaba en Windows porque MLflow deja abierta su `mlflow.db`
+  temporal. Se corrigió solo en el test (cierra esos motores antes de borrar la carpeta); no se
+  tocó `src/modeling`.
+- **Dependencias:** se añadió `httpx2` (TestClient de Starlette 1.x); `httpx` se conserva para el
+  benchmark. Faltaban instalados `psycopg` y `coverage`, ya listados en `requirements.txt`.
+- **Documentos de fases anteriores** (`fase1_bd.md` … `fase4_calidad.md`, `fase*_verificacion*.json`)
+  describen el backend previo al refactor; se conservan como historia, sin actualizar.
+
+## 7. Cambios que debe reflejar el documento OE2
+
+Correcciones del DDL (Anexo B):
+1. **Permisos:** `GRANT INSERT, UPDATE ON ejecucion TO rol_api` (la API registra inferencias y
+   activaciones) y `GRANT INSERT, UPDATE ON provincia, distrito, semana_epidemiologica,
+   version_modelo, importancia_variable TO rol_pipeline` (carga y publicación).
+2. **Semilla `umbrales_aceptacion`:** añadir `"bloque": "temporada_2024"` (bloque que decide la aceptación).
+3. **Índice de idempotencia:** `CREATE UNIQUE INDEX ux_ejecucion_huella_ingesta ON ejecucion
+   ((detalle ->> 'huella')) WHERE tipo = 'ingesta' AND estado = 'exitosa'`.
+4. **Roles:** crearlos con `DO … IF NOT EXISTS` (re-ejecutable) y aplicar RLS/política también a
+   `importancia_variable`.
+
+Extensiones del esquema (sección 5, Tablas 9–14):
+5. Tabla `importancia_variable` (`id_importancia`, `id_version` FK, `variable`, `importancia`, `rango`; HU0008-4).
+6. `alerta.motivo` (text, opcional): explica el retiro.
+7. `version_modelo.reproducibilidad` (jsonb, opcional): device, versión de XGBoost, plataforma,
+   partición temporal y fechas de entrenamiento.
+8. Parámetro `seleccion_experimental` en `parametro_sistema` (mientras ningún modelo cumpla los umbrales).
+
+API (Tabla 2):
+9. Endpoints extra: GET `/distritos/{ubigeo}`, `/observaciones`, `/alertas/{id}`, `/modelos/{id}`,
+   `/modelos/{id}/variables`.
+10. Parámetros: `corte` en `/predicciones`; `desde`/`hasta` en `/series`; filtro extra `estado` en
+    `/alertas`; cuerpo `{horizonte, id_semana_corte}` en `POST /admin/inferencias`; `{version}` =
+    `id_version` en la activación.
+11. Campo calculado `experimental` en predicciones, alertas, tablero y modelos; h=3 responde
+    `no_disponible` («sin modelo para h=3») en lecturas y 409 en la inferencia.
+12. `/mapa-riesgo` devuelve centroides (`Point`), no polígonos.
+
+Operación y datos:
+13. Storage local (`models/storage/<bucket>/`) en TB1 en lugar de Supabase Storage.
+14. Predicciones OOS del protocolo guardadas como cortes pasados (`id_version_*` NULL; bloque en
+    `ejecucion.detalle`); persistencia calculada al vuelo, sin versión propia.
+15. Modo demo experimental: versiones `candidata` servidas como experimentales hasta que una cumpla
+    los umbrales (desviación temporal).

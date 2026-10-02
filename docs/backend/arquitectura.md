@@ -1,136 +1,80 @@
-# Arquitectura del backend
+# Arquitectura del backend (esquema OE2)
 
-El backend aplica publicación batch y consulta con reevaluación real. El pipeline
-local lee fuentes agregadas, valida GX, reutiliza el modelado existente y publica
-en una transacción SQL. La API usa únicamente la BD para obtener datos y cargar
-el booster; no depende de los CSV, de `models/` ni del almacenamiento de MLflow.
-React es un consumidor previsto y queda fuera de este encargo.
+Fuente de diseño: documento «OE2 Diseño de la Solución v1.1» (sección 5, Anexo B, Tabla 2),
+resumido en [especificacion_oe2.md](especificacion_oe2.md). En TB1 todo es local.
 
-## C4: contexto
+## Contexto
 
 ```mermaid
 flowchart LR
-    vigilancia[Personal de vigilancia de Piura] --> react[Aplicación React prevista]
-    equipo[Equipo de tesis: Rosa y Nicolás] --> batch[Publicación local]
-    fuentes[MINSA, Sala Situacional, clima y censo] --> batch
-    batch --> sistema[Backend Denguekay]
-    react --> sistema
-    sistema --> react
+  fuentes[Excel MINSA, Sala Situacional, Open-Meteo, INEI] --> pipeline[Pipeline de datos y modelado<br/>bronze → silver → gold]
+  pipeline --> batch[Carga y publicación<br/>src/serving]
+  batch --> bd[(PostgreSQL local<br/>esquema OE2)]
+  batch --> storage[(models/storage<br/>modelos/geodatos/reportes)]
+  batch --> mlflow[(MLflow local)]
+  api[FastAPI<br/>src/api] --> bd
+  api --> storage
+  frontend[Frontend React<br/>fuera de TB1 backend] --> api
 ```
 
-La unidad de información es distrito/semana epidemiológica. No se almacenan
-personas. Estas fuentes son las entradas documentadas por el pipeline del repo;
-el backend no accede directamente a servicios epidemiológicos externos.
+## Contenedores y componentes
 
-## C4: contenedores
+| Componente | Responsabilidad |
+|---|---|
+| `src/db` | Esquema SQLAlchemy portable (PostgreSQL / SQLite), migraciones Alembic (`0003_oe2`), sesiones y UPSERT |
+| `src/serving/cargar_datos` | Ingesta validada (GX + linaje) de provincia, distrito, calendario y observaciones |
+| `src/serving/modelos`, `publicar` | Ajuste de servicio con `src/modeling/train.py`, MLflow, versiones `candidata` y booster en Storage |
+| `src/serving/almacenamiento` | Puerto `Almacenamiento` (`guardar`, `leer`, `existe`) y adaptador local; adaptador Supabase futuro |
+| `src/serving/inferencia` | Vector desde la BD (`construir_filas_futuras`), selección activa/experimental, UPSERT, alertas, OOS |
+| `src/serving/parametros` | Lectura de `parametro_sistema` (cortes, umbrales y bloque, selección experimental) |
+| `src/api` | Routers de la Tabla 2, DTO por lotes, errores uniformes, caché por revisión, OpenAPI con ejemplos reales |
 
-```mermaid
-flowchart LR
-    fuentes[Gold / silver / reference: solo lectura] --> publicar[Python: src.serving]
-    publicar --> mlflow[MLflow local: runs y artefactos]
-    publicar --> archivos[models/serving: evidencia local]
-    publicar --> bd[(PostgreSQL: destino Supabase)]
-    bd <--> api[FastAPI: src.api]
-    api <--> react[React: consumidor previsto]
-    config[config.yaml y entorno privado] --> publicar
-    config --> api
-    sqlite[(SQLite temporal / copia local)] -. pruebas .-> api
-```
+## Modelo de datos
 
-PostgreSQL local y SQLite se han ejecutado; Supabase y Render son destinos
-previstos para la fase 5. MLflow registra experimentos y versiones de servicio
-como runs; no se usa su Model Registry. La API no necesita `mlflow.db`.
-
-## C4: componentes
-
-```mermaid
-flowchart TB
-    cli[serving.publicar / cargar_datos] --> gx[validation.calidad_gx + auditoría de traspaso]
-    gx --> modelado[modeling.train, features, protocolo compacto]
-    modelado --> artefactos[serving.modelos / artefactos]
-    artefactos --> publicacion[serving.publicacion / riesgo]
-    publicacion --> orm[db.modelos + sesion + Alembic]
-    routers[api.routers: recursos HTTP] --> deps[dependencias: sesión, API key, caché]
-    deps --> consultas[consultas y esquemas Pydantic]
-    consultas --> orm
-    routers --> reevaluacion[serving.reevaluacion]
-    reevaluacion --> artefactos
-    reevaluacion --> orm
-    routers --> errores[errores uniformes + tiempo de respuesta]
-```
-
-El catálogo, observaciones y carga están separados de las versiones y ejecuciones.
-Una predicción referencia clasificación, regresión y persistencia; conserva el
-vector y el origen. Las alertas referencian predicciones y conservan sus retiros.
-`activacion_modelo` audita cambios de selección. Los índices evitan duplicados de
-observaciones y múltiples versiones activas por tipo/horizonte. Migraciones en
-`src/db/migraciones/` son la autoridad del esquema; no se crea automáticamente al
-arrancar la API.
+Nueve tablas del DDL (`provincia`, `distrito`, `semana_epidemiologica`, `ejecucion`,
+`observacion_semanal`, `version_modelo`, `prediccion`, `alerta`, `parametro_sistema`) más la
+extensión `importancia_variable`. `ejecucion` audita todo (`ingesta`, `inferencia`,
+`reentrenamiento`, `mantenimiento`). En PostgreSQL: ENUM nativos, `jsonb`, identity, CHECK con
+regex, RLS y roles `rol_api` / `rol_pipeline`.
 
 ## Secuencia: publicación
 
 ```mermaid
 sequenceDiagram
-    actor Equipo
-    participant CLI as serving.publicar
-    participant Fuentes as Gold / silver / reference
-    participant Validacion as GX + contrato temporal
-    participant Modelo as Modelado existente
-    participant MLflow
-    participant BD
-    Equipo->>CLI: publicar --horizontes 2 4
-    CLI->>Fuentes: Leer fuentes y calcular SHA256
-    CLI->>Validacion: Validar calidad, calendario, hashes y protocolo
-    CLI->>BD: Buscar identidad de publicación
-    alt Misma identidad completada
-        BD-->>CLI: Ejecución existente: reutilizada
-    else Entradas nuevas
-        CLI->>Modelo: Ajustar etiquetas cerradas y construir filas futuras
-        Modelo-->>CLI: Boosters, columnas, gain y predicciones reales
-        CLI->>MLflow: Registrar run normal
-        CLI->>BD: Transacción: versiones, OOS, vigentes y alertas
-        BD-->>CLI: Confirmar historial y ejecución
-    end
+  participant CLI as publicar
+  participant F as Fuentes (data/, solo lectura)
+  participant M as train.py + MLflow
+  participant S as Storage local
+  participant BD as PostgreSQL
+  CLI->>F: GX, linaje y hashes
+  CLI->>BD: ejecucion ingesta + upsert de catálogo y observaciones
+  CLI->>M: ajuste de servicio (mismos hiperparámetros) y run MLflow
+  CLI->>S: modelos/<codigo>.json
+  CLI->>BD: version_modelo candidata (sha256, cumple_umbrales con parametro_sistema)
+  CLI->>BD: predicciones OOS como cortes pasados
+  CLI->>BD: inferencia del corte vigente (UPSERT) y alertas
+  CLI->>BD: ejecucion reentrenamiento exitosa (una transacción)
 ```
 
-El OOS procede del CSV del protocolo de temporadas 2022–2024 y calendario 2025.
-Sus versiones históricas sin booster no son reactivables. Si falta el CSV se
-regenera con el módulo existente y salida separada en `models/serving/`; no se
-fabrican predicciones ni se sobrescriben los resultados de Rosa.
-
-## Secuencia: inferencia dentro de la API
+## Secuencia: inferencia por la API
 
 ```mermaid
 sequenceDiagram
-    actor Cliente
-    participant API
-    participant BD
-    participant Modelo as XGBoost cargado desde BD
-    Cliente->>API: POST recalcular + X-API-Key
-    API->>API: Validar clave y horizonte
-    API->>BD: Bloquear versiones; leer artefactos y vectores vigentes
-    API->>API: Comprobar columnas, corte y política de validación
-    API->>Modelo: Predecir con boosters guardados
-    Modelo-->>API: Probabilidades y magnitudes
-    API->>BD: Agregar ejecución/predicciones y actualizar alertas
-    BD-->>API: Commit o rollback completo
-    API->>API: Invalidar caché
-    API-->>Cliente: Resultado con IDs y fecha de corte original
+  participant C as Cliente (X-API-Key)
+  participant A as POST /admin/inferencias
+  participant BD as PostgreSQL
+  participant S as Storage
+  C->>A: {horizonte, id_semana_corte}
+  A->>BD: versión activa o seleccion_experimental
+  A->>BD: panel de casos + población 2017 hasta el corte
+  A->>A: construir_filas_futuras (en memoria, sin persistir)
+  A->>S: booster y verificación SHA-256
+  A->>BD: UPSERT prediccion, alertas, ejecucion inferencia
+  A-->>C: resumen (experimental, disponibles, alertas)
 ```
 
-Activar una versión sigue la misma transacción y audita la selección si cambia.
-Una falla de artefacto/esquema/corte devuelve 409 y conserva la selección anterior.
-Los GET consultan revisión real de BD incluso en aciertos de caché; una conexión
-fallida devuelve 503, sin servir el valor almacenado como vigente.
+## Límites
 
-## Fechas y límites
-
-La semana objetivo es `t`; la información utilizada cierra en `t−h`. El helper
-compartido está en `src/utils/calendario.py`, usa MMWR y contempla la semana 53 de
-2025. La corrección se documenta en
-`docs/feature_engineering/correccion_calendario.md`.
-`fecha_actualizacion` describe una escritura; `fecha_corte_datos` describe las
-fuentes. Un recalculado no actualiza los datos epidemiológicos.
-
-Para cifras verificadas, cobertura y latencias consultar
-[fase4_calidad.md](fase4_calidad.md) y sus JSON de evidencia.
+- Corte de datos publicado: 27/12/2025; sin actualización automática ni scheduler.
+- Ninguna versión cumple los umbrales: la demo sirve predicciones `experimental: true`.
+- El mapa usa centroides; no hay polígonos en la referencia del proyecto.

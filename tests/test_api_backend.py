@@ -371,6 +371,18 @@ class TestAPIReal(unittest.TestCase):
             finally:
                 motor.dispose()
 
+    def test_prueba_humo_tabla_2(self):
+        from src.api.prueba_humo import ejecutar, markdown
+        resultados = ejecutar(self.cliente, CLAVE)
+        estados = {(r["metodo"], r["ruta"]): r["http"] for r in resultados}
+        self.assertEqual(estados["GET", "/mapa-riesgo?horizonte=4"], 200)
+        self.assertEqual(estados["POST", "/admin/inferencias (sin X-API-Key)"], 401)
+        self.assertEqual([r["http"] for r in resultados if r["ruta"].endswith("/activar")], [409])
+        self.assertEqual(sum(r["http"] == 200 for r in resultados), 10)
+        texto = markdown(resultados, "http://testserver", "SQLite de prueba")
+        self.assertIn("| GET | `/salud` | 200 |", texto)
+        self.assertNotIn(CLAVE, texto)
+
     def test_api_no_lee_data(self):
         codigo = '''
 import sys

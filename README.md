@@ -2,60 +2,40 @@
 
 ## Backend
 
-Las fases 1–4 incorporan el esquema SQLAlchemy/Alembic, la carga validada,
-la publicación de predicciones con XGBoost real y la API FastAPI. Puede usar PostgreSQL con psycopg 3
-(incluido Supabase) o SQLite para pruebas. Copia `.env.example` como `.env`,
-configura `DATABASE_URL` y una `API_KEY` para escrituras y, desde la raíz, ejecuta:
+Backend local alineado al documento OE2 (sección 5, Anexo B y Tabla 2): PostgreSQL con el esquema
+de [ddl_oe2.sql](docs/backend/ddl_oe2.sql), carga validada, boosters XGBoost en Storage local
+(`models/storage/`) y API FastAPI. En TB1 no se despliega nada (ni Supabase ni Render). Copia
+`.env.example` como `.env`, define `DATABASE_URL` (PostgreSQL local) y `API_KEY`, y desde la raíz,
+en PowerShell:
 
-```bash
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -c "from src.utils.paths import SERVING_MODELS; SERVING_MODELS.mkdir(parents=True, exist_ok=True)"
-.venv/bin/alembic upgrade head
-.venv/bin/python -m src.serving.publicar --horizontes 2 4
-.venv/bin/python -m unittest discover -s tests
-.venv/bin/python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
+```powershell
+.\.venv\Scripts\python -m pip install -r requirements.txt
+.\.venv\Scripts\python -m alembic upgrade head
+.\.venv\Scripts\python -m src.serving.cargar_datos
+.\.venv\Scripts\python -m src.serving.publicar --horizontes 2 4
+.\.venv\Scripts\python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-En Windows usa `.\.venv\Scripts\python.exe` y
-`.\.venv\Scripts\alembic.exe` (por ejemplo,
-`.\.venv\Scripts\python.exe -m src.serving.publicar --horizontes 2 4`).
-La publicación exige gold, silver, referencias, manifiesto y resultados del
-protocolo temporal consistentes; ejecuta GX y la auditoría antes de escribir.
-Entrena versiones de servicio nuevas, conserva las retrospectivas de Rosa y
-guarda los artefactos en la BD. Una repetición con las mismas entradas,
-configuración, código y entorno reutiliza la ejecución. `data/` es solo lectura.
+La API queda en `http://127.0.0.1:8000/api/v1` (documentación en `/docs`). Con uvicorn levantado,
+`.\.venv\Scripts\python -m src.api.prueba_humo` llama a cada endpoint de la Tabla 2 y escribe
+[evidencia_tb1.md](docs/backend/evidencia/evidencia_tb1.md). `data/` es solo lectura.
 
-El estado de validación usa las métricas de 2024; 2025 se reporta como
-sensibilidad separada. Las versiones actuales son **experimentales** y el
-corte de datos publicado es **27/12/2025**, sin actualización automática.
+Ninguna versión de modelo cumple todavía los umbrales de aceptación: se sirven como
+`experimental: true` mediante `parametro_sistema.seleccion_experimental` (desviación temporal).
+Corte de datos publicado: 27/12/2025.
 
-La API expone `/api/v1`, `/docs` y `/openapi.json`. Consulta e infiere desde
-la BD sin necesitar `data/`, `models/` ni `mlflow.db`; el pipeline de publicación
-sí necesita las fuentes locales. Sus POST exigen `X-API-Key`, conservan
-historial y reevalúan boosters/vectores almacenados. El CORS está restringido
-al origen configurado. Una versión activa no equivale a promoción a producción.
+Tests y cobertura (SQLite temporal; PostgreSQL si existe `DENGUEKAY_PG_PRUEBAS_URL`):
 
-Si ya tienes la BD poblada, basta configurar `.env` y levantar Uvicorn;
-no necesitas repetir la publicación para consultar o recalcular. Para usar la
-copia local de verificación de fase 3: `DATABASE_URL=sqlite:///models/serving/fase3.sqlite`.
-Exporta ejemplos reales con `.venv/bin/python -m src.api.exportar_openapi`.
+```powershell
+.\.venv\Scripts\python -m coverage run --source=src/db,src/serving,src/api -m unittest discover -s tests
+.\.venv\Scripts\python -m coverage report -m
+```
 
-Consulta [operación](docs/backend/operacion.md) y
-[cierre de la fase 1](docs/backend/fase1_bd.md) y
-[cierre de la fase 2](docs/backend/fase2_inferencia.md),
-[cierre de la fase 3](docs/backend/fase3_api.md) y
-[contrato API](docs/backend/contrato_api.md).
-La fase 4 incorpora [arquitectura](docs/backend/arquitectura.md),
-[decisiones](docs/backend/decisiones_tecnicas.md),
-[trazabilidad HU](docs/backend/trazabilidad_hu.md) y
-[mediciones de calidad](docs/backend/fase4_calidad.md).
-Ejecuta `.venv/bin/python -m coverage run -m unittest discover -s tests` y
-`.venv/bin/python -m coverage report --fail-under=80`. El benchmark usa la BD
-configurada: `.venv/bin/python -m src.api.benchmark`; con `--url` mide HTTP real.
-Las escrituras son opcionales (`--incluir-escrituras`) y deben medirse sobre una
-copia de la BD, pues agregan ejecuciones. CI ejecuta tests/cobertura en push/PR
-para Linux, Windows y macOS; falta observar sus runs remotos tras el push.
-El despliegue Render/Supabase y el SLA remoto requieren aprobación de la fase 5.
+Documentación: [operación](docs/backend/operacion.md), [contrato API](docs/backend/contrato_api.md),
+[arquitectura](docs/backend/arquitectura.md), [decisiones](docs/backend/decisiones_tecnicas.md),
+[trazabilidad HU](docs/backend/trazabilidad_hu.md), [especificación OE2](docs/backend/especificacion_oe2.md)
+y [desviaciones](docs/backend/desviaciones_oe2.md). Los cierres `fase1_bd.md` … `fase4_calidad.md`
+describen el backend anterior al refactor y se conservan como historia.
 
 ## Feature engineering con Codex
 

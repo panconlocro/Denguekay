@@ -1,97 +1,51 @@
-# Decisiones técnicas
+# Decisiones técnicas del backend
 
-## FastAPI y Pydantic v2
+Las diferencias con el documento OE2 y su justificación están en
+[desviaciones_oe2.md](desviaciones_oe2.md); aquí se resumen las decisiones de implementación.
 
-Se conserva el stack solicitado: rutas tipadas, validación de parámetros, modelos
-de respuesta y OpenAPI. Pydantic rechaza campos extra y valores incompatibles;
-las fechas se serializan en UTC. Django aportaría administración integrada, pero
-no existe una necesidad de ese panel en el contrato; Flask exigiría ensamblar más
-validación y documentación. La elección no acredita rendimiento por sí sola:
-se mide la implementación en [los reportes de fase 4](fase4_calidad.md).
-Referencia: [documentación oficial FastAPI](https://fastapi.tiangolo.com/).
+## Stack
 
-## SQLAlchemy 2, Alembic y PostgreSQL
+- **FastAPI + Pydantic v2:** contrato tipado, OpenAPI generado, validación con 422 uniforme.
+- **SQLAlchemy 2 + Alembic + psycopg 3:** un mismo esquema para PostgreSQL y SQLite (pruebas);
+  las migraciones son la autoridad del esquema (nunca `create_all` al arrancar).
+- **Portabilidad:** `sqlalchemy.Enum` nativo en PostgreSQL y CHECK en SQLite;
+  `JSON().with_variant(JSONB)`; CHECK con regex o aritmética de fechas solo en PostgreSQL
+  (`ddl_if`), con equivalentes en SQLite y validación en el ORM.
 
-SQLAlchemy centraliza transacciones y consultas; Alembic conserva revisiones del
-esquema. Se usa `JSON` portable, claves foráneas e índices SQL, sin PostGIS ni
-JSONB obligatorio. SQLite permite pruebas aisladas con migraciones reales;
-PostgreSQL local verifica el motor previsto para Supabase. SQLite no acredita
-semántica idéntica de bloqueos concurrentes: las pruebas HTTP locales son
-secuenciales y falta medir concurrencia en producción.
+## Datos y modelo
 
-Una alternativa de acceso exclusivo por SDK REST de Supabase limitaría la misma
-implementación en SQLite y el control transaccional de activación/republicación.
-Supabase proporciona el destino gestionado propuesto; aún no se ha comprobado
-una conexión remota. Referencias: [SQLAlchemy: transacciones](https://docs.sqlalchemy.org/en/20/orm/session_transaction.html),
-[Alembic](https://alembic.sqlalchemy.org/en/latest/),
-[conexiones Supabase](https://supabase.com/docs/guides/database/connecting-to-postgres).
+- **El modelo no cambia:** el ajuste de servicio reutiliza `ajustar_modelos`, `PARAMETROS_BASE` y
+  las variantes del protocolo compacto; las métricas son las del protocolo temporal guardado.
+- **Vector reconstruido desde la BD:** `construir_filas_futuras` sobre el panel leído de
+  `observacion_semanal`. Verificado contra gold (diferencia máxima 1,8e-15) y contra el pipeline
+  anterior (probabilidades idénticas).
+- **Booster en Storage**, no en la BD: ruta lógica `modelos/<codigo>.json` + SHA-256; un hash
+  distinto bloquea la inferencia (409).
+- **UPSERT de predicciones** por `(ubigeo, id_semana_corte, horizonte)`: el historial de un mismo
+  corte no se conserva; queda la trazabilidad por `id_ejecucion` y `fecha_generacion`.
+- **Parámetros en la BD:** cortes de riesgo, umbrales (con bloque decisor `temporada_2024`) y
+  regla de brote viven en `parametro_sistema`; `config.yaml` solo siembra la selección experimental.
 
-## Batch y reevaluación
+## Demo experimental (desviación temporal)
 
-La publicación local ejecuta GX y reutiliza `train`, columnas/contratos, parámetros,
-cortes y métricas existentes. Los GET consultan predicciones persistidas; los POST
-cargan boosters desde BD y reevalúan los vectores guardados. Entrenar durante una
-consulta HTTP aumentaría la duración y acoplaría el despliegue a las fuentes;
-servir únicamente CSV impediría la integración API–modelo exigida.
+El CHECK `estado <> 'activa' OR cumple_umbrales` se respeta: las versiones quedan `candidata`. Si
+no hay versión activa y `servir_no_validadas = true`, la inferencia usa
+`parametro_sistema.seleccion_experimental` y la API marca `experimental: true`. Con
+`servir_no_validadas = false` las predicciones se guardan `no_disponible` con motivo.
 
-Las versiones finales de servicio utilizan etiquetas cerradas al último origen;
-las métricas importadas proceden del protocolo OOS y no evalúan ese ajuste final
-como si se hubiese probado otra vez. La selección activa es una decisión de
-inferencia para la demo, no una promoción a producción. Para producción se requiere
-una evaluación temporal que supere los umbrales, revisión de Rosa y autorización
-del despliegue. No todos los runs de MLflow pasan a producción.
+## Seguridad
 
-## Artefactos y reproducción
+- Escrituras con `X-API-Key` (comparación en tiempo constante); sin clave configurada, 503.
+- RLS y roles `rol_api` / `rol_pipeline` (NOLOGIN) creados por la migración en PostgreSQL. La API
+  local se conecta como propietario de las tablas, al que RLS no aplica.
+- `.env` no se versiona; errores sin SQL ni credenciales; CORS restringido a `cors_origen`.
 
-El booster XGBoost JSON se guarda en `version_modelo.artefacto`, junto con columnas,
-parámetros, hashes, dispositivo, plataforma y versión de XGBoost. Permite ejecutar
-la API sin un volumen de datasets/modelos. Incrementa el tamaño de BD y de copias
-de seguridad; los listados no exponen el booster. Un almacenamiento de objetos
-separado reduciría ese tamaño, pero añade disponibilidad y credenciales externas.
-Referencia: [serialización XGBoost](https://xgboost.readthedocs.io/en/stable/tutorials/saving_model.html).
+## Rendimiento
 
-Los boosters OOS originales no fueron entregados: se preservan las predicciones
-de Rosa y se marcan esas versiones como no reactivables. Los modelos de servicio
-nuevos son distintos ajustes; no se promete identidad numérica CPU/GPU. El helper
-MMWR corrige fechas y no altera silenciosamente los resultados históricos.
+DTO por lotes (sin N+1), caché de lecturas de 10 s invalidada por `max(id_ejecucion)` y booster
+cacheado en memoria. Benchmark local: lecturas p95 ≤ 32 ms; inferencia ≈ 3,6 s (< 5 s).
 
-## Caché y rendimiento
+## Pendiente (fuera de TB1)
 
-Caché en memoria por proceso, TTL corto y capacidad limitada; compara revisión de
-carga/ejecución/activación en BD antes de reutilizar una lectura. Las escrituras
-invalidan; `Cache-Control: no-cache` o `no-store` omite la caché de lecturas para
-medir y diagnosticar. No elimina el booster residente. Redis permitiría compartir
-la caché entre workers, a costa de otra dependencia; no se necesita para la demo
-actual. El benchmark publica tiempos completos, errores y recursos omitidos.
-
-## Seguridad y operación
-
-Lectura pública de datos agregados; escritura con clave privada `X-API-Key` y
-comparación en tiempo constante. CORS permite el origen configurado, no autentica
-usuarios. El frontend público debe consumir GET; una API key privada no debe
-incluirse en el bundle React. Las escrituras son operaciones técnicas desde un
-cliente autorizado. Autenticación por usuario y roles sería una ampliación futura.
-
-Las credenciales viven en `.env`/variables del entorno y no en los reportes. Los
-errores uniformes evitan exponer SQL, cadenas de conexión o detalles del booster.
-La base utiliza sus permisos PostgreSQL; para una exposición remota falta verificar
-TLS, credenciales, configuración de Render y acceso a Supabase en fase 5. No se
-incorporan datos personales. No se afirma una certificación jurídica del sistema.
-
-## Limitaciones y decisiones pendientes
-
-- Los modelos actuales no cumplen HU0007-4: todos se identifican como experimentales.
-  `servir_no_validadas: true` permite la demo; con `false` hay valores nulos y motivo.
-- Se aprobó usar 2024 para aceptación y reportar 2025 como sensibilidad separada.
-  No se promedian los periodos ni se presupone que h=2 esté validado.
-- Se aprobó mantener alertas visibles desde 0,50 y conservar `alerta_modelo` con el
-  umbral F1. Su discrepancia permanece visible: las probabilidades no están
-  acreditadas como calibradas. Falta decidir su uso operativo con Rosa.
-- El corte de fuentes es 2025; recalcular no produce información nueva ni un
-  pronóstico actual a fecha del servidor.
-- h=3 no tiene gold/modelo: las lecturas declaran ausencia y las escrituras lo rechazan.
-- Solo hay centroides en las referencias disponibles; no se fabrican polígonos.
-- Deriva automatizada, optimización adicional de hiperparámetros, React, SLA remoto
-  y disponibilidad del periodo de validación quedan pendientes; ver trazabilidad.
-- Resultados pueden variar entre CPU/GPU. CI verifica muestras reales en CPU y
-  requiere ejecución remota para acreditar Windows/Linux, además de macOS local.
+Adaptador Supabase Storage y despliegue (Supabase/Render), monitoreo de deriva, scheduler semanal,
+un modelo que cumpla los umbrales y polígonos distritales para el mapa.

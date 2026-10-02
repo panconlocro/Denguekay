@@ -40,5 +40,19 @@ class TestConfiguracionBD(unittest.TestCase):
             motor.dispose()
 
 
+class TestEvidenciaSQL(unittest.TestCase):
+    def test_sql_offline_de_la_migracion_sin_credenciales(self):
+        import tempfile
+        from pathlib import Path
+        from src.db.exportar_sql_migracion import exportar
+        with tempfile.TemporaryDirectory() as carpeta:
+            sql = exportar(Path(carpeta) / "migracion.sql").read_text(encoding="utf-8")
+        self.assertEqual(sql.count("CREATE TYPE"), 10)
+        self.assertIn("CREATE POLICY servicio_prediccion", sql)
+        self.assertIn("ux_ejecucion_huella_ingesta", sql)
+        self.assertNotIn("CONSTRAINT ck_provincia_ck_", sql)
+        self.assertNotIn("password", sql.lower())
+
+
 if __name__ == "__main__":
     unittest.main()

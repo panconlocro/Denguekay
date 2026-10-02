@@ -93,6 +93,20 @@ class AplanadoTests(unittest.TestCase):
         self.assertEqual(metricas["seleccion_umbral.umbral"], 0.2)
 
 
+def cerrar_motores_mlflow(carpeta):
+    """En Windows, MLflow deja abierta su mlflow.db y el directorio temporal no se puede borrar.
+
+    Se cierran solo los motores SQLAlchemy de la carpeta de la prueba; no cambia src/modeling.
+    """
+    import gc
+    from sqlalchemy.engine import Engine
+
+    for objeto in gc.get_objects():
+        base = (objeto.url.database or "").replace("\\", "/").lower() if isinstance(objeto, Engine) else ""
+        if base and Path(carpeta).as_posix().lower() in base:
+            objeto.dispose()
+
+
 class RegistroTests(unittest.TestCase):
     def test_registra_padre_variantes_y_folds_anidados(self):
         import mlflow
@@ -120,6 +134,7 @@ class RegistroTests(unittest.TestCase):
             finally:
                 if anterior is not None:
                     os.environ["MLFLOW_TRACKING_URI"] = anterior
+                cerrar_motores_mlflow(tmp)
             # 1 padre + 2 variantes + 5 folds
             self.assertEqual(len(runs), 8)
             self.assertEqual(runs["tags.nivel"].value_counts().to_dict(), {"fold": 5, "variante": 2})
