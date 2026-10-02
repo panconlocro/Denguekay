@@ -1,0 +1,28 @@
+{
+    "permissions":  {
+                        "allow":  [
+                                      "Bash(.venv/Scripts/python -m unittest:*)",
+                                      "Bash(.venv/Scripts/python -m coverage:*)",
+                                      "Bash(.venv/Scripts/python -m alembic:*)",
+                                      "Bash(.venv/Scripts/python -m src.serving.cargar_datos:*)",
+                                      "Bash(.venv/Scripts/python -m src.api.exportar_openapi:*)",
+                                      "Bash(.venv/Scripts/python -m pip check:*)",
+                                      "Bash(.\\.venv\\Scripts\\python -m unittest:*)",
+                                      "Bash(.\\.venv\\Scripts\\python -m coverage:*)",
+                                      "Bash(.\\.venv\\Scripts\\python -m alembic:*)",
+                                      "Bash(git status:*)",
+                                      "Bash(git diff:*)",
+                                      "Bash(git log:*)"
+                                  ],
+                        "ask":  [
+                                    "Bash(git commit:*)",
+                                    "Bash(git push:*)",
+                                    "Bash(.venv/Scripts/python -m pip install:*)"
+                                ],
+                        "deny":  [
+                                     "Edit(/data/**)",
+                                     "Write(/data/**)",
+                                     "Read(./.env)"
+                                 ]
+                    }
+}

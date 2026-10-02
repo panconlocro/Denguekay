@@ -43,3 +43,18 @@ Por indicación del asesor de tesis, gold no se toca hasta que el equipo haga el
 ## Herramientas del proyecto
 - Skill `eda-dengue` (`.claude/skills/eda-dengue/`): método, fases y estándares del EDA. Úsala para cualquier tarea de análisis exploratorio.
 - Subagente `revisor-eda` (`.claude/agents/revisor-eda.md`): auditor independiente que recalcula cada cifra citada al cierre de cada fase.
+
+
+<!-- inicio: backend OE2 -->
+## Backend (refactor OE2, TB1)
+- **Fuente de verdad del esquema y la API:** `docs/backend/especificacion_oe2.md` y `docs/backend/ddl_oe2.sql` (copiados del documento OE2: sección 5, Anexo B y Tabla 2). El código se adapta al documento, no al revés. Toda diferencia se justifica en `docs/backend/desviaciones_oe2.md` y se le consulta a Rosa antes.
+- **Alcance TB1: todo local.** PostgreSQL local + SQLite para tests, uvicorn local, artefactos en `models/storage/` mediante un adaptador local. Prohibido configurar o desplegar Supabase/Render en esta etapa.
+- Stack: FastAPI + Pydantic v2, SQLAlchemy 2 + Alembic, psycopg 3. Las migraciones en `src/db/migraciones/` son la autoridad del esquema; nunca `create_all` al arrancar la API.
+- Comandos (PowerShell, desde la raíz):
+  - `.\.venv\Scripts\python -m alembic upgrade head`
+  - `.\.venv\Scripts\python -m src.serving.cargar_datos`
+  - `.\.venv\Scripts\python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000`
+  - `.\.venv\Scripts\python -m coverage run --source=src/db,src/serving,src/api -m unittest discover -s tests` y `... -m coverage report -m`
+- Tests en BD temporal; nunca contra la BD de Rosa. Cobertura mínima 80 %.
+- Al cerrar cada fase del refactor, invoca al subagente `revisor-backend` y pega su tabla en el resumen.
+<!-- fin: backend OE2 -->
