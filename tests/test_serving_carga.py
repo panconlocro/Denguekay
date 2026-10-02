@@ -1,109 +1,30 @@
-"""Carga idempotente, ceros, calendario y procedencia; sin modelos simulados."""
+"""Carga OE2 con filas reales: provincia, distrito, calendario, observaciones e ingesta."""
 
 from dataclasses import replace
-import hashlib
-import io
-from contextlib import redirect_stderr
+from datetime import date
 from pathlib import Path
 import tempfile
 import unittest
 
-import pandas as pd
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError
 
-from backend_soporte import datos_muestra, entorno_bd, leer_muestra, motor_temporal
-from src.db.modelos import CargaDatos, Distrito, ObservacionSemanal
-from src.db.sesion import crear_motor, transaccion
-from src.processing.epi_sala import load_ubigeo_catalog
-from src.serving.cargar_datos import (cargar_datos, main, persistir_carga,
-                                     preparar_distritos, preparar_observaciones)
-from src.utils.paths import DISTRITOS_COORDS, UBIGEO_CATALOG
+from backend_soporte import datos_muestra, leer_muestra, motor_temporal
+from src.db.modelos import (Distrito, Ejecucion, ObservacionSemanal, ParametroSistema, Provincia,
+                            SemanaEpidemiologica)
+from src.db.sesion import transaccion
+from src.serving import cargar_datos as carga
+from src.serving.configuracion import configuracion_servicio
 
 
-class TestPreparacionCarga(unittest.TestCase):
-    def setUp(self):
-        self.gold, self.sala = leer_muestra()
-
-    def test_muestra_real_y_etiquetas_preservadas(self):
-        registros, corte = preparar_observaciones(self.gold, self.sala)
-        self.assertEqual(len(registros), 12)
-        self.assertEqual(sum(r["casos"] == 0 for r in registros), 8)
-        self.assertEqual(str(corte), "2025-12-27")
-        for registro, original in zip(registros, self.gold.itertuples()):
-            self.assertEqual(registro["casos"], original.casos_Dengue)
-            self.assertEqual(registro["brote"], original.brote)
-            self.assertEqual(registro["umbral_brote_casos"], original.umbral_brote_casos)
-            self.assertEqual(registro["procedencia"], "Sala Situacional MINSA 2025" if original.anio == 2025 else "Excel histórico MINSA")
-
-    def test_fecha_mmwr_inconsistente_es_rechazada(self):
-        self.gold.loc[0, "semana"] += 3
-        with self.assertRaisesRegex(ValueError, "calendario MMWR"):
-            preparar_observaciones(self.gold, self.sala)
-
-    def test_no_introduce_semana_53_de_sala_en_observaciones(self):
-        registros, _ = preparar_observaciones(self.gold, self.sala)
-        self.assertTrue(all(r["semana"] <= 52 for r in registros if r["anio"] == 2025))
-
-    def test_sala_diferente_o_ausente_es_rechazada(self):
-        for sala in (self.sala.iloc[1:], self.sala.assign(casos_Dengue=self.sala.casos_Dengue + 1)):
-            with self.subTest(filas=len(sala)), self.assertRaisesRegex(ValueError, "no coinciden"):
-                preparar_observaciones(self.gold, sala)
-
-    def test_sala_y_gold_duplicados_son_rechazados(self):
-        with self.assertRaisesRegex(ValueError, "duplicadas"):
-            preparar_observaciones(self.gold, pd.concat([self.sala, self.sala.iloc[:1]]))
-        with self.assertRaisesRegex(ValueError, "únicas"):
-            preparar_observaciones(pd.concat([self.gold, self.gold.iloc[:1]]), self.sala)
-
-    def test_sin_observacion_se_conserva_null_con_motivo(self):
-        indice = self.gold.index[self.gold.anio.eq(2017)][0]
-        self.gold.loc[indice, "casos_Dengue"] = float("nan")
-        registros, _ = preparar_observaciones(self.gold, self.sala)
-        self.assertIsNone(registros[indice]["casos"])
-        self.assertIsNotNone(registros[indice]["motivo"])
-
-    def test_casos_invalidos_o_etiquetas_invalidas_son_rechazados(self):
-        indice = self.gold.index[self.gold.anio.eq(2017)][0]
-        for columna, valor in (("casos_Dengue", -1), ("casos_Dengue", 1.5),
-                               ("casos_Dengue", float("inf")), ("brote", 2),
-                               ("umbral_brote_casos", float("nan"))):
-            datos = self.gold.copy()
-            datos[columna] = datos[columna].astype(float)
-            datos.loc[indice, columna] = valor
-            with self.subTest(columna=columna, valor=valor), self.assertRaises(ValueError):
-                preparar_observaciones(datos, self.sala)
-
-    def test_distritos_con_centroides_y_sin_poligonos(self):
-        catalogo = load_ubigeo_catalog(UBIGEO_CATALOG)
-        coords = pd.read_csv(DISTRITOS_COORDS)
-        originales = coords.copy(deep=True)
-        registros = preparar_distritos(catalogo, coords)
-        self.assertEqual(len(registros), 65)
-        self.assertEqual({r["ubigeo"] for r in registros}, set(catalogo.ubigeo))
-        self.assertTrue(all(r["geometria"] is None and r["motivo_geometria"] for r in registros))
-        pd.testing.assert_frame_equal(originales, coords)
-
-    def test_centroide_faltante_invalido_y_catalogo_duplicado(self):
-        catalogo = load_ubigeo_catalog(UBIGEO_CATALOG)
-        coords = pd.read_csv(DISTRITOS_COORDS)
-        with self.assertRaisesRegex(ValueError, "mismos distritos"):
-            preparar_distritos(catalogo, coords.iloc[1:])
-        with self.assertRaisesRegex(ValueError, "Centroide inválido"):
-            preparar_distritos(catalogo, coords.assign(lat=float("nan")))
-        with self.assertRaisesRegex(ValueError, "únicos"):
-            preparar_distritos(pd.concat([catalogo, catalogo.iloc[:1]]), coords)
-
-
-class TestPersistenciaCarga(unittest.TestCase):
+class TestCargaOE2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.carpeta_fixture = tempfile.TemporaryDirectory()
-        cls.datos = datos_muestra(Path(cls.carpeta_fixture.name))
+        cls.fixture = tempfile.TemporaryDirectory()
+        cls.datos = datos_muestra(Path(cls.fixture.name), configuracion_servicio().seleccion_experimental)
 
     @classmethod
     def tearDownClass(cls):
-        cls.carpeta_fixture.cleanup()
+        cls.fixture.cleanup()
 
     def setUp(self):
         self.carpeta = tempfile.TemporaryDirectory()
@@ -113,64 +34,118 @@ class TestPersistenciaCarga(unittest.TestCase):
         self.motor.dispose()
         self.carpeta.cleanup()
 
-    def test_dos_cargas_no_duplican_ni_cambian_fecha(self):
-        with transaccion(self.motor) as sesion:
-            primero = persistir_carga(sesion, self.datos)
-        with transaccion(self.motor) as sesion:
-            fecha = sesion.get(ObservacionSemanal, 1).fecha_actualizacion
-            segundo = persistir_carga(sesion, self.datos)
-            self.assertTrue(segundo["reutilizada"])
-            self.assertEqual(primero["carga_id"], segundo["carga_id"])
-            self.assertEqual(sesion.scalar(select(func.count()).select_from(Distrito)), 65)
-            self.assertEqual(sesion.scalar(select(func.count()).select_from(ObservacionSemanal)), 12)
-            self.assertEqual(sesion.scalar(select(func.count()).select_from(CargaDatos)), 1)
-            self.assertEqual(sesion.get(ObservacionSemanal, 1).fecha_actualizacion, fecha)
+    def cargar(self, datos=None):
+        with transaccion(self.motor) as s:
+            return carga.persistir_carga(s, datos or self.datos)
 
-    def test_gx_fallido_no_escribe(self):
-        datos = replace(self.datos, validacion_gx={"exito": False})
-        with self.assertRaisesRegex(ValueError, "GX"), transaccion(self.motor) as sesion:
-            persistir_carga(sesion, datos)
-        with transaccion(self.motor) as sesion:
-            self.assertEqual(sesion.scalar(select(func.count()).select_from(CargaDatos)), 0)
+    def contar(self, s, modelo):
+        return s.scalar(select(func.count()).select_from(modelo))
 
-    def test_lote_invalido_revierte_toda_la_carga(self):
-        datos = replace(self.datos, observaciones=self.datos.observaciones + self.datos.observaciones[:1])
-        with self.assertRaises(IntegrityError), transaccion(self.motor) as sesion:
-            persistir_carga(sesion, datos)
-        with transaccion(self.motor) as sesion:
-            self.assertEqual(sesion.scalar(select(func.count()).select_from(CargaDatos)), 0)
-            self.assertEqual(sesion.scalar(select(func.count()).select_from(Distrito)), 0)
+    def test_carga_completa_y_trazable(self):
+        r = self.cargar()
+        self.assertFalse(r["reutilizada"])
+        self.assertEqual((r["provincias"], r["distritos"], r["observaciones"]), (8, 65, 75))
+        self.assertEqual(r["id_semana_corte"], 202552)
+        with transaccion(self.motor) as s:
+            self.assertEqual(self.contar(s, Provincia), 8)
+            piura = s.get(Distrito, "200101")
+            self.assertEqual((piura.ubigeo_provincia, piura.poblacion_censo_2017), ("2001", 158495))
+            self.assertIsInstance(piura.ubigeo, str)
+            self.assertEqual(s.get(Provincia, "2001").nombre, "Piura")
+            o2017 = s.get(ObservacionSemanal, ("200101", 201720))
+            o2025 = s.get(ObservacionSemanal, ("200101", 202552))
+            self.assertEqual((o2017.fuente_casos, o2025.fuente_casos), ("excel_historico", "sala_situacional"))
+            self.assertEqual(o2025.estado_cobertura, "verificado")
+            self.assertIsNotNone(o2025.temp_media_c)
+            self.assertLessEqual(o2025.temp_min_c, o2025.temp_media_c)
+            ejecucion = s.get(Ejecucion, r["id_ejecucion"])
+            self.assertEqual((ejecucion.tipo, ejecucion.estado, ejecucion.id_semana_corte), ("ingesta", "exitosa", 202552))
+            self.assertEqual(ejecucion.detalle["hashes_entrada"], self.datos.hashes)
+            self.assertTrue(ejecucion.detalle["validacion_gx"]["exito"])
+            self.assertEqual(o2025.id_ejecucion, ejecucion.id_ejecucion)
+            seleccion = s.get(ParametroSistema, "seleccion_experimental").valor
+            self.assertEqual(seleccion["4"]["clasificacion"], "clf-h4-v1")
 
-    def test_extension_real_actualiza_corte_y_conserva_auditoria(self):
-        gold, sala = leer_muestra()
-        anterior = gold.loc[gold.anio.eq(2017)]
-        registros, corte = preparar_observaciones(anterior, sala)
-        hashes = {"seleccion_gold": hashlib.sha256(anterior.to_csv(index=False).encode()).hexdigest()}
-        datos = replace(self.datos, observaciones=registros, fecha_corte_datos=corte, hashes=hashes)
-        with transaccion(self.motor) as sesion:
-            primera = persistir_carga(sesion, datos)
-        with transaccion(self.motor) as sesion:
-            segunda = persistir_carga(sesion, self.datos)
-            self.assertNotEqual(primera["carga_id"], segunda["carga_id"])
-            self.assertEqual(sesion.scalar(select(func.count()).select_from(CargaDatos)), 2)
-            self.assertEqual(sesion.scalar(select(func.count()).select_from(ObservacionSemanal)), 12)
-            self.assertEqual(sesion.get(ObservacionSemanal, 1).fecha_corte_datos, self.datos.fecha_corte_datos)
-            self.assertEqual(sesion.get(ObservacionSemanal, 1).carga_id, segunda["carga_id"])
+    def test_ceros_se_conservan_y_casos_de_gold_coinciden(self):
+        self.cargar()
+        silver = leer_muestra()["silver"]
+        with transaccion(self.motor) as s:
+            casos = {(o.ubigeo, o.id_semana): o.casos_dengue for o in s.scalars(select(ObservacionSemanal))}
+        for fila in silver.itertuples():
+            self.assertEqual(casos[fila.ubigeo, fila.anio * 100 + fila.semana], fila.casos_Dengue)
+        self.assertIn(0, casos.values())
 
-    def test_rechaza_base_sin_migraciones(self):
-        motor = crear_motor("sqlite://")
+    def test_calendario_mmwr_incluye_semana_53_y_temporada(self):
+        semanas = {s["id_semana"]: s for s in self.datos.semanas}
+        s53 = semanas[202553]
+        self.assertEqual((s53["fecha_inicio"], s53["fecha_fin"]), (date(2025, 12, 28), date(2026, 1, 3)))
+        self.assertEqual(semanas[202601]["fecha_inicio"], date(2026, 1, 4))
+        self.assertEqual((semanas[202534]["temporada"], semanas[202535]["temporada"]), (2025, 2026))
+        self.assertTrue(all(s["fecha_fin"].toordinal() - s["fecha_inicio"].toordinal() == 6 for s in self.datos.semanas))
+
+    def test_idempotente_y_actualizacion_sin_duplicados(self):
+        primera = self.cargar()
+        segunda = self.cargar()
+        self.assertTrue(segunda["reutilizada"])
+        self.assertEqual(primera["id_ejecucion"], segunda["id_ejecucion"])
+        distritos = [{**d, "nombre": d["nombre"].upper()} for d in self.datos.distritos]
+        tercera = self.cargar(replace(self.datos, distritos=distritos, hashes={**self.datos.hashes, "otra": "x"}))
+        self.assertNotEqual(tercera["id_ejecucion"], primera["id_ejecucion"])
+        with transaccion(self.motor) as s:
+            self.assertEqual(self.contar(s, ObservacionSemanal), 75)
+            self.assertEqual(self.contar(s, Distrito), 65)
+            self.assertEqual(s.get(Distrito, "200101").nombre, "PIURA")
+            self.assertEqual(self.contar(s, Ejecucion), 2)
+
+    def test_semilla_experimental_no_pisa_un_valor_existente(self):
+        self.cargar()
+        with transaccion(self.motor) as s:
+            s.get(ParametroSistema, "seleccion_experimental").valor = {"2": {"clasificacion": "x", "regresion": "y"}}
+        self.cargar(replace(self.datos, hashes={**self.datos.hashes, "otra": "x"}))
+        with transaccion(self.motor) as s:
+            self.assertEqual(s.get(ParametroSistema, "seleccion_experimental").valor["2"]["clasificacion"], "x")
+
+    def test_rechaza_gx_fallido(self):
+        with self.assertRaisesRegex(ValueError, "GX"):
+            self.cargar(replace(self.datos, validacion_gx={"exito": False}))
+
+    def test_fuentes_inconsistentes_se_rechazan(self):
+        muestra = leer_muestra()
+        ubigeo_corto = muestra["silver"].copy()
+        ubigeo_corto.loc[ubigeo_corto.index[0], "ubigeo"] = "20010"
+        casos = [
+            ("sala", muestra["sala"].assign(casos_Dengue=muestra["sala"].casos_Dengue + 1), "Sala"),
+            ("gold", muestra["gold"].iloc[1:], "etiqueta"),
+            ("gold", muestra["gold"].assign(casos_Dengue=muestra["gold"].casos_Dengue + 1), "silver y gold"),
+            ("silver", muestra["silver"].assign(semana=muestra["silver"].semana + 1), "MMWR"),
+            ("cobertura", muestra["cobertura"].iloc[1:], "cobertura"),
+            ("silver", ubigeo_corto, "seis dígitos"),
+        ]
+        for clave, valor, mensaje in casos:
+            entradas = {**muestra, clave: valor}
+            with self.subTest(clave=clave, mensaje=mensaje), self.assertRaisesRegex(ValueError, mensaje):
+                carga.preparar_observaciones(entradas["silver"], entradas["cobertura"], entradas["gold"], entradas["sala"])
+
+    def test_exige_esquema_y_registra_fallos(self):
+        from sqlalchemy.engine import URL
+        from src.db.sesion import crear_motor
+        vacio = crear_motor(URL.create("sqlite", database=str(Path(self.carpeta.name) / "vacia.db")))
         try:
             with self.assertRaisesRegex(ValueError, "alembic upgrade head"):
-                cargar_datos(motor)
+                carga.cargar_datos(vacio)
         finally:
-            motor.dispose()
+            vacio.dispose()
+        carga.registrar_fallo(self.motor, "ingesta", ValueError("fuente ilegible"), {"huella": "h"})
+        with transaccion(self.motor) as s:
+            fallida = s.scalar(select(Ejecucion).where(Ejecucion.estado == "fallida"))
+            self.assertEqual(fallida.tipo, "ingesta")
+            self.assertIn("fuente ilegible", fallida.mensaje_error)
 
-    def test_cli_sin_configuracion_error_controlado(self):
-        salida = io.StringIO()
-        with entorno_bd(""), redirect_stderr(salida):
-            resultado = main([])
-        self.assertEqual(resultado, 1)
-        self.assertIn("Falta DATABASE_URL", salida.getvalue())
+    def test_semanas_cubren_objetivos_futuros(self):
+        self.cargar()
+        with transaccion(self.motor) as s:
+            ultima = s.scalar(select(func.max(SemanaEpidemiologica.id_semana)))
+        self.assertGreaterEqual(ultima, 202605)
 
 
 if __name__ == "__main__":

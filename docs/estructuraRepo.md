@@ -216,63 +216,48 @@ La auditoría de la corrección y sus límites están en
 `docs/feature_engineering/correccion_calendario.md` y sus cifras en
 `docs/feature_engineering/metricas/correccion_calendario.json`.
 
-### Backend aprobado por fases
+### Backend (esquema del documento OE2)
 
 ```text
 src/db/
 ├── configuracion.py          # DATABASE_URL desde .env o entorno
-├── sesion.py                 # motores, claves foráneas y transacciones
-├── modelos.py                # esquema relacional portable
-└── migraciones/              # revisiones Alembic versionadas
+├── sesion.py                 # motores, claves foráneas, transacciones y UPSERT portable
+├── modelos.py                # esquema OE2 (docs/backend/ddl_oe2.sql) portable
+├── exportar_sql_migracion.py # evidencia alembic upgrade --sql sin conexión
+└── migraciones/              # revisiones Alembic; 0003_oe2 es el esquema vigente
 src/serving/
-├── cargar_datos.py           # GX + auditoría existente + carga idempotente
-├── configuracion.py          # variantes, riesgo y criterios de aceptación
+├── cargar_datos.py           # ingesta: provincia, distrito, calendario, observaciones
+├── configuracion.py          # horizontes, variantes y selección experimental (config.yaml)
+├── parametros.py             # lectura de parametro_sistema (autoridad de umbrales y cortes)
+├── almacenamiento.py         # puerto Almacenamiento + adaptador local models/storage/
 ├── protocolo.py              # importa y verifica los resultados temporales de Rosa
-├── modelos.py                # ajuste final con train.py y metadatos históricos
-├── artefactos.py             # serialización y reevaluación de boosters desde BD
-├── riesgo.py                 # riesgo visible, alerta y disponibilidad
-├── publicacion.py            # transacción: versiones, predicciones y alertas
-├── reevaluacion.py           # reevaluación/activación atómica desde BD, sin entrenamiento
-└── publicar.py               # CLI idempotente y runs normales de MLflow
-src/api/
-├── main.py                   # aplicación, ciclo de vida, CORS y tiempo de respuesta
-├── dependencias.py           # sesiones, clave de escritura y caché por revisión de BD
-├── errores.py                # formato uniforme y errores sin secretos ni SQL
-├── esquemas.py               # contrato Pydantic v2 y fechas UTC
-├── consultas.py              # datos/DTO desde BD; series con huecos y calendario MMWR
-├── cache.py                  # TTL de lecturas, capacidad acotada y concurrencia
-├── openapi.py                # especificación con ejemplos leídos de la BD real
-├── exportar_openapi.py       # CLI de exportación; exige conexión real
-├── benchmark.py              # p50/p95 con y sin caché contra BD real o HTTP
-└── routers/                  # referencia, datos, vigilancia y modelos
-src/validation/
-└── validacion_modelo.py      # aceptación derivada de métricas por bloque
+├── modelos.py                # ajuste final con train.py y registro de versiones
+├── artefactos.py             # booster en Storage, verificación SHA-256 e inferencia
+├── riesgo.py                 # nivel de riesgo y cambio de alerta
+├── inferencia.py             # vector desde la BD, UPSERT de predicciones, alertas, OOS
+└── publicar.py               # CLI: carga, ajuste, MLflow, versiones, OOS e inferencia
+src/api/                      # FastAPI: rutas de la Tabla 2 del documento OE2
+├── main.py, dependencias.py, errores.py, esquemas.py, consultas.py
+├── cache.py, openapi.py, exportar_openapi.py, benchmark.py
+└── routers/                  # referencia, datos, vigilancia, modelos y admin
 tests/
-├── backend_soporte.py
-├── serving_soporte.py
-├── test_db_backend.py
-├── test_serving_carga.py
-├── test_serving_futuras.py
-├── test_serving_politicas.py
-├── test_serving_protocolo.py
-├── test_serving_publicacion.py
-├── test_api_backend.py       # HTTP + SQLite migrada + modelos y datos reales
-├── test_api_benchmark.py     # mediciones/fallos usando la API y BD reales
-├── test_serving_operacion.py # fallos CLI y trazabilidad de código/catálogo
-└── fixtures/backend/         # filas copiadas de gold/Sala, con procedencia
-docs/backend/                 # operación y cierres verificables
-models/serving/               # BD SQLite/cobertura/artefactos locales; no se versionan
-├── ejecuciones/<huella>/     # reporte, boosters, vectores y resumen de publicación
-└── protocolo_regenerado/     # solo si faltan las predicciones OOS originales
+├── backend_soporte.py, serving_soporte.py
+├── test_db_backend.py, test_esquema_oe2.py
+├── test_serving_*.py         # carga, inferencia, publicación, políticas, protocolo
+├── test_api_backend.py, test_api_benchmark.py
+└── fixtures/backend/         # filas reales copiadas de silver/gold/Sala, con procedencia
+docs/backend/                 # especificación OE2, desviaciones, operación y contrato
+└── evidencia/                # SQL de la migración, prueba de humo TB1 (versionado)
+models/storage/               # artefactos (buckets modelos/geodatos/reportes); no se versiona
+models/serving/               # BD SQLite y ejecuciones locales; no se versionan
 ```
 
-Las fases 1–2 construyen persistencia, carga e inferencia. La fase 3 expone
-la API en `src/api/`. El backend
-solo lee `data/`. `carga_datos` audita hashes, GX y corte; `activacion_modelo`
-registra los cambios de versión sin borrar predicciones. Las
-fixtures contienen datos agregados reales y permiten ejecutar pruebas sin
-descargar todo el panel. Sus metadatos documentan la selección y los hashes
-de origen. No sustituyen los archivos completos para publicar en producción.
+El esquema y la API siguen `docs/backend/especificacion_oe2.md` y `ddl_oe2.sql`;
+toda diferencia está en `docs/backend/desviaciones_oe2.md`. El backend solo lee
+`data/`. Cargas, inferencias, publicaciones y activaciones quedan como filas de
+`ejecucion` (tipo + detalle). Las fixtures contienen datos agregados reales y
+permiten ejecutar pruebas sin descargar todo el panel; sus metadatos documentan
+la selección y los hashes de origen.
 Las fixtures de fase 2 incluyen semanas temporales continuas, una muestra de
 entrenamiento, referencia censal y predicciones OOS con métricas originales;
 `procedencia_fase2.json` documenta su selección. Los cierres de fase 2 y sus

@@ -3,7 +3,7 @@
 Fuente de verdad: [`especificacion_oe2.md`](especificacion_oe2.md) y [`ddl_oe2.sql`](ddl_oe2.sql).
 Este archivo registra cada diferencia entre el documento y el código y la decisión
 tomada para el refactor. **Estado: decisiones de la Fase 0 aprobadas por Rosa
-(2026-10-01); Fase 1 (esquema) implementada; Fases 2–3 pendientes.**
+(2026-10-01); Fases 1 y 2 implementadas; Fase 3 pendiente.**
 
 Código revisado: `src/db/modelos.py`, migraciones `0001_backend` y `0002_serving`,
 `src/serving/`, `src/api/` y los tests del backend (`test_db_backend`, `test_serving_*`,
@@ -130,6 +130,35 @@ Tipos de desviación:
   del backend fue en PostgreSQL 17.5 sobre macOS. El DDL no mostró diferencias de
   comportamiento entre versiones: ENUM, identity, jsonb, regex, índices parciales y por
   expresión, RLS, roles (`DO … IF NOT EXISTS`), GRANT por columna y políticas funcionaron igual.
+
+## 6b. Notas de implementación (Fase 2: carga y artefactos)
+
+Elecciones simples registradas sin consulta (modo de trabajo acordado):
+- **`fecha_extraccion`** = instante de la ingesta en la BD (las fuentes no traen su fecha de
+  extracción por fila).
+- **Calendario:** `semana_epidemiologica` cubre desde 2017-S01 hasta un año después del corte
+  (objetivos futuros de inferencia); `temporada = anio + (semana >= 35)`, la regla del modelado.
+- **Clima y numeric del DDL:** clima redondeado a 2 decimales (`numeric(5,2)`, `numeric(7,2)`);
+  `probabilidad_brote` a 4 (`numeric(5,4)`) y `casos_estimados` a 2. El nivel de riesgo se
+  calcula sobre la probabilidad ya redondeada, para que coincida con el valor guardado.
+- **Vector reconstruido:** usa `construir_filas_futuras` del modelado sobre el panel leído de la
+  BD. Esa función exige tres fracciones censales 2017 que la BD no guarda (no son variables de
+  los modelos de servicio): se completan con 0 y se descartan. Verificado con datos reales en 13
+  cortes (845 filas): diferencia máxima con gold 1,8e-15. Cortes con origen anterior a
+  2019-01-01 dan `no_disponible`: es la barrera de disponibilidad del censo que ya aplica el
+  pipeline (`FECHA_SOCIO_2017`).
+- **Códigos de versión:** `clf-h{h}-v{n}` / `reg-h{h}-v{n}`; un booster idéntico (mismo SHA-256 y
+  mismo dataset) reutiliza su versión. `seleccion_experimental` no se actualiza sola: si una
+  nueva publicación crea `v2`, hay que actualizar ese parámetro en la BD.
+- **Predicciones OOS:** se importan los bloques temporada 2022, 2023, 2024 y calendario 2025
+  (los mismos que publicaba el backend anterior); no generan alertas (son históricas) y su
+  marca `experimental` sale de las versiones de servicio del mismo horizonte.
+- **Alertas:** una alerta activa por distrito y horizonte; al llegar un corte nuevo la anterior
+  se retira con `fecha_retiro` y `motivo`. Recalcular el mismo corte actualiza su alerta.
+- **`config.yaml`:** se quitaron `riesgo`, `alerta_nivel_minimo` y `criterios_validacion`
+  de `serving`; esos valores viven solo en `parametro_sistema`.
+- **CPU frente a GPU:** el servicio predice en CPU. En este equipo XGBoost entrena en GPU y su
+  `predict` difiere del booster en CPU en ~6e-8 (1 ULP de float32); no afecta al modelo.
 
 ## 7. Cambios pendientes en el documento OE2
 

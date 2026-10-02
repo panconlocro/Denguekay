@@ -1,4 +1,4 @@
-"""Aceptación por 2024, faltantes y cortes de riesgo acordados con Rosa."""
+"""Riesgo, aceptación, configuración, parámetros de la BD y almacenamiento local."""
 
 from copy import deepcopy
 from dataclasses import asdict
@@ -8,12 +8,20 @@ import unittest
 
 import yaml
 
+from backend_soporte import motor_temporal
 from serving_soporte import protocolo_muestra
-from src.db.modelos import VersionModelo
+from src.db.modelos import ParametroSistema
+from src.db.sesion import transaccion
+from src.serving import parametros
+from src.serving.almacenamiento import AlmacenamientoLocal, validar_ruta
 from src.serving.configuracion import configuracion_servicio
 from src.serving.protocolo import _comparar_metricas, metricas_de_variante
-from src.serving.riesgo import disponibilidad_modelo, genera_alerta, nivel_riesgo
+from src.serving.riesgo import ETIQUETAS, cambio_alerta, nivel_riesgo
 from src.validation.validacion_modelo import evaluar_validacion_modelo
+
+CORTES = {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75}
+CRITERIOS = {"bloques": ["temporada_2024"], "recall_minimo": 0.8, "precision_minima": 0.6,
+             "f1_minimo": 0.7, "proporcion_error_persistencia": 0.85}
 
 
 class TestPoliticasServicio(unittest.TestCase):
@@ -22,56 +30,38 @@ class TestPoliticasServicio(unittest.TestCase):
         cls.cfg = configuracion_servicio()
         cls.metricas = metricas_de_variante(protocolo_muestra(), 2, "base_6_poblacion_2017")
 
-    def test_bordes_de_riesgo_y_alertas_visibles_desde_05(self):
-        for p, nivel in ((None, "Sin datos"), (0, "Bajo"), (.249999, "Bajo"), (.25, "Medio"),
-                         (.499999, "Medio"), (.5, "Alto"), (.749999, "Alto"), (.75, "Muy alto"), (1, "Muy alto")):
+    def test_bordes_de_riesgo(self):
+        for p, nivel in ((None, None), (0, "bajo"), (.249999, "bajo"), (.25, "medio"), (.499999, "medio"),
+                         (.5, "alto"), (.749999, "alto"), (.75, "muy_alto"), (1, "muy_alto")):
             with self.subTest(p=p):
-                self.assertEqual(nivel_riesgo(p, self.cfg.riesgo), nivel)
-                self.assertEqual(genera_alerta(nivel), nivel in ("Alto", "Muy alto"))
-        self.assertFalse(genera_alerta("Alto", "Muy alto"))
-        with self.assertRaises(ValueError):
-            genera_alerta("Bajo", "Medio")
+                self.assertEqual(nivel_riesgo(p, CORTES), nivel)
         for p in (-.1, 1.1, float("nan"), float("inf")):
             with self.assertRaises(ValueError):
-                nivel_riesgo(p, self.cfg.riesgo)
+                nivel_riesgo(p, CORTES)
+        self.assertEqual(ETIQUETAS["muy_alto"], "Muy alto")
+
+    def test_cambio_de_alerta(self):
+        self.assertEqual(cambio_alerta(None, "alto"), "nueva")
+        self.assertEqual(cambio_alerta("alto", "alto"), "se_mantiene")
+        self.assertEqual(cambio_alerta("alto", "muy_alto"), "sube_nivel")
+        self.assertEqual(cambio_alerta("muy_alto", "alto"), "baja_nivel")
 
     def test_metricas_reales_de_2024_no_cumplen_y_2025_no_decide(self):
-        for tipo in ("clasificacion", "regresion"):
-            resultado = evaluar_validacion_modelo(tipo, self.metricas, self.cfg.criterios_validacion)
+        for tarea in ("clasificacion", "regresion"):
+            resultado = evaluar_validacion_modelo(tarea, self.metricas, CRITERIOS)
             self.assertEqual(resultado["estado_validacion"], "experimental")
             self.assertEqual(set(resultado["bloques"]), {"temporada_2024"})
             sin_2025 = deepcopy(self.metricas)
             del sin_2025["bloques"]["calendario_2025"]
-            self.assertEqual(resultado, evaluar_validacion_modelo(tipo, sin_2025, self.cfg.criterios_validacion))
+            self.assertEqual(resultado, evaluar_validacion_modelo(tarea, sin_2025, CRITERIOS))
 
     def test_aceptacion_en_bordes_con_metricas_reales_y_limites_iguales(self):
-        criterios = deepcopy(self.cfg.criterios_validacion)
+        criterios = deepcopy(CRITERIOS)
         m = self.metricas["bloques"]["temporada_2024"]["clasificacion"]["alerta_directa"]
         criterios.update(recall_minimo=m["recall"], precision_minima=m["precision"], f1_minimo=m["f1"])
         self.assertEqual(evaluar_validacion_modelo("clasificacion", self.metricas, criterios)["estado_validacion"], "validado")
         criterios["recall_minimo"] += .000001
         self.assertEqual(evaluar_validacion_modelo("clasificacion", self.metricas, criterios)["estado_validacion"], "experimental")
-
-    def test_faltante_no_es_cero_y_persistencia_es_referencia(self):
-        metricas = deepcopy(self.metricas)
-        metricas["bloques"]["temporada_2024"]["clasificacion"]["alerta_directa"]["recall"] = None
-        estado = evaluar_validacion_modelo("clasificacion", metricas, self.cfg.criterios_validacion)
-        self.assertFalse(estado["disponible"])
-        self.assertIsNone(estado["bloques"]["temporada_2024"]["criterios"]["recall"]["valor"])
-        self.assertIn("no disponible", estado["motivo"])
-        for tipo in ("clasificacion", "regresion", "desconocido"):
-            self.assertEqual(evaluar_validacion_modelo(tipo, {}, {})["estado_validacion"], "experimental")
-        self.assertEqual(evaluar_validacion_modelo("persistencia", {}, {})["estado_validacion"], "referencia")
-        estado = evaluar_validacion_modelo("clasificacion", {}, self.cfg.criterios_validacion)
-        self.assertFalse(estado["disponible"])
-
-    def test_disponibilidad_no_oculta_estado_experimental(self):
-        v = VersionModelo(tipo="clasificacion", metricas_evaluacion=self.metricas,
-                          criterios_validacion=self.cfg.criterios_validacion)
-        self.assertEqual(v.estado_validacion, "experimental")
-        self.assertFalse(disponibilidad_modelo(v, False)["disponible"])
-        self.assertTrue(disponibilidad_modelo(v, True)["disponible"])
-        self.assertFalse(disponibilidad_modelo(None, True)["disponible"])
 
     def test_metricas_ausentes_o_distintas_rechazan_protocolo(self):
         _comparar_metricas({"a": {"b": None}}, {"a": {"b": None}})
@@ -79,13 +69,11 @@ class TestPoliticasServicio(unittest.TestCase):
             with self.assertRaises(ValueError):
                 _comparar_metricas(actual, esperado)
 
-    def test_configuracion_rechaza_umbral_variante_o_politica_invalidos(self):
+    def test_configuracion_rechaza_valores_invalidos(self):
         original = asdict(self.cfg)
-        cambios = ({"horizontes": []}, {"variantes": {"clasificacion": "inventada", "regresion": "base_6"}},
-                   {"riesgo": {"medio": .5, "alto": .25, "muy_alto": .75}},
-                   {"alerta_nivel_minimo": "Medio"}, {"servir_no_validadas": "true"},
-                   {"criterios_validacion": {**original["criterios_validacion"], "bloques": []}},
-                   {"criterios_validacion": {**original["criterios_validacion"], "precision_minima": None}})
+        cambios = ({"horizontes": []}, {"horizontes": [3]}, {"variantes": {"clasificacion": "inventada", "regresion": "base_6"}},
+                   {"servir_no_validadas": "true"}, {"seleccion_experimental": {"2": {"clasificacion": "x"}}},
+                   {"seleccion_experimental": {"2": {"clasificacion": "x" * 21, "regresion": "y"}}})
         with tempfile.TemporaryDirectory() as carpeta:
             ruta = Path(carpeta) / "config.yaml"
             for cambio in cambios:
@@ -95,6 +83,43 @@ class TestPoliticasServicio(unittest.TestCase):
             ruta.write_text("{}", encoding="utf-8")
             with self.assertRaises(ValueError):
                 configuracion_servicio(ruta)
+
+
+class TestParametrosYAlmacenamiento(unittest.TestCase):
+    def test_parametros_desde_la_bd(self):
+        with tempfile.TemporaryDirectory() as carpeta:
+            motor = motor_temporal(Path(carpeta))
+            try:
+                with transaccion(motor) as s:
+                    self.assertEqual(parametros.cortes_riesgo(s), CORTES)
+                    self.assertEqual(parametros.criterios_aceptacion(s), CRITERIOS)
+                    self.assertEqual(parametros.seleccion_experimental(s), {})
+                    parametros.sembrar_seleccion_experimental(s, {2: {"clasificacion": "a", "regresion": "b"}})
+                    self.assertEqual(parametros.seleccion_experimental(s)[2]["regresion"], "b")
+                    s.get(ParametroSistema, "cortes_riesgo").valor = {"medio": .5, "alto": .25, "muy_alto": .75}
+                    s.flush()
+                    with self.assertRaises(ValueError):
+                        parametros.cortes_riesgo(s)
+                    s.delete(s.get(ParametroSistema, "regla_brote"))
+                    s.flush()
+                    with self.assertRaises(parametros.ParametroFaltante):
+                        parametros.leer(s, "regla_brote")
+            finally:
+                motor.dispose()
+
+    def test_almacenamiento_local(self):
+        with tempfile.TemporaryDirectory() as carpeta:
+            almacen = AlmacenamientoLocal(Path(carpeta))
+            self.assertFalse(almacen.existe("modelos/a.json"))
+            almacen.guardar("modelos/a.json", b"{}")
+            self.assertTrue(almacen.existe("modelos/a.json"))
+            self.assertEqual(almacen.leer("modelos/a.json"), b"{}")
+            self.assertTrue((Path(carpeta) / "modelos" / "a.json").is_file())
+            with self.assertRaises(FileNotFoundError):
+                almacen.leer("reportes/b.json")
+            for ruta in ("otro/a.json", "modelos/../x", "a.json", "modelos\\a.json", "modelos//a"):
+                with self.subTest(ruta=ruta), self.assertRaises(ValueError):
+                    validar_ruta(ruta)
 
 
 if __name__ == "__main__":

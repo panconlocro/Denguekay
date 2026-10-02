@@ -26,17 +26,12 @@ serving:
   variantes:
     clasificacion: base_6_poblacion_2017
     regresion: base_6
-  riesgo:
-    medio: 0.25
-    alto: 0.50
-    muy_alto: 0.75
-  alerta_nivel_minimo: Alto
+  # Demo experimental (desviación temporal OE2): si no hay versión activa, se usa
+  # esta selección. Solo siembra parametro_sistema.seleccion_experimental.
   servir_no_validadas: true
+  seleccion_experimental:
+    "2": {clasificacion: clf-h2-v1, regresion: reg-h2-v1}
+    "4": {clasificacion: clf-h4-v1, regresion: reg-h4-v1}
   cors_origen: "http://localhost:5173"
-  criterios_validacion:
-    # Decisión de Rosa: 2024 decide; 2025 se informa como sensibilidad aparte.
-    bloques: [temporada_2024]
-    recall_minimo: 0.80
-    precision_minima: 0.60
-    f1_minimo: 0.70
-    proporcion_error_persistencia: 0.85
+  # Cortes de riesgo, umbrales de aceptación (bloque temporada_2024) y regla de
+  # brote viven en parametro_sistema; los siembra la migración 0003_oe2.

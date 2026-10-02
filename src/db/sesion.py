@@ -44,3 +44,28 @@ def transaccion(motor):
     with crear_fabrica_sesiones(motor)() as sesion:
         with sesion.begin():
             yield sesion
+
+
+def upsert(sesion, tabla, filas, claves, actualizar=None, lote=2000):
+    """INSERT ... ON CONFLICT (claves) DO UPDATE portable entre SQLite y PostgreSQL.
+
+    ``actualizar`` limita las columnas que se sobrescriben; por defecto, todas
+    las de la fila salvo las claves. Con ``actualizar=()`` no se modifica nada
+    (ON CONFLICT DO NOTHING). Inserta por lotes para no exceder parámetros.
+    """
+    if not filas:
+        return
+    if sesion.bind.dialect.name == "postgresql":
+        from sqlalchemy.dialects.postgresql import insert
+    else:
+        from sqlalchemy.dialects.sqlite import insert
+    columnas = list(filas[0])
+    actualizables = [c for c in (columnas if actualizar is None else actualizar) if c not in claves]
+    for inicio in range(0, len(filas), lote):
+        consulta = insert(tabla).values(filas[inicio:inicio + lote])
+        if actualizables:
+            consulta = consulta.on_conflict_do_update(
+                index_elements=list(claves), set_={c: consulta.excluded[c] for c in actualizables})
+        else:
+            consulta = consulta.on_conflict_do_nothing(index_elements=list(claves))
+        sesion.execute(consulta)

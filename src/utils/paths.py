@@ -47,6 +47,8 @@ GOLD_MANIFEST = GOLD / "manifest_fase6.json"
 
 MODELS = ROOT / "models"
 SERVING_MODELS = MODELS / "serving"
+# Storage local de artefactos (buckets modelos/geodatos/reportes del documento OE2); no se versiona.
+STORAGE = MODELS / "storage"
 ENV_FILE = ROOT / ".env"
 ALEMBIC_CONFIG = ROOT / "alembic.ini"
 DB_MIGRACIONES = ROOT / "src" / "db" / "migraciones"
@@ -62,10 +64,11 @@ GX_DIR = ROOT / "great_expectations"
 DOCS = ROOT / "docs"
 BACKEND_DOCS = DOCS / "backend"
 OPENAPI_JSON = BACKEND_DOCS / "openapi.json"
+# Evidencia versionada del refactor OE2 (sin credenciales).
+EVIDENCIA_BACKEND = BACKEND_DOCS / "evidencia"
+MIGRACION_OE2_SQL = EVIDENCIA_BACKEND / "migracion_0003_oe2_postgresql.sql"
 API_VERIFICACION = BACKEND_DOCS / "fase3_verificacion.json"
 API_BD_VERIFICACION = SERVING_MODELS / "fase3.sqlite"
-# Evidencia offline (alembic upgrade --sql) de la migración al esquema OE2.
-MIGRACION_OE2_SQL = SERVING_MODELS / "migracion_0003_oe2_postgresql.sql"
 API_BENCHMARK_JSON = SERVING_MODELS / "benchmark.json"
 API_BD_BENCHMARK = SERVING_MODELS / "fase4.sqlite"
 BACKEND_FASE4_VERIFICACION = BACKEND_DOCS / "fase4_verificacion.json"

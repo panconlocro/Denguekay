@@ -6,6 +6,7 @@ models/*.pkl
 models/*.joblib
 models/experimentos/
 models/serving/
+models/storage/
 .coverage
 htmlcov/
 coverage.xml

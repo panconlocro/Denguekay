@@ -62,7 +62,7 @@ class TestOperacionServing(unittest.TestCase):
                     primera = persistir_carga(s, previa)
                 with transaccion(motor) as s:
                     segunda = persistir_carga(s, datos)
-                    self.assertNotEqual(primera["carga_id"], segunda["carga_id"])
+                    self.assertNotEqual(primera["id_ejecucion"], segunda["id_ejecucion"])
                     for d in datos.distritos:
                         self.assertEqual(s.get(Distrito, d["ubigeo"]).nombre, d["nombre"])
             finally:

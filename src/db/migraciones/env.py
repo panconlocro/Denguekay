@@ -8,7 +8,9 @@ from src.db.sesion import crear_motor
 
 
 if context.is_offline_mode():
-    context.configure(url=obtener_url(), target_metadata=Base.metadata,
+    # El modo offline solo necesita el dialecto: admite una URL inyectada sin credenciales.
+    url = context.config.attributes.get("url") or obtener_url()
+    context.configure(url=url, target_metadata=Base.metadata,
                       literal_binds=True, compare_type=True)
     with context.begin_transaction():
         context.run_migrations()

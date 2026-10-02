@@ -64,29 +64,38 @@ def motor_temporal(carpeta):
     return motor
 
 
+def leer_csv(nombre):
+    datos = pd.read_csv(BACKEND_FIXTURES / nombre, dtype={"ubigeo": "string"})
+    for c in ("semana_inicio", "origen_inicio", "origen_cierre"):
+        if c in datos:
+            datos[c] = pd.to_datetime(datos[c])
+    return datos
+
+
 def leer_muestra():
-    """Doce filas extraídas de gold real y seis filas de su fuente Sala."""
-    gold = pd.read_csv(BACKEND_FIXTURES / "gold_h2_muestra.csv", dtype={"ubigeo": "string"},
-                       parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
-    sala = pd.read_csv(BACKEND_FIXTURES / "sala_muestra.csv", dtype={"ubigeo": "string"})
-    return gold, sala
+    """Filas reales de 3 distritos: silver (casos y clima), cobertura, gold (etiqueta) y Sala."""
+    gold = pd.concat([leer_csv("gold_h2_muestra.csv"), leer_csv("gold_temporal_h2_muestra.csv")])
+    gold = gold.drop_duplicates(["ubigeo", "anio", "semana"]).reset_index(drop=True)
+    return {"silver": leer_csv("silver_muestra.csv"), "cobertura": leer_csv("cobertura_muestra.csv"),
+            "gold": gold, "sala": leer_csv("sala_muestra.csv")}
 
 
-def datos_muestra(carpeta):
-    """Ejecuta GX sobre datos reales; devuelve evidencia y registros para cargar."""
-    # Importación diferida: la carga se adapta al esquema OE2 en la Fase 2.
-    from src.serving.cargar_datos import DatosCarga, preparar_distritos, preparar_observaciones
+def datos_muestra(carpeta, seleccion_experimental=None):
+    """Ejecuta GX sobre gold real y prepara el lote de carga OE2 desde las fixtures."""
+    # Importación diferida: evita cargar GX al importar este módulo.
+    from src.processing.epi_sala import load_ubigeo_catalog
+    from src.serving.cargar_datos import preparar_desde_tablas
     from src.validation.calidad_gx import obtener_contexto, validar_dataframe
     from src.validation.expectations_gold import expectativas_gold
 
-    gold, sala = leer_muestra()
+    muestra = leer_muestra()
     calidad = validar_dataframe(
-        gold, nombre_suite="backend_gold_h2", nombre_activo="backend_gold_h2",
-        expectativas=expectativas_gold(2, sorted(gold.ubigeo.unique())),
+        muestra["gold"], nombre_suite="backend_gold_h2", nombre_activo="backend_gold_h2",
+        expectativas=expectativas_gold(2, sorted(muestra["gold"].ubigeo.unique())),
         contexto=obtener_contexto(carpeta / "gx"), actualizar_docs=False)
-    distritos = preparar_distritos(load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRITOS_COORDS))
-    observaciones, corte = preparar_observaciones(gold, sala)
-    archivos = [BACKEND_FIXTURES / "gold_h2_muestra.csv", BACKEND_FIXTURES / "sala_muestra.csv",
-                UBIGEO_CATALOG, DISTRITOS_COORDS]
-    hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in archivos}
-    return DatosCarga(distritos, observaciones, hashes, {"exito": calidad["exito"], "suites": [calidad]}, corte)
+    archivos = [BACKEND_FIXTURES / n for n in ("silver_muestra.csv", "cobertura_muestra.csv", "gold_h2_muestra.csv",
+                                             "gold_temporal_h2_muestra.csv", "sala_muestra.csv")]
+    hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in archivos + [UBIGEO_CATALOG, DISTRITOS_COORDS]}
+    return preparar_desde_tablas(load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRITOS_COORDS),
+                                 muestra["silver"], muestra["cobertura"], muestra["gold"], muestra["sala"],
+                                 hashes, {"exito": calidad["exito"], "suites": [calidad]}, seleccion_experimental)

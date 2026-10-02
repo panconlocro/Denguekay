@@ -5,6 +5,7 @@
   },
   "seleccion": "UBIGEO 200101, 200201, 200502; semanas 20/21 de 2017 y 51/52 de 2025",
   "filas_gold": 12,
-  "filas_sala": 6,
-  "casos_cero": 8
+  "filas_sala": 69,
+  "casos_cero": 8,
+  "seleccion_sala": "Mismos UBIGEO; semanas 30-52 de 2025 de epi_sala_semanal.csv (refactor OE2: contraste de 2025 con silver_muestra.csv)"
 }

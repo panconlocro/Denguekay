@@ -1,6 +1,8 @@
 """Importación de OOS y serialización contrastadas con salidas reales."""
 
 from copy import deepcopy
+from pathlib import Path
+import tempfile
 import unittest
 
 import numpy as np
@@ -10,7 +12,8 @@ from serving_soporte import protocolo_muestra
 from src.db.modelos import VersionModelo
 from src.modeling.train import ajustar_modelos, conteos_desde_log1p, evaluar_fold
 from src.modeling.validacion_temporal_compacta import variantes_compactas
-from src.serving.artefactos import predecir_con_version, serializar_booster
+from src.serving.almacenamiento import AlmacenamientoLocal
+from src.serving.artefactos import predecir_con_version, serializar_booster, sha256_bytes
 from src.serving.protocolo import verificar_bloque
 
 
@@ -52,11 +55,20 @@ class TestContratoProtocolo(unittest.TestCase):
         datos = self.protocolo.datos[2]
         cols = variantes_compactas(2)["base_6_poblacion_2017"]
         reg, cls = ajustar_modelos(datos, cols)
+        # El servicio predice en CPU; en GPU el estimador difiere en ~1 ULP de float32.
+        reg.set_params(device="cpu")
+        cls.set_params(device="cpu")
         vectores = datos.iloc[-6:][cols]
-        for tipo, modelo, esperado in (("clasificacion", cls, cls.predict_proba(vectores)[:, 1]),
-            ("regresion", reg, conteos_desde_log1p(reg.predict(vectores)))):
-            version = VersionModelo(tipo=tipo, columnas=cols, artefacto=serializar_booster(modelo))
-            np.testing.assert_array_equal(predecir_con_version(version, vectores.to_dict("records")), esperado)
+        with tempfile.TemporaryDirectory() as carpeta:
+            almacenamiento = AlmacenamientoLocal(Path(carpeta))
+            for tarea, modelo, esperado in (("clasificacion", cls, cls.predict_proba(vectores)[:, 1]),
+                ("regresion", reg, conteos_desde_log1p(reg.predict(vectores)))):
+                contenido = serializar_booster(modelo)
+                ruta = f"modelos/{tarea}.json"
+                almacenamiento.guardar(ruta, contenido)
+                version = VersionModelo(codigo=tarea, tarea=tarea, variables=cols, ruta_artefacto=ruta,
+                                        sha256_artefacto=sha256_bytes(contenido))
+                np.testing.assert_array_equal(predecir_con_version(version, vectores.to_dict("records"), almacenamiento), esperado)
 
     def test_casos_reales_entre_umbral_f1_y_05_no_son_alertas_visibles(self):
         umbral = self.fold["clasificacion"]["umbral_probabilidad"]
