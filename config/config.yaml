@@ -20,3 +20,23 @@ xgboost:
   device: auto
   # auto = todos los núcleos de la CPU. No cambia los resultados.
   n_jobs: auto
+
+serving:
+  horizontes: [2, 4]
+  variantes:
+    clasificacion: base_6_poblacion_2017
+    regresion: base_6
+  riesgo:
+    medio: 0.25
+    alto: 0.50
+    muy_alto: 0.75
+  alerta_nivel_minimo: Alto
+  servir_no_validadas: true
+  cors_origen: "http://localhost:5173"
+  criterios_validacion:
+    # Decisión de Rosa: 2024 decide; 2025 se informa como sensibilidad aparte.
+    bloques: [temporada_2024]
+    recall_minimo: 0.80
+    precision_minima: 0.60
+    f1_minimo: 0.70
+    proporcion_error_persistencia: 0.85

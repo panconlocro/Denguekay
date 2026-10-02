@@ -8,6 +8,7 @@ from src.validation.contrato_pronostico import CLAVE, auditar_origen
 
 def construir_historia_calendario(
     panel: pd.DataFrame, horizonte: int, ventana: int = 4,
+    *, permitir_faltantes: bool = False,
 ) -> pd.DataFrame:
     """Construye candidatos causales por distrito y semana objetivo.
 
@@ -17,6 +18,9 @@ def construir_historia_calendario(
     historia insuficiente conservan NaN. El calendario de la semana objetivo
     es conocido antes del pronóstico. No se imputan faltantes ni se escribe
     ningún dataset; la disponibilidad efectiva de publicación se audita aparte.
+    ``permitir_faltantes`` permite objetivos futuros sin casos observados:
+    conserva NaN en las ventanas incompletas, sin imputar ceros. El valor
+    por defecto mantiene el contrato estricto del gold y del entrenamiento.
     """
     if horizonte not in (2, 4):
         raise ValueError("El proyecto contempla horizontes de 2 o 4 semanas")
@@ -33,7 +37,9 @@ def construir_historia_calendario(
     if len(fuente) != len(panel):
         raise ValueError("El cruce con casos cambió el número de filas")
     casos = pd.to_numeric(fuente["casos_Dengue"], errors="raise")
-    if casos.isna().any() or not np.isfinite(casos.to_numpy(dtype=float)).all() or (casos < 0).any():
+    presentes = casos.dropna()
+    if ((not permitir_faltantes and casos.isna().any())
+            or not np.isfinite(presentes.to_numpy(dtype=float)).all() or (presentes < 0).any()):
         raise ValueError("casos_Dengue debe ser numérico, finito y no negativo")
     semana = pd.to_numeric(fuente["semana"], errors="raise")
     if semana.isna().any() or not semana.between(1, 53).all() or not (semana % 1 == 0).all():

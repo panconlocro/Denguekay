@@ -1,5 +1,38 @@
 # Denguekay
 
+## Backend
+
+Las fases 1–2 incorporan el esquema SQLAlchemy/Alembic, la carga validada
+y la publicación de predicciones con XGBoost real. Puede usar PostgreSQL con psycopg 3
+(incluido Supabase) o SQLite para pruebas. Copia `.env.example` como `.env`,
+configura `DATABASE_URL` y, desde la raíz, ejecuta:
+
+```bash
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -c "from src.utils.paths import SERVING_MODELS; SERVING_MODELS.mkdir(parents=True, exist_ok=True)"
+.venv/bin/alembic upgrade head
+.venv/bin/python -m src.serving.publicar --horizontes 2 4
+.venv/bin/python -m unittest discover -s tests
+```
+
+En Windows usa `.\.venv\Scripts\python.exe` y
+`.\.venv\Scripts\alembic.exe` (por ejemplo,
+`.\.venv\Scripts\python.exe -m src.serving.publicar --horizontes 2 4`).
+La publicación exige gold, silver, referencias, manifiesto y resultados del
+protocolo temporal consistentes; ejecuta GX y la auditoría antes de escribir.
+Entrena versiones de servicio nuevas, conserva las retrospectivas de Rosa y
+guarda los artefactos en la BD. Una repetición con las mismas entradas,
+configuración, código y entorno reutiliza la ejecución. `data/` es solo lectura.
+
+El estado de validación usa las métricas de 2024; 2025 se reporta como
+sensibilidad separada. Las versiones actuales son **experimentales** y el
+corte de datos publicado es **27/12/2025**, sin actualización automática.
+
+Consulta [operación](docs/backend/operacion.md) y
+[cierre de la fase 1](docs/backend/fase1_bd.md) y
+[cierre de la fase 2](docs/backend/fase2_inferencia.md). La API corresponde a
+la fase 3, tras la aprobación de Rosa.
+
 ## Feature engineering con Codex
 
 Las instrucciones locales de Codex están en `AGENTS.md` y la skill

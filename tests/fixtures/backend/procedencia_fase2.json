@@ -1,0 +1,8 @@
+{
+  "fuentes": {
+    "meteo_socio_epi_piura_2017_2025.csv": "b04dc8c31793a08b417e5bafd9db101f4a18c9299686cb2dd4bfe2e5049b6c88",
+    "validacion_temporal_compacta.json": "8abda45dc7559cbdb21400ebc502980d6a821ee72857fa55cc07f6adffaa9e61",
+    "predicciones_por_bloque.csv": "01e5008f28788d7fa03830dd4e91d0572505bf3fbaed9fcb2aeeb4aefc240e0e"
+  },
+  "seleccion": "UBIGEO 200101, 200201, 200502. Temporal: semanas 30–52 de 2025. Entrenamiento de pruebas: semanas 14–30 de 2017, 10–30 de 2023, 51–52 de 2025. OOS: semanas 12/20/30 de 2023, temporada 2023, variantes seleccionadas, h2/h4. Referencia: censo 2017. JSON: variantes base_6 y base_6_poblacion_2017 del reporte original."
+}

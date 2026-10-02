@@ -13,6 +13,7 @@ from pathlib import Path
 
 # Raíz del repo (este archivo vive en src/utils/paths.py -> subir 2 niveles)
 ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "src"
 
 CONFIG = ROOT / "config" / "config.yaml"
 
@@ -41,8 +42,15 @@ SILVER_INTEGRADO_BASE = SILVER_INTEGRADO_DIR / "meteo_socio_epi_base_piura_2017_
 SILVER_INTEGRADO = SILVER_INTEGRADO_DIR / "meteo_socio_epi_piura_2017_2025.csv"
 
 UBIGEO_CATALOG = REFERENCE / "catalogo_ubigeos_piura.csv"
+DISTRITOS_COORDS = REFERENCE / "distritos_piura_coords.csv"
+GOLD_MANIFEST = GOLD / "manifest_fase6.json"
 
 MODELS = ROOT / "models"
+SERVING_MODELS = MODELS / "serving"
+ENV_FILE = ROOT / ".env"
+ALEMBIC_CONFIG = ROOT / "alembic.ini"
+DB_MIGRACIONES = ROOT / "src" / "db" / "migraciones"
+BACKEND_FIXTURES = ROOT / "tests" / "fixtures" / "backend"
 
 # Seguimiento de experimentos (MLflow) y calidad de datos (Great Expectations).
 # La base SQLite y los artefactos de MLflow son locales y no se versionan.
@@ -52,6 +60,11 @@ GX_DIR = ROOT / "great_expectations"
 
 # Salidas del EDA (versionadas en Git: son texto y figuras chicas, no datos)
 DOCS = ROOT / "docs"
+BACKEND_DOCS = DOCS / "backend"
+METRICAS_COMPACTAS = DOCS / "modeling" / "metricas" / "validacion_temporal_compacta.json"
+PREDICCIONES_COMPACTAS = MODELS / "experimentos" / "validacion_temporal_compacta" / "predicciones_por_bloque.csv"
+SERVING_EJECUCIONES = SERVING_MODELS / "ejecuciones"
+SERVING_PROTOCOLO_REGENERADO = SERVING_MODELS / "protocolo_regenerado"
 EDA_DOCS = DOCS / "eda"
 EDA_FIGURAS = EDA_DOCS / "figuras"
 EDA_METRICAS = EDA_DOCS / "metricas"

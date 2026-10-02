@@ -5,6 +5,10 @@ data/gold/*
 models/*.pkl
 models/*.joblib
 models/experimentos/
+models/serving/
+.coverage
+htmlcov/
+coverage.xml
 __pycache__/
 *.ipynb_checkpoints/
 .env

@@ -1,0 +1,10 @@
+{
+  "fuentes": {
+    "meteo_socio_epi_piura_2017_2025_h2_gold.csv": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3",
+    "epi_sala_semanal.csv": "b53a1fd75b9c39f0de3cc4353bef825ecc417ffac54383052a3d47247bbf0c24"
+  },
+  "seleccion": "UBIGEO 200101, 200201, 200502; semanas 20/21 de 2017 y 51/52 de 2025",
+  "filas_gold": 12,
+  "filas_sala": 6,
+  "casos_cero": 8
+}

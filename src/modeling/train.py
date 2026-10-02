@@ -177,13 +177,21 @@ def ajustar_modelos(
     return regresor, clasificador
 
 
+def conteos_desde_log1p(predicciones: np.ndarray) -> np.ndarray:
+    """Invierte la salida del regresor con los límites originales del protocolo."""
+    conteos = np.expm1(np.clip(predicciones, 0, 30)).clip(min=0)
+    if not np.isfinite(conteos).all():
+        raise ValueError("El modelo produjo conteos no finitos")
+    return conteos
+
+
 def predecir_fold(
     entrenamiento: pd.DataFrame, prueba: pd.DataFrame, columnas: list[str],
 ) -> tuple[pd.DataFrame, XGBRegressor, XGBClassifier]:
     """Predice ambos objetivos sobre exactamente las mismas distrito-semanas."""
     regresor, clasificador = ajustar_modelos(entrenamiento, columnas)
     x = prueba[columnas]
-    conteos = np.expm1(np.clip(regresor.predict(x), 0, 30)).clip(min=0)
+    conteos = conteos_desde_log1p(regresor.predict(x))
     probabilidades = clasificador.predict_proba(x)[:, 1]
     if not np.isfinite(conteos).all() or not np.isfinite(probabilidades).all():
         raise ValueError("El modelo produjo predicciones no finitas")

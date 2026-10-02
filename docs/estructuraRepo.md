@@ -12,6 +12,8 @@ tesis-dengue-piura/
 ├── AGENTS.md                  # contexto y reglas para Codex
 ├── .codex/skills/             # workflows de Codex (feature engineering)
 ├── .gitignore
+├── .env.example               # conexión y secretos sin valores reales
+├── alembic.ini                # migraciones del backend, sin credenciales
 ├── environment.yml            # o requirements.txt
 ├── config/
 │   └── config.yaml
@@ -29,18 +31,22 @@ tesis-dengue-piura/
 │   ├── validation/
 │   ├── eda/
 │   ├── modeling/
+│   ├── db/                    # ORM, configuración, sesiones y migraciones
+│   ├── serving/               # carga, inferencia real y publicación batch
 │   ├── utils/
 │   └── update_dataset_module.py
 │
 ├── notebooks/
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
+├── tests/fixtures/backend/    # muestra agregada real, pequeña y versionada
 ├── mlflow.db                  # tracking de MLflow (generado, no se versiona)
 ├── mlartifacts/               # artefactos de MLflow (generado, no se versiona)
 └── docs/
     ├── eda/
     ├── feature_engineering/   # plan, evidencia, decisiones y PDF de referencia
-    └── modeling/              # diseño y resultados del entrenamiento
+    ├── modeling/              # diseño y resultados del entrenamiento
+    └── backend/               # operación y evidencia del backend por fase
 ```
 
 ---
@@ -105,7 +111,8 @@ El plan de construcción está en `docs/feature_engineering/plan.md`. La entrada
 ### `data/reference/` — catálogos que casi no cambian
 ```
 reference/
-└── distritos_piura_coords.csv   # 65 distritos, ubigeo, lat/lon
+├── catalogo_ubigeos_piura.csv   # provincia, distrito y UBIGEO
+└── distritos_piura_coords.csv   # 65 centroides; se cruza con el catálogo
 ```
 **Va acá:** tablas maestras chicas que usan varios notebooks (catálogos, diccionarios de códigos, listas de distritos). A diferencia de bronze/silver/gold, esta carpeta **sí se puede subir a Git** porque es chica y cambia poco — es la excepción a la regla de "data/ no se versiona".
 
@@ -167,6 +174,7 @@ eda/
 modeling/
 ├── __init__.py
 ├── historia_calendario.py   # candidatos causales de historia propia y calendario (fase 2)
+├── inferencia_futura.py     # extensión en memoria del calendario, sin fuga ni escritura en data/
 ├── vecinos_jerarquia.py     # contexto espacial y provincial/regional rezagado (fase 3)
 ├── clima.py                 # ventanas climáticas y climatología ajustada por corte (fase 4)
 ├── diagnostico.py           # ridge fijo compartido en ablaciones exploratorias
@@ -204,6 +212,53 @@ anterior desde `src/eda/calidad.py` se conserva para los notebooks.
 La auditoría de la corrección y sus límites están en
 `docs/feature_engineering/correccion_calendario.md` y sus cifras en
 `docs/feature_engineering/metricas/correccion_calendario.json`.
+
+### Backend aprobado por fases
+
+```text
+src/db/
+├── configuracion.py          # DATABASE_URL desde .env o entorno
+├── sesion.py                 # motores, claves foráneas y transacciones
+├── modelos.py                # esquema relacional portable
+└── migraciones/              # revisiones Alembic versionadas
+src/serving/
+├── cargar_datos.py           # GX + auditoría existente + carga idempotente
+├── configuracion.py          # variantes, riesgo y criterios de aceptación
+├── protocolo.py              # importa y verifica los resultados temporales de Rosa
+├── modelos.py                # ajuste final con train.py y metadatos históricos
+├── artefactos.py             # serialización y reevaluación de boosters desde BD
+├── riesgo.py                 # riesgo visible, alerta y disponibilidad
+├── publicacion.py            # transacción: versiones, predicciones y alertas
+└── publicar.py               # CLI idempotente y runs normales de MLflow
+src/validation/
+└── validacion_modelo.py      # aceptación derivada de métricas por bloque
+tests/
+├── backend_soporte.py
+├── serving_soporte.py
+├── test_db_backend.py
+├── test_serving_carga.py
+├── test_serving_futuras.py
+├── test_serving_politicas.py
+├── test_serving_protocolo.py
+├── test_serving_publicacion.py
+└── fixtures/backend/         # filas copiadas de gold/Sala, con procedencia
+docs/backend/                 # operación y cierres verificables
+models/serving/               # BD SQLite/cobertura/artefactos locales; no se versionan
+├── ejecuciones/<huella>/     # reporte, boosters, vectores y resumen de publicación
+└── protocolo_regenerado/     # solo si faltan las predicciones OOS originales
+```
+
+Las fases 1–2 construyen persistencia, carga e inferencia. La fase 3 añadirá
+la API en `src/api/`. El backend
+solo lee `data/`. `carga_datos` audita hashes, GX y corte; `activacion_modelo`
+registra los cambios de versión sin borrar predicciones. Las
+fixtures contienen datos agregados reales y permiten ejecutar pruebas sin
+descargar todo el panel. Sus metadatos documentan la selección y los hashes
+de origen. No sustituyen los archivos completos para publicar en producción.
+Las fixtures de fase 2 incluyen semanas temporales continuas, una muestra de
+entrenamiento, referencia censal y predicciones OOS con métricas originales;
+`procedencia_fase2.json` documenta su selección. Los cierres de fase 2 y sus
+verificaciones SQLite/PostgreSQL viven en `docs/backend/fase2_*`.
 
 ---
 
@@ -281,6 +336,7 @@ trazabilidad_scraper_dengue_piura_2025.zip
 models/*.pkl
 models/*.joblib
 models/experimentos/
+models/serving/
 __pycache__/
 *.ipynb_checkpoints/
 .env
@@ -304,6 +360,11 @@ great_expectations/gx/
 | Función que limpia, agrega o mergea datos | `src/processing/` |
 | Chequeo de calidad de datos | `src/validation/` |
 | Código de entrenamiento/evaluación de modelo | `src/modeling/` |
+| ORM, conexión o migración de la BD | `src/db/` |
+| Carga/predicción/publicación del backend | `src/serving/` |
+| Router o esquema de la API (fase 3) | `src/api/` |
+| Documentación y evidencia del backend | `docs/backend/` |
+| Muestra real para pruebas del backend | `tests/fixtures/backend/` |
 | Función chica usada por varios módulos | `src/utils/` |
 | Notebook que orquesta un paso del pipeline | `notebooks/`, numerado |
 | Dato tal cual vino de la fuente | `data/bronze/<fuente>/` |
