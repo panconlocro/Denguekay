@@ -172,10 +172,22 @@ class Indicador(Disponibilidad):
     valor: int | float | None
 
 
+class ResumenObservado(Disponibilidad):
+    """Casos de la última semana observada; cobertura independiente del pronóstico."""
+    tipo_dato: Literal["observado"]
+    unidad: Literal["casos"]
+    semana_inicio: date | None
+    fecha_actualizacion: datetime | None
+    cobertura_distritos: int
+    casos_distritos_disponibles: Indicador
+    casos_region: Indicador
+
+
 class TableroRespuesta(Metadatos):
     horizonte: int
     semana_objetivo: date | None
     estado_validacion: str
+    observado: ResumenObservado
     indicadores: dict[str, Indicador]
     niveles_riesgo: dict[str, int]
     cobertura: dict[str, int]

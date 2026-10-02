@@ -29,7 +29,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:22.468387Z",
                       "estado": "operativa",
                       "conexion_bd": true,
                       "versiones_activas": [
@@ -191,8 +191,8 @@
                         }
                       ],
                       "ultima_ejecucion": {
-                        "id": 3,
-                        "fecha": "2026-10-02T02:04:07.360564",
+                        "id": 83,
+                        "fecha": "2026-10-02T02:31:22.468387",
                         "estado": "completada",
                         "filas_generadas": 65
                       }
@@ -317,7 +317,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:22.468387Z",
                       "elementos": [
                         {
                           "disponible": true,
@@ -428,7 +428,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:22.468387Z",
                       "type": "FeatureCollection",
                       "features": [
                         {
@@ -1894,7 +1894,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:22.468387Z",
                       "elementos": [
                         {
                           "disponible": true,
@@ -2091,13 +2091,13 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:22.468387Z",
                       "elementos": [
                         {
                           "disponible": true,
                           "motivo": null,
                           "fecha_corte_datos": "2025-12-27",
-                          "fecha_actualizacion": "2026-10-02T02:04:07.365249Z",
+                          "fecha_actualizacion": "2026-10-02T02:31:21.592999Z",
                           "ubigeo": "200101",
                           "distrito": "Piura",
                           "anio": 2026,
@@ -2107,7 +2107,7 @@
                           "tipo_dato": "pronosticado",
                           "estado_validacion": "experimental",
                           "version_modelo_id": 1,
-                          "id": 27236,
+                          "id": 31136,
                           "tipo": "vigente",
                           "origen_cierre": "2025-12-27",
                           "probabilidad": 0.028871988877654076,
@@ -2118,7 +2118,7 @@
                           "alerta_visible": false,
                           "version_regresion_id": 2,
                           "version_persistencia_id": 3,
-                          "ejecucion_id": 3,
+                          "ejecucion_id": 63,
                           "componentes": {
                             "clasificacion": {
                               "disponible": true,
@@ -2291,7 +2291,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.365249Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:21.592999Z",
                       "ubigeo": "200101",
                       "distrito": "Piura",
                       "horizonte": 2,
@@ -2447,7 +2447,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365249Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.592999Z",
                             "ubigeo": "200101",
                             "distrito": "Piura",
                             "anio": 2026,
@@ -2457,7 +2457,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27236,
+                            "id": 31136,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.028871988877654076,
@@ -2468,7 +2468,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -2591,23 +2591,23 @@
                   "bd_real": {
                     "summary": "Ejemplo obtenido de la base de datos configurada",
                     "value": {
-                      "ejecucion_id": 2,
+                      "ejecucion_id": 43,
                       "operacion": "reevaluacion_api",
-                      "horizonte": 2,
+                      "horizonte": 4,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.333063Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:20.655568Z",
                       "filas_generadas": 65,
                       "versiones_usadas": [
-                        1,
-                        2,
-                        3
+                        4,
+                        5,
+                        6
                       ],
                       "alertas": {
                         "retiradas_anteriores": 0,
                         "activas_nuevas": 0,
                         "historicas_nuevas": 0
                       },
-                      "duracion_segundos": 0.03562354200403206,
+                      "duracion_segundos": 0.021057792007923126,
                       "estado_validacion": "experimental"
                     }
                   }
@@ -2716,7 +2716,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:21.587638Z",
                       "horizonte": 2,
                       "semana_objetivo": "2026-01-04",
                       "leyenda": [
@@ -2771,7 +2771,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365249Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.592999Z",
                             "ubigeo": "200101",
                             "distrito": "Piura",
                             "anio": 2026,
@@ -2781,7 +2781,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27236,
+                            "id": 31136,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.028871988877654076,
@@ -2792,7 +2792,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -2826,7 +2826,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365252Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593001Z",
                             "ubigeo": "200104",
                             "distrito": "Castilla",
                             "anio": 2026,
@@ -2836,7 +2836,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27237,
+                            "id": 31137,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0047871386632323265,
@@ -2847,7 +2847,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -2881,7 +2881,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365252Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593002Z",
                             "ubigeo": "200105",
                             "distrito": "Catacaos",
                             "anio": 2026,
@@ -2891,7 +2891,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27238,
+                            "id": 31138,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004715331364423037,
@@ -2902,7 +2902,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -2936,7 +2936,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365252Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593002Z",
                             "ubigeo": "200107",
                             "distrito": "Cura Mori",
                             "anio": 2026,
@@ -2946,7 +2946,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27239,
+                            "id": 31139,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004712280351668596,
@@ -2957,7 +2957,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -2991,7 +2991,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365253Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593003Z",
                             "ubigeo": "200108",
                             "distrito": "El Tallán",
                             "anio": 2026,
@@ -3001,7 +3001,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27240,
+                            "id": 31140,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004094930365681648,
@@ -3012,7 +3012,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3046,7 +3046,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365253Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593003Z",
                             "ubigeo": "200109",
                             "distrito": "La Arena",
                             "anio": 2026,
@@ -3056,7 +3056,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27241,
+                            "id": 31141,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004875265061855316,
@@ -3067,7 +3067,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3101,7 +3101,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365253Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593003Z",
                             "ubigeo": "200110",
                             "distrito": "La Unión",
                             "anio": 2026,
@@ -3111,7 +3111,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27242,
+                            "id": 31142,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004875265061855316,
@@ -3122,7 +3122,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3156,7 +3156,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365254Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593003Z",
                             "ubigeo": "200111",
                             "distrito": "Las Lomas",
                             "anio": 2026,
@@ -3166,7 +3166,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27243,
+                            "id": 31143,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.00478330347687006,
@@ -3177,7 +3177,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3211,7 +3211,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365254Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593004Z",
                             "ubigeo": "200114",
                             "distrito": "Tambo Grande",
                             "anio": 2026,
@@ -3221,7 +3221,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27244,
+                            "id": 31144,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.005068614147603512,
@@ -3232,7 +3232,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3266,7 +3266,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365254Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593004Z",
                             "ubigeo": "200115",
                             "distrito": "Veintiséis de Octubre",
                             "anio": 2026,
@@ -3276,7 +3276,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27245,
+                            "id": 31145,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0451444610953331,
@@ -3287,7 +3287,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3321,7 +3321,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365254Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593004Z",
                             "ubigeo": "200201",
                             "distrito": "Ayabaca",
                             "anio": 2026,
@@ -3331,7 +3331,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27246,
+                            "id": 31146,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004851262550801039,
@@ -3342,7 +3342,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3376,7 +3376,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365255Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593005Z",
                             "ubigeo": "200202",
                             "distrito": "Frias",
                             "anio": 2026,
@@ -3386,7 +3386,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27247,
+                            "id": 31147,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004712280351668596,
@@ -3397,7 +3397,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3431,7 +3431,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365255Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593005Z",
                             "ubigeo": "200203",
                             "distrito": "Jilili",
                             "anio": 2026,
@@ -3441,7 +3441,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27248,
+                            "id": 31148,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004010868724435568,
@@ -3452,7 +3452,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3486,7 +3486,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365255Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593005Z",
                             "ubigeo": "200204",
                             "distrito": "Lagunas",
                             "anio": 2026,
@@ -3496,7 +3496,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27249,
+                            "id": 31149,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0030978908762335777,
@@ -3507,7 +3507,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3541,7 +3541,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365255Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593005Z",
                             "ubigeo": "200205",
                             "distrito": "Montero",
                             "anio": 2026,
@@ -3551,7 +3551,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27250,
+                            "id": 31150,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0030978908762335777,
@@ -3562,7 +3562,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3596,7 +3596,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365256Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593006Z",
                             "ubigeo": "200206",
                             "distrito": "Pacaipampa",
                             "anio": 2026,
@@ -3606,7 +3606,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27251,
+                            "id": 31151,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.00478330347687006,
@@ -3617,7 +3617,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3651,7 +3651,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365256Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593006Z",
                             "ubigeo": "200207",
                             "distrito": "Paimas",
                             "anio": 2026,
@@ -3661,7 +3661,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27252,
+                            "id": 31152,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0036356914788484573,
@@ -3672,7 +3672,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3706,7 +3706,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365256Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593006Z",
                             "ubigeo": "200208",
                             "distrito": "Sapillica",
                             "anio": 2026,
@@ -3716,7 +3716,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27253,
+                            "id": 31153,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0036356914788484573,
@@ -3727,7 +3727,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3761,7 +3761,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365256Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593007Z",
                             "ubigeo": "200209",
                             "distrito": "Sicchez",
                             "anio": 2026,
@@ -3771,7 +3771,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27254,
+                            "id": 31154,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004010868724435568,
@@ -3782,7 +3782,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3816,7 +3816,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365257Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593007Z",
                             "ubigeo": "200210",
                             "distrito": "Suyo",
                             "anio": 2026,
@@ -3826,7 +3826,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27255,
+                            "id": 31155,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004554219543933868,
@@ -3837,7 +3837,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3871,7 +3871,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365257Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593007Z",
                             "ubigeo": "200301",
                             "distrito": "Huancabamba",
                             "anio": 2026,
@@ -3881,7 +3881,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27256,
+                            "id": 31156,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.00478330347687006,
@@ -3892,7 +3892,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3926,7 +3926,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365257Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593007Z",
                             "ubigeo": "200302",
                             "distrito": "Canchaque",
                             "anio": 2026,
@@ -3936,7 +3936,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27257,
+                            "id": 31157,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0035877199843525887,
@@ -3947,7 +3947,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -3981,7 +3981,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365257Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593008Z",
                             "ubigeo": "200303",
                             "distrito": "El Carmen de la Frontera",
                             "anio": 2026,
@@ -3991,7 +3991,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27258,
+                            "id": 31158,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.00463536661118269,
@@ -4002,7 +4002,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4036,7 +4036,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365258Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593008Z",
                             "ubigeo": "200304",
                             "distrito": "Huarmaca",
                             "anio": 2026,
@@ -4046,7 +4046,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27259,
+                            "id": 31159,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004851262550801039,
@@ -4057,7 +4057,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4091,7 +4091,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365258Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593008Z",
                             "ubigeo": "200305",
                             "distrito": "Lalaquiz",
                             "anio": 2026,
@@ -4101,7 +4101,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27260,
+                            "id": 31160,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004094930365681648,
@@ -4112,7 +4112,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4146,7 +4146,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365258Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593009Z",
                             "ubigeo": "200306",
                             "distrito": "San Miguel de El Faique",
                             "anio": 2026,
@@ -4156,7 +4156,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27261,
+                            "id": 31161,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0036356914788484573,
@@ -4167,7 +4167,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4201,7 +4201,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365259Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593009Z",
                             "ubigeo": "200307",
                             "distrito": "Sondor",
                             "anio": 2026,
@@ -4211,7 +4211,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27262,
+                            "id": 31162,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0035877199843525887,
@@ -4222,7 +4222,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4256,7 +4256,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365259Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593009Z",
                             "ubigeo": "200308",
                             "distrito": "Sondorillo",
                             "anio": 2026,
@@ -4266,7 +4266,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27263,
+                            "id": 31163,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0036356914788484573,
@@ -4277,7 +4277,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4311,7 +4311,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365259Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593009Z",
                             "ubigeo": "200401",
                             "distrito": "Chulucanas",
                             "anio": 2026,
@@ -4321,7 +4321,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27264,
+                            "id": 31164,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.1852608472108841,
@@ -4332,7 +4332,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4366,7 +4366,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365259Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593010Z",
                             "ubigeo": "200402",
                             "distrito": "Buenos Aires",
                             "anio": 2026,
@@ -4376,7 +4376,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27265,
+                            "id": 31165,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0036356914788484573,
@@ -4387,7 +4387,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4421,7 +4421,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365260Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593010Z",
                             "ubigeo": "200403",
                             "distrito": "Chalaco",
                             "anio": 2026,
@@ -4431,7 +4431,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27266,
+                            "id": 31166,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0035877199843525887,
@@ -4442,7 +4442,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4476,7 +4476,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365260Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593010Z",
                             "ubigeo": "200404",
                             "distrito": "La Matanza",
                             "anio": 2026,
@@ -4486,7 +4486,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27267,
+                            "id": 31167,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0360649898648262,
@@ -4497,7 +4497,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4531,7 +4531,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365260Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593011Z",
                             "ubigeo": "200405",
                             "distrito": "Morropon",
                             "anio": 2026,
@@ -4541,7 +4541,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27268,
+                            "id": 31168,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004681009333580732,
@@ -4552,7 +4552,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4586,7 +4586,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365260Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593011Z",
                             "ubigeo": "200406",
                             "distrito": "Salitral",
                             "anio": 2026,
@@ -4596,7 +4596,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27269,
+                            "id": 31169,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0035877199843525887,
@@ -4607,7 +4607,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4641,7 +4641,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365261Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593011Z",
                             "ubigeo": "200407",
                             "distrito": "San Juan de Bigote",
                             "anio": 2026,
@@ -4651,7 +4651,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27270,
+                            "id": 31170,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0030978908762335777,
@@ -4662,7 +4662,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4696,7 +4696,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365261Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593011Z",
                             "ubigeo": "200408",
                             "distrito": "Santa Catalina de Mossa",
                             "anio": 2026,
@@ -4706,7 +4706,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27271,
+                            "id": 31171,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004094930365681648,
@@ -4717,7 +4717,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4751,7 +4751,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365261Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593012Z",
                             "ubigeo": "200409",
                             "distrito": "Santo Domingo",
                             "anio": 2026,
@@ -4761,7 +4761,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27272,
+                            "id": 31172,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0030978908762335777,
@@ -4772,7 +4772,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4806,7 +4806,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365261Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593012Z",
                             "ubigeo": "200410",
                             "distrito": "Yamango",
                             "anio": 2026,
@@ -4816,7 +4816,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27273,
+                            "id": 31173,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0035877199843525887,
@@ -4827,7 +4827,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4861,7 +4861,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365262Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593012Z",
                             "ubigeo": "200501",
                             "distrito": "Paita",
                             "anio": 2026,
@@ -4871,7 +4871,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27274,
+                            "id": 31174,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.005082589574158192,
@@ -4882,7 +4882,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4916,7 +4916,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365262Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593013Z",
                             "ubigeo": "200502",
                             "distrito": "Amotape",
                             "anio": 2026,
@@ -4926,7 +4926,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27275,
+                            "id": 31175,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004010868724435568,
@@ -4937,7 +4937,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -4971,7 +4971,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365262Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593013Z",
                             "ubigeo": "200503",
                             "distrito": "Arenal",
                             "anio": 2026,
@@ -4981,7 +4981,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27276,
+                            "id": 31176,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004010868724435568,
@@ -4992,7 +4992,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5026,7 +5026,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365262Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593013Z",
                             "ubigeo": "200504",
                             "distrito": "Colan",
                             "anio": 2026,
@@ -5036,7 +5036,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27277,
+                            "id": 31177,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004576009698212147,
@@ -5047,7 +5047,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5081,7 +5081,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365263Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593013Z",
                             "ubigeo": "200505",
                             "distrito": "La Huaca",
                             "anio": 2026,
@@ -5091,7 +5091,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27278,
+                            "id": 31178,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.00463536661118269,
@@ -5102,7 +5102,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5136,7 +5136,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365263Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593014Z",
                             "ubigeo": "200506",
                             "distrito": "Tamarindo",
                             "anio": 2026,
@@ -5146,7 +5146,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27279,
+                            "id": 31179,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004094930365681648,
@@ -5157,7 +5157,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5191,7 +5191,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365263Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593014Z",
                             "ubigeo": "200507",
                             "distrito": "Vichayal",
                             "anio": 2026,
@@ -5201,7 +5201,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27280,
+                            "id": 31180,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004024765454232693,
@@ -5212,7 +5212,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5246,7 +5246,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365263Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593014Z",
                             "ubigeo": "200601",
                             "distrito": "Sullana",
                             "anio": 2026,
@@ -5256,7 +5256,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27281,
+                            "id": 31181,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.15273723006248474,
@@ -5267,7 +5267,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5301,7 +5301,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365264Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593015Z",
                             "ubigeo": "200602",
                             "distrito": "Bellavista",
                             "anio": 2026,
@@ -5311,7 +5311,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27282,
+                            "id": 31182,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004875265061855316,
@@ -5322,7 +5322,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5356,7 +5356,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365264Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593015Z",
                             "ubigeo": "200603",
                             "distrito": "Ignacio Escudero",
                             "anio": 2026,
@@ -5366,7 +5366,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27283,
+                            "id": 31183,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.00478330347687006,
@@ -5377,7 +5377,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5411,7 +5411,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365264Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593015Z",
                             "ubigeo": "200604",
                             "distrito": "Lancones",
                             "anio": 2026,
@@ -5421,7 +5421,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27284,
+                            "id": 31184,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.00463536661118269,
@@ -5432,7 +5432,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5466,7 +5466,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365264Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593015Z",
                             "ubigeo": "200605",
                             "distrito": "Marcavelica",
                             "anio": 2026,
@@ -5476,7 +5476,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27285,
+                            "id": 31185,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004851262550801039,
@@ -5487,7 +5487,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5521,7 +5521,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365265Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593016Z",
                             "ubigeo": "200606",
                             "distrito": "Miguel Checa",
                             "anio": 2026,
@@ -5531,7 +5531,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27286,
+                            "id": 31186,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0036356914788484573,
@@ -5542,7 +5542,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5576,7 +5576,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365265Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593016Z",
                             "ubigeo": "200607",
                             "distrito": "Querecotillo",
                             "anio": 2026,
@@ -5586,7 +5586,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27287,
+                            "id": 31187,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.00478330347687006,
@@ -5597,7 +5597,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5631,7 +5631,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365265Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593016Z",
                             "ubigeo": "200608",
                             "distrito": "Salitral_s",
                             "anio": 2026,
@@ -5641,7 +5641,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27288,
+                            "id": 31188,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.003849948290735483,
@@ -5652,7 +5652,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5686,7 +5686,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365266Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593017Z",
                             "ubigeo": "200701",
                             "distrito": "Pariñas",
                             "anio": 2026,
@@ -5696,7 +5696,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27289,
+                            "id": 31189,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004784057382494211,
@@ -5707,7 +5707,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5741,7 +5741,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365266Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593017Z",
                             "ubigeo": "200702",
                             "distrito": "El Alto",
                             "anio": 2026,
@@ -5751,7 +5751,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27290,
+                            "id": 31190,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0035877199843525887,
@@ -5762,7 +5762,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5796,7 +5796,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365266Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593017Z",
                             "ubigeo": "200703",
                             "distrito": "La Brea",
                             "anio": 2026,
@@ -5806,7 +5806,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27291,
+                            "id": 31191,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.00463536661118269,
@@ -5817,7 +5817,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5851,7 +5851,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365266Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593018Z",
                             "ubigeo": "200704",
                             "distrito": "Lobitos",
                             "anio": 2026,
@@ -5861,7 +5861,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27292,
+                            "id": 31192,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004010868724435568,
@@ -5872,7 +5872,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5906,7 +5906,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365267Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593018Z",
                             "ubigeo": "200705",
                             "distrito": "Los Organos",
                             "anio": 2026,
@@ -5916,7 +5916,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27293,
+                            "id": 31193,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.0038747983053326607,
@@ -5927,7 +5927,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -5961,7 +5961,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365267Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593018Z",
                             "ubigeo": "200706",
                             "distrito": "Mancora",
                             "anio": 2026,
@@ -5971,7 +5971,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27294,
+                            "id": 31194,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004750589374452829,
@@ -5982,7 +5982,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -6016,7 +6016,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365267Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593018Z",
                             "ubigeo": "200801",
                             "distrito": "Sechura",
                             "anio": 2026,
@@ -6026,7 +6026,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27295,
+                            "id": 31195,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004786629695445299,
@@ -6037,7 +6037,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -6071,7 +6071,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365267Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593019Z",
                             "ubigeo": "200802",
                             "distrito": "Bellavista de la Union",
                             "anio": 2026,
@@ -6081,7 +6081,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27296,
+                            "id": 31196,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004094930365681648,
@@ -6092,7 +6092,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -6126,7 +6126,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365268Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593019Z",
                             "ubigeo": "200803",
                             "distrito": "Bernal",
                             "anio": 2026,
@@ -6136,7 +6136,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27297,
+                            "id": 31197,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.003849948290735483,
@@ -6147,7 +6147,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -6181,7 +6181,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365268Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593019Z",
                             "ubigeo": "200804",
                             "distrito": "Cristo Nos Valga",
                             "anio": 2026,
@@ -6191,7 +6191,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27298,
+                            "id": 31198,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004094930365681648,
@@ -6202,7 +6202,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -6236,7 +6236,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365268Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593020Z",
                             "ubigeo": "200805",
                             "distrito": "Vice",
                             "anio": 2026,
@@ -6246,7 +6246,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27299,
+                            "id": 31199,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004794548265635967,
@@ -6257,7 +6257,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -6291,7 +6291,7 @@
                             "disponible": true,
                             "motivo": null,
                             "fecha_corte_datos": "2025-12-27",
-                            "fecha_actualizacion": "2026-10-02T02:04:07.365268Z",
+                            "fecha_actualizacion": "2026-10-02T02:31:21.593020Z",
                             "ubigeo": "200806",
                             "distrito": "Rinconada Llicuar",
                             "anio": 2026,
@@ -6301,7 +6301,7 @@
                             "tipo_dato": "pronosticado",
                             "estado_validacion": "experimental",
                             "version_modelo_id": 1,
-                            "id": 27300,
+                            "id": 31200,
                             "tipo": "vigente",
                             "origen_cierre": "2025-12-27",
                             "probabilidad": 0.004010868724435568,
@@ -6312,7 +6312,7 @@
                             "alerta_visible": false,
                             "version_regresion_id": 2,
                             "version_persistencia_id": 3,
-                            "ejecucion_id": 3,
+                            "ejecucion_id": 63,
                             "componentes": {
                               "clasificacion": {
                                 "disponible": true,
@@ -6436,10 +6436,29 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:21.587638Z",
                       "horizonte": 2,
                       "semana_objetivo": "2026-01-04",
                       "estado_validacion": "experimental",
+                      "observado": {
+                        "disponible": true,
+                        "motivo": null,
+                        "tipo_dato": "observado",
+                        "unidad": "casos",
+                        "semana_inicio": "2025-12-21",
+                        "fecha_actualizacion": "2026-10-02T00:27:10.131046Z",
+                        "cobertura_distritos": 65,
+                        "casos_distritos_disponibles": {
+                          "disponible": true,
+                          "motivo": null,
+                          "valor": 4
+                        },
+                        "casos_region": {
+                          "disponible": true,
+                          "motivo": null,
+                          "valor": 4
+                        }
+                      },
                       "indicadores": {
                         "probabilidad_media_distritos_disponibles": {
                           "disponible": true,
@@ -6655,7 +6674,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:22.468387Z",
                       "elementos": [
                         {
                           "disponible": true,
@@ -7010,7 +7029,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:22.468387Z",
                       "elementos": [
                         {
                           "disponible": true,
@@ -7895,23 +7914,23 @@
                   "bd_real": {
                     "summary": "Ejemplo obtenido de la base de datos configurada",
                     "value": {
-                      "ejecucion_id": 3,
+                      "ejecucion_id": 83,
                       "operacion": "activacion_api",
-                      "horizonte": 2,
+                      "horizonte": 4,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+                      "fecha_actualizacion": "2026-10-02T02:31:22.468387Z",
                       "filas_generadas": 65,
                       "versiones_usadas": [
-                        1,
-                        2,
-                        3
+                        4,
+                        5,
+                        6
                       ],
                       "alertas": {
                         "retiradas_anteriores": 0,
                         "activas_nuevas": 0,
                         "historicas_nuevas": 0
                       },
-                      "duracion_segundos": 0.02017741599411238,
+                      "duracion_segundos": 0.024684666001121514,
                       "estado_validacion": "experimental"
                     }
                   }
@@ -9952,6 +9971,85 @@
         "title": "ReevaluacionRespuesta",
         "description": "Ejecución confirmada atómicamente desde artefactos y vectores de la BD"
       },
+      "ResumenObservado": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "tipo_dato": {
+            "type": "string",
+            "const": "observado",
+            "title": "Tipo Dato"
+          },
+          "unidad": {
+            "type": "string",
+            "const": "casos",
+            "title": "Unidad"
+          },
+          "semana_inicio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Semana Inicio"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion"
+          },
+          "cobertura_distritos": {
+            "type": "integer",
+            "title": "Cobertura Distritos"
+          },
+          "casos_distritos_disponibles": {
+            "$ref": "#/components/schemas/Indicador"
+          },
+          "casos_region": {
+            "$ref": "#/components/schemas/Indicador"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "tipo_dato",
+          "unidad",
+          "semana_inicio",
+          "fecha_actualizacion",
+          "cobertura_distritos",
+          "casos_distritos_disponibles",
+          "casos_region"
+        ],
+        "title": "ResumenObservado",
+        "description": "Casos de la última semana observada; cobertura independiente del pronóstico."
+      },
       "SaludRespuesta": {
         "properties": {
           "disponible": {
@@ -10240,6 +10338,9 @@
             "type": "string",
             "title": "Estado Validacion"
           },
+          "observado": {
+            "$ref": "#/components/schemas/ResumenObservado"
+          },
           "indicadores": {
             "additionalProperties": {
               "$ref": "#/components/schemas/Indicador"
@@ -10275,6 +10376,7 @@
           "horizonte",
           "semana_objetivo",
           "estado_validacion",
+          "observado",
           "indicadores",
           "niveles_riesgo",
           "cobertura",

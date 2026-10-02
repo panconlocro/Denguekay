@@ -59,6 +59,10 @@ def lectura(request: Request, response: Response, sesion, construir):
         select(func.max(ActivacionModelo.id)).scalar_subquery())).one())
     clave = (str(request.url), revision)
     cache = request.app.state.cache
+    directivas = {p.strip().lower() for p in request.headers.get("Cache-Control", "").split(",")}
+    if "no-cache" in directivas or "no-store" in directivas:
+        response.headers["X-Cache"] = "BYPASS"
+        return construir()
     valor = cache.obtener(clave)
     response.headers["X-Cache"] = "HIT" if valor is not None else "MISS"
     if valor is None:

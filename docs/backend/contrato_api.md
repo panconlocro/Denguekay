@@ -54,6 +54,10 @@ no tenga fila, con probabilidad/magnitud nulas y riesgo Sin datos.
 
 La probabilidad y la magnitud tienen disponibilidad independiente en
 `componentes`. Si falta un componente, el otro no se sustituye ni se rellena.
+El tablero añade `observado`: `tipo_dato: observado`, unidad `casos`, última
+semana observada, fecha de carga, cobertura y sumas parciales/regionales. Su
+periodo es independiente de `semana_objetivo` del pronóstico. Los indicadores
+`casos_estimados_*` tienen unidad casos; las probabilidades son proporciones.
 El tablero declara la cobertura de los agregados parciales; `casos_estimados_region`
 es nulo si falta algún distrito. Un conteo real de cero alertas sí puede ser
 cero; si no existe probabilidad para evaluar alertas, el indicador es nulo.
@@ -132,3 +136,7 @@ interactiva sigue accesible si la BD cae, sin ejemplos inventados de respaldo.
 Pendientes de las fases siguientes: benchmark SLA reproducible, documentación
 C4/trazabilidad completa, CI y despliegue aprobado en Render/Supabase. Windows
 no se ha ejecutado en este equipo; no hay afirmación de verificación remota.
+
+Para diagnóstico y benchmark se puede enviar `Cache-Control: no-cache` o
+`no-store` en GET: omite la caché de lecturas y devuelve `X-Cache: BYPASS`.
+La verificación de conexión sigue siendo obligatoria.

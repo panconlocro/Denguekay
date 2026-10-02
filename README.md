@@ -2,7 +2,7 @@
 
 ## Backend
 
-Las fases 1–3 incorporan el esquema SQLAlchemy/Alembic, la carga validada,
+Las fases 1–4 incorporan el esquema SQLAlchemy/Alembic, la carga validada,
 la publicación de predicciones con XGBoost real y la API FastAPI. Puede usar PostgreSQL con psycopg 3
 (incluido Supabase) o SQLite para pruebas. Copia `.env.example` como `.env`,
 configura `DATABASE_URL` y una `API_KEY` para escrituras y, desde la raíz, ejecuta:
@@ -45,8 +45,17 @@ Consulta [operación](docs/backend/operacion.md) y
 [cierre de la fase 2](docs/backend/fase2_inferencia.md),
 [cierre de la fase 3](docs/backend/fase3_api.md) y
 [contrato API](docs/backend/contrato_api.md).
-Benchmark, CI y documentación integral corresponden a la fase 4; el despliegue
-en Render/Supabase requiere la aprobación de su fase.
+La fase 4 incorpora [arquitectura](docs/backend/arquitectura.md),
+[decisiones](docs/backend/decisiones_tecnicas.md),
+[trazabilidad HU](docs/backend/trazabilidad_hu.md) y
+[mediciones de calidad](docs/backend/fase4_calidad.md).
+Ejecuta `.venv/bin/python -m coverage run -m unittest discover -s tests` y
+`.venv/bin/python -m coverage report --fail-under=80`. El benchmark usa la BD
+configurada: `.venv/bin/python -m src.api.benchmark`; con `--url` mide HTTP real.
+Las escrituras son opcionales (`--incluir-escrituras`) y deben medirse sobre una
+copia de la BD, pues agregan ejecuciones. CI ejecuta tests/cobertura en push/PR
+para Linux, Windows y macOS; falta observar sus runs remotos tras el push.
+El despliegue Render/Supabase y el SLA remoto requieren aprobación de la fase 5.
 
 ## Feature engineering con Codex
 

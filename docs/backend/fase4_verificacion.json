@@ -1,0 +1,196 @@
+{
+  "fecha_verificacion_utc": "2026-10-02T02:47:03.417366+00:00",
+  "pruebas": {
+    "comando": "python -m coverage run -m unittest discover -s tests",
+    "cantidad": 251,
+    "duracion_segundos": 51.099,
+    "resultado": "OK"
+  },
+  "cobertura": {
+    "comando": "python -m coverage report --fail-under=80",
+    "total": 90.16307206733298,
+    "paquetes": {
+      "api": {
+        "sentencias": 849,
+        "faltantes": 40,
+        "porcentaje": 95.28857479387514
+      },
+      "serving": {
+        "sentencias": 717,
+        "faltantes": 138,
+        "porcentaje": 80.75313807531381
+      },
+      "db": {
+        "sentencias": 335,
+        "faltantes": 9,
+        "porcentaje": 97.31343283582089
+      }
+    },
+    "sin_exclusiones_de_modulos": true
+  },
+  "gx": {
+    "comando": "python -m src.validation.calidad_gx",
+    "ejecutado_al_iniciar_fase": true,
+    "silver_integrado": {
+      "filas": 30485,
+      "exitosas": 107,
+      "evaluadas": 107
+    },
+    "gold_h2": {
+      "filas": 30485,
+      "exitosas": 92,
+      "evaluadas": 92
+    },
+    "gold_h4": {
+      "filas": 30485,
+      "exitosas": 92,
+      "evaluadas": 92
+    }
+  },
+  "pip_check": "No broken requirements found.",
+  "entradas_protegidas": {
+    "archivos_verificados": 503,
+    "cambios": [],
+    "alcance": [
+      "data/",
+      "models/experimentos/",
+      "docs/modeling/metricas/"
+    ]
+  },
+  "conteos": {
+    "sqlite_origen_fase3": {
+      "distrito": 65,
+      "observacion_semanal": 30485,
+      "version_modelo": 30,
+      "prediccion": 27300,
+      "ejecucion_prediccion": 3,
+      "alerta": 4002,
+      "activacion_modelo": 6
+    },
+    "sqlite_copia_fase4": {
+      "distrito": 65,
+      "observacion_semanal": 30485,
+      "version_modelo": 30,
+      "prediccion": 32500,
+      "ejecucion_prediccion": 83,
+      "alerta": 4002,
+      "activacion_modelo": 6
+    },
+    "postgresql_copia_fase4": {
+      "version": "PostgreSQL 17.5 (Homebrew) on aarch64-apple-darwin24.4.0, compiled by Apple clang version 17.0.0 (clang-1700.0.13.3), 64-bit",
+      "distrito": 65,
+      "observacion_semanal": 30485,
+      "version_modelo": 30,
+      "prediccion": 32500,
+      "ejecucion_prediccion": 83,
+      "alerta": 4002,
+      "activacion_modelo": 6
+    }
+  },
+  "versiones_activas": [
+    {
+      "id": 1,
+      "horizonte": 2,
+      "tipo": "clasificacion",
+      "estado_validacion": "experimental"
+    },
+    {
+      "id": 3,
+      "horizonte": 2,
+      "tipo": "persistencia",
+      "estado_validacion": "referencia"
+    },
+    {
+      "id": 2,
+      "horizonte": 2,
+      "tipo": "regresion",
+      "estado_validacion": "experimental"
+    },
+    {
+      "id": 4,
+      "horizonte": 4,
+      "tipo": "clasificacion",
+      "estado_validacion": "experimental"
+    },
+    {
+      "id": 6,
+      "horizonte": 4,
+      "tipo": "persistencia",
+      "estado_validacion": "referencia"
+    },
+    {
+      "id": 5,
+      "horizonte": 4,
+      "tipo": "regresion",
+      "estado_validacion": "experimental"
+    }
+  ],
+  "fecha_corte_datos": "2025-12-27",
+  "benchmark": {
+    "sqlite": {
+      "archivo": "benchmark_sqlite.json",
+      "casos_medidos": 46,
+      "repeticiones": 20,
+      "peticiones_medidas": 920,
+      "errores": 0,
+      "max_p95_ms": 393.40626220873673,
+      "max_duracion_ms": 395.7656670099823,
+      "peor_caso": {
+        "metodo": "GET",
+        "ruta": "/tablero?horizonte=2",
+        "modo": "sin_cache_lecturas",
+        "p50_ms": 338.5692294978071,
+        "p95_ms": 393.40626220873673
+      },
+      "cumple_sla_completo_medicion_local": true,
+      "sha256": "83a61e59674d061117da87f97661af04e7cd88a8578e1256e7d0e047e38acf7f"
+    },
+    "postgresql": {
+      "archivo": "benchmark_postgresql.json",
+      "casos_medidos": 46,
+      "repeticiones": 20,
+      "peticiones_medidas": 920,
+      "errores": 0,
+      "max_p95_ms": 360.64692498766817,
+      "max_duracion_ms": 430.6236670090584,
+      "peor_caso": {
+        "metodo": "GET",
+        "ruta": "/tablero?horizonte=4",
+        "modo": "sin_cache_lecturas",
+        "p50_ms": 331.85475048958324,
+        "p95_ms": 360.64692498766817
+      },
+      "cumple_sla_completo_medicion_local": true,
+      "sha256": "4fb1e812359bdf1eb3c13b5ad392d58580d6fd7533fa12aa61b06fc9cf5e9d2d"
+    }
+  },
+  "historial": {
+    "copias_de_fase3": true,
+    "post_por_copia": 80,
+    "entrenamiento_completo_repetido": false,
+    "modelo_registry_usado": false
+  },
+  "fuente_hu": {
+    "archivo": "US_Criterios_De_Aceptacion_1.xlsm",
+    "sha256": "59a3fecb7559dd07912ca7529c90a16ba81c342fa4db276f9c1dfadd486bf139"
+  },
+  "pendientes": [
+    "CI remoto Linux/Windows/macOS tras push",
+    "Despliegue Render/Supabase previa aprobación",
+    "SLA remoto, página React y disponibilidad en periodo definido",
+    "Aceptación predictiva: modelos experimentales",
+    "Gold/modelo h=3",
+    "Polígonos de distrito",
+    "Monitoreo automático de deriva"
+  ],
+  "ci_local_copia_versionable": {
+    "cantidad_tests": 251,
+    "duracion_segundos": 49.166,
+    "resultado": "OK",
+    "cobertura_total": 90.16307206733298,
+    "umbrales_por_paquete": "API, serving y db >=80 %, comandos ejecutados con retorno 0",
+    "fuentes_completas_y_modelos_locales_omitidos": true,
+    "ejecucion_remota": false,
+    "sistema_ejecutado": "macOS"
+  }
+}

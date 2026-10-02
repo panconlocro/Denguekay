@@ -14,6 +14,8 @@ tesis-dengue-piura/
 ├── .gitignore
 ├── .env.example               # conexión y secretos sin valores reales
 ├── alembic.ini                # migraciones del backend, sin credenciales
+├── .coveragerc                # cobertura de API/serving/db, umbral de CI
+├── .github/workflows/         # tests y cobertura en push/PR; sin despliegue
 ├── environment.yml            # o requirements.txt
 ├── config/
 │   └── config.yaml
@@ -241,6 +243,7 @@ src/api/
 ├── cache.py                  # TTL de lecturas, capacidad acotada y concurrencia
 ├── openapi.py                # especificación con ejemplos leídos de la BD real
 ├── exportar_openapi.py       # CLI de exportación; exige conexión real
+├── benchmark.py              # p50/p95 con y sin caché contra BD real o HTTP
 └── routers/                  # referencia, datos, vigilancia y modelos
 src/validation/
 └── validacion_modelo.py      # aceptación derivada de métricas por bloque
@@ -254,6 +257,8 @@ tests/
 ├── test_serving_protocolo.py
 ├── test_serving_publicacion.py
 ├── test_api_backend.py       # HTTP + SQLite migrada + modelos y datos reales
+├── test_api_benchmark.py     # mediciones/fallos usando la API y BD reales
+├── test_serving_operacion.py # fallos CLI y trazabilidad de código/catálogo
 └── fixtures/backend/         # filas copiadas de gold/Sala, con procedencia
 docs/backend/                 # operación y cierres verificables
 models/serving/               # BD SQLite/cobertura/artefactos locales; no se versionan
@@ -275,6 +280,12 @@ verificaciones SQLite/PostgreSQL viven en `docs/backend/fase2_*`.
 El contrato y la evidencia de fase 3 viven en `docs/backend/contrato_api.md`,
 `fase3_api.md`, `fase3_verificacion.json` y `openapi.json`. La copia SQLite
 de verificación HTTP queda en `models/serving/fase3.sqlite`, sin versionar.
+Fase 4: `docs/backend/arquitectura.md`, `decisiones_tecnicas.md`,
+`trazabilidad_hu.md`, `fase4_calidad.md`, `fase4_verificacion.json` y los reportes `benchmark_*.json` documentan
+la implementación y mediciones reales. La copia de benchmark SQLite vive en
+`models/serving/fase4.sqlite`; las mediciones locales por defecto van en
+`models/serving/benchmark.json`. `.github/workflows/backend.yml` ejecuta la
+suite completa con fixtures versionadas, sin descargar gold/silver ni desplegar.
 
 ---
 

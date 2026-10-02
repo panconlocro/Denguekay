@@ -264,9 +264,25 @@ def tablero(sesion, horizonte, cfg):
         return {"valor": valor if disponible else None, "disponible": disponible,
                 "motivo": None if disponible else motivo}
     completos = bool(filas) and len(casos) == len(datos["distritos"])
+    # El observado usa su propia semana y fecha de carga, sin mezclarlo con el objetivo futuro.
+    semana_observada = sesion.scalar(select(func.max(ObservacionSemanal.semana_inicio)))
+    observadas = sesion.scalars(select(ObservacionSemanal).where(
+        ObservacionSemanal.semana_inicio == semana_observada)).all() if semana_observada else []
+    casos_observados = [o.casos for o in observadas if o.casos is not None]
+    carga = sesion.scalar(select(CargaDatos).order_by(CargaDatos.id.desc()).limit(1))
+    observado = {"tipo_dato": "observado", "unidad": "casos", "semana_inicio": semana_observada,
+        "fecha_actualizacion": carga.fecha if carga else None,
+        "disponible": bool(casos_observados),
+        "motivo": None if casos_observados else "No hay observaciones disponibles",
+        "cobertura_distritos": len(casos_observados),
+        "casos_distritos_disponibles": indicador(sum(casos_observados), bool(casos_observados), "No hay casos observados disponibles"),
+        "casos_region": indicador(sum(casos_observados), bool(casos_observados) and len(casos_observados) == len(datos["distritos"]),
+            "Faltan observaciones para uno o más distritos")}
+
     return {k: datos[k] for k in ("fecha_corte_datos", "fecha_actualizacion", "disponible", "motivo", "horizonte", "semana_objetivo")} | {
         "estado_validacion": "sin_modelo" if not filas else ("validado" if all(
             p["estado_validacion"] == "validado" for p in filas) else "experimental"),
+        "observado": observado,
         "indicadores": {
             "probabilidad_media_distritos_disponibles": indicador(sum(probabilidades) / len(probabilidades) if probabilidades else None, bool(probabilidades)),
             "casos_estimados_distritos_disponibles": indicador(sum(casos) if casos else None, bool(casos)),

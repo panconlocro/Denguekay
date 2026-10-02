@@ -53,7 +53,7 @@ def crear_app(motor=None, cfg=None, clave_api=None, ttl_cache=10):
     app.state.fabrica_sesiones = crear_fabrica_sesiones(motor) if motor is not None else None
     registrar_errores(app)
     app.add_middleware(CORSMiddleware, allow_origins=[cfg.cors_origen],
-        allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-API-Key"],
+        allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-API-Key", "Cache-Control"],
         expose_headers=["X-Tiempo-Respuesta-ms", "X-Cache"])
 
     @app.middleware("http")

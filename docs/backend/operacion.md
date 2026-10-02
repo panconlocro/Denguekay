@@ -1,6 +1,6 @@
 # Operación del backend
 
-## Alcance disponible: fases 1–3
+## Alcance disponible: fases 1–4
 
 Esquema relacional, carga validada, versiones XGBoost de servicio y publicación
 batch con historial y API FastAPI. La inferencia carga boosters desde la BD;
@@ -208,3 +208,135 @@ resultados medidos en `fase2_inferencia.md` y `fase2_verificacion_*.json`.
 
 La verificación post-despliegue y el guion de demo quedan pendientes de la
 fase 5 y de su aprobación.
+
+## Calidad, cobertura y benchmark (fase 4)
+
+Los tests usan SQLite temporal migrada y muestras agregadas reales versionadas en
+`tests/fixtures/backend/`; su manifiesto identifica las fuentes. No requieren los
+gold completos, `mlflow.db` ni boosters locales de Rosa. El pipeline de publicación
+completo sí requiere esos archivos de entrada descritos arriba.
+
+Desde la raíz, en macOS:
+
+```bash
+.venv/bin/python -m coverage run -m unittest discover -s tests
+.venv/bin/python -m coverage report --fail-under=80
+.venv/bin/python -m coverage xml
+.venv/bin/python -m src.api.benchmark
+```
+
+En PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m coverage run -m unittest discover -s tests
+.\.venv\Scripts\python.exe -m coverage report --fail-under=80
+.\.venv\Scripts\python.exe -m coverage xml
+.\.venv\Scripts\python.exe -m src.api.benchmark
+```
+
+`.coveragerc` mide todos los módulos de API, serving y BD, incluidas migraciones y
+CLI. El último comando usa la BD real seleccionada por `DATABASE_URL` mediante
+TestClient: declara que no mide una conexión HTTP de red. Para medir el servidor
+Uvicorn ya levantado:
+
+```bash
+.venv/bin/python -m src.api.benchmark --url http://127.0.0.1:8000 --repeticiones 20
+```
+
+Por defecto mide solo lecturas: reporta las escrituras como no medidas y el SLA
+completo como falso. Para medir las 16 operaciones, seleccionar una **copia de la
+BD** en el servidor y usar `--incluir-escrituras`, con `API_KEY` en el entorno
+privado del cliente. Cada POST agrega una ejecución y sus predicciones reales;
+activar la versión ya seleccionada también reevalúa, sin inventar un cambio de
+selección en la auditoría. El historial anterior permanece. No se necesita
+reentrenar para estas mediciones. Ejemplo sobre un servidor que usa esa copia:
+
+```bash
+.venv/bin/python -m src.api.benchmark --url http://127.0.0.1:8000 --repeticiones 20 --incluir-escrituras
+```
+
+La salida predeterminada es `models/serving/benchmark.json`. `--salida` permite
+una ruta bajo `models/` o `docs/backend/`, nunca `data/`. Hay dos mediciones de cada
+GET: `Cache-Control: no-cache` y caché habilitada; los POST no tienen calentamiento.
+Se conservan duraciones individuales, p50/p95 interpolados, estados HTTP, errores,
+cabeceras de caché, versiones activas y corte. Retorno 0: SLA de los casos medidos
+cumplido; 2: errores o p95 incumplido; 1: configuración/descubrimiento fallidos.
+Comprobar siempre `cobertura_completa` y `no_medidos`, además del código de retorno.
+
+Los reportes versionados son una evidencia fechada de la ejecución local, no una
+promesa para Render. No incluyen URL de BD ni API key. No acreditan carga de
+página, concurrencia, arranque en frío o disponibilidad mensual. Los servicios
+locales usados para medir se detienen al cerrar la verificación.
+
+El workflow `.github/workflows/backend.yml` instala requisitos, ejecuta toda la
+suite, exige 80 % de cobertura y publica XML por sistema: Linux, Windows y macOS.
+Se activa en push/PR o manualmente. Una ejecución local de la misma suite sobre
+una copia con solo archivos versionables comprueba independencia de entradas
+ignoradas. El resultado remoto del workflow debe revisarse tras hacer push;
+no se considera ejecutado en Windows por haber escrito su configuración.
+Referencias: [workflow Python oficial](https://docs.github.com/en/actions/tutorials/build-and-test-code/python),
+[setup-python](https://github.com/actions/setup-python),
+[artefactos de CI](https://github.com/actions/upload-artifact).
+
+## Preparación de Supabase y comprobación posterior (fase 5 pendiente)
+
+Esta es una guía de preparación; el despliegue requiere aprobación de su fase.
+Crear/seleccionar el proyecto Supabase, obtener la cadena PostgreSQL desde su
+panel y conservarla en `.env` local y en los secretos del servicio. Elegir la
+conexión directa o el pooler de sesión compatible con el entorno y sus puertos,
+según [la guía oficial de conexión](https://supabase.com/docs/guides/database/connecting-to-postgres).
+El pipeline y Alembic necesitan operaciones transaccionales: comprobar la
+modalidad de conexión antes de migrar. Añadir `sslmode=require` y probar conexión
+sin imprimir la URL. No usar una clave del frontend como contraseña PostgreSQL.
+
+Ejecutar `alembic upgrade head` y `src.serving.publicar --horizontes 2 4`
+localmente con esa conexión. Confirmar esquema, cortes, disponibilidad y hashes
+antes de apuntar la API al proyecto. Render necesitará Python/dependencias,
+`config/config.yaml`, módulos `src/`, `DATABASE_URL` y `API_KEY`, además del origen
+React en la configuración. La manifestación concreta de Render se prepara en
+fase 5; no se ha publicado un servicio en esta fase.
+
+Después del despliegue, el equipo debe registrar la URL y fecha de verificación:
+
+1. GET `/api/v1/salud`: 200, conexión, versiones, corte y última ejecución reales.
+2. Consultar catálogo, observado, predicción, mapa, serie, alertas y modelo;
+   comparar los IDs/cortes con la misma BD publicada localmente.
+3. Probar 404 de recurso, 422 de parámetros y 401 sin clave en un POST. No provocar
+   una caída de la BD compartida; comprobar 503 en un entorno de ensayo separado.
+4. En un entorno de ensayo con clave, recalcular un horizonte; comprobar que usa
+   el booster de BD, conserva OOS/historial y no cambia el corte ni el otro horizonte.
+5. Activar una versión compatible disponible, verificar auditoría y revertir;
+   una versión experimental no se denomina validada por esta operación.
+6. Exportar OpenAPI contra esa BD y medir HTTP con `benchmark --url` remoto;
+   medir también arranque en frío y registrar condiciones de infraestructura.
+7. Con React, verificar selección, huecos, leyendas, CORS y carga de páginas;
+   medir disponibilidad durante un periodo explícito. HU0016-3 requiere API <5 s,
+   página <10 s y disponibilidad ≥95 %, no solo un benchmark local.
+
+## Mantenimiento, datos recientes y responsables
+
+El equipo de soporte revisa salud, errores HTTP, corte de fuentes y última
+publicación. Un servicio sano con corte antiguo no implica datos recientes. La
+frecuencia objetivo es semanal cuando haya un boletín disponible; no se creó
+una automatización ni se simula la llegada de fuentes.
+
+Ante datos nuevos: ejecutar el pipeline documentado en README y `docs/estructuraRepo.md`,
+validar silver/gold y calendario, repetir el protocolo temporal y contrastar sus
+hashes/resultados; entonces publicar una versión nueva. Si cambian gold y métricas
+no corresponden, la publicación debe fallar, no reutilizar la evaluación anterior.
+La reevaluación HTTP usa los mismos vectores y no sustituye este proceso.
+
+Rosa revisa decisiones de modelado y aceptación conforme a las reglas del repo;
+el equipo desarrollador opera migraciones/publicación y conserva evidencia.
+Acordar el responsable concreto de credenciales, backups y monitoreo antes del
+despliegue. No hay detector automático de deriva implementado ni umbrales
+aprobados: HU0009-2 queda pendiente. Registrar cualquier sospecha de degradación,
+revisar métricas por bloque y evaluar/reentrenar antes de promover una versión.
+
+Para recuperar un fallo: respaldar la BD, comprobar proceso/conexión/migraciones,
+revisar último lote y activar una versión anterior compatible con artefacto mediante
+el POST protegido. Si no existe versión validada, el retorno es técnico y
+experimental; no satisface por sí mismo una recuperación a producción validada.
+La restauración desde backup es distinta de activar un modelo; ensayarla en una
+BD separada antes de sustituir datos compartidos. No borrar versiones ni ejecutar
+downgrade sobre una BD de trabajo para resolver un fallo de inferencia.
