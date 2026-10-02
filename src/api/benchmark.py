@@ -36,38 +36,41 @@ def leer_json(cliente, ruta):
 
 
 def descubrir_casos(cliente, horizontes):
-    """Selecciona ubigeo, objetivos e IDs existentes; nunca usa IDs inventados."""
+    """Selecciona ubigeo, alertas y versiones existentes; nunca usa IDs inventados.
+
+    Cada caso es (método, ruta, cuerpo JSON). La activación solo se mide si hay
+    una versión que cumpla los umbrales (si no, responde 409 por diseño).
+    """
     salud = leer_json(cliente, "/salud")
     distritos = leer_json(cliente, "/distritos?tamano_pagina=1")["elementos"]
     if not distritos:
         raise ValueError("El benchmark requiere distritos y una carga real de datos")
     ubigeo = distritos[0]["ubigeo"]
-    casos = [("GET", "/salud"), ("GET", "/distritos"),
-             ("GET", f"/distritos/{ubigeo}"), ("GET", "/distritos/geojson"),
-             ("GET", "/observaciones"), ("GET", "/modelos")]
+    casos = [("GET", "/salud", None), ("GET", "/distritos", None), ("GET", f"/distritos/{ubigeo}", None),
+             ("GET", "/observaciones", None), ("GET", "/modelos/activo", None)]
     omitidos = []
     for h in horizontes:
-        for ruta in (f"/predicciones?horizonte={h}", f"/mapa?horizonte={h}",
-                     f"/series/{ubigeo}?horizonte={h}", f"/tablero?horizonte={h}",
+        for ruta in (f"/predicciones?horizonte={h}", f"/mapa-riesgo?horizonte={h}",
+                     f"/series/{ubigeo}?horizonte={h}", f"/tablero/resumen?horizonte={h}",
                      f"/alertas?horizonte={h}"):
-            casos.append(("GET", ruta))
-        casos.append(("POST", f"/predicciones/recalcular?horizonte={h}"))
+            casos.append(("GET", ruta, None))
+        casos.append(("POST", "/admin/inferencias", {"horizonte": h}))
     alerta = leer_json(cliente, "/alertas?tamano_pagina=1")["elementos"]
     if alerta:
-        casos.append(("GET", f"/alertas/{alerta[0]['id']}"))
+        casos.append(("GET", f"/alertas/{alerta[0]['id_alerta']}", None))
     else:
         omitidos.append({"ruta": "/alertas/{identificador}", "motivo": "No hay alertas guardadas para medir un detalle real"})
-    activas = [v for v in salud["versiones_activas"]
-               if v["tipo"] == "clasificacion" and v["horizonte"] in horizontes]
-    if not activas:
-        raise ValueError("No hay versiones activas de clasificación para los horizontes solicitados")
-    for v in activas:
-        casos.extend([("GET", f"/modelos/{v['id']}"), ("GET", f"/modelos/{v['id']}/variables"),
-                      ("POST", f"/modelos/{v['id']}/activar")])
-    return casos, omitidos, salud
+    en_uso = [v for v in leer_json(cliente, "/modelos/activo")["elementos"] if v["horizonte"] in horizontes]
+    if not en_uso:
+        raise ValueError("No hay versiones en uso para los horizontes solicitados")
+    for v in en_uso:
+        casos.extend([("GET", f"/modelos/{v['id_version']}", None), ("GET", f"/modelos/{v['id_version']}/variables", None)])
+    omitidos.append({"ruta": "/admin/modelos/{version}/activar",
+                     "motivo": "Activar cambia el estado de una versión y exige cumple_umbrales; se prueba en los tests"})
+    return casos, omitidos, salud, en_uso
 
 
-def medir_caso(cliente, metodo, ruta, modo, repeticiones, calentamiento, clave_api, limite):
+def medir_caso(cliente, metodo, ruta, modo, repeticiones, calentamiento, clave_api, limite, cuerpo=None):
     """Incluye transporte, ejecución y recepción completa del cuerpo; exige HTTP 200."""
     cabeceras = {"Cache-Control": "no-cache"} if modo == "sin_cache_lecturas" else {}
     if metodo == "POST":
@@ -76,7 +79,7 @@ def medir_caso(cliente, metodo, ruta, modo, repeticiones, calentamiento, clave_a
     for indice in range(calentamiento + repeticiones):
         inicio = perf_counter()
         try:
-            respuesta = cliente.request(metodo, "/api/v1" + ruta, headers=cabeceras)
+            respuesta = cliente.request(metodo, "/api/v1" + ruta, headers=cabeceras, json=cuerpo)
             # httpx/TestClient entregan el cuerpo recibido; no se usa solo la cabecera del servidor.
             _ = respuesta.content
             tiempo = (perf_counter() - inicio) * 1000
@@ -91,7 +94,7 @@ def medir_caso(cliente, metodo, ruta, modo, repeticiones, calentamiento, clave_a
         caches[cache] += 1
         errores += estado != 200
     p50, p95 = percentil(duraciones, .5), percentil(duraciones, .95)
-    return {"metodo": metodo, "ruta": ruta, "modo": modo,
+    return {"metodo": metodo, "ruta": ruta, "cuerpo": cuerpo, "modo": modo,
         "repeticiones": repeticiones, "calentamiento": calentamiento,
         "duraciones_ms": duraciones, "p50_ms": p50, "p95_ms": p95,
         "max_ms": max(duraciones), "http": dict(estados), "cache": dict(caches),
@@ -108,16 +111,16 @@ def ejecutar_benchmark(cliente, *, horizontes=(2, 4), repeticiones=20,
         raise ValueError("El benchmark exige horizontes únicos con modelos reales: 2 y/o 4")
     if incluir_escrituras and not clave_api:
         raise ValueError("Configura API_KEY para medir los endpoints de escritura")
-    casos, omitidos, salud = descubrir_casos(cliente, horizontes)
+    casos, omitidos, salud, en_uso = descubrir_casos(cliente, horizontes)
     resultados = []
-    for metodo, ruta in casos:
+    for metodo, ruta, cuerpo in casos:
         if metodo == "POST" and not incluir_escrituras:
             omitidos.append({"ruta": ruta, "motivo": "Escritura no medida; usar --incluir-escrituras en una BD de ensayo"})
             continue
         modos = ("sin_cache_lecturas", "cache_habilitada") if metodo == "GET" else ("escritura",)
         for modo in modos:
             resultados.append(medir_caso(cliente, metodo, ruta, modo, repeticiones,
-                calentamiento if metodo == "GET" else 0, clave_api, limite))
+                calentamiento if metodo == "GET" else 0, clave_api, limite, cuerpo))
     salud_final = leer_json(cliente, "/salud")
     return {"fecha_medicion": datetime.now(timezone.utc).isoformat(),
         "fecha_corte_datos": salud["fecha_corte_datos"],
@@ -129,8 +132,8 @@ def ejecutar_benchmark(cliente, *, horizontes=(2, 4), repeticiones=20,
         "no_medidos": omitidos, "cumple_sla_medido": all(r["cumple_sla"] for r in resultados),
         "cobertura_completa": not omitidos,
         "cumple_sla_completo": not omitidos and all(r["cumple_sla"] for r in resultados),
-        "versiones_activas": [{k: v[k] for k in ("id", "horizonte", "tipo", "estado_validacion")}
-            for v in salud["versiones_activas"]],
+        "versiones_en_uso": [{k: v[k] for k in ("id_version", "codigo", "horizonte", "tarea", "seleccion", "experimental")}
+            for v in en_uso],
         "entorno": {"python": platform.python_version(), "plataforma": platform.platform(),
             "dependencias": {p: version(p) for p in ("fastapi", "httpx", "SQLAlchemy", "xgboost", "coverage")}},
         "nota": "Carga secuencial, sin incluir arranque del proceso. Sin cache de lecturas no elimina la caché residente del booster. No sustituye medición remota ni prueba de concurrencia"}
@@ -164,7 +167,7 @@ def main(argv=None):
             reporte["transporte"] = "HTTP real"
         else:
             from fastapi.testclient import TestClient
-            from src.api.main import crear_app
+            from src.api.main import crear_app  # usa DATABASE_URL y models/storage
             with TestClient(crear_app()) as cliente:
                 reporte = ejecutar_benchmark(cliente, **argumentos)
             reporte["transporte"] = "ASGI TestClient contra BD real; sin red HTTP"

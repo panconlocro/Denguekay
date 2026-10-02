@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 import numpy as np
 from sqlalchemy import func, select
@@ -13,7 +14,7 @@ from sqlalchemy import func, select
 import test_api_backend as soporte_api
 from backend_soporte import entorno_bd
 from src.api.benchmark import ejecutar_benchmark, main, medir_caso, percentil
-from src.db.modelos import ObservacionSemanal
+from src.db.modelos import Ejecucion, ObservacionSemanal, Prediccion, VersionModelo
 from src.db.sesion import transaccion
 from src.utils.paths import ROOT, SERVING_MODELS
 
@@ -22,7 +23,11 @@ class TestBenchmarkReal(unittest.TestCase):
     # Comparte la preparación ya contrastada: las filas y boosters proceden de fixtures reales.
     setUp = soporte_api.TestAPIReal.setUp
     tearDown = soporte_api.TestAPIReal.tearDown
-    conteos = soporte_api.TestAPIReal.conteos
+
+    def conteos(self):
+        with transaccion(self.motor) as s:
+            return {m.__tablename__: s.scalar(select(func.count()).select_from(m))
+                    for m in (VersionModelo, Prediccion, Ejecucion)}
 
     @classmethod
     def setUpClass(cls):
@@ -36,10 +41,13 @@ class TestBenchmarkReal(unittest.TestCase):
         antes = self.conteos()
         reporte = ejecutar_benchmark(self.cliente, repeticiones=2, calentamiento=1,
             incluir_escrituras=True, clave_api="clave-local-de-prueba")
-        self.assertTrue(reporte["cobertura_completa"])
-        self.assertTrue(reporte["cumple_sla_completo"])
+        # La activación no se mide (exige cumple_umbrales): la cobertura se declara incompleta.
+        self.assertEqual([o["ruta"] for o in reporte["no_medidos"]], ["/admin/modelos/{version}/activar"])
+        self.assertFalse(reporte["cobertura_completa"])
+        self.assertTrue(reporte["cumple_sla_medido"])
         self.assertEqual(reporte["fecha_corte_datos"], "2025-12-27")
-        self.assertEqual(len(reporte["resultados"]), 46)
+        self.assertEqual(len(reporte["resultados"]), 50)
+        self.assertEqual(len(reporte["versiones_en_uso"]), 4)
         for r in reporte["resultados"]:
             self.assertEqual(r["http"], {"200": 2})
             self.assertEqual(r["errores"], 0)
@@ -47,9 +55,8 @@ class TestBenchmarkReal(unittest.TestCase):
             self.assertAlmostEqual(r["p95_ms"], float(np.percentile(r["duraciones_ms"], 95)))
         despues = self.conteos()
         self.assertEqual(antes["version_modelo"], despues["version_modelo"])
-        self.assertGreater(despues["prediccion"], antes["prediccion"])
-        self.assertEqual(despues["ejecucion_prediccion"] - antes["ejecucion_prediccion"], 8)
-        self.assertEqual(antes["activacion_modelo"], despues["activacion_modelo"])
+        self.assertEqual(antes["prediccion"], despues["prediccion"])  # UPSERT: no duplica
+        self.assertEqual(despues["ejecucion"] - antes["ejecucion"], 4)
         bypass = [r for r in reporte["resultados"] if r["ruta"].startswith("/mapa") and r["modo"] == "sin_cache_lecturas"]
         self.assertTrue(all(r["cache"] == {"BYPASS": 2} for r in bypass))
         caliente = [r for r in reporte["resultados"] if r["ruta"].startswith("/mapa") and r["modo"] == "cache_habilitada"]
@@ -61,12 +68,12 @@ class TestBenchmarkReal(unittest.TestCase):
         self.assertFalse(r["cobertura_completa"])
         self.assertFalse(r["cumple_sla_completo"])
         self.assertTrue(r["cumple_sla_medido"])
-        self.assertEqual(len(r["no_medidos"]), 2)
+        self.assertEqual(len(r["no_medidos"]), 2)  # inferencia h=2 y activación
         self.assertEqual(antes, self.conteos())
 
     def test_errores_http_y_limite_incumplido_no_se_ocultan(self):
-        r = medir_caso(self.cliente, "POST", "/predicciones/recalcular?horizonte=2",
-            "escritura", 2, 0, "clave-incorrecta", 5)
+        r = medir_caso(self.cliente, "POST", "/admin/inferencias",
+            "escritura", 2, 0, "clave-incorrecta", 5, {"horizonte": 2})
         self.assertEqual(r["errores"], 2)
         self.assertEqual(r["http"], {"401": 2})
         self.assertFalse(r["cumple_sla"])
@@ -87,7 +94,7 @@ class TestBenchmarkReal(unittest.TestCase):
         SERVING_MODELS.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=SERVING_MODELS) as carpeta:
             ruta = Path(carpeta) / "medicion.json"
-            with entorno_bd(str(self.motor.url)), redirect_stdout(StringIO()):
+            with entorno_bd(str(self.motor.url)), redirect_stdout(StringIO()),                     mock.patch("src.api.main.AlmacenamientoLocal", return_value=self.almacenamiento):
                 salida = main(["--horizontes", "2", "--repeticiones", "2", "--calentamiento", "0",
                                "--salida", str(ruta.relative_to(ROOT))])
             self.assertEqual(salida, 0)
@@ -101,20 +108,13 @@ class TestBenchmarkReal(unittest.TestCase):
             with redirect_stdout(StringIO()), self.assertRaises(SystemExit):
                 main(["--salida", "data/medicion.json"])
 
-    def test_tablero_observado_con_periodo_cobertura_y_ceros_reales(self):
-        r = self.cliente.get("/api/v1/tablero?horizonte=2").json()["observado"]
+    def test_tablero_casos_observados_de_la_ultima_semana(self):
+        r = self.cliente.get("/api/v1/tablero/resumen?horizonte=2").json()["casos_observados_ultima_semana"]
         with transaccion(self.motor) as s:
-            semana = s.scalar(select(func.max(ObservacionSemanal.semana_inicio)))
-            casos = s.scalars(select(ObservacionSemanal.casos).where(ObservacionSemanal.semana_inicio == semana)).all()
-        disponibles = [c for c in casos if c is not None]
-        self.assertEqual(r["semana_inicio"], str(semana))
-        self.assertEqual(r["tipo_dato"], "observado")
-        self.assertEqual(r["unidad"], "casos")
-        self.assertEqual(r["casos_distritos_disponibles"]["valor"], sum(disponibles))
-        self.assertEqual(r["cobertura_distritos"], len(disponibles))
-        self.assertIsNone(r["casos_region"]["valor"])
-        self.assertFalse(r["casos_region"]["disponible"])
-        self.assertIsNotNone(r["fecha_actualizacion"])
-        sin_modelo = self.cliente.get("/api/v1/tablero?horizonte=3").json()
-        self.assertTrue(sin_modelo["observado"]["disponible"])
+            semana = s.scalar(select(func.max(ObservacionSemanal.id_semana)))
+            casos = s.scalars(select(ObservacionSemanal.casos_dengue).where(ObservacionSemanal.id_semana == semana)).all()
+        self.assertEqual(r["valor"], sum(c for c in casos if c is not None))
+        self.assertTrue(r["disponible"])
+        sin_modelo = self.cliente.get("/api/v1/tablero/resumen?horizonte=3").json()
+        self.assertTrue(sin_modelo["casos_observados_ultima_semana"]["disponible"])
         self.assertFalse(sin_modelo["disponible"])

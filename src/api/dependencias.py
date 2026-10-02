@@ -10,12 +10,12 @@ from pydantic import Field, StringConstraints
 from sqlalchemy import func, select
 
 from src.api.errores import ErrorAPI
-from src.db.modelos import ActivacionModelo, CargaDatos, EjecucionPrediccion
+from src.db.modelos import Ejecucion
 
 Ubigeo = Annotated[str, StringConstraints(pattern=r"^[0-9]{6}$"),
                    Field(description="Código distrital de seis dígitos, conservado como texto")]
 Identificador = Annotated[int, Path(ge=1, description="Identificador positivo del registro guardado en la BD")]
-Horizonte = Annotated[int, Query(ge=2, le=4, description="Anticipación en semanas: 2 o 4 con modelos; 3 requiere una versión disponible")]
+Horizonte = Annotated[int, Query(ge=2, le=4, description="Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible")]
 PaginaNumero = Annotated[int, Query(ge=1, description="Página, comenzando en uno")]
 TamanoPagina = Annotated[int, Query(ge=1, le=100, description="Cantidad máxima de elementos por página")]
 clave_header = APIKeyHeader(name="X-API-Key", auto_error=False,
@@ -46,17 +46,10 @@ def validar_rango(desde: date | None, hasta: date | None):
         raise ErrorAPI(422, "rango_invalido", "desde debe ser anterior o igual a hasta")
 
 
-def validar_semana(semana: date | None):
-    if semana and semana.weekday() != 6:
-        raise ErrorAPI(422, "semana_invalida", "semana debe ser la fecha de inicio en domingo, con formato AAAA-MM-DD")
-
-
 def lectura(request: Request, response: Response, sesion, construir):
     """Verifica la BD incluso en aciertos; nuevas publicaciones invalidan claves."""
-    revision = tuple(sesion.execute(select(
-        select(func.max(CargaDatos.id)).scalar_subquery(),
-        select(func.max(EjecucionPrediccion.id)).where(EjecucionPrediccion.estado == "completada").scalar_subquery(),
-        select(func.max(ActivacionModelo.id)).scalar_subquery())).one())
+    # Toda carga, inferencia, publicación o activación crea una fila en ejecucion.
+    revision = tuple(sesion.execute(select(func.max(Ejecucion.id_ejecucion), func.max(Ejecucion.fin))).one())
     clave = (str(request.url), revision)
     cache = request.app.state.cache
     directivas = {p.strip().lower() for p in request.headers.get("Cache-Control", "").split(",")}

@@ -18,7 +18,7 @@ def exportar(motor=None):
         # Fuerza una consulta antes de exportar; no acepta una exportación vacía por BD caída.
         from src.api.consultas import salud
         with app.state.fabrica_sesiones() as sesion:
-            salud(sesion)
+            salud(sesion, app.version)
         schema = especificacion(app)
         OPENAPI_JSON.parent.mkdir(parents=True, exist_ok=True)
         OPENAPI_JSON.write_text(json.dumps(schema, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")

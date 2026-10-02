@@ -3,7 +3,7 @@
 Fuente de verdad: [`especificacion_oe2.md`](especificacion_oe2.md) y [`ddl_oe2.sql`](ddl_oe2.sql).
 Este archivo registra cada diferencia entre el documento y el código y la decisión
 tomada para el refactor. **Estado: decisiones de la Fase 0 aprobadas por Rosa
-(2026-10-01); Fases 1 y 2 implementadas; Fase 3 pendiente.**
+(2026-10-01); Fases 1, 2 y 3 implementadas.**
 
 Código revisado: `src/db/modelos.py`, migraciones `0001_backend` y `0002_serving`,
 `src/serving/`, `src/api/` y los tests del backend (`test_db_backend`, `test_serving_*`,
@@ -159,6 +159,35 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
   de `serving`; esos valores viven solo en `parametro_sistema`.
 - **CPU frente a GPU:** el servicio predice en CPU. En este equipo XGBoost entrena en GPU y su
   `predict` difiere del booster en CPU en ~6e-8 (1 ULP de float32); no afecta al modelo.
+
+## 6c. Notas de implementación (Fase 3: API)
+
+- **Rutas:** las 10 de la Tabla 2 con sus nombres exactos más 5 extensiones (`/distritos/{ubigeo}`,
+  `/observaciones`, `/alertas/{id}`, `/modelos/{id}`, `/modelos/{id}/variables`). Se eliminaron
+  `/tablero`, `/mapa`, `/distritos/geojson`, `/modelos` (lista), `/predicciones/recalcular` y
+  `/modelos/{id}/activar`, sin alias.
+- **Corte vigente:** el último `id_semana_corte` generado por una inferencia operativa (publicación
+  o API), no por la importación OOS. `/predicciones` acepta `corte` (anio*100+semana) para consultar
+  cortes pasados; cada predicción indica `tipo` = `vigente` o `retrospectiva`.
+- **h=3:** las lecturas responden 200 con `disponible: false` y motivo «sin modelo para h=3»
+  (listas vacías; en el mapa, todos los distritos «Sin datos»); `POST /admin/inferencias` con h=3
+  responde 409.
+- **`/mapa-riesgo`:** GeoJSON `FeatureCollection` con un `Point` (centroide) por distrito; la
+  referencia del proyecto no tiene polígonos, así que el bucket `geodatos` no se usa en TB1.
+  Metadatos (horizonte, cortes, leyenda, `experimental`) van como miembros extra (RFC 7946).
+- **`/modelos/activo`:** devuelve la versión en uso por tarea y horizonte: la `activa` o, en su
+  defecto, la de `seleccion_experimental`, con `seleccion` y `experimental`.
+- **`POST /admin/inferencias`:** cuerpo JSON `{horizonte, id_semana_corte?}`; sin corte usa la última
+  semana observada. Inferir un corte pasado sobrescribe (UPSERT) la predicción OOS de ese corte y
+  usa el modelo actual, que pudo ver datos posteriores: es una operación administrativa, no una
+  evaluación histórica.
+- **`POST /admin/modelos/{version}/activar`:** `{version}` es `id_version`. Exige
+  `cumple_umbrales` (409 si no), archiva la activa previa, fija `fecha_activacion` y registra una
+  `ejecucion` de tipo `mantenimiento`. No recalcula predicciones: se llama después a
+  `/admin/inferencias`.
+- **Errores 409:** `inferencia_no_disponible`, `artefacto_invalido`, `no_cumple_umbrales`, `ya_activa`.
+- **Benchmark:** la activación no se mide (cambia el estado y hoy responde 409 por diseño); el
+  reporte declara la cobertura incompleta.
 
 ## 7. Cambios pendientes en el documento OE2
 

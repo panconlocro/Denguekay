@@ -1,4 +1,4 @@
-"""Mapa, indicadores consolidados y alertas con trazabilidad."""
+"""Tablero, mapa de riesgo y alertas (HU0012, HU0014, HU0015)."""
 
 from typing import Literal
 
@@ -7,43 +7,44 @@ from fastapi import APIRouter, Request, Response
 from src.api import consultas as q
 from src.api.dependencias import Horizonte, Identificador, PaginaNumero, Sesion, TamanoPagina, Ubigeo, lectura
 from src.api.errores import ErrorAPI
-from src.api.esquemas import AlertaRespuesta, MapaRespuesta, Pagina, TableroRespuesta
+from src.api.esquemas import AlertaRespuesta, MapaRiesgoRespuesta, Pagina, TableroRespuesta
 from src.db.modelos import Alerta
 
 router = APIRouter(tags=["Vigilancia"])
 
 
-@router.get("/mapa", response_model=MapaRespuesta, summary="Mostrar todos los distritos con riesgo o Sin datos")
-def mapa(request: Request, response: Response, sesion: Sesion, horizonte: Horizonte):
-    """Incluye leyenda configurable, corte epidemiológico y motivos de ausencia."""
-    return lectura(request, response, sesion, lambda: q.mapa(sesion, horizonte, request.app.state.cfg))
-
-
-@router.get("/tablero", response_model=TableroRespuesta, summary="Consultar indicadores del último periodo pronosticado")
+@router.get("/tablero/resumen", response_model=TableroRespuesta, summary="Resumen del corte vigente (HU0012)")
 def tablero(request: Request, response: Response, sesion: Sesion, horizonte: Horizonte):
-    """El total regional es null cuando falta magnitud para algún distrito; muestra cobertura real."""
-    return lectura(request, response, sesion, lambda: q.tablero(sesion, horizonte, request.app.state.cfg))
+    """Niveles de riesgo, alertas activas y casos; la suma regional es null si falta algún distrito."""
+    return lectura(request, response, sesion, lambda: q.tablero(sesion, horizonte))
 
 
-@router.get("/alertas", response_model=Pagina[AlertaRespuesta], summary="Listar alertas por nivel de riesgo descendente")
+@router.get("/mapa-riesgo", response_model=MapaRiesgoRespuesta, summary="Mapa de riesgo GeoJSON (HU0014)")
+def mapa_riesgo(request: Request, response: Response, sesion: Sesion, horizonte: Horizonte):
+    """FeatureCollection con un Point (centroide) por distrito y su nivel de riesgo o Sin datos."""
+    return lectura(request, response, sesion, lambda: q.mapa_riesgo(sesion, horizonte))
+
+
+@router.get("/alertas", response_model=Pagina[AlertaRespuesta], summary="Listar alertas (HU0015)")
 def alertas(request: Request, response: Response, sesion: Sesion,
             horizonte: Horizonte | None = None, ubigeo: Ubigeo | None = None,
+            nivel: Literal["alto", "muy_alto"] | None = None,
             estado: Literal["activa", "retirada"] | None = None,
             pagina: PaginaNumero = 1, tamano_pagina: TamanoPagina = 50):
-    """El nivel visible y alerta_modelo por F1 se exponen por separado, con estado experimental."""
+    """Filtros por horizonte, distrito y nivel (Tabla 2); ``estado`` es un filtro extra."""
     if ubigeo:
         q.distrito_existente(sesion, ubigeo)
     return lectura(request, response, sesion, lambda: q.paginar(sesion,
-        q.consulta_alertas(horizonte, ubigeo, estado), pagina, tamano_pagina,
-        lambda a: q.alerta_dto(sesion, a, request.app.state.cfg)))
+        q.consulta_alertas(horizonte, ubigeo, nivel, estado), pagina, tamano_pagina,
+        lambda filas: q.alerta_dtos(sesion, filas)))
 
 
-@router.get("/alertas/{identificador}", response_model=AlertaRespuesta, summary="Consultar alerta e indicadores que la sustentan")
+@router.get("/alertas/{identificador}", response_model=AlertaRespuesta, summary="Consultar una alerta (extensión)")
 def alerta(identificador: Identificador, request: Request, response: Response, sesion: Sesion):
-    """Conserva el estado retirada y el motivo, sin presentar retrospectivas como vigentes."""
+    """Incluye la predicción que la sustenta; conserva estado retirado y motivo."""
     def construir():
         a = sesion.get(Alerta, identificador)
         if a is None:
             raise ErrorAPI(404, "alerta_no_encontrada", "La alerta no existe")
-        return q.alerta_dto(sesion, a, request.app.state.cfg)
+        return q.alerta_dtos(sesion, [a])[0]
     return lectura(request, response, sesion, construir)
