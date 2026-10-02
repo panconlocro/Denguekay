@@ -6,14 +6,12 @@ import os
 
 from alembic import command
 from alembic.config import Config
+from sqlalchemy.engine import make_url
 import pandas as pd
 
 from src.db.sesion import crear_motor
 from src.processing.epi_sala import load_ubigeo_catalog
-from src.serving.cargar_datos import DatosCarga, preparar_distritos, preparar_observaciones
 from src.utils.paths import ALEMBIC_CONFIG, BACKEND_FIXTURES, DISTRITOS_COORDS, UBIGEO_CATALOG
-from src.validation.calidad_gx import obtener_contexto, validar_dataframe
-from src.validation.expectations_gold import expectativas_gold
 
 
 @contextmanager
@@ -40,6 +38,23 @@ def migrar(motor, destino="head"):
         command.upgrade(config, destino)
 
 
+def url_pg_pruebas():
+    """URL de la BD PostgreSQL desechable, o None si no está configurada.
+
+    Se exige que el nombre de la base contenga «prueba» para no tocar nunca la
+    BD local de la aplicación. La URL no se imprime.
+    """
+    valor = os.environ.get("DENGUEKAY_PG_PRUEBAS_URL", "").strip()
+    if not valor:
+        return None
+    url = make_url(valor)
+    if url.drivername in {"postgres", "postgresql"}:
+        url = url.set(drivername="postgresql+psycopg")
+    if url.get_backend_name() != "postgresql" or "prueba" not in (url.database or ""):
+        raise ValueError("DENGUEKAY_PG_PRUEBAS_URL debe apuntar a una BD PostgreSQL de pruebas")
+    return url
+
+
 def motor_temporal(carpeta):
     """SQLite aislado, con claves foráneas activas."""
     from sqlalchemy.engine import URL
@@ -59,6 +74,11 @@ def leer_muestra():
 
 def datos_muestra(carpeta):
     """Ejecuta GX sobre datos reales; devuelve evidencia y registros para cargar."""
+    # Importación diferida: la carga se adapta al esquema OE2 en la Fase 2.
+    from src.serving.cargar_datos import DatosCarga, preparar_distritos, preparar_observaciones
+    from src.validation.calidad_gx import obtener_contexto, validar_dataframe
+    from src.validation.expectations_gold import expectativas_gold
+
     gold, sala = leer_muestra()
     calidad = validar_dataframe(
         gold, nombre_suite="backend_gold_h2", nombre_activo="backend_gold_h2",

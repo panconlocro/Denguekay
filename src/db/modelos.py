@@ -1,16 +1,22 @@
-"""Esquema portable; el historial de modelos y predicciones no se elimina."""
+"""Esquema del almacén operacional según el documento OE2 (Anexo B, ddl_oe2.sql).
+
+Portable: en PostgreSQL usa ENUM nativos, jsonb, identity y CHECK con regex;
+en SQLite (solo pruebas) los ENUM son CHECK y el formato se valida en el ORM.
+La autoridad del esquema es la migración ``0003_oe2``; este módulo la refleja.
+"""
 
 from datetime import date, datetime, timezone
 import re
 
-from sqlalchemy import (Boolean, CheckConstraint, Date, DateTime, Float,
-                        ForeignKey, Index, Integer, JSON, MetaData, String,
-                        Text, UniqueConstraint, text)
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, validates, relationship
+from sqlalchemy import (BigInteger, Boolean, CHAR, CheckConstraint, Date, DateTime,
+                        Enum, ForeignKey, Identity, Index, Integer, JSON, MetaData,
+                        Numeric, SmallInteger, String, Text, UniqueConstraint, func, text)
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, validates
 
 
 def ahora_utc():
-    """Instante de actualización, separado del corte epidemiológico."""
+    """Instante con zona UTC; en SQLite evita fechas sin zona."""
     return datetime.now(timezone.utc)
 
 
@@ -25,229 +31,292 @@ class Base(DeclarativeBase):
     })
 
 
-def restriccion_ubigeo():
-    """Verifica seis dígitos también ante inserciones SQL directas."""
-    partes = ["length(ubigeo) = 6"] + [
-        f"substr(ubigeo, {i}, 1) BETWEEN '0' AND '9'" for i in range(1, 7)]
-    return CheckConstraint(" AND ".join(partes), name="ubigeo_seis_digitos")
+# Valores de los ENUM del DDL. El orden se conserva: en PostgreSQL define el orden del tipo.
+FUENTE_CASOS = ("excel_historico", "sala_situacional")
+COBERTURA = ("verificado", "sin_registro", "pendiente")
+TAREA = ("clasificacion", "regresion")
+ESTADO_VERSION = ("candidata", "activa", "archivada", "rechazada")
+TIPO_EJECUCION = ("ingesta", "inferencia", "reentrenamiento", "mantenimiento")
+ESTADO_EJECUCION = ("en_curso", "exitosa", "fallida")
+NIVEL_RIESGO = ("bajo", "medio", "alto", "muy_alto")
+ESTADO_PREDICCION = ("disponible", "no_disponible")
+ESTADO_ALERTA = ("activa", "retirada")
+CAMBIO_ALERTA = ("nueva", "se_mantiene", "sube_nivel", "baja_nivel")
+HORIZONTES = (2, 3, 4)
+
+
+def enum(valores, nombre):
+    """ENUM nativo en PostgreSQL; CHECK en SQLite. Rechaza textos ajenos en Python."""
+    return Enum(*valores, name=nombre, native_enum=True, create_constraint=True,
+                validate_strings=True)
+
+
+JSONB_PORTABLE = JSON(none_as_null=True).with_variant(JSONB(none_as_null=True), "postgresql")
+# SQLite solo autoincrementa con INTEGER PRIMARY KEY.
+BIGINT_ID = BigInteger().with_variant(Integer(), "sqlite")
+
+
+def solo_postgresql(condicion, nombre):
+    """CHECK con sintaxis propia de PostgreSQL (regex, aritmética de fechas)."""
+    return CheckConstraint(condicion, name=nombre).ddl_if(dialect="postgresql")
+
+
+def solo_sqlite(condicion, nombre):
+    return CheckConstraint(condicion, name=nombre).ddl_if(dialect="sqlite")
+
+
+def digitos_sqlite(columna, n):
+    """Equivalente portable de ``columna ~ '^[0-9]{n}$'`` para SQLite."""
+    partes = [f"length({columna}) = {n}"] + [
+        f"substr({columna}, {i}, 1) BETWEEN '0' AND '9'" for i in range(1, n + 1)]
+    return " AND ".join(partes)
+
+
+def restricciones_digitos(columna, n, nombre):
+    return (solo_postgresql(f"{columna} ~ '^[0-9]{{{n}}}$'", nombre),
+            solo_sqlite(digitos_sqlite(columna, n), nombre))
+
+
+def _validar_digitos(valor, n, campo):
+    if not isinstance(valor, str) or re.fullmatch(rf"[0-9]{{{n}}}", valor) is None:
+        raise ValueError(f"{campo} debe ser texto de {'seis' if n == 6 else 'cuatro'} dígitos")
+    return valor
 
 
 class ConUbigeo:
     @validates("ubigeo")
     def validar_ubigeo(self, _, valor):
         """Rechaza enteros, códigos cortos y letras sin normalización implícita."""
-        if not isinstance(valor, str) or re.fullmatch(r"[0-9]{6}", valor) is None:
-            raise ValueError("ubigeo debe ser texto de seis dígitos")
-        return valor
+        return _validar_digitos(valor, 6, "ubigeo")
+
+
+class Provincia(Base):
+    __tablename__ = "provincia"
+    __table_args__ = restricciones_digitos("ubigeo_provincia", 4, "ubigeo_provincia_formato")
+    ubigeo_provincia: Mapped[str] = mapped_column(CHAR(4), primary_key=True)
+    nombre: Mapped[str] = mapped_column(String(80))
+
+    @validates("ubigeo_provincia")
+    def validar_codigo(self, _, valor):
+        return _validar_digitos(valor, 4, "ubigeo_provincia")
 
 
 class Distrito(ConUbigeo, Base):
     __tablename__ = "distrito"
-    __table_args__ = (restriccion_ubigeo(),
-                     CheckConstraint("lat BETWEEN -90 AND 90", name="lat_valida"),
-                     CheckConstraint("lon BETWEEN -180 AND 180", name="lon_valida"))
-    ubigeo: Mapped[str] = mapped_column(String(6), primary_key=True)
-    nombre: Mapped[str] = mapped_column(String(100))
-    provincia: Mapped[str] = mapped_column(String(100))
-    lat: Mapped[float | None] = mapped_column(Float)
-    lon: Mapped[float | None] = mapped_column(Float)
-    geometria: Mapped[dict | None] = mapped_column(JSON(none_as_null=True))
-    motivo_geometria: Mapped[str | None] = mapped_column(Text)
-    fecha_actualizacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc)
+    __table_args__ = (
+        *restricciones_digitos("ubigeo", 6, "ubigeo_formato"),
+        CheckConstraint("latitud BETWEEN -6.5 AND -3.5", name="latitud_piura"),
+        CheckConstraint("longitud BETWEEN -81.5 AND -79.0", name="longitud_piura"),
+        CheckConstraint("poblacion_censo_2017 > 0", name="poblacion_positiva"),
+    )
+    ubigeo: Mapped[str] = mapped_column(CHAR(6), primary_key=True)
+    ubigeo_provincia: Mapped[str] = mapped_column(CHAR(4), ForeignKey("provincia.ubigeo_provincia"))
+    nombre: Mapped[str] = mapped_column(String(80))
+    latitud: Mapped[float] = mapped_column(Numeric(9, 6, asdecimal=False))
+    longitud: Mapped[float] = mapped_column(Numeric(9, 6, asdecimal=False))
+    poblacion_censo_2017: Mapped[int | None] = mapped_column(Integer)
+    activo: Mapped[bool] = mapped_column(Boolean, default=True, server_default=text("true"))
+    provincia: Mapped[Provincia] = relationship()
 
 
-class CargaDatos(Base):
-    """Trazabilidad e idempotencia de la carga validada de fuentes."""
-    __tablename__ = "carga_datos"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    huella: Mapped[str] = mapped_column(String(64), unique=True)
-    hashes_entrada: Mapped[dict] = mapped_column(JSON)
-    validacion_gx: Mapped[dict] = mapped_column(JSON)
-    fecha_corte_datos: Mapped[date] = mapped_column(Date)
-    filas_distritos: Mapped[int] = mapped_column(Integer)
-    filas_observaciones: Mapped[int] = mapped_column(Integer)
-    fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc)
+class SemanaEpidemiologica(Base):
+    """Calendario MMWR; ``id_semana = anio*100 + semana``."""
+    __tablename__ = "semana_epidemiologica"
+    __table_args__ = (
+        UniqueConstraint("anio", "semana"),
+        CheckConstraint("semana BETWEEN 1 AND 53", name="semana_valida"),
+        solo_postgresql("fecha_fin = fecha_inicio + 6", "fecha_fin_valida"),
+        solo_sqlite("fecha_fin = date(fecha_inicio, '+6 days')", "fecha_fin_valida"),
+    )
+    id_semana: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    anio: Mapped[int] = mapped_column(SmallInteger)
+    semana: Mapped[int] = mapped_column(SmallInteger)
+    fecha_inicio: Mapped[date] = mapped_column(Date)
+    fecha_fin: Mapped[date] = mapped_column(Date)
+    temporada: Mapped[int] = mapped_column(SmallInteger)
+
+
+class Ejecucion(Base):
+    """Cargas, inferencias, reentrenamientos y mantenimiento; evidencia en ``detalle``."""
+    __tablename__ = "ejecucion"
+    __table_args__ = (
+        # Extensión aprobada: idempotencia de cargas por la huella guardada en el detalle.
+        Index("ux_ejecucion_huella_ingesta", text("(detalle ->> 'huella')"), unique=True,
+              postgresql_where=text("tipo = 'ingesta' AND estado = 'exitosa'")).ddl_if(dialect="postgresql"),
+    )
+    id_ejecucion: Mapped[int] = mapped_column(BIGINT_ID, Identity(always=True), primary_key=True)
+    tipo: Mapped[str] = mapped_column(enum(TIPO_EJECUCION, "tipo_ejecucion_t"))
+    estado: Mapped[str] = mapped_column(enum(ESTADO_EJECUCION, "estado_ejecucion_t"),
+                                        default="en_curso", server_default="en_curso")
+    id_semana_corte: Mapped[int | None] = mapped_column(ForeignKey("semana_epidemiologica.id_semana"))
+    inicio: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc,
+                                             server_default=func.now())
+    fin: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    detalle: Mapped[dict | None] = mapped_column(JSONB_PORTABLE)
+    mensaje_error: Mapped[str | None] = mapped_column(Text)
+
+
+Index("ix_ejecucion_tipo_inicio", Ejecucion.tipo, Ejecucion.inicio.desc())
+
 
 
 class ObservacionSemanal(ConUbigeo, Base):
     __tablename__ = "observacion_semanal"
     __table_args__ = (
-        UniqueConstraint("ubigeo", "anio", "semana"), restriccion_ubigeo(),
-        CheckConstraint("semana BETWEEN 1 AND 53", name="semana_valida"),
-        CheckConstraint("casos >= 0", name="casos_no_negativos"),
+        CheckConstraint("casos_dengue >= 0", name="casos_no_negativos"),
         CheckConstraint("umbral_brote_casos >= 0", name="umbral_no_negativo"),
-        CheckConstraint("casos IS NOT NULL OR motivo IS NOT NULL", name="faltante_con_motivo"),
-        Index("ix_observacion_distrito_fecha", "ubigeo", "semana_inicio"),
+        CheckConstraint("precip_total_mm BETWEEN 0 AND 1500", name="precipitacion_valida"),
+        CheckConstraint("hum_rel_media_pct BETWEEN 0 AND 100", name="humedad_valida"),
+        CheckConstraint("temp_min_c <= temp_media_c AND temp_media_c <= temp_max_c",
+                        name="temperaturas_ordenadas"),
+        Index("ix_obs_semana", "id_semana"),
     )
-    id: Mapped[int] = mapped_column(primary_key=True)
-    ubigeo: Mapped[str] = mapped_column(String(6), ForeignKey("distrito.ubigeo"))
-    anio: Mapped[int] = mapped_column(Integer)
-    semana: Mapped[int] = mapped_column(Integer)
-    semana_inicio: Mapped[date] = mapped_column(Date)
-    casos: Mapped[int | None] = mapped_column(Integer)
+    ubigeo: Mapped[str] = mapped_column(CHAR(6), ForeignKey("distrito.ubigeo"), primary_key=True)
+    id_semana: Mapped[int] = mapped_column(ForeignKey("semana_epidemiologica.id_semana"), primary_key=True)
+    casos_dengue: Mapped[int | None] = mapped_column(Integer)  # NULL = sin dato; 0 = cero real
+    umbral_brote_casos: Mapped[float | None] = mapped_column(Numeric(10, 2, asdecimal=False))
     brote: Mapped[bool | None] = mapped_column(Boolean)
-    umbral_brote_casos: Mapped[float | None] = mapped_column(Float)
-    procedencia: Mapped[str] = mapped_column(String(80))
-    motivo: Mapped[str | None] = mapped_column(Text)
-    carga_id: Mapped[int] = mapped_column(ForeignKey("carga_datos.id"))
-    fecha_corte_datos: Mapped[date] = mapped_column(Date)
-    fecha_actualizacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc)
+    temp_media_c: Mapped[float | None] = mapped_column(Numeric(5, 2, asdecimal=False))
+    temp_min_c: Mapped[float | None] = mapped_column(Numeric(5, 2, asdecimal=False))
+    temp_max_c: Mapped[float | None] = mapped_column(Numeric(5, 2, asdecimal=False))
+    precip_total_mm: Mapped[float | None] = mapped_column(Numeric(7, 2, asdecimal=False))
+    hum_rel_media_pct: Mapped[float | None] = mapped_column(Numeric(5, 2, asdecimal=False))
+    fuente_casos: Mapped[str] = mapped_column(enum(FUENTE_CASOS, "fuente_casos_t"))
+    estado_cobertura: Mapped[str] = mapped_column(enum(COBERTURA, "cobertura_t"))
+    fecha_extraccion: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    id_ejecucion: Mapped[int] = mapped_column(ForeignKey("ejecucion.id_ejecucion"))
 
 
 class VersionModelo(Base):
     __tablename__ = "version_modelo"
     __table_args__ = (
-        CheckConstraint("horizonte BETWEEN 2 AND 4", name="horizonte_valido"),
-        CheckConstraint("tipo IN ('clasificacion','regresion','persistencia')", name="tipo_valido"),
+        CheckConstraint("horizonte IN (2, 3, 4)", name="horizonte_valido"),
         CheckConstraint("umbral_probabilidad BETWEEN 0 AND 1", name="umbral_valido"),
-        CheckConstraint("origen IN ('servicio','retrospectiva')", name="origen_valido"),
-        CheckConstraint("NOT activa OR (artefacto IS NOT NULL AND origen = 'servicio')", name="activa_con_artefacto"),
-        Index("ix_version_horizonte_tipo", "horizonte", "tipo", "activa"),
-        Index("uq_version_activa", "horizonte", "tipo", unique=True,
-              sqlite_where=text("activa = 1"), postgresql_where=text("activa")),
+        CheckConstraint("estado <> 'activa' OR cumple_umbrales", name="activa_cumple_umbrales"),
+        Index("ux_version_activa", "tarea", "horizonte", unique=True,
+              postgresql_where=text("estado = 'activa'"), sqlite_where=text("estado = 'activa'")),
     )
-    id: Mapped[int] = mapped_column(primary_key=True)
-    huella: Mapped[str] = mapped_column(String(64), unique=True)
-    origen: Mapped[str] = mapped_column(String(20), default="servicio")
-    bloque: Mapped[str | None] = mapped_column(String(50))
-    horizonte: Mapped[int] = mapped_column(Integer)
-    tipo: Mapped[str] = mapped_column(String(20))
-    variante: Mapped[str] = mapped_column(String(80))
-    columnas: Mapped[list] = mapped_column(JSON)
-    hiperparametros: Mapped[dict] = mapped_column(JSON)
-    umbral_probabilidad: Mapped[float | None] = mapped_column(Float)
-    entrenamiento_inicio: Mapped[date] = mapped_column(Date)
-    entrenamiento_corte: Mapped[date] = mapped_column(Date)
-    metricas_evaluacion: Mapped[dict] = mapped_column(JSON)
-    criterios_validacion: Mapped[dict] = mapped_column(JSON, default=dict)
-    particion_temporal: Mapped[dict] = mapped_column(JSON)
-    mlflow_run_id: Mapped[str | None] = mapped_column(String(64))
-    sha256_gold: Mapped[str] = mapped_column(String(64))
-    sha256_manifiesto: Mapped[str] = mapped_column(String(64))
-    device: Mapped[str] = mapped_column(String(40))
-    version_xgboost: Mapped[str | None] = mapped_column(String(40))
-    plataforma: Mapped[str | None] = mapped_column(String(200))
-    fecha_creacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc)
-    activa: Mapped[bool] = mapped_column(Boolean, default=False)
-    artefacto: Mapped[dict | None] = mapped_column(JSON(none_as_null=True))
-    motivo_artefacto: Mapped[str | None] = mapped_column(Text)
+    id_version: Mapped[int] = mapped_column(Integer, Identity(always=True), primary_key=True)
+    codigo: Mapped[str] = mapped_column(String(20), unique=True)
+    tarea: Mapped[str] = mapped_column(enum(TAREA, "tarea_t"))
+    horizonte: Mapped[int] = mapped_column(SmallInteger)
+    algoritmo: Mapped[str] = mapped_column(String(40))
+    variables: Mapped[list] = mapped_column(JSONB_PORTABLE)
+    hiperparametros: Mapped[dict] = mapped_column(JSONB_PORTABLE)
+    metricas: Mapped[dict] = mapped_column(JSONB_PORTABLE)
+    umbral_probabilidad: Mapped[float | None] = mapped_column(Numeric(4, 3, asdecimal=False))
+    cumple_umbrales: Mapped[bool] = mapped_column(Boolean)
+    estado: Mapped[str] = mapped_column(enum(ESTADO_VERSION, "estado_version_t"),
+                                        default="candidata", server_default="candidata")
+    mlflow_run_id: Mapped[str] = mapped_column(String(64))
+    ruta_artefacto: Mapped[str] = mapped_column(Text)
+    sha256_artefacto: Mapped[str] = mapped_column(CHAR(64))
+    sha256_dataset: Mapped[str] = mapped_column(CHAR(64))
+    fecha_registro: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc,
+                                                     server_default=func.now())
+    fecha_activacion: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Extensión: device, versión de XGBoost, plataforma, partición temporal y fechas de entrenamiento.
+    reproducibilidad: Mapped[dict | None] = mapped_column(JSONB_PORTABLE)
 
-    @property
-    def detalle_validacion(self):
-        """Resultado siempre derivado de las métricas y política guardadas."""
-        from src.validation.validacion_modelo import evaluar_validacion_modelo
-        return evaluar_validacion_modelo(self.tipo, self.metricas_evaluacion or {}, self.criterios_validacion or {})
-
-    @property
-    def estado_validacion(self):
-        return self.detalle_validacion["estado_validacion"]
-
-    @property
-    def puede_activarse(self):
-        return self.origen == "servicio" and bool(self.artefacto)
+    @validates("horizonte")
+    def validar_horizonte(self, _, valor):
+        if valor not in HORIZONTES or isinstance(valor, bool):
+            raise ValueError("horizonte debe ser 2, 3 o 4")
+        return valor
 
 
 class ImportanciaVariable(Base):
+    """Extensión aprobada (HU0008-4): importancia gain del booster de servicio."""
     __tablename__ = "importancia_variable"
-    __table_args__ = (UniqueConstraint("version_modelo_id", "variable"),
+    __table_args__ = (UniqueConstraint("id_version", "variable"),
                      CheckConstraint("importancia >= 0 AND rango >= 1", name="importancia_valida"))
-    id: Mapped[int] = mapped_column(primary_key=True)
-    version_modelo_id: Mapped[int] = mapped_column(ForeignKey("version_modelo.id"))
+    id_importancia: Mapped[int] = mapped_column(Integer, Identity(always=True), primary_key=True)
+    id_version: Mapped[int] = mapped_column(ForeignKey("version_modelo.id_version"))
     variable: Mapped[str] = mapped_column(String(100))
-    importancia: Mapped[float] = mapped_column(Float)
+    importancia: Mapped[float] = mapped_column(Numeric(asdecimal=False))
     rango: Mapped[int] = mapped_column(Integer)
-
-
-class EjecucionPrediccion(Base):
-    __tablename__ = "ejecucion_prediccion"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc)
-    fecha_corte_datos: Mapped[date] = mapped_column(Date)
-    versiones_usadas: Mapped[list] = mapped_column(JSON)
-    hashes_entrada: Mapped[dict] = mapped_column(JSON)
-    huella: Mapped[str] = mapped_column(String(64), unique=True)
-    estado: Mapped[str] = mapped_column(String(20))
-    filas_generadas: Mapped[int] = mapped_column(Integer)
-    duracion_segundos: Mapped[float] = mapped_column(Float)
-    motivo: Mapped[str | None] = mapped_column(Text)
-    resumen: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 class Prediccion(ConUbigeo, Base):
     __tablename__ = "prediccion"
     __table_args__ = (
-        UniqueConstraint("ejecucion_id", "ubigeo", "horizonte", "semana_inicio", "tipo"),
-        restriccion_ubigeo(),
-        CheckConstraint("horizonte BETWEEN 2 AND 4", name="horizonte_valido"),
-        CheckConstraint("semana BETWEEN 1 AND 53", name="semana_valida"),
-        CheckConstraint("probabilidad BETWEEN 0 AND 1", name="probabilidad_valida"),
+        UniqueConstraint("ubigeo", "id_semana_corte", "horizonte"),
+        CheckConstraint("horizonte IN (2, 3, 4)", name="horizonte_valido"),
+        CheckConstraint("probabilidad_brote BETWEEN 0 AND 1", name="probabilidad_valida"),
         CheckConstraint("casos_estimados >= 0", name="casos_no_negativos"),
-        CheckConstraint("origen_cierre < semana_inicio", name="origen_anterior_objetivo"),
-        CheckConstraint("tipo IN ('vigente','retrospectiva')", name="tipo_valido"),
-        Index("ix_prediccion_horizonte_fecha", "horizonte", "semana_inicio"),
-        Index("ix_prediccion_ubigeo_horizonte", "ubigeo", "horizonte"),
+        CheckConstraint(
+            "(estado = 'disponible' AND probabilidad_brote IS NOT NULL AND nivel_riesgo IS NOT NULL)"
+            " OR (estado = 'no_disponible' AND probabilidad_brote IS NULL AND nivel_riesgo IS NULL"
+            " AND motivo_no_disponible IS NOT NULL)", name="estado_coherente"),
+        Index("ix_pred_objetivo", "id_semana_objetivo", "horizonte"),
     )
-    id: Mapped[int] = mapped_column(primary_key=True)
-    ubigeo: Mapped[str] = mapped_column(String(6), ForeignKey("distrito.ubigeo"))
-    horizonte: Mapped[int] = mapped_column(Integer)
-    anio: Mapped[int] = mapped_column(Integer)
-    semana: Mapped[int] = mapped_column(Integer)
-    semana_inicio: Mapped[date] = mapped_column(Date)
-    origen_cierre: Mapped[date] = mapped_column(Date)
-    probabilidad: Mapped[float | None] = mapped_column(Float)
-    nivel_riesgo: Mapped[str | None] = mapped_column(String(20))
-    casos_estimados: Mapped[float | None] = mapped_column(Float)
-    casos_persistencia: Mapped[float | None] = mapped_column(Float)
-    alerta_modelo: Mapped[bool | None] = mapped_column(Boolean)
-    tipo: Mapped[str] = mapped_column(String(20))
-    version_clasificacion_id: Mapped[int | None] = mapped_column(ForeignKey("version_modelo.id"))
-    version_regresion_id: Mapped[int | None] = mapped_column(ForeignKey("version_modelo.id"))
-    version_persistencia_id: Mapped[int | None] = mapped_column(ForeignKey("version_modelo.id"))
-    ejecucion_id: Mapped[int] = mapped_column(ForeignKey("ejecucion_prediccion.id"))
-    caracteristicas: Mapped[dict] = mapped_column(JSON)
-    motivo: Mapped[str | None] = mapped_column(Text)
-    fecha_actualizacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc)
-    version_clasificacion: Mapped[VersionModelo | None] = relationship(foreign_keys=[version_clasificacion_id])
-    version_regresion: Mapped[VersionModelo | None] = relationship(foreign_keys=[version_regresion_id])
+    id_prediccion: Mapped[int] = mapped_column(BIGINT_ID, Identity(always=True), primary_key=True)
+    ubigeo: Mapped[str] = mapped_column(CHAR(6), ForeignKey("distrito.ubigeo"))
+    id_semana_corte: Mapped[int] = mapped_column(ForeignKey("semana_epidemiologica.id_semana"))
+    id_semana_objetivo: Mapped[int] = mapped_column(ForeignKey("semana_epidemiologica.id_semana"))
+    horizonte: Mapped[int] = mapped_column(SmallInteger)
+    probabilidad_brote: Mapped[float | None] = mapped_column(Numeric(5, 4, asdecimal=False))
+    nivel_riesgo: Mapped[str | None] = mapped_column(enum(NIVEL_RIESGO, "nivel_riesgo_t"))
+    casos_estimados: Mapped[float | None] = mapped_column(Numeric(10, 2, asdecimal=False))
+    estado: Mapped[str] = mapped_column(enum(ESTADO_PREDICCION, "estado_prediccion_t"))
+    motivo_no_disponible: Mapped[str | None] = mapped_column(Text)
+    id_version_clasificador: Mapped[int | None] = mapped_column(ForeignKey("version_modelo.id_version"))
+    id_version_regresor: Mapped[int | None] = mapped_column(ForeignKey("version_modelo.id_version"))
+    id_ejecucion: Mapped[int] = mapped_column(ForeignKey("ejecucion.id_ejecucion"))
+    fecha_generacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc,
+                                                       server_default=func.now())
+    version_clasificador: Mapped[VersionModelo | None] = relationship(foreign_keys=[id_version_clasificador])
+    version_regresor: Mapped[VersionModelo | None] = relationship(foreign_keys=[id_version_regresor])
 
-    @property
-    def estado_validacion(self):
-        """Una predicción conjunta solo se valida si ambos componentes cumplen."""
-        versiones = (self.version_clasificacion, self.version_regresion)
-        if any(v is None for v in versiones):
-            return "experimental"
-        return "validado" if all(v.estado_validacion == "validado" for v in versiones) else "experimental"
+    @validates("horizonte")
+    def validar_horizonte(self, _, valor):
+        if valor not in HORIZONTES or isinstance(valor, bool):
+            raise ValueError("horizonte debe ser 2, 3 o 4")
+        return valor
 
 
 class Alerta(ConUbigeo, Base):
     __tablename__ = "alerta"
     __table_args__ = (
-        UniqueConstraint("prediccion_id"), restriccion_ubigeo(),
-        CheckConstraint("estado IN ('activa','retirada')", name="estado_valido"),
-        Index("ix_alerta_horizonte_estado", "horizonte", "estado"),
+        UniqueConstraint("id_prediccion"),
+        CheckConstraint("nivel IN ('alto', 'muy_alto')", name="nivel_alerta"),
+        CheckConstraint("estado = 'activa' OR fecha_retiro IS NOT NULL", name="retiro_con_fecha"),
+        Index("ix_alerta_estado", "estado", "nivel"),
     )
-    id: Mapped[int] = mapped_column(primary_key=True)
-    prediccion_id: Mapped[int] = mapped_column(ForeignKey("prediccion.id"))
-    ubigeo: Mapped[str] = mapped_column(String(6), ForeignKey("distrito.ubigeo"))
-    horizonte: Mapped[int] = mapped_column(Integer)
-    semana_inicio: Mapped[date] = mapped_column(Date)
-    nivel: Mapped[str] = mapped_column(String(20))
-    estado: Mapped[str] = mapped_column(String(20))
-    fecha_generacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc)
+    id_alerta: Mapped[int] = mapped_column(BIGINT_ID, Identity(always=True), primary_key=True)
+    id_prediccion: Mapped[int] = mapped_column(ForeignKey("prediccion.id_prediccion"))
+    ubigeo: Mapped[str] = mapped_column(CHAR(6), ForeignKey("distrito.ubigeo"))
+    nivel: Mapped[str] = mapped_column(enum(NIVEL_RIESGO, "nivel_riesgo_t"))
+    estado: Mapped[str] = mapped_column(enum(ESTADO_ALERTA, "estado_alerta_t"),
+                                        default="activa", server_default="activa")
+    cambio: Mapped[str] = mapped_column(enum(CAMBIO_ALERTA, "cambio_alerta_t"))
+    fecha_generacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc,
+                                                       server_default=func.now())
     fecha_retiro: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    motivo: Mapped[str | None] = mapped_column(Text)
+    motivo: Mapped[str | None] = mapped_column(Text)  # Extensión aprobada: explica el retiro.
     prediccion: Mapped[Prediccion] = relationship()
 
-    @property
-    def estado_validacion(self):
-        return self.prediccion.estado_validacion
+
+class ParametroSistema(Base):
+    """Parámetros que leen la API y el pipeline; ``config.yaml`` solo siembra."""
+    __tablename__ = "parametro_sistema"
+    clave: Mapped[str] = mapped_column(String(60), primary_key=True)
+    valor: Mapped[dict] = mapped_column(JSONB_PORTABLE)
+    descripcion: Mapped[str] = mapped_column(Text)
+    fecha_actualizacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc,
+                                                          server_default=func.now())
 
 
-class ActivacionModelo(Base):
-    __tablename__ = "activacion_modelo"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    version_anterior_id: Mapped[int | None] = mapped_column(ForeignKey("version_modelo.id"))
-    version_nueva_id: Mapped[int] = mapped_column(ForeignKey("version_modelo.id"))
-    ejecucion_id: Mapped[int] = mapped_column(ForeignKey("ejecucion_prediccion.id"))
-    fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora_utc)
-    motivo: Mapped[str] = mapped_column(Text)
+# Semillas del DDL; ``bloque`` en umbrales_aceptacion es una corrección aprobada del documento.
+PARAMETROS_INICIALES = (
+    {"clave": "regla_brote",
+     "valor": {"anios_previos": 5, "k_desviaciones": 1.5, "minimo_casos": 2},
+     "descripcion": "Umbral = media de la misma semana en 5 años previos + k DE; mínimo de casos"},
+    {"clave": "cortes_riesgo",
+     "valor": {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75},
+     "descripcion": "Cortes de probabilidad para el nivel de riesgo"},
+    {"clave": "umbrales_aceptacion",
+     "valor": {"recall": 0.80, "precision": 0.60, "f1": 0.70, "razon_error_base": 0.85,
+               "bloque": "temporada_2024"},
+     "descripcion": "Criterios para promover un modelo"},
+)

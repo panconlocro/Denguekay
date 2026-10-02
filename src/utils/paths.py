@@ -64,6 +64,8 @@ BACKEND_DOCS = DOCS / "backend"
 OPENAPI_JSON = BACKEND_DOCS / "openapi.json"
 API_VERIFICACION = BACKEND_DOCS / "fase3_verificacion.json"
 API_BD_VERIFICACION = SERVING_MODELS / "fase3.sqlite"
+# Evidencia offline (alembic upgrade --sql) de la migración al esquema OE2.
+MIGRACION_OE2_SQL = SERVING_MODELS / "migracion_0003_oe2_postgresql.sql"
 API_BENCHMARK_JSON = SERVING_MODELS / "benchmark.json"
 API_BD_BENCHMARK = SERVING_MODELS / "fase4.sqlite"
 BACKEND_FASE4_VERIFICACION = BACKEND_DOCS / "fase4_verificacion.json"
