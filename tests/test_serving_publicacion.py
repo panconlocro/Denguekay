@@ -16,7 +16,7 @@ from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.cargar_datos import persistir_carga
 from src.serving.modelos import (VersionPreparada, cumple_umbrales, guardar_versiones, reporte_servicio,
-                                 siguiente_codigo)
+                                 ruta_artefacto, siguiente_codigo)
 from src.serving.publicar import publicacion_existente, publicar, publicar_en_bd
 
 
@@ -76,6 +76,17 @@ class TestPublicacion(unittest.TestCase):
         self.assertEqual(nuevas[clave][0], "clf-h2-v2")
         with transaccion(self.motor) as s:
             self.assertEqual(siguiente_codigo(s, "clasificacion", 2), "clf-h2-v3")
+
+    def test_storage_compartido_no_sobrescribe_artefactos_ajenos(self):
+        ajeno = b'{"booster": "de otra BD"}'
+        self.almacenamiento.guardar("modelos/clf-h2-v1.json", ajeno)
+        codigos = self.guardar()
+        with transaccion(self.motor) as s:
+            v = s.get(VersionModelo, codigos[2, "clasificacion"][1])
+            self.assertTrue(v.ruta_artefacto.startswith("modelos/clf-h2-v1-"))
+            self.assertEqual(hashlib.sha256(self.almacenamiento.leer(v.ruta_artefacto)).hexdigest(), v.sha256_artefacto)
+        self.assertEqual(self.almacenamiento.leer("modelos/clf-h2-v1.json"), ajeno)
+        self.assertEqual(ruta_artefacto(self.almacenamiento, "clf-h2-v1", ajeno), "modelos/clf-h2-v1.json")
 
     def test_cumple_umbrales_lee_la_bd(self):
         metricas = self.preparadas[2, "clasificacion"].datos["metricas"]

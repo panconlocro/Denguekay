@@ -121,8 +121,8 @@ Tipos de desviación:
 - **Portabilidad:** las CHECK con regex y `fecha_fin = fecha_inicio + 6` se crean solo en
   PostgreSQL; en SQLite se usan equivalentes (`substr`, `date(fecha_inicio, '+6 days')`) y la
   validación del ORM. Los nombres de restricciones siguen la convención `ck_<tabla>_<nombre>`.
-- **Evidencia SQL offline** (`models/serving/migracion_0003_oe2_postgresql.sql`, no versionada):
-  cubre `0002_serving → 0003_oe2`. No se puede generar desde `base` porque la migración
+- **Evidencia SQL offline** (`docs/backend/evidencia/migracion_0003_oe2_postgresql.sql`, versionada;
+  se regenera con `python -m src.db.exportar_sql_migracion`): cubre `0002_serving → 0003_oe2`. No se puede generar desde `base` porque la migración
   histórica `0002_serving` consulta `version_modelo` y eso no funciona en modo `--sql`; es
   previo al refactor y no se edita una migración ya aplicada.
 - **PostgreSQL 18.6 (Windows).** La verificación de la Fase 1 corrió en PostgreSQL 18.6 nativo
@@ -153,8 +153,17 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
 - **Predicciones OOS:** se importan los bloques temporada 2022, 2023, 2024 y calendario 2025
   (los mismos que publicaba el backend anterior); no generan alertas (son históricas) y su
   marca `experimental` sale de las versiones de servicio del mismo horizonte.
-- **Alertas:** una alerta activa por distrito y horizonte; al llegar un corte nuevo la anterior
-  se retira con `fecha_retiro` y `motivo`. Recalcular el mismo corte actualiza su alerta.
+- **Alertas:** como máximo una alerta activa por distrito y horizonte (la del corte más reciente);
+  al llegar un corte nuevo la anterior se retira con `fecha_retiro` y `motivo`. `cambio` compara con
+  el nivel de la predicción de la semana de corte anterior (sin ella, `nueva`), por lo que recalcular un corte da el
+  mismo resultado; inferir un corte pasado deja su alerta como `retirada` (historia).
+- **Storage compartido:** `models/storage` es común a todas las BD locales y los códigos se
+  reinician por BD; si `modelos/<codigo>.json` ya existe con otro contenido no se sobrescribe y se
+  usa `modelos/<codigo>-<sha256[:12]>.json`. Un rollback puede dejar un artefacto sin versión
+  (inofensivo: se identifica por su hash).
+- **Auditoría de fallos:** las inferencias de la API que fallan (409/503) quedan como `ejecucion`
+  `fallida`; la carga registra también los fallos de preparación (GX, linaje). Las observaciones
+  que desaparezcan de la fuente no se borran (UPSERT sin borrado).
 - **`config.yaml`:** se quitaron `riesgo`, `alerta_nivel_minimo` y `criterios_validacion`
   de `serving`; esos valores viven solo en `parametro_sistema`.
 - **CPU frente a GPU:** el servicio predice en CPU. En este equipo XGBoost entrena en GPU y su

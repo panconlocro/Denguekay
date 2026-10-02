@@ -200,18 +200,32 @@ def inferir(sesion, horizonte, id_semana_corte=None, *, almacenamiento, servir_n
 
 
 def actualizar_alertas(sesion, horizonte, id_semana_corte):
-    """Una alerta activa por distrito y horizonte; ``cambio`` respecto del corte anterior."""
+    """Alertas del corte para alto/muy_alto; como máximo una activa por distrito y horizonte.
+
+    ``cambio`` compara con el nivel de la predicción de la semana de corte
+    anterior (corte - 1 semana); sin ella, ``nueva``. Es idempotente:
+    recalcular el mismo corte da el mismo resultado.
+    La alerta activa es siempre la del corte más reciente; inferir un corte
+    pasado no reactiva alertas viejas ni deja dos activas.
+    """
     ahora = ahora_utc()
     actuales = list(sesion.scalars(select(Prediccion).where(
         Prediccion.horizonte == horizonte, Prediccion.id_semana_corte == id_semana_corte)))
-    anteriores = {}
+    if not actuales:
+        return {"nuevas_o_actualizadas": 0, "retiradas": 0}
+    corte = semana(sesion, id_semana_corte)
+    previa = sesion.scalar(select(SemanaEpidemiologica.id_semana).where(
+        SemanaEpidemiologica.fecha_inicio == corte.fecha_inicio - pd.Timedelta(weeks=1).to_pytimedelta()))
+    niveles_previos = dict(sesion.execute(select(Prediccion.ubigeo, Prediccion.nivel_riesgo).where(
+        Prediccion.horizonte == horizonte, Prediccion.id_semana_corte == previa)).all()) if previa else {}
+    activas = {}
     for alerta, corte in sesion.execute(select(Alerta, Prediccion.id_semana_corte).join(
             Prediccion, Prediccion.id_prediccion == Alerta.id_prediccion).where(
-            Prediccion.horizonte == horizonte, Prediccion.id_semana_corte < id_semana_corte,
-            Alerta.estado == "activa").order_by(Prediccion.id_semana_corte)):
-        anteriores[alerta.ubigeo] = alerta  # queda la del corte más reciente
+            Prediccion.horizonte == horizonte, Prediccion.id_semana_corte != id_semana_corte,
+            Alerta.estado == "activa")):
+        activas.setdefault(alerta.ubigeo, []).append((corte, alerta))
     propias = {a.id_prediccion: a for a in sesion.scalars(select(Alerta).where(
-        Alerta.id_prediccion.in_([p.id_prediccion for p in actuales])))} if actuales else {}
+        Alerta.id_prediccion.in_([p.id_prediccion for p in actuales])))}
     conteo = {"nuevas_o_actualizadas": 0, "retiradas": 0}
 
     def retirar(alerta, motivo):
@@ -220,24 +234,30 @@ def actualizar_alertas(sesion, horizonte, id_semana_corte):
             conteo["retiradas"] += 1
 
     for p in actuales:
-        anterior = anteriores.get(p.ubigeo)
+        otras = activas.get(p.ubigeo, [])
+        posterior = any(corte > id_semana_corte for corte, _ in otras)
         propia = propias.get(p.id_prediccion)
         if p.estado == "disponible" and p.nivel_riesgo in NIVELES_ALERTA:
-            cambio = cambio_alerta(anterior.nivel if anterior else None, p.nivel_riesgo)
+            previo = niveles_previos.get(p.ubigeo)
+            cambio = cambio_alerta(previo if previo in NIVELES_ALERTA else None, p.nivel_riesgo)
             if propia is None:
-                sesion.add(Alerta(id_prediccion=p.id_prediccion, ubigeo=p.ubigeo, nivel=p.nivel_riesgo,
-                                  estado="activa", cambio=cambio, fecha_generacion=ahora))
+                propia = Alerta(id_prediccion=p.id_prediccion, ubigeo=p.ubigeo, nivel=p.nivel_riesgo,
+                                estado="activa", cambio=cambio, fecha_generacion=ahora)
+                sesion.add(propia)
             else:
                 propia.nivel, propia.cambio, propia.estado = p.nivel_riesgo, cambio, "activa"
                 propia.fecha_generacion, propia.fecha_retiro, propia.motivo = ahora, None, None
             conteo["nuevas_o_actualizadas"] += 1
-            if anterior is not None:
-                retirar(anterior, f"Sustituida por la alerta del corte {id_semana_corte}")
-        else:
-            if propia is not None:
-                retirar(propia, "La predicción recalculada ya no alcanza nivel alto")
-            if anterior is not None:
-                retirar(anterior, f"El riesgo del corte {id_semana_corte} ya no alcanza nivel alto")
+            if posterior:  # corte pasado: queda como historia, no compite con la vigente
+                propia.estado, propia.fecha_retiro = "retirada", ahora
+                propia.motivo = "Corte anterior a una alerta activa más reciente"
+        elif propia is not None:
+            retirar(propia, "La predicción recalculada ya no alcanza nivel alto")
+        motivo = (f"Sustituida por la alerta del corte {id_semana_corte}" if propia is not None and propia.estado == "activa"
+                  else f"El riesgo del corte {id_semana_corte} ya no alcanza nivel alto")
+        for corte, alerta in otras:
+            if corte < id_semana_corte:
+                retirar(alerta, motivo)
     sesion.flush()
     return conteo
 

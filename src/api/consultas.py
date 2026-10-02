@@ -269,7 +269,9 @@ def consulta_alertas(horizonte=None, ubigeo=None, nivel=None, estado=None):
 
 
 def alerta_dtos(sesion, filas):
-    preds = {p["id_prediccion"]: p for p in prediccion_dtos(sesion, [a.prediccion for a in filas])}
+    ids = {a.id_prediccion for a in filas}
+    predicciones = list(sesion.scalars(select(Prediccion).where(Prediccion.id_prediccion.in_(ids)))) if ids else []
+    preds = {p["id_prediccion"]: p for p in prediccion_dtos(sesion, predicciones)}
     return [{"id_alerta": a.id_alerta, "ubigeo": a.ubigeo, "distrito": preds[a.id_prediccion]["distrito"],
              "horizonte": preds[a.id_prediccion]["horizonte"], "nivel": a.nivel,
              "nivel_etiqueta": ETIQUETAS[a.nivel], "estado": a.estado, "cambio": a.cambio,

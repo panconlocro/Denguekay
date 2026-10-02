@@ -10,6 +10,7 @@ from src.api.esquemas import ActivacionRespuesta, InferenciaRespuesta, Solicitud
 from src.db.modelos import Ejecucion, VersionModelo, ahora_utc
 from src.serving.artefactos import ArtefactoInvalido
 from src.serving.inferencia import InferenciaNoDisponible, inferir
+from src.serving.parametros import ParametroFaltante
 
 router = APIRouter(prefix="/admin", tags=["Administración"], dependencies=[Depends(exigir_clave)])
 
@@ -31,8 +32,17 @@ def inferencias(solicitud: SolicitudInferencia, request: Request, sesion: Sesion
         resultado = inferir(sesion, solicitud.horizonte, solicitud.id_semana_corte,
                             almacenamiento=request.app.state.almacenamiento,
                             servir_no_validadas=request.app.state.cfg.servir_no_validadas, origen="api")
-    except (InferenciaNoDisponible, ArtefactoInvalido) as error:
+    except (InferenciaNoDisponible, ArtefactoInvalido, ParametroFaltante) as error:
         sesion.rollback()
+        # Se audita el intento fallido, como en la carga y la publicación.
+        sesion.add(Ejecucion(tipo="inferencia", estado="fallida", fin=ahora_utc(),
+                             detalle={"origen": "api", "horizonte": solicitud.horizonte,
+                                      "id_semana_corte": solicitud.id_semana_corte},
+                             mensaje_error=f"{type(error).__name__}: {error}"[:2000]))
+        sesion.commit()
+        request.app.state.cache.limpiar()
+        if isinstance(error, ParametroFaltante):
+            raise ErrorAPI(503, "parametros_no_configurados", str(error)) from error
         codigo = "artefacto_invalido" if isinstance(error, ArtefactoInvalido) else "inferencia_no_disponible"
         raise ErrorAPI(409, codigo, str(error)) from error
     confirmar(request, sesion)
@@ -54,6 +64,8 @@ def activar(version: Identificador, request: Request, sesion: Sesion):
                        "La versión no cumple los umbrales de aceptación; se sirve solo como experimental")
     if nueva.estado == "activa":
         raise ErrorAPI(409, "ya_activa", "La versión ya está activa")
+    if nueva.estado == "rechazada":
+        raise ErrorAPI(409, "version_rechazada", "Una versión rechazada no se puede activar")
     anterior = sesion.scalar(select(VersionModelo).where(
         VersionModelo.tarea == nueva.tarea, VersionModelo.horizonte == nueva.horizonte,
         VersionModelo.estado == "activa").with_for_update())

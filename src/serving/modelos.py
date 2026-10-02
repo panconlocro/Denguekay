@@ -93,6 +93,22 @@ def siguiente_codigo(sesion, tarea, horizonte):
     return f"{prefijo}{max(numeros, default=0) + 1}"
 
 
+def ruta_artefacto(almacenamiento, codigo, contenido):
+    """``modelos/<codigo>.json``; nunca sobrescribe un artefacto distinto.
+
+    Otra BD local (p. ej. la de pruebas) puede haber guardado ya ese código con
+    otro booster: en ese caso se usa un nombre con el SHA-256, sin pisar el ajeno.
+    """
+    ruta = f"modelos/{codigo}.json"
+    if almacenamiento.existe(ruta):
+        if sha256_bytes(almacenamiento.leer(ruta)) == sha256_bytes(contenido):
+            return ruta
+        ruta = f"modelos/{codigo}-{sha256_bytes(contenido)[:12]}.json"
+    if not almacenamiento.existe(ruta):
+        almacenamiento.guardar(ruta, contenido)
+    return ruta
+
+
 def guardar_versiones(sesion, preparadas, mlflow_run_id, criterios, almacenamiento):
     """Registra cada versión como ``candidata``; un mismo artefacto reutiliza su versión.
 
@@ -107,8 +123,7 @@ def guardar_versiones(sesion, preparadas, mlflow_run_id, criterios, almacenamien
             VersionModelo.sha256_dataset == datos["sha256_dataset"]))
         if version is None:
             codigo = siguiente_codigo(sesion, datos["tarea"], datos["horizonte"])
-            ruta = f"modelos/{codigo}.json"
-            almacenamiento.guardar(ruta, preparada.artefacto)
+            ruta = ruta_artefacto(almacenamiento, codigo, preparada.artefacto)
             version = VersionModelo(**datos, codigo=codigo, ruta_artefacto=ruta, estado="candidata",
                                     mlflow_run_id=mlflow_run_id,
                                     cumple_umbrales=cumple_umbrales(datos["tarea"], datos["metricas"], criterios))

@@ -276,7 +276,11 @@ def exigir_esquema(motor):
 def cargar_datos(motor):
     """Exige una BD migrada y publica toda la carga en una sola transacción."""
     exigir_esquema(motor)
-    datos = preparar_carga()
+    try:
+        datos = preparar_carga()
+    except (ValueError, OSError) as error:
+        registrar_fallo(motor, "ingesta", error, {"etapa": "preparacion"})
+        raise
     try:
         with transaccion(motor) as sesion:
             return persistir_carga(sesion, datos)

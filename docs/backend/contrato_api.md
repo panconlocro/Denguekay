@@ -37,9 +37,10 @@ Extensiones (no están en la Tabla 2): GET `/distritos/{ubigeo}`, `/observacione
 
 - `nivel_riesgo` ∈ `bajo|medio|alto|muy_alto` según `parametro_sistema.cortes_riesgo`
   (0,25 / 0,50 / 0,75); `nivel_riesgo_etiqueta` da el texto legible.
-- Una alerta se genera para `alto` y `muy_alto`; `cambio` compara con la alerta activa del corte
-  anterior (`nueva`, `se_mantiene`, `sube_nivel`, `baja_nivel`). Al llegar otro corte la anterior
-  pasa a `retirada` con `fecha_retiro` y `motivo`.
+- Una alerta se genera para `alto` y `muy_alto`; `cambio` compara con el nivel de la semana de
+  corte anterior (`nueva`, `se_mantiene`, `sube_nivel`, `baja_nivel`). Hay como máximo una alerta
+  activa por distrito y horizonte: al llegar otro corte la anterior pasa a `retirada` con
+  `fecha_retiro` y `motivo`.
 - `experimental: true` indica que la versión usada no cumple los umbrales de aceptación (hoy, todas).
   `alerta_modelo` compara la probabilidad con el umbral F1 de la versión; es independiente de la alerta.
 - `casos_persistencia` es la línea base: casos observados en la semana de corte.
@@ -52,9 +53,9 @@ Formato uniforme `{"codigo", "mensaje", "detalle"}`, sin SQL ni credenciales.
 |---|---|
 | 401 | `clave_invalida` |
 | 404 | `distrito_no_encontrado`, `alerta_no_encontrada`, `modelo_no_encontrado`, `solicitud_invalida` |
-| 409 | `inferencia_no_disponible`, `artefacto_invalido`, `no_cumple_umbrales`, `ya_activa`, `sin_datos` |
+| 409 | `inferencia_no_disponible`, `artefacto_invalido`, `no_cumple_umbrales`, `ya_activa`, `version_rechazada`, `sin_datos` |
 | 422 | `parametro_invalido`, `rango_invalido` |
-| 503 | `bd_no_disponible`, `escritura_no_configurada` |
+| 503 | `bd_no_disponible`, `escritura_no_configurada`, `parametros_no_configurados` |
 
 ## Caché y tiempos
 

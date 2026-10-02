@@ -210,6 +210,8 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
             predecir(202541, 0.8, "muy_alto")
             self.assertEqual(alertas()[-1], (202541, "muy_alto", "activa", "sube_nivel"))
             self.assertEqual(alertas()[0][2], "retirada")
+            predecir(202541, 0.8, "muy_alto")  # recálculo idéntico del mismo corte
+            self.assertEqual(alertas()[-1], (202541, "muy_alto", "activa", "sube_nivel"))
             predecir(202542, 0.8, "muy_alto")
             self.assertEqual(alertas()[-1][3], "se_mantiene")
             predecir(202543, 0.55, "alto")
@@ -219,10 +221,14 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
             retirada = s.scalar(select(Alerta).where(Alerta.estado == "retirada").order_by(Alerta.id_alerta.desc()))
             self.assertIsNotNone(retirada.fecha_retiro)
             self.assertIn("202544", retirada.motivo)
-            predecir(202544, 0.9, "muy_alto")  # recálculo del mismo corte
-            self.assertEqual(alertas()[-1], (202544, "muy_alto", "activa", "nueva"))
+            predecir(202544, 0.9, "muy_alto")  # recálculo del mismo corte: compara con 202543 (alto)
+            self.assertEqual(alertas()[-1], (202544, "muy_alto", "activa", "sube_nivel"))
+            predecir(202539, 0.6, "alto")  # corte pasado: no reactiva ni duplica
+            self.assertEqual(sum(a[2] == "activa" for a in alertas()), 1)
+            pasada = next(a for a in alertas() if a[0] == 202539)
+            self.assertEqual((pasada[2], pasada[3]), ("retirada", "nueva"))
             predecir(202544, 0.1, "bajo")
-            self.assertEqual(alertas()[-1][2], "retirada")
+            self.assertEqual(sum(a[2] == "activa" for a in alertas()), 0)
 
     def test_importa_oos_como_cortes_pasados(self):
         with transaccion(self.motor) as s:

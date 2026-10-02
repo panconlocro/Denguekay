@@ -247,6 +247,12 @@ class TestAPIReal(unittest.TestCase):
         with transaccion(self.motor) as s:
             self.assertEqual(s.scalar(select(func.count()).select_from(Ejecucion).where(
                 Ejecucion.detalle.is_not(None), Ejecucion.tipo == "inferencia", Ejecucion.estado == "en_curso")), 0)
+            fallidas = list(s.scalars(select(Ejecucion).where(Ejecucion.estado == "fallida")))
+            self.assertEqual(len(fallidas), 3)  # h=3, corte sin datos y artefacto alterado
+            self.assertTrue(all(f.tipo == "inferencia" and f.mensaje_error for f in fallidas))
+            s.execute(text("DELETE FROM parametro_sistema WHERE clave = 'cortes_riesgo'"))
+        r = self.post("/admin/inferencias", {"horizonte": 2})
+        self.assertEqual((r.status_code, r.json()["codigo"]), (503, "parametros_no_configurados"))
 
     def test_activacion(self):
         clf = self.version("clf-h2-v1")
@@ -260,6 +266,10 @@ class TestAPIReal(unittest.TestCase):
         self.assertEqual(r.json()["activada"]["estado"], "activa")
         self.assertIsNone(r.json()["archivada"])
         self.assertEqual(self.post(f"/admin/modelos/{clf}/activar").json()["codigo"], "ya_activa")
+        with transaccion(self.motor) as s:
+            s.get(VersionModelo, self.version("reg-h4-v1")).estado = "rechazada"
+            s.get(VersionModelo, self.version("reg-h4-v1")).cumple_umbrales = True
+        self.assertEqual(self.post(f"/admin/modelos/{self.version('reg-h4-v1')}/activar").json()["codigo"], "version_rechazada")
         self.post(f"/admin/modelos/{self.version('reg-h2-v1')}/activar")
         en_uso = self.get("/modelos/activo?horizonte=2")["elementos"]
         self.assertEqual({m["seleccion"] for m in en_uso}, {"activa"})
