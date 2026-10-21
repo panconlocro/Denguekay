@@ -9,6 +9,7 @@ tesis-dengue-piura/
 ├── README.md
 ├── CLAUDE.md                  # contexto y reglas para Claude Code
 ├── _claude_setup/             # configuración versionada para Claude Code
+├── .claude/agents/            # subagentes auditores versionados (revisor-backend, revisor-modelado)
 ├── AGENTS.md                  # contexto y reglas para Codex
 ├── .codex/skills/             # workflows de Codex (feature engineering)
 ├── .gitignore
@@ -185,7 +186,7 @@ modeling/
 ├── sociodemografia.py       # referencia 2017, demografía anual y eje urbano por fold (fase 5)
 ├── diagnostico_socio.py     # ablación temporal exploratoria de variantes fijas y anuales (fase 5)
 ├── etiqueta_brote.py        # regla de semana elevada con historia previa
-├── features.py              # integración y validación de gold para h=2/4 (fase 6)
+├── features.py              # integración y validación de gold; persiste solo h=2/4, construye h=1..6 en memoria
 ├── contrato_xgboost.py      # candidatos, exclusiones y auditoría de traspaso (fase 7)
 ├── dispositivo.py           # elige GPU NVIDIA (CUDA) o CPU para XGBoost según config.yaml
 ├── evaluate.py              # métricas de conteos y alertas
@@ -196,6 +197,11 @@ modeling/
 ├── ablacion_fracciones.py   # criba individualmente 15 fracciones fijas y anuales
 ├── ablacion_poblacion_sin_seguro.py # compara dos rasgos censales solos y juntos
 ├── validacion_temporal_compacta.py # calibra umbrales con temporadas previas
+├── diagnostico_arquitectura.py # diagnóstico de errores en memoria (encargo multi-horizonte, fase 1)
+├── protocolo_arquitectura.py # protocolo preregistrado: calibración cronológica, p ≥ 0,50, antelación y regla de decisión (fase 2)
+├── estrategias_horizonte.py # matrices h=1..6 en memoria, estrategias E1/E2/E3 y coherencia entre horizontes (fase 3)
+├── salida_probabilistica.py # formulaciones S1–S5 (conteo, base_margin, binomial negativa, calibración) y compatibilidad multi-salida (fase 4)
+├── cache_experimentos.py    # caché de entrenamientos del notebook 31 con huella de datos, config y código
 └── seguimiento_mlflow.py    # registra cada reporte de experimento en MLflow (runs anidados)
 ```
 **Va acá:** el feature engineering para el modelo y todo lo relacionado con entrenamiento y evaluación. `features.py` integra los candidatos de fase 6; `train.py` entrena los dos primeros objetivos XGBoost, `evaluate.py` contiene métricas compartidas, `ablacion_espacial.py` contrasta vecinos y jerarquía, `ablacion_clima.py` contrasta clima observado y anomalías, `ablacion_sociodemografica.py` compara bloques demográficos, `ablacion_fracciones.py` criba las 15 fracciones una por una, `ablacion_poblacion_sin_seguro.py` compara las dos candidatas fijas por separado y juntas, y `validacion_temporal_compacta.py` calibra umbrales con temporadas previas y compara matrices pequeñas. Cuando prueben un modelo nuevo, la lógica compartida (split train/test, métricas) se conserva en un solo lugar. `seguimiento_mlflow.py` registra en MLflow el reporte de cualquier experimento con la forma estándar `horizontes → variantes → folds`.
@@ -307,10 +313,11 @@ notebooks/
 ├── 27_modelado_ablacion_sociodemografica.ipynb
 ├── 28_modelado_ablacion_fracciones.ipynb
 ├── 29_modelado_ablacion_poblacion_sin_seguro.ipynb
-└── 30_modelado_validacion_temporal_compacta.ipynb
+├── 30_modelado_validacion_temporal_compacta.ipynb
+└── 31_modelado_arquitectura_horizontes.ipynb
 ```
 
-Los notebooks `10`–`16` son el EDA (Hito 2, Data Understanding) y **leen** `silver/integrado/`; no escriben en `data/`. El notebook `17` audita el contrato temporal y el objetivo de la primera fase de feature engineering. El `18` construye y compara historia propia y calendario en memoria para la segunda fase. El `19` construye y audita vecinos y contexto provincial/regional rezagado. El `20` construye ventanas climáticas y compara su aporte en cortes temporales, con climatologías ajustadas antes de cada prueba. El `21` compara rasgos fijos de 2017 y anuales reconstruidos, con CP1 ajustado por fold. El `22` genera y valida gold por horizonte. El `23` audita los archivos persistidos, sintetiza variables y entrega el contrato de modelado. El `24` orquesta el primer XGBoost de conteos y alerta; el `25` compara bloques espaciales, el `26` compara clima con anomalías ajustadas por fold, el `27` compara demografía fija y anual reconstruida, el `28` criba las 15 fracciones individualmente, el `29` contrasta población censal fija y fracción sin seguro de 2017, solas y juntas, y el `30` evalúa matrices compactas con calibración progresiva. El plan y los criterios de cierre del FE están en `docs/feature_engineering/plan.md`.
+Los notebooks `10`–`16` son el EDA (Hito 2, Data Understanding) y **leen** `silver/integrado/`; no escriben en `data/`. El notebook `17` audita el contrato temporal y el objetivo de la primera fase de feature engineering. El `18` construye y compara historia propia y calendario en memoria para la segunda fase. El `19` construye y audita vecinos y contexto provincial/regional rezagado. El `20` construye ventanas climáticas y compara su aporte en cortes temporales, con climatologías ajustadas antes de cada prueba. El `21` compara rasgos fijos de 2017 y anuales reconstruidos, con CP1 ajustado por fold. El `22` genera y valida gold por horizonte. El `23` audita los archivos persistidos, sintetiza variables y entrega el contrato de modelado. El `24` orquesta el primer XGBoost de conteos y alerta; el `25` compara bloques espaciales, el `26` compara clima con anomalías ajustadas por fold, el `27` compara demografía fija y anual reconstruida, el `28` criba las 15 fracciones individualmente, el `29` contrasta población censal fija y fracción sin seguro de 2017, solas y juntas, y el `30` evalúa matrices compactas con calibración progresiva. El `31` orquesta el encargo de arquitectura multi-horizonte (`docs/modeling/plan_arquitectura_horizontes.md`), fase por fase. El plan y los criterios de cierre del FE están en `docs/feature_engineering/plan.md`.
 
 **Va acá:** cualquier notebook nuevo, con un número que refleje en qué paso del pipeline entra. Si agregas un paso intermedio, usa notación tipo `04b_` en vez de renumerar todo lo que sigue.
 
@@ -332,7 +339,7 @@ módulo.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
 - **`docs/eda/`**: salidas del EDA, también versionadas (texto y figuras chicas): `hallazgos.md` (conclusiones por fase), `informe_eda.md` (síntesis final), `problemas_y_decisiones.md` (problemas de datos y decisiones pendientes, consolidados al cierre del EDA), `figuras/<fase>/` (PNG) y `metricas/<fase>.json` (cifras citadas en los hallazgos).
 - **`docs/feature_engineering/`**: plan de fases, informes, `metricas/<fase>.json` y `figuras/<fase>/` sobre las variables del modelo; se versiona. Su subcarpeta `references/` conserva el PDF de investigación aportado por Rosa para futuras sesiones. La skill local `.codex/skills/feature-engineering-dengue/` y `AGENTS.md` describen el flujo de Codex. Ninguno contiene datos generados del panel.
-- **`docs/modeling/`**: diseño y métricas versionadas de entrenamiento y evaluación temporal; las predicciones por fila quedan en `models/experimentos/`.
+- **`docs/modeling/`**: diseño y métricas versionadas de entrenamiento y evaluación temporal; las predicciones por fila quedan en `models/experimentos/`. Las figuras de modelado van en `docs/modeling/figuras/<encargo>/` (PNG chicos, versionados); el encargo multi-horizonte usa `arquitectura_horizontes.md` (protocolo y resultados), `figuras/arquitectura_horizontes/`, `metricas/arquitectura_horizontes.json` (una sección por fase) y `models/experimentos/arquitectura_horizontes/`.
 
 ---
 
