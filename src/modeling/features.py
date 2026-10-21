@@ -25,11 +25,13 @@ from src.modeling.sociodemografia import (
 from src.modeling.vecinos_jerarquia import construir_vecinos_jerarquia
 from src.processing.socio_interpolacion import SOCIO_COLUMNS
 from src.utils.paths import GOLD, SILVER_EPI_HISTORICO, SILVER_INTEGRADO, UBIGEO_CATALOG
-from src.validation.contrato_pronostico import CLAVE, auditar_origen
+from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
 from src.validation.expectations_integrado import (
     coverage_path, load_case_coverage, validate_complete, validate_geography,
 )
 
+# Gold persistido: solo h=2 y h=4. Otros horizontes de HORIZONTES_EXPERIMENTALES
+# se construyen en memoria con construir_gold y nunca se escriben en data/.
 HORIZONTES = (2, 4)
 FECHA_SOCIO_2017 = "2019-01-01"  # barrera conservadora, no fecha verificada del Excel
 BASE = ["provincia", "distrito", "distrito_key", *CLAVE, "semana_inicio", "casos_Dengue"]
@@ -37,8 +39,8 @@ BASE = ["provincia", "distrito", "distrito_key", *CLAVE, "semana_inicio", "casos
 
 def columnas_gold(horizonte: int, *, con_brote: bool = False) -> list[str]:
     """Contrato de columnas candidatas y metadatos para un horizonte."""
-    if horizonte not in HORIZONTES:
-        raise ValueError("El horizonte debe ser 2 o 4 semanas")
+    if horizonte not in HORIZONTES_EXPERIMENTALES:
+        raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     columnas = [
         *BASE, "origen_inicio", "origen_cierre",
         f"casos_lag_{horizonte}", f"casos_lag_{horizonte + 1}",
@@ -99,8 +101,8 @@ def construir_gold(
     fracciones anuales del silver son una reconstrucción retrospectiva que
     incorpora el extremo de 2025; su uso debe evaluarse por separado.
     """
-    if horizonte not in HORIZONTES:
-        raise ValueError("El horizonte debe ser 2 o 4 semanas")
+    if horizonte not in HORIZONTES_EXPERIMENTALES:
+        raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     faltan = set(BASE) - set(panel)
     if faltan:
         raise ValueError(f"Faltan columnas del integrado: {sorted(faltan)}")
@@ -138,7 +140,7 @@ def validar_gold(
     con_brote: bool = False, minimo_casos_brote: int = 1,
 ) -> dict[str, int]:
     """Comprueba llaves, etiqueta, origen, nulos de arranque y finitud."""
-    if horizonte not in HORIZONTES:
+    if horizonte not in HORIZONTES_EXPERIMENTALES:
         raise ValueError("Horizonte inválido")
     if len(gold) != len(silver) or gold.duplicated(CLAVE).any() or silver.duplicated(CLAVE).any():
         raise ValueError("Gold debe conservar las llaves únicas y el número de filas de silver")
@@ -204,6 +206,20 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def construir_etiquetas(
+    panel: pd.DataFrame, brote: ConfiguracionBroteEstacional,
+    historia_path: Path = SILVER_EPI_HISTORICO,
+) -> pd.DataFrame:
+    """Etiqueta brote con la historia previa al panel, igual que ``generar_gold``."""
+    historia = pd.read_csv(Path(historia_path), dtype={"ubigeo": "string"})
+    primero = int(panel.anio.min())
+    historia = historia.loc[historia.anio.between(primero - brote.anios_previos, primero - 1)]
+    return etiquetar_brote_estacional(
+        panel, historia, multiplicador=brote.multiplicador,
+        anios_previos=brote.anios_previos, minimo_casos=brote.minimo_casos,
+    )
+
+
 def generar_gold(
     input_path: Path = SILVER_INTEGRADO, output_dir: Path = GOLD,
     catalog_path: Path = UBIGEO_CATALOG,
@@ -221,13 +237,7 @@ def generar_gold(
     etiquetas = None
     if brote is not None:
         historia_path = Path(historia_path)
-        historia = pd.read_csv(historia_path, dtype={"ubigeo": "string"})
-        primero = int(panel.anio.min())
-        historia = historia.loc[historia.anio.between(primero - brote.anios_previos, primero - 1)]
-        etiquetas = etiquetar_brote_estacional(
-            panel, historia, multiplicador=brote.multiplicador,
-            anios_previos=brote.anios_previos, minimo_casos=brote.minimo_casos,
-        )
+        etiquetas = construir_etiquetas(panel, brote, historia_path)
     salidas = {h: construir_gold(panel, h, etiquetas,
                                 minimo_casos_brote=brote.minimo_casos if brote else 1)
                for h in HORIZONTES}

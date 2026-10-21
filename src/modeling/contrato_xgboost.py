@@ -12,6 +12,7 @@ import pandas as pd
 
 from src.eda.carga import cargar_integrado
 from src.modeling.features import HORIZONTES, columnas_gold, validar_gold
+from src.validation.contrato_pronostico import HORIZONTES_EXPERIMENTALES
 from src.modeling.sociodemografia import DIRECTAS
 from src.processing.socio_interpolacion import SOCIO_COLUMNS
 from src.utils.paths import (
@@ -31,13 +32,13 @@ NO_PREDICTORAS = (
 
 
 def familias_predictoras(horizonte: int) -> dict[str, list[str]]:
-    """Devuelve candidatos de gold por familia para `h=2` o `h=4`.
+    """Devuelve candidatos por familia para un horizonte de 1 a 6 semanas.
 
     Las familias opcionales se ensayan mediante ablaciones; devolverlas aquí
     no implica entrenar todas juntas ni validar su disponibilidad operativa.
     """
-    if horizonte not in HORIZONTES:
-        raise ValueError("El horizonte debe ser 2 o 4 semanas")
+    if horizonte not in HORIZONTES_EXPERIMENTALES:
+        raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     h = horizonte
     return {
         "historia": [f"casos_lag_{h}", f"casos_lag_{h + 1}",

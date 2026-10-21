@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from src.eda.espacial import distancias_km, pesos_inverso_distancia, pesos_knn
-from src.validation.contrato_pronostico import CLAVE, auditar_origen
+from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
 
 
 def catalogo_geografico(panel: pd.DataFrame) -> pd.DataFrame:
@@ -83,8 +83,8 @@ def construir_vecinos_jerarquia(
     Se exige un panel completo en todas las fechas para evitar promedios
     espaciales calculados silenciosamente con distritos ausentes.
     """
-    if horizonte not in (2, 4):
-        raise ValueError("El proyecto contempla horizontes de 2 o 4 semanas")
+    if horizonte not in HORIZONTES_EXPERIMENTALES:
+        raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     if "casos_Dengue" not in panel:
         raise ValueError("Falta casos_Dengue")
     audit = auditar_origen(panel, horizonte)

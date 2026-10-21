@@ -3,6 +3,9 @@
 import pandas as pd
 
 CLAVE = ["ubigeo", "anio", "semana"]
+# Horizontes admitidos para construir matrices en memoria. Gold persistido
+# sigue limitado a features.HORIZONTES (2 y 4) hasta que el equipo decida.
+HORIZONTES_EXPERIMENTALES = (1, 2, 3, 4, 5, 6)
 
 
 def auditar_origen(panel: pd.DataFrame, horizonte: int = 4) -> pd.DataFrame:

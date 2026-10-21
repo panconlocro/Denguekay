@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from src.validation.contrato_pronostico import CLAVE, auditar_origen
+from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
 from src.processing.socio_interpolacion import SOCIO_COLUMNS
 
 
@@ -103,8 +103,8 @@ def construir_sociodemografia(
     que los orígenes de prueba sí son posteriores a la disponibilidad.
     CP1 debe provenir de un ajuste del fold de entrenamiento.
     """
-    if horizonte not in (2, 4):
-        raise ValueError("Use horizonte de 2 o 4 semanas")
+    if horizonte not in HORIZONTES_EXPERIMENTALES:
+        raise ValueError("Use horizonte de 1 a 6 semanas")
     disponible = pd.Timestamp(fecha_disponible)
     if pd.isna(disponible):
         raise ValueError("fecha_disponible inválida")

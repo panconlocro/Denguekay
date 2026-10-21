@@ -45,7 +45,7 @@ class ContratoXGBoostTests(unittest.TestCase):
 
     def test_horizonte_invalido(self):
         with self.assertRaisesRegex(ValueError, "horizonte"):
-            familias_predictoras(3)
+            familias_predictoras(7)
 
     def test_ablacion_compara_mismo_corte_y_referencia(self):
         base = {"horizonte": 4, "temporada": 2024, "modelo": "historia_calendario",

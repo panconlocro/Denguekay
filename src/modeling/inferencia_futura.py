@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from src.modeling.features import FECHA_SOCIO_2017
+from src.modeling.features import FECHA_SOCIO_2017, HORIZONTES
 from src.modeling.historia_calendario import construir_historia_calendario
 from src.modeling.sociodemografia import referencia_2017, construir_sociodemografia
 from src.modeling.validacion_temporal_compacta import variantes_compactas
@@ -19,6 +19,10 @@ def construir_filas_futuras(panel, horizonte, *, columnas=None, fecha_corte=None
     el panel al cierre solicitado ANTES de construir variables o referencia.
     Devuelve (filas completas, razones de filas no disponibles).
     """
+    # La operación solo sirve los horizontes con gold persistido (h=2 y h=4);
+    # los demás existen solo en memoria para experimentar.
+    if horizonte not in HORIZONTES:
+        raise ValueError("La inferencia futura solo admite los horizontes con gold persistido")
     variantes = variantes_compactas(horizonte)
     columnas = columnas or variantes["base_6_poblacion_2017"]
     permitidas = set(variantes["base_6_poblacion_2017"])

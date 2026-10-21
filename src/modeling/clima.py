@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from src.validation.contrato_pronostico import CLAVE, auditar_origen
+from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
 
 
 CLIMA_PRINCIPAL = ("hum_rel_media", "precip_total_mm")
@@ -87,8 +87,8 @@ def construir_clima(
     filas por distrito permanecen sin historia. No se crean salidas para la
     precipitación duplicada ``lluvia_total_mm``.
     """
-    if horizonte not in (2, 4) or ventana < 2:
-        raise ValueError("Use horizonte 2 o 4 y ventana de al menos 2 semanas")
+    if horizonte not in HORIZONTES_EXPERIMENTALES or ventana < 2:
+        raise ValueError("Use horizonte de 1 a 6 y ventana de al menos 2 semanas")
     datos = _validar_clima(panel, climatologia.variables)
     tabla = climatologia.tabla
     esperadas = {"ubigeo", "semana_clima", *climatologia.variables}
@@ -123,8 +123,8 @@ def construir_clima_observado(
     anomalías siguen construyéndose con ``ajustar_climatologia`` y
     ``construir_clima`` dentro de cada corte de entrenamiento.
     """
-    if horizonte not in (2, 4) or ventana < 2 or not variables or len(set(variables)) != len(variables):
-        raise ValueError("Use horizonte 2 o 4, ventana >= 2 y variables distintas")
+    if horizonte not in HORIZONTES_EXPERIMENTALES or ventana < 2 or not variables or len(set(variables)) != len(variables):
+        raise ValueError("Use horizonte de 1 a 6, ventana >= 2 y variables distintas")
     datos = _validar_clima(panel, variables)
     salida = datos[CLAVE + ["semana_inicio"]].copy()
     for variable in variables:

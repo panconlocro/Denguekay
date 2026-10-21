@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from src.validation.contrato_pronostico import CLAVE, auditar_origen
+from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
 
 
 def construir_historia_calendario(
@@ -22,8 +22,8 @@ def construir_historia_calendario(
     conserva NaN en las ventanas incompletas, sin imputar ceros. El valor
     por defecto mantiene el contrato estricto del gold y del entrenamiento.
     """
-    if horizonte not in (2, 4):
-        raise ValueError("El proyecto contempla horizontes de 2 o 4 semanas")
+    if horizonte not in HORIZONTES_EXPERIMENTALES:
+        raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     if ventana < 2:
         raise ValueError("La ventana debe cubrir al menos dos semanas")
     if "casos_Dengue" not in panel:
