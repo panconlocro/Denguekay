@@ -149,6 +149,30 @@ class RegistroTests(unittest.TestCase):
             self.assertEqual(variante["tags.seleccionada_en_validacion"], "regresion")
             self.assertTrue((tmp / "mlartifacts").exists())
 
+    def test_no_duplica_un_run_con_la_misma_huella(self):
+        import mlflow
+
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            uri = f"sqlite:///{(tmp / 'mlflow.db').as_posix()}"
+            metricas = tmp / "reporte.json"
+            metricas.write_text("{}", encoding="utf-8")
+            anterior = os.environ.pop("MLFLOW_TRACKING_URI", None)
+            try:
+                kw = dict(metricas_path=metricas, salida_dir=tmp / "no_existe", tracking_uri=uri)
+                primero = registrar_reporte("prueba", reporte_sintetico(), huella="h1", **kw)
+                repetido = registrar_reporte("prueba", reporte_sintetico(), huella="h1", **kw)
+                otro = registrar_reporte("prueba", reporte_sintetico(), huella="h2", **kw)
+                runs = mlflow.search_runs(experiment_names=["denguekay/prueba"])
+            finally:
+                if anterior is not None:
+                    os.environ["MLFLOW_TRACKING_URI"] = anterior
+                cerrar_motores_mlflow(tmp)
+            padres = runs[runs["tags.mlflow.parentRunId"].isna()]
+            self.assertEqual(primero, repetido)
+            self.assertNotEqual(primero, otro)
+            self.assertEqual(sorted(padres["tags.huella_cache"]), ["h1", "h2"])
+
 
 if __name__ == "__main__":
     unittest.main()

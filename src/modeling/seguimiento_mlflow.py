@@ -46,6 +46,7 @@ SECCIONES = {"regresion": "reg", "clasificacion": "cls", "persistencia": "pers"}
 TIPOS_VALIDACION = {"validacion", "seleccion"}
 CLAVES_FOLD = {"horizonte", "variante", "bloque", "regresion", "clasificacion"}
 LARGO_MAXIMO_PARAM = 6000
+ETIQUETA_HUELLA = "huella_cache"
 
 
 # ---------------------------------------------------------------------------
@@ -270,21 +271,46 @@ def _modelos_del_fold(salida_dir: Path, horizonte, variante: str, bloque: str) -
 # Registro
 # ---------------------------------------------------------------------------
 
+def run_con_huella(experiment_id: str, huella: str) -> str | None:
+    """Id del run padre ya registrado con esa huella de caché (``None`` si no hay)."""
+    import mlflow
+
+    runs = mlflow.search_runs(
+        experiment_ids=[experiment_id], output_format="list",
+        filter_string=f"tags.{ETIQUETA_HUELLA} = '{huella}'")
+    padres = [r for r in runs if "mlflow.parentRunId" not in r.data.tags and r.data.tags.get("duplicada") != "true"]
+    return min(padres, key=lambda r: r.info.start_time).info.run_id if padres else None
+
+
 def registrar_reporte(
     experimento: str, reporte: dict, *, metricas_path: Path, salida_dir: Path,
     gold_dir: Path | None = None, calidad_datos: dict | None = None,
     descripcion: str | None = None, tracking_uri: str | None = None,
-    registrar_datasets: bool = True,
+    registrar_datasets: bool = True, huella: str | None = None,
 ) -> str:
-    """Registra un reporte ya calculado en MLflow y devuelve el id del run padre."""
+    """Registra un reporte ya calculado en MLflow y devuelve el id del run padre.
+
+    Con ``huella`` (la de ``cache_experimentos``), si el experimento ya tiene un
+    run padre con esa huella no se registra otro: se devuelve el existente.
+    Así, volver a ejecutar un notebook sin cambios de datos ni código no
+    duplica corridas.
+    """
     import mlflow
 
     metricas_path, salida_dir = Path(metricas_path), Path(salida_dir)
     nombre_experimento = f"{PREFIJO_EXPERIMENTO}/{experimento}"
     experiment_id = configurar_experimento(nombre_experimento, tracking_uri)
+    if huella is not None:
+        existente = run_con_huella(experiment_id, huella)
+        if existente is not None:
+            print(f"MLflow: ya existe el run {existente} con huella {huella[:12]} en '{nombre_experimento}'; "
+                  "no se registra otro")
+            return existente
 
     params_padre = {}
     etiquetas_padre = {"experimento": experimento, **etiquetas_entorno()}
+    if huella is not None:
+        etiquetas_padre[ETIQUETA_HUELLA] = huella
     for clave, valor in reporte.items():
         if clave in {"horizontes", "parametros"}:
             continue
