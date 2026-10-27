@@ -38,6 +38,19 @@ class TestComparacion(unittest.TestCase):
         self.assertEqual(set(cruce.loc[~cruce.coincide, "metrica"]), {"brier"})
 
 
+class TestHuellaPredicciones(unittest.TestCase):
+    def test_no_depende_del_orden_y_si_de_los_valores(self):
+        pred = pd.DataFrame({"ubigeo": ["200101", "200102", "200101"], "anio": [2022] * 3, "semana": [1, 1, 2],
+                             "horizonte": [2, 2, 2], "bloque": ["temporada_2022"] * 3, "semilla": [17] * 3,
+                             "casos_predichos": [1.5, 0.25, 3.0],
+                             "semana_inicio": pd.to_datetime(["2022-01-02", "2022-01-02", "2022-01-09"])})
+        base = fh.huella_predicciones(pred)
+        self.assertEqual(base, fh.huella_predicciones(pred.iloc[::-1][list(reversed(pred.columns))]))
+        otra = pred.copy()
+        otra.loc[1, "casos_predichos"] += 1e-9
+        self.assertNotEqual(base, fh.huella_predicciones(otra))
+
+
 class TestAntecedentes(unittest.TestCase):
     def test_delta_y_elegida(self):
         def fold(bloque, f1_reg, f1_cls):

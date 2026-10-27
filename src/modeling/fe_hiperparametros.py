@@ -14,6 +14,7 @@ Las variables nuevas van en su propio módulo (fase 2b) y la búsqueda de
 hiperparámetros en ``hiperparametros.py`` (fase 3). Nada se escribe en ``data/``.
 """
 
+import hashlib
 import json
 import time
 
@@ -232,6 +233,25 @@ def medir_ajuste(matrices: dict[int, pd.DataFrame], serie: pd.DataFrame, semilla
 # ---------------------------------------------------------------------------
 # MLflow (forma estándar horizontes → variantes → folds)
 # ---------------------------------------------------------------------------
+
+def huella_predicciones(predicciones: pd.DataFrame) -> str:
+    """Huella de un registro: SHA-256 de las predicciones y de la versión del protocolo.
+
+    Las filas se ordenan por llave, horizonte, bloque y semilla, y las columnas
+    por nombre, así que el orden de concatenación no la cambia. La versión del
+    protocolo es el hash de ``protocolo_arquitectura.py``. No depende del resto
+    de ``src/modeling/``: volver a correr un notebook con predicciones
+    idénticas no registra otra corrida.
+    """
+    from pathlib import Path
+
+    claves = [c for c in ("ubigeo", "anio", "semana", "horizonte", "bloque", "semilla") if c in predicciones]
+    canonica = predicciones.sort_values(claves).reset_index(drop=True)
+    canonica = canonica[sorted(canonica.columns)]
+    total = hashlib.sha256(canonica.to_csv(index=False, date_format="%Y-%m-%d").encode("utf-8"))
+    total.update(hashlib.sha256(Path(pa.__file__).read_bytes()).digest())
+    return total.hexdigest()
+
 
 def reporte_mlflow(experimento: str, medianas: dict[str, pd.DataFrame],
                    semillas: tuple[int, ...] = pa.SEMILLAS, hiperparametros: dict | None = None) -> dict:
