@@ -2,7 +2,7 @@
 
 > Generado por `python -m src.modeling.diccionario_variables`; no editar a mano.
 
-Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_tree, t+2/t+3/t+4 desde el origen o = t − 2) · S4_s3 · α dentro_muestra. El origen es `o = t − 2` (fila h=2); las tres salidas (t+2, t+3, t+4) usan las mismas variables.
+Configuración: C3 + A3 = base_6 + B3 + clima de gold (humedad y precipitación, media de 5 semanas hasta o) · E3 (un regresor multi-salida, multi_output_tree, t+2/t+3/t+4 desde el origen o = t − 2) · S4_s3 · α dentro_muestra. El origen es `o = t − 2` (fila h=2); las tres salidas (t+2, t+3, t+4) usan las mismas variables.
 
 ## `hist_lag_a`
 
@@ -17,7 +17,7 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 - **Por qué está:** persistencia: el mejor predictor simple del encargo de arquitectura (base_6)
 - **Evidencia:** base_6, referencia B (fase 0)
 - **Test de no fuga:** tests/test_historia_calendario.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte
-- **Rango observado (orígenes 2017-01-28 a 2025-12-13, 30160 filas):** 0 a 2084, mediana 0; 0 nulos
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 2084, mediana 0; 0 nulos
 
 ## `hist_lag_b`
 
@@ -32,7 +32,7 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 - **Por qué está:** tendencia inmediata junto con hist_lag_a
 - **Evidencia:** base_6, referencia B (fase 0)
 - **Test de no fuga:** tests/test_historia_calendario.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte
-- **Rango observado (orígenes 2017-01-28 a 2025-12-13, 30160 filas):** 0 a 2084, mediana 0; 0 nulos
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 2084, mediana 0; 0 nulos
 
 ## `hist_media_4`
 
@@ -47,7 +47,7 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 - **Por qué está:** nivel reciente menos ruidoso que un rezago
 - **Evidencia:** base_6, referencia B (fase 0)
 - **Test de no fuga:** tests/test_historia_calendario.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen
-- **Rango observado (orígenes 2017-01-28 a 2025-12-13, 30160 filas):** 0 a 1772, mediana 0; 0 nulos
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 1772, mediana 0; 0 nulos
 
 ## `hist_semanas_pos_4`
 
@@ -62,7 +62,7 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 - **Por qué está:** persistencia de la transmisión
 - **Evidencia:** base_6, referencia B (fase 0)
 - **Test de no fuga:** tests/test_historia_calendario.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen
-- **Rango observado (orígenes 2017-01-28 a 2025-12-13, 30160 filas):** 0 a 4, mediana 0; 0 nulos
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 4, mediana 0; 0 nulos
 
 ## `semana_epi_seno`
 
@@ -77,7 +77,7 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 - **Por qué está:** estacionalidad sin inventar un corte de temporada
 - **Evidencia:** base_6, referencia B (fase 0)
 - **Test de no fuga:** tests/test_historia_calendario.py · test_calendario_conocido_y_semana_53
-- **Rango observado (orígenes 2017-01-28 a 2025-12-13, 30160 filas):** -1 a 1, mediana 0; 0 nulos
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** -1 a 1, mediana 0; 0 nulos
 
 ## `semana_epi_coseno`
 
@@ -92,7 +92,7 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 - **Por qué está:** pareja del seno: ubica la semana en el círculo
 - **Evidencia:** base_6, referencia B (fase 0)
 - **Test de no fuga:** tests/test_historia_calendario.py · test_calendario_conocido_y_semana_53
-- **Rango observado (orígenes 2017-01-28 a 2025-12-13, 30160 filas):** -1 a 1, mediana 0; 0 nulos
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** -1 a 1, mediana 0; 0 nulos
 
 ## `propia_semanas_desde_ultimo_caso`
 
@@ -107,7 +107,7 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 - **Por qué está:** cuánto lleva el distrito sin transmisión antes de un inicio
 - **Evidencia:** B3: gana a B en h2 y h3 (fase 2b); C3 elegida (fase 2c); 3.ª por SHAP
 - **Test de no fuga:** tests/test_features_inicio.py · test_no_fuga_por_perturbacion y test_no_fuga_por_perturbacion_en_origenes
-- **Rango observado (orígenes 2017-01-28 a 2025-12-13, 30160 filas):** 0 a 52, mediana 21; 0 nulos
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 52, mediana 21; 0 nulos
 
 ## `propia_pendiente_4`
 
@@ -122,7 +122,7 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 - **Por qué está:** dirección del cambio reciente (a priori; no observada en la fase 1)
 - **Evidencia:** B3 (fase 2b), C3 (fase 2c)
 - **Test de no fuga:** tests/test_features_inicio.py · test_no_fuga_por_perturbacion
-- **Rango observado (orígenes 2017-01-28 a 2025-12-13, 30160 filas):** -1,171 a 1,346, mediana 0; 0 nulos
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** -1,171 a 1,346, mediana 0; 0 nulos
 
 ## `propia_log_casos_temporada_anterior`
 
@@ -137,7 +137,37 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 - **Por qué está:** nivel previo del distrito (memoria de una temporada)
 - **Evidencia:** B3 (fase 2b), C3 (fase 2c)
 - **Test de no fuga:** tests/test_features_inicio.py · test_temporada_2017_usa_la_historia y test_no_fuga_por_perturbacion
-- **Rango observado (orígenes 2017-01-28 a 2025-12-13, 30160 filas):** 0 a 9,47, mediana 1,386; 0 nulos
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 9,47, mediana 1,386; 0 nulos
+
+## `hum_rel_media_media5_h2`
+
+- **Etiqueta:** media de la humedad relativa media semanal (%) de las semanas o − 4 a o
+- **Columna en gold h=2:** `no está en gold (propuesta)`
+- **Fuente:** meteorológica (Open-Meteo, archive API; diario agregado a semana MMWR; silver integrado)
+- **Definición:** media de la humedad relativa media semanal (%) de las semanas o − 4 a o
+- **Ventana:** semanas o − 4..o (5 semanas observadas hasta el origen)
+- **Transformación:** media móvil de 5 semanas, sin climatología ni anomalía
+- **Tipo:** real 0–100 (%)
+- **Nulos:** en gold, las 6 primeras semanas de cada distrito; en la tabla de orígenes, la primera semana de 2017 (65 filas), que la configuración excluye
+- **Por qué está:** clima reciente; bajó las razones MAE y RMSE del conteo
+- **Evidencia:** A3 (fase 2a, lectura de conteo); complemento de clima: F+A3 mejora el conteo en h2, h3 y h4
+- **Test de no fuga:** tests/test_clima_features.py · test_ventana_h4_y_h2_acaba_en_origen y test_cambio_posterior_al_origen_no_altera_feature
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 47,14 a 95,17, mediana 71; 0 nulos
+
+## `precip_total_mm_media5_h2`
+
+- **Etiqueta:** media de la precipitación total semanal (mm) de las semanas o − 4 a o
+- **Columna en gold h=2:** `no está en gold (propuesta)`
+- **Fuente:** meteorológica (Open-Meteo, archive API; diario agregado a semana MMWR; silver integrado)
+- **Definición:** media de la precipitación total semanal (mm) de las semanas o − 4 a o
+- **Ventana:** semanas o − 4..o (5 semanas observadas hasta el origen)
+- **Transformación:** media móvil de 5 semanas, sin climatología ni anomalía
+- **Tipo:** real ≥ 0 (mm por semana)
+- **Nulos:** en gold, las 6 primeras semanas de cada distrito; en la tabla de orígenes, la primera semana de 2017 (65 filas), que la configuración excluye
+- **Por qué está:** clima reciente; bajó las razones MAE y RMSE del conteo
+- **Evidencia:** A3 (fase 2a, lectura de conteo); complemento de clima: F+A3 mejora el conteo en h2, h3 y h4
+- **Test de no fuga:** tests/test_clima_features.py · test_ventana_h4_y_h2_acaba_en_origen y test_cambio_posterior_al_origen_no_altera_feature
+- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 480,8, mediana 3,08; 0 nulos
 
 ## Insumo de inferencia: margen de persistencia
 
@@ -190,6 +220,26 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 | `hist_semanas_pos_4` | 2024 | 0 | 2 | 4 | 0 |
 | `hist_semanas_pos_4` | 2025 | 0 | 0 | 4 | 0 |
 | `hist_semanas_pos_4` | 2026 | 0 | 0 | 4 | 0 |
+| `hum_rel_media_media5_h2` | 2017 | 52,97 | 79,84 | 94,2 | 0 |
+| `hum_rel_media_media5_h2` | 2018 | 54 | 71,86 | 93,6 | 0 |
+| `hum_rel_media_media5_h2` | 2019 | 53,37 | 71,93 | 94,89 | 0 |
+| `hum_rel_media_media5_h2` | 2020 | 53,31 | 69,09 | 93,49 | 0 |
+| `hum_rel_media_media5_h2` | 2021 | 53,14 | 69,09 | 93,23 | 0 |
+| `hum_rel_media_media5_h2` | 2022 | 54 | 69,94 | 94,17 | 0 |
+| `hum_rel_media_media5_h2` | 2023 | 50,23 | 72,23 | 93,57 | 0 |
+| `hum_rel_media_media5_h2` | 2024 | 50,4 | 70,6 | 93,77 | 0 |
+| `hum_rel_media_media5_h2` | 2025 | 47,14 | 70,26 | 95,17 | 0 |
+| `hum_rel_media_media5_h2` | 2026 | 53,66 | 70,67 | 90,8 | 0 |
+| `precip_total_mm_media5_h2` | 2017 | 0 | 31,15 | 480,8 | 0 |
+| `precip_total_mm_media5_h2` | 2018 | 0 | 2,98 | 136,2 | 0 |
+| `precip_total_mm_media5_h2` | 2019 | 0 | 3,62 | 291,1 | 0 |
+| `precip_total_mm_media5_h2` | 2020 | 0 | 2,54 | 140,3 | 0 |
+| `precip_total_mm_media5_h2` | 2021 | 0 | 2,34 | 151,8 | 0 |
+| `precip_total_mm_media5_h2` | 2022 | 0 | 2,5 | 160,7 | 0 |
+| `precip_total_mm_media5_h2` | 2023 | 0 | 2,9 | 327 | 0 |
+| `precip_total_mm_media5_h2` | 2024 | 0 | 3,78 | 198 | 0 |
+| `precip_total_mm_media5_h2` | 2025 | 0 | 3,3 | 207,8 | 0 |
+| `precip_total_mm_media5_h2` | 2026 | 0 | 1,75 | 64,62 | 0 |
 | `propia_log_casos_temporada_anterior` | 2017 | 0 | 3,135 | 7,084 | 0 |
 | `propia_log_casos_temporada_anterior` | 2018 | 0 | 3,332 | 9,47 | 0 |
 | `propia_log_casos_temporada_anterior` | 2019 | 0 | 0,6931 | 9,47 | 0 |
@@ -220,7 +270,7 @@ Configuración: C3 = base_6 + B3 · E3 (un regresor multi-salida, multi_output_t
 | `propia_semanas_desde_ultimo_caso` | 2024 | 0 | 0 | 52 | 0 |
 | `propia_semanas_desde_ultimo_caso` | 2025 | 0 | 10 | 52 | 0 |
 | `propia_semanas_desde_ultimo_caso` | 2026 | 0 | 26 | 52 | 0 |
-| `semana_epi_coseno` | 2017 | -1 | -0,6631 | 0,823 | 0 |
+| `semana_epi_coseno` | 2017 | -1 | -0,6631 | 0,7485 | 0 |
 | `semana_epi_coseno` | 2018 | -1 | 0 | 1 | 0 |
 | `semana_epi_coseno` | 2019 | -1 | 0 | 1 | 0 |
 | `semana_epi_coseno` | 2020 | -1 | 0 | 1 | 0 |

@@ -13,14 +13,23 @@ from src.modeling import salida_probabilistica as sp
 from src.utils.paths import EXPERIMENTOS_FE_HIPERPARAMETROS, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
 
 GUARDADAS = EXPERIMENTOS_FE_HIPERPARAMETROS / "fase4" / "predicciones_s4s3_dentro_muestra.csv.gz"
+GUARDADAS_V2 = EXPERIMENTOS_FE_HIPERPARAMETROS / "complemento_clima" / "predicciones_F_A3.csv.gz"
 HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
 
 
 class TestConfiguracion(unittest.TestCase):
     def test_constante_coherente(self):
-        c = cf.CONFIGURACION_2026
-        self.assertEqual(len(c["columnas"]), 9)
+        v1, c = cf.CONFIGURACION_2026_V1, cf.CONFIGURACION_2026
+        self.assertEqual(len(v1["columnas"]), 9)
+        self.assertEqual(c["columnas"], [*v1["columnas"], *cf.COLUMNAS_A3])
+        self.assertEqual({k: v for k, v in c.items() if k not in ("columnas", "matriz", "version", "decisiones",
+                                                                  "fecha_congelamiento", "filas_excluidas")},
+                         {k: v for k, v in v1.items() if k not in ("columnas", "matriz", "decisiones",
+                                                                   "fecha_congelamiento")})
         self.assertEqual(c["columnas"][:6], eh.GENERICAS)
+        self.assertEqual(cf.HISTORIAL["V2"]["estado"], "vigente")
+        # La huella de la V1 no cambia al agregar la V2.
+        self.assertEqual(cf.huella(v1), "88ed2a43b0171a0878b99122b70109be61b27d5d4d29a2b93eae55066fd8f945")
         self.assertIn(c["formulacion"], sp.FORMULACIONES)
         self.assertIn(c["dispersion"], sp.DISPERSIONES)
         self.assertEqual(c["hiperparametros"], hp.BASE)
@@ -38,6 +47,8 @@ class TestConfiguracion(unittest.TestCase):
 
 class TestDiccionario(unittest.TestCase):
     def test_cubre_exactamente_las_columnas_finales(self):
+        self.assertEqual(dv.diccionario(cf.CONFIGURACION_2026_V1["columnas"]).variable.tolist(),
+                         cf.CONFIGURACION_2026_V1["columnas"])
         tabla = dv.diccionario(cf.CONFIGURACION_2026["columnas"])
         self.assertEqual(tabla.variable.tolist(), cf.CONFIGURACION_2026["columnas"])
         campos = ["fuente", "definicion", "ventana", "transformacion", "tipo", "nulos", "por_que", "evidencia",
@@ -56,19 +67,30 @@ class TestDiccionario(unittest.TestCase):
         self.assertIn("margen de persistencia", texto)
 
 
-@unittest.skipUnless(HAY_DATOS and GUARDADAS.exists(), "requiere datos y las predicciones guardadas de la fase 4")
+@unittest.skipUnless(HAY_DATOS and GUARDADAS.exists() and GUARDADAS_V2.exists(),
+                     "requiere datos y las predicciones guardadas de la fase 4 y del complemento")
 class TestReproduccion(unittest.TestCase):
-    def test_reproduce_la_fase_4_con_la_semilla_de_despliegue(self):
+    @classmethod
+    def setUpClass(cls):
         from src.eda.carga import cargar_integrado
         from src.modeling import fe_hiperparametros as fh
 
-        panel = cargar_integrado(SILVER_INTEGRADO)
-        regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        ins = fh.insumos(panel, regla)
-        pred = cf.predecir(ins["matrices"], cf.origenes(panel, ins, regla))
-        guardadas = pd.read_csv(GUARDADAS, dtype={"ubigeo": "string"})
+        cls.panel = cargar_integrado(SILVER_INTEGRADO)
+        cls.regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
+        cls.ins = fh.insumos(cls.panel, cls.regla)
+
+    def _comprobar(self, configuracion, ruta):
+        o = cf.origenes(self.panel, self.ins, self.regla, configuracion=configuracion)
+        pred = cf.predecir(self.ins["matrices"], o, configuracion=configuracion)
+        guardadas = pd.read_csv(ruta, dtype={"ubigeo": "string"})
         r = cf.coincide_con_guardadas(pred, guardadas[guardadas.semilla.eq(cf.SEMILLA_DESPLIEGUE)])
         self.assertTrue(r["coincide"], r)
+
+    def test_v1_reproduce_la_fase_4_con_la_semilla_de_despliegue(self):
+        self._comprobar(cf.CONFIGURACION_2026_V1, GUARDADAS)
+
+    def test_v2_reproduce_el_complemento_con_la_semilla_de_despliegue(self):
+        self._comprobar(cf.CONFIGURACION_2026, GUARDADAS_V2)
 
 
 if __name__ == "__main__":

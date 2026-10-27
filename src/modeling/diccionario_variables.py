@@ -87,6 +87,28 @@ DEFINICIONES = {
         "evidencia": "B3 (fase 2b), C3 (fase 2c)",
         "test_no_fuga": "tests/test_features_inicio.py · test_temporada_2017_usa_la_historia y "
                         "test_no_fuga_por_perturbacion"},
+    "hum_rel_media_media5_h2": {
+        "fuente": "meteorológica (Open-Meteo, archive API; diario agregado a semana MMWR; silver integrado)",
+        "definicion": "media de la humedad relativa media semanal (%) de las semanas o − 4 a o",
+        "ventana": "semanas o − 4..o (5 semanas observadas hasta el origen)",
+        "transformacion": "media móvil de 5 semanas, sin climatología ni anomalía", "tipo": "real 0–100 (%)",
+        "nulos": "en gold, las 6 primeras semanas de cada distrito; en la tabla de orígenes, la primera semana de "
+                 "2017 (65 filas), que la configuración excluye",
+        "por_que": "clima reciente; bajó las razones MAE y RMSE del conteo",
+        "evidencia": "A3 (fase 2a, lectura de conteo); complemento de clima: F+A3 mejora el conteo en h2, h3 y h4",
+        "test_no_fuga": "tests/test_clima_features.py · test_ventana_h4_y_h2_acaba_en_origen y "
+                        "test_cambio_posterior_al_origen_no_altera_feature"},
+    "precip_total_mm_media5_h2": {
+        "fuente": "meteorológica (Open-Meteo, archive API; diario agregado a semana MMWR; silver integrado)",
+        "definicion": "media de la precipitación total semanal (mm) de las semanas o − 4 a o",
+        "ventana": "semanas o − 4..o (5 semanas observadas hasta el origen)",
+        "transformacion": "media móvil de 5 semanas, sin climatología ni anomalía", "tipo": "real ≥ 0 (mm por semana)",
+        "nulos": "en gold, las 6 primeras semanas de cada distrito; en la tabla de orígenes, la primera semana de "
+                 "2017 (65 filas), que la configuración excluye",
+        "por_que": "clima reciente; bajó las razones MAE y RMSE del conteo",
+        "evidencia": "A3 (fase 2a, lectura de conteo); complemento de clima: F+A3 mejora el conteo en h2, h3 y h4",
+        "test_no_fuga": "tests/test_clima_features.py · test_ventana_h4_y_h2_acaba_en_origen y "
+                        "test_cambio_posterior_al_origen_no_altera_feature"},
 }
 
 INSUMO_INFERENCIA = {

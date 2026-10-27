@@ -798,7 +798,10 @@ frente a la persistencia. Mediana de las 5 semillas.
 
 ### Evaluación prospectiva de 2026 (fijada ahora; todavía no se aplica a nada)
 
-- **Test independiente:** las semanas objetivo publicadas por MINSA después del 2026-10-27.
+- **Test independiente:** las semanas objetivo publicadas por MINSA después del congelamiento vigente.
+  - **Actualización (complemento de clima):** la configuración vigente es la V2 (C3 + A3). El test independiente
+    empieza en el commit que la congela (2026-10-27, mismo día que la V1, pero posterior a ella). La V1
+    (`d6bd0be`) queda como histórica.
 - **No son independientes** las semanas 35–53 de 2025: ya están en el panel y se miraron como sensibilidad de
   conteos (`calendario_2025`). Aunque la HU0007-4 hable de «temporada 2025-2026», no cuentan.
 - **Reporte:** cada métrica con su número de positivos (semanas brote o inicios limpios) y un IC bootstrap.
@@ -956,3 +959,162 @@ Fuente de verdad: `src/modeling/complemento_clima.py → PREREGISTRO_COMPLEMENTO
   - si no, se queda F y el congelamiento sigue en 2026-10-27.
 - **No decide:** 2024 (contraste), 2025 (sensibilidad de conteos), la robustez sin las 8 primeras semanas de
   2017, SHAP, la antelación, el recall de brotes nuevos y el conteo por fase de la curva.
+
+### Resultados
+
+Notebook `35_modelado_clima_conteo.ipynb`; cifras en `metricas/fe_hiperparametros.json → complemento_clima`;
+predicciones en `models/experimentos/fe_hiperparametros/complemento_clima/`; figura
+`shap_por_horizonte_F_A3.png`; MLflow `fe_hiperparametros_complemento_clima` (`6afc4549fd214a1497636319b3e6844c`).
+Filas excluidas por A3: 65 orígenes, todos de la semana del 2017-02-05.
+
+**Condición 1, conteo: se cumple en h=2, h=3 y h=4.** Delta de la mediana de la razón (F+A3 − F∩A3) [umbral de
+empate]:
+
+| h | Razón MAE 2022 | Razón MAE 2023 | Razón RMSE 2022 | Razón RMSE 2023 |
+|---|---|---|---|---|
+| 2 | −0,082 [0,016] | −0,066 [0,011] | −0,162 [0,032] | −0,123 [0,020] |
+| 3 | −0,134 [0,029] | −0,064 [0,006] | −0,300 [0,051] | −0,094 [0,011] |
+| 4 | −0,198 [0,026] | −0,057 [0,011] | −0,464 [0,041] | −0,072 [0,013] |
+
+Ninguna razón sube en ningún horizonte.
+
+**Condición 2, la alerta no pierde: se cumple** (empate en h=2, h=3 y h=4). La razón MAE marca un veto a favor
+de F+A3: la guarda mejora más que el rango entre semillas.
+
+**Decisión: se adopta F+A3.** La configuración congelada nueva es la V2 de `configuracion_final.py`
+(`CONFIGURACION_2026`).
+
+#### El costo en la alerta, que la regla no mide
+
+La regla pide que la alerta empeore en las dos temporadas para declarar «pierde». En 2022 empeora y en 2023 no
+se mueve:
+
+- **F1 a 0,50, Δ 2022 / 2023:** h2 +0,007 / +0,006; h3 −0,048 / +0,002; h4 **−0,192** / +0,009. En 2022 · h4 la
+  caída supera el umbral de empate (0,061); en 2023, no.
+- **Recall 2022:** h4 0,376 → **0,202**; h3 0,531 → 0,462.
+- **AUPRC 2022:** −0,006 / −0,008 / −0,009. **Brier 2022:** +0,001 / +0,002 / +0,005. Ninguna supera su rango en
+  las dos temporadas.
+- **Antelación frente a F∩A3** (semilla 17, IC pareado):
+  - h2: +0,021 (IC −0,021 a 0,063);
+  - h3: −0,053 (IC −0,116 a 0,000), con el extremo superior en 0;
+  - h4: −0,032 (IC −0,074 a 0,011).
+  - En 2022 · h4, la mediana de la antelación pasa de 0,053 a 0.
+- **Antelación sobre inicios limpios 2022–2023** (mediana de semillas):
+
+  | h | F∩A3 | F+A3 | F completa |
+  |---|---|---|---|
+  | 2 | 0,116 | 0,147 | 0,137 |
+  | 3 | 0,200 | 0,147 | 0,211 |
+  | 4 | 0,221 | 0,189 | 0,232 |
+
+- **Frente a la persistencia** (semilla 17), F+A3 da h2 +0,021 (IC −0,042 a 0,074), h3 +0,011 (IC −0,053 a
+  0,074) y h4 −0,021 (IC −0,105 a 0,063).
+  - En h4 sigue sin perder (el IC incluye 0), pero la diferencia pasa de positiva a negativa: 2022 −0,263, 2023
+    +0,140.
+  - Parte de lo que la 4.3 ganó en antelación con S4_s3 se devuelve aquí.
+- **Recall de brotes nuevos** (2 primeras semanas), 2022 / 2023: h2 0,061 → 0,102 / 0,116 → 0,151; h3 0,061 →
+  0,041 / 0,163 → 0,128; h4 0,041 → 0 / 0,163 → 0,151.
+
+En resumen: F+A3 estima mucho mejor la magnitud, pero alerta menos en 2022 · h4. La regla preregistrada da más
+peso al conteo y acepta ese costo porque no se repite en 2023.
+
+#### Métricas (mediana de semillas, F∩A3 → F+A3)
+
+| Temporada | h | F1 | Razón MAE | Razón RMSE | MAE (casos) | RMSE (casos) |
+|---|---|---|---|---|---|---|
+| 2022 | 2 | 0,702 → 0,709 | 1,000 → 0,919 | 1,099 → 0,938 | 1,96 → 1,80 | 6,64 → 5,66 |
+| 2022 | 3 | 0,642 → 0,594 | 1,017 → 0,883 | 1,221 → 0,922 | 2,43 → 2,11 | 8,95 → 6,75 |
+| 2022 | 4 | 0,525 → 0,333 | 1,036 → 0,838 | 1,369 → 0,905 | 2,95 → 2,39 | 11,68 → 7,73 |
+| 2023 | 2 | 0,852 → 0,858 | 0,884 → 0,818 | 0,991 → 0,869 | 9,58 → 8,87 | 49,05 → 42,97 |
+| 2023 | 3 | 0,826 → 0,828 | 0,811 → 0,747 | 0,912 → 0,818 | 11,88 → 10,94 | 61,17 → 54,85 |
+| 2023 | 4 | 0,802 → 0,811 | 0,765 → 0,708 | 0,851 → 0,779 | 13,53 → 12,52 | 68,26 → 62,47 |
+| 2024 (contraste) | 2 | 0,796 → 0,803 | 1,343 → 0,937 | 1,691 → 0,945 | 6,66 → 4,64 | 26,65 → 14,90 |
+| 2024 (contraste) | 3 | 0,778 → 0,781 | 1,508 → 0,938 | 1,874 → 0,981 | 9,62 → 5,98 | 38,68 → 20,26 |
+| 2024 (contraste) | 4 | 0,744 → 0,749 | 1,617 → 0,951 | 2,007 → 1,011 | 12,69 → 7,46 | 51,08 → 25,74 |
+
+P, R, AUPRC, Brier y los rangos entre semillas de las tres variantes (F, F∩A3 y F+A3) están en el JSON. F
+completa y F∩A3 difieren muy poco: solo cambian las 65 filas.
+
+#### Conteo por fase de la curva regional (razón MAE, F∩A3 → F+A3)
+
+- **Pico:**
+  - 2022: h2 1,20 → 1,02; h3 1,41 → 1,08; h4 1,60 → 1,08;
+  - 2023: 1,01 → 0,89; 1,02 → 0,91; 1,05 → 0,95;
+  - 2024: 1,80 → 1,05; 1,95 → 1,09; 2,00 → 1,14.
+- **Bajada 2024:** 1,41 → 0,84; 1,81 → 0,86; 2,22 → 0,94.
+- **Subida 2022:** 1,14 → 1,07; 1,14 → 1,06; 1,07 → 1,04.
+- **Valle:** sin cambios relevantes (2023 · h2 sube de 1,03 a 1,05).
+- **Lectura:** el clima ayuda sobre todo en el pico y la bajada, que es donde la configuración final
+  sobreestimaba o subestimaba la magnitud. Es una asociación, no una prueba de efecto del clima.
+
+#### HU0007-4 (F → F+A3)
+
+- **Clasificación:** las mismas 4 celdas (2023 · h2 y 2024 h2/h3/h4).
+- **Regresión:** F+A3 cumple en **2023 · h3** (0,747 / 0,818) y **2023 · h4** (0,708 / 0,779). La frontera
+  2023 · h4 (F: 0,764 / 0,852) queda resuelta a favor.
+  - 2023 · h2 sigue sin cumplir: la razón RMSE es 0,869.
+  - 2022 y 2024 no cumplen.
+- **Contraste 2024:** las razones quedan cerca de 1 (MAE 0,94–0,95; RMSE 0,95–1,01), frente a 1,35–1,62 y
+  1,67–2,01 con F. Ya no son mucho peores que la persistencia, pero tampoco mejores.
+
+#### Robustez (solo lectura), sin las 8 primeras semanas de orígenes de 2017
+
+- Los 12 deltas de las razones siguen siendo negativos, aunque más chicos. Por ejemplo, h4 2022 razón RMSE
+  −0,154 frente a −0,464.
+- La condición 1 se sigue cumpliendo en h2, h3 y h4.
+
+#### SHAP por horizonte de F+A3 (semilla 17)
+
+- En S4_s3 el margen de persistencia es `base_margin`, así que SHAP describe la desviación respecto de la
+  persistencia.
+- La precipitación media de 5 semanas está entre las 3–4 variables con más peso en los tres bloques (0,18–0,35).
+- La humedad pesa menos (0,04–0,16) y crece con h.
+- `propia_semanas_desde_ultimo_caso` sigue primera.
+
+#### Disponibilidad del clima (supuesto y limitación)
+
+- `src/ingestion/fetch_openmeteo.py` descarga clima **diario histórico** de la *archive API* de Open-Meteo, con un
+  rango fijo (`START`/`END` = 2017-01-01 a 2025-12-31).
+- `src/processing/agregacion_semanal.py` lo agrega a semana MMWR (domingo a sábado).
+- El manifest de gold declara el supuesto: «Casos y clima semanal suponen disponibilidad al cierre de su semana;
+  latencia no verificada».
+- A3 usa la semana o, la que cierra en el origen. En producción hace falta el clima diario de esa semana el día
+  en que se emite el pronóstico.
+- **No se verificó** (sin llamadas de red) si la *archive API* ya tiene esos días al cierre de la semana o con
+  cuánto rezago llegan. Es una *hipótesis* que pueda haber unos días de rezago.
+- Si lo hubiera, habría dos opciones, y cualquiera de las dos sería un encargo nuevo con preregistro:
+  - correr la ventana una semana (o − 5..o − 1), lo que cambia la variable;
+  - usar otra fuente para los últimos días, lo que cambia la distribución de los datos.
+- Hoy no existe una ingesta periódica: el rango de descarga es fijo.
+
+### Configuración congelada nueva (V2)
+
+| Pieza | Valor |
+|---|---|
+| Matriz | C3 + A3 = `base_6` + B3 + `hum_rel_media_media5_h2` + `precip_total_mm_media5_h2` (11 columnas; diccionario actualizado) |
+| Filas | Sin los 65 orígenes con nulos de arranque de A3 (primera semana de 2017) |
+| Resto | Igual que la V1: E3 · S4_s3 · α dentro de la muestra · hiperparámetros heredados · Platt · p ≥ 0,50 · semilla 17 |
+| Fecha de congelamiento | 2026-10-27, commit que introduce la V2 en `configuracion_final.py` |
+| Huella (configuración + módulos) | `c36d7a80d1896a203874bf271bd78f1078850e1faa381e2b17e9ba04b07d5569` |
+| Histórica | V1 (`CONFIGURACION_2026_V1`, `d6bd0be`, huella `88ed2a43…`, sin cambios) |
+
+- `tests/test_configuracion_final.py` reproduce con la semilla 17 las predicciones guardadas de las dos versiones.
+- En MLflow, el run del complemento (`6afc4549…`) lleva `configuracion_congelada_2026 = vigente`. El de la fase 4
+  (`cda23d28…`) lleva `reemplazada`.
+
+### Cambios pendientes por la V2 (sin implementar)
+
+- **Gold h=2 y GX:** A3 ya existe en gold h=2 (`hum_rel_media_media5_h2`, `precip_total_mm_media5_h2`) y en sus
+  expectativas GX (humedad entre 0 y 100, entre otras). No cambian. Siguen pendientes las 3 columnas de B3.
+- **`features.py` y notebook 22:** nada nuevo por A3. Lo pendiente es lo de B3.
+- **`config/config.yaml`:** la variante única pasa a ser la V2 (11 columnas). Los horizontes no cambian
+  ([2, 3, 4]).
+- **Artefacto:** la lista de columnas pasa a 11 y la huella a la de la V2. El resto queda igual (booster
+  multi-salida, 3 α, 3 Platt, regla de k, casos del origen para el `base_margin`).
+- **`inferencia.vectores_desde_bd`:** ahora también necesita el **clima de las semanas o − 4..o** de cada
+  distrito. Sin él no hay predicción; no se imputa.
+- **Ingesta meteo:** hace falta una ingesta periódica (hoy el rango es fijo hasta 2025-12-31) y verificar el
+  rezago de la *archive API* (ver la limitación de arriba).
+- **Interfaz y HU0008:** la advertencia sobre el conteo se suaviza. En 2024 las razones quedan cerca de 1, no
+  por debajo; los casos esperados siguen siendo orientativos. Además, hay que advertir que en 2022 la alerta en
+  h4 fue más tardía.
