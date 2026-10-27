@@ -324,8 +324,9 @@ Cada variante se compara contra su B∩ en la misma intersección de filas. Comp
   - Como sube la antelación y el recall en nuevos, **no** recibe la marca de señal de temporada.
   - Límite: «semanas desde el último caso» empieza truncada en las primeras semanas de 2017 (no usa la
     historia previa); afecta solo filas de entrenamiento.
-- **B1 gana en h=2 solo por antelación** (0,137 frente a 0,084; +0,042, IC95 0,011 a 0,084), con más inicios
-  avisados en 2022 y en 2023.
+- **B1 gana en h=2 solo por antelación, no por F1** (0,137 frente a 0,084; +0,042, IC95 0,011 a 0,084), con
+  más inicios avisados en 2022 y en 2023. Su F1 de 2022 cae mucho (en h=4, de 0,463 a 0,275); la regla no lo
+  cuenta como pérdida porque es una sola temporada.
   - El F1 no mejora: sube en 2023 (+0,011 a +0,016) y **baja en 2022** (−0,047 / −0,093 / −0,188 en h=2/3/4).
     Como empeora en una sola temporada, la regla no lo cuenta.
   - La caída de 2022 en h=4 es grande (0,463 → 0,275) y debe pesar en la lectura, aunque no cambie el
@@ -351,3 +352,91 @@ observación: no cambia la regla.
 Entran a la combinada las familias que **ganan** (B1 y B3) o que empatan con mejor antelación o recall en
 brotes nuevos (B2, por el recall en nuevos en h=2). Ninguna familia del bloque A cumple esa condición. La
 variante conjunta candidata sería `base_6`+B1+B2+B3, comparada contra la referencia B en la intersección de filas.
+
+## Fase 2c · Combinación
+
+Preregistrada y commiteada antes de correr: candidatas **C** = `base_6`+B1+B2+B3 y **C3** = `base_6`+B3.
+Comparaciones nuevas: 2 (acumuladas: **16**, todas las previstas).
+
+### Veredictos (regla simétrica, 5 semillas)
+
+| Candidata | Referencia | h=2 | h=3 | h=4 | Resultado |
+|---|---|---|---|---|---|
+| C (`base_6`+B1+B2+B3) | B∩C | **gana** | empate | empate | adoptable |
+| C3 (`base_6`+B3) | B (reutiliza la 2b) | **gana** | **gana** | empate | adoptable |
+| C | C3∩C | empate | empate | empate | empate |
+
+**Decisión según la regla preregistrada:** ambas ganan a B y C empata con C3, así que **se elige C3**, que tiene
+menos columnas (9 frente a 21).
+
+**Matriz elegida:** `base_6` + B3 = `hist_lag_a`, `hist_lag_b`, `hist_media_4`, `hist_semanas_pos_4`,
+`semana_epi_seno`, `semana_epi_coseno`, `propia_semanas_desde_ultimo_caso`, `propia_pendiente_4` y
+`propia_log_casos_temporada_anterior`.
+
+Observaciones sobre C, que no cambian la decisión:
+- Mejora el F1 de 2023 en los 3 horizontes (+0,018 a +0,033), pero en 2022 lo derrumba en h=4 (0,463 → 0,063)
+  y lo baja en h=3. Es la misma caída que mostraron B1 y B5 en la celda frágil 2022·h=4.
+- Frente a C3 empata en todo: B1 y B2 no agregan nada sobre B3 según la regla.
+
+### Robustez de C3 frente a B (solo lectura; no cambia la decisión)
+
+Se quitaron del entrenamiento de ambas, una a la vez, las primeras 8 semanas de orígenes de 2017 (520 filas) y
+la temporada 2018 (3380 filas). Diferencias C3 − B (medianas de 5 semillas):
+
+| Recorte | h | ΔF1 2022 | ΔF1 2023 | ΔAntelación 2022 | ΔAntelación 2023 | Veredicto |
+|---|---|---|---|---|---|---|
+| ninguno | 2 | +0,046 | +0,011 | +0,079 | +0,053 | gana |
+| ninguno | 3 | +0,022 | +0,017 | −0,026 | +0,053 | gana |
+| ninguno | 4 | −0,012 | +0,018 | 0,000 | +0,053 | empate |
+| sin 8 primeras semanas de 2017 | 2 | +0,030 | +0,003 | +0,026 | 0,000 | empate |
+| sin 8 primeras semanas de 2017 | 3 | **−0,006** | +0,004 | 0,000 | 0,000 | empate |
+| sin 8 primeras semanas de 2017 | 4 | −0,042 | +0,006 | 0,000 | +0,018 | empate |
+| sin temporada 2018 | 2 | +0,031 | +0,019 | +0,053 | +0,053 | gana |
+| sin temporada 2018 | 3 | +0,004 | +0,026 | 0,000 | +0,070 | gana |
+| sin temporada 2018 | 4 | −0,098 | +0,026 | 0,000 | +0,088 | empate |
+
+**Límite.** Sin las primeras 8 semanas de 2017, el signo de la diferencia de F1 se **invierte** en h=3 de 2022
+(+0,022 → −0,006). La ventaja de antelación desaparece (pasa a 0) en h=2 de 2023 y en h=3 de ambas temporadas, y
+las dos victorias de C3 pasan a empate. Sin la temporada 2018, en cambio, se mantienen las victorias en h=2 y
+h=3 y todos los signos de F1.
+
+La ventaja de B3 depende en buena parte de que el entrenamiento incluya el arranque de la epidemia de 2017. Con
+las dos epidemias grandes concentrando los inicios, esto se reporta como límite de la elección: el resultado no
+es estable ante quitar 8 semanas de entrenamiento.
+
+### SHAP por horizonte de C3 (semilla 17; media de |SHAP| en el log de casos esperados)
+
+| Variable | 2022 (h=2 / 3 / 4) | 2023 (h=2 / 3 / 4) | 2024 (h=2 / 3 / 4) |
+|---|---|---|---|
+| `hist_lag_a` | 1,42 / 1,35 / 1,26 | 1,25 / 1,19 / 1,13 | 1,54 / 1,48 / 1,41 |
+| `hist_media_4` | 0,55 / 0,54 / 0,53 | 0,68 / 0,66 / 0,64 | 0,63 / 0,61 / 0,59 |
+| `propia_semanas_desde_ultimo_caso` | 0,43 / 0,40 / 0,37 | 0,54 / 0,50 / 0,48 | 0,39 / 0,37 / 0,35 |
+| `semana_epi_seno` | 0,19 / 0,25 / 0,31 | 0,17 / 0,22 / 0,26 | 0,15 / 0,21 / 0,27 |
+| `hist_lag_b` | 0,24 / 0,23 / 0,22 | 0,18 / 0,17 / 0,16 | 0,22 / 0,21 / 0,20 |
+| `propia_log_casos_temporada_anterior` | 0,16 / 0,18 / 0,20 | 0,11 / 0,12 / 0,14 | 0,16 / 0,19 / 0,21 |
+| `semana_epi_coseno` | 0,05 / 0,08 / 0,11 | 0,05 / 0,08 / 0,11 | 0,03 / 0,04 / 0,06 |
+| `hist_semanas_pos_4` | 0,09 / 0,09 / 0,09 | 0,05 / 0,05 / 0,05 | 0,00 / 0,00 / 0,00 |
+| `propia_pendiente_4` | 0,06 / 0,07 / 0,08 | 0,04 / 0,05 / 0,06 | 0,04 / 0,05 / 0,06 |
+
+«Semanas desde el último caso» es la tercera variable en importancia en todos los bloques. Con el horizonte,
+crecen el calendario y la temporada anterior, y bajan los rezagos.
+
+**Limitación de B3, sin cambiar su definición después de los resultados:** «semanas desde el último caso» empieza
+truncada al inicio de 2017, porque no usa la historia previa al panel; afecta solo filas de entrenamiento.
+
+## Conclusión de la fase 2 (variables)
+
+- **Matriz elegida: C3 = `base_6` + B3 (9 columnas).** Bajo el protocolo congelado, frente a la referencia B
+  (`base_6`), gana en h=2 y h=3 por F1 a 0,50 en 2022 y 2023 y por antelación sobre inicios limpios, y empata en
+  h=4. Ninguna familia del bloque A ganó. De las nuevas, solo B3 sostiene la mejora; B1 y B2 no agregan nada
+  sobre B3.
+- **La mejora es bajo el protocolo y frágil.** Depende de los pocos inicios de 2017 que hay en el entrenamiento:
+  sin las 8 primeras semanas de orígenes de 2017, las dos victorias de C3 pasan a empate, y en h=3 de 2022 se
+  invierte el signo del F1. Las diferencias son de una a pocas centésimas de F1 y de pocos episodios de
+  antelación sobre 95.
+- **No se puede concluir que el modelo anticipe brotes en general.** La mejora se mide sobre dos temporadas de
+  selección (2022 y 2023) que además se usaron para elegir. La magnitud real la dirá la evaluación independiente
+  de 2026.
+- **Sobre «semanas desde el último caso»:** es la tercera variable por importancia SHAP en el modelo de conteo y
+  su inclusión se asocia a la mejora observada. Eso describe cómo usa el modelo la variable; no muestra que el
+  tiempo sin casos tenga relación causal con el inicio de un brote.

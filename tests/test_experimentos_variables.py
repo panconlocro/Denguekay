@@ -63,6 +63,33 @@ class TestLectura(unittest.TestCase):
         self.assertFalse(solo_una.mejora_recall_nuevos.iloc[0])
 
 
+class TestCombinada(unittest.TestCase):
+    @staticmethod
+    def _v(*veredictos):
+        return pd.DataFrame({"candidata": "x", "horizonte": [2, 3, 4], "veredicto": list(veredictos)})
+
+    def test_regla_preregistrada(self):
+        gana, empata, pierde = self._v("gana", "empate", "empate"), self._v(*["empate"] * 3), self._v("gana", "pierde", "empate")
+        cols = {"C": 21, "C3": 9}
+        self.assertEqual(ev.decidir_combinada(empata, empata, empata, cols)["elegida"], "base_6")
+        self.assertEqual(ev.decidir_combinada(pierde, gana, gana, cols)["elegida"], "C3")
+        self.assertEqual(ev.decidir_combinada(gana, empata, empata, cols)["elegida"], "C")
+        self.assertEqual(ev.decidir_combinada(gana, gana, gana, cols)["elegida"], "C")
+        self.assertEqual(ev.decidir_combinada(gana, gana, empata, cols)["elegida"], "C3")
+        self.assertEqual(ev.decidir_combinada(gana, gana, pierde, cols)["elegida"], "C3")
+
+    def test_recortes_de_robustez(self):
+        semanas = pd.date_range("2017-02-05", periods=120, freq="7D")
+        o = pd.DataFrame({"semana_inicio": semanas, "anio": semanas.year, "semana": semanas.isocalendar().week.to_numpy()})
+        primeras = ev.recorte_robustez(o, "primeras_8_semanas_2017")
+        self.assertEqual(int(primeras.sum()), 8)
+        self.assertEqual(o.loc[primeras, "semana_inicio"].max(), pd.Timestamp("2017-03-26"))
+        t2018 = ev.recorte_robustez(o, "temporada_2018")
+        self.assertTrue(o.loc[t2018, "semana_inicio"].between("2017-08-27", "2018-08-26").all())
+        with self.assertRaises(ValueError):
+            ev.recorte_robustez(o, "otro")
+
+
 @unittest.skipUnless(HAY_DATOS, "requiere silver integrado, manifiesto y gold")
 class TestConDatos(unittest.TestCase):
     @classmethod

@@ -177,3 +177,84 @@ def evaluar_y_resumir(matrices, serie, *, columnas, origenes, preparar_bloque=No
     """``fe_hiperparametros.evaluar_variante`` + ``resumir_variante`` en un paso."""
     r = fh.evaluar_variante(matrices, serie, columnas=columnas, origenes=origenes, preparar_bloque=preparar_bloque)
     return {**r, "resumen": fh.resumir_variante(r["evaluaciones"], serie)}
+
+
+# ---------------------------------------------------------------------------
+# Combinada (fase 2c) y robustez
+# ---------------------------------------------------------------------------
+
+def gana_a(veredictos: pd.DataFrame) -> bool:
+    """Adoptable frente a la referencia: gana en algún horizonte y no pierde en ninguno."""
+    return bool(eh.adopcion(veredictos).resultado.eq("adoptable").all())
+
+
+def decidir_combinada(c_frente_b: pd.DataFrame, c3_frente_b: pd.DataFrame, c_frente_c3: pd.DataFrame,
+                      columnas: dict[str, int]) -> dict:
+    """Regla preregistrada de la 2c (``preregistro_fe.COMBINADA``)."""
+    ganan = [n for n, v in (("C", c_frente_b), ("C3", c3_frente_b)) if gana_a(v)]
+    if not ganan:
+        return {"elegida": "base_6", "criterio": "ni C ni C3 ganan a la referencia B"}
+    if len(ganan) == 1:
+        return {"elegida": ganan[0], "criterio": f"solo {ganan[0]} gana a la referencia B"}
+    if gana_a(c_frente_c3):
+        return {"elegida": "C", "criterio": "ambas ganan a B y C gana a C3"}
+    menos = min(("C", "C3"), key=lambda n: columnas[n])
+    resultado = eh.adopcion(c_frente_c3).resultado.iloc[0]
+    return {"elegida": "C3", "criterio": f"ambas ganan a B; C frente a C3: {resultado}; se elige C3 "
+                                         f"(menos columnas: {menos})"}
+
+
+def recorte_robustez(origenes: pd.DataFrame, nombre: str) -> pd.Series:
+    """Filas de entrenamiento que se quitan en la lectura de robustez de la 2c.
+
+    ``primeras_8_semanas_2017``: los 8 primeros orígenes de 2017 de la tabla
+    (por semana objetivo de h=2). ``temporada_2018``: orígenes cuya semana
+    objetivo de h=2 cae en la temporada 2018. Ninguna es fila de prueba.
+    """
+    if nombre == "primeras_8_semanas_2017":
+        semanas = np.sort(origenes.loc[origenes.semana_inicio.dt.year.eq(2017), "semana_inicio"].unique())[:8]
+        return origenes.semana_inicio.isin(semanas)
+    if nombre == "temporada_2018":
+        from src.eda.temporal import asignar_temporada
+        from src.modeling.train import SEMANA_INICIO_TEMPORADA
+        return pd.Series(asignar_temporada(origenes.anio, origenes.semana, SEMANA_INICIO_TEMPORADA).eq(2018).to_numpy(),
+                         index=origenes.index)
+    raise ValueError(f"Recorte desconocido: {nombre}")
+
+
+def signos_por_temporada(resumen_a: dict, resumen_b: dict, bloques: tuple[str, ...] = pa.BLOQUES_SELECCION) -> pd.DataFrame:
+    """Signo de la diferencia A − B de F1 a 0,50 y de antelación (medianas de semillas) por h y temporada."""
+    ma = resumen_a["medianas"].set_index(["horizonte", "bloque"])
+    mb = resumen_b["medianas"].set_index(["horizonte", "bloque"])
+    aa = resumen_a["antelacion"].set_index(["horizonte", "bloque"])
+    ab = resumen_b["antelacion"].set_index(["horizonte", "bloque"])
+    filas = []
+    for h in eh.HORIZONTES_ESTRATEGIA:
+        for b in bloques:
+            df1 = float(ma.at[(h, b), "f1_050"] - mb.at[(h, b), "f1_050"])
+            dan = float(aa.at[(h, b), "mediana"] - ab.at[(h, b), "mediana"])
+            filas.append({"horizonte": h, "bloque": b, "delta_f1_050": df1, "signo_f1": int(np.sign(df1)),
+                          "delta_antelacion": dan, "signo_antelacion": int(np.sign(dan))})
+    return pd.DataFrame(filas)
+
+
+def figura_shap(shap: dict[str, pd.DataFrame], titulo: str):
+    """Media de |SHAP| por variable y horizonte (filas = horizontes), un panel por bloque."""
+    import matplotlib.pyplot as plt
+
+    bloques = list(shap)
+    fig, ejes = plt.subplots(1, len(bloques), figsize=(6 * len(bloques), 0.35 * len(next(iter(shap.values())).columns) + 2),
+                             squeeze=False, sharey=True)
+    for ax, bloque in zip(ejes.ravel(), bloques):
+        tabla = shap[bloque].T
+        orden = tabla.mean(axis=1).sort_values().index
+        y = np.arange(len(orden))
+        for i, h in enumerate(tabla.columns):
+            ax.barh(y + (i - 1) * 0.27, tabla.loc[orden, h], 0.27, label=f"h={h}")
+        ax.set_yticks(y, orden)
+        ax.set_xlabel("Media de |SHAP| (log de casos esperados)")
+        ax.set_title(bloque.replace("temporada_", "Temporada "))
+    ejes[0, 0].legend(fontsize=8)
+    fig.suptitle(titulo)
+    fig.tight_layout()
+    return fig
