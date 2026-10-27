@@ -725,3 +725,150 @@ de 0,137 a 0,232 y deja de perder frente a la persistencia. En cambio, la razón
   alerta en la probabilidad calibrada.
 - Cualquier explicación por variable (HU0008) sobre el modelo de conteo describe un modelo cuya magnitud es poco
   fiable fuera de 2023.
+
+## Fase 5 · Síntesis del encargo
+
+### Configuración final congelada (2026-10-27)
+
+Fuente de verdad: `src/modeling/configuracion_final.py → CONFIGURACION_2026`, commit `d6bd0be` del 2026-10-27,
+que es la fecha de congelamiento.
+
+| Pieza | Valor |
+|---|---|
+| Matriz | C3 = `base_6` + B3 (9 columnas; diccionario en `diccionario_variables.md`, HU0006-3) |
+| Estrategia | E3: un regresor XGBoost multi-salida (`multi_output_tree`) para t+2, t+3 y t+4 desde el origen o = t − 2 |
+| Conteo | `count:poisson` con `base_margin` = log(casos del origen + 0,5) en las tres salidas (S4_s3) |
+| Probabilidad | P(casos ≥ k) binomial negativa NB2, k = max(⌊umbral⌋ + 1, 2); α dentro de la muestra por horizonte |
+| Hiperparámetros | heredados: 160 árboles, profundidad 3, learning rate 0,05, subsample 0,8, colsample 0,9, min_child_weight 5, reg_lambda 5, reg_alpha 0, gamma 0, max_delta_step 0,7 |
+| Calibración | Platt cronológico con las predicciones fuera de muestra de las temporadas previas cerradas |
+| Alerta | p ≥ 0,50 |
+| Semilla de despliegue | 17 |
+| Huella (configuración + módulos) | `88ed2a43b0171a0878b99122b70109be61b27d5d4d29a2b93eae55066fd8f945` |
+
+`tests/test_configuracion_final.py` comprueba que la constante reproduce las predicciones guardadas de la fase 4
+con la semilla 17. **No se cambia después de ver datos de 2026**: cualquier cambio es un encargo nuevo con su
+propio preregistro.
+
+### Cadena de decisiones (19 comparaciones preregistradas)
+
+| Fase | Comparaciones | Resultado |
+|---|---|---|
+| 0 | — | Referencia B = E3·S4_s2 con `base_6`, reproducida 615/615 |
+| 1 | — | Diagnóstico de inicios (2017–2021) y preregistro de A1–A7 y B1–B5 |
+| 2a | 7 (A1–A7 frente a B) | Ninguna familia de gold gana; A2 pierde en h3 |
+| 2b | 7 (B1–B5 frente a B; extensiones de B1 y B5) | B3 gana en h2 y h3; B1 gana en h2 solo por antelación; B2, B4 y B5 empatan; la extensión de B5 pierde en h4 |
+| 2c | 2 (C frente a B; C frente a C3) | C y C3 ganan a B; C empata con C3 → **C3** (menos columnas) |
+| 3 | 1 (candidata TPE frente a la base) | Empate → **hiperparámetros heredados** |
+| 4.2 | 1 (α OOS frente a α dentro de la muestra) | Empate forzado por el respaldo → **α dentro de la muestra** |
+| 4.3 | 1 (S4_s3 frente a S4_s2) | S4_s3 gana en h4 por antelación → **S4_s3** |
+
+Las lecturas de robustez, SHAP, antelación y recall de brotes nuevos no decidieron. 2024 fue siempre contraste.
+
+### Qué cambió frente a la referencia B (lectura)
+
+- **Antelación sobre inicios limpios 2022–2023** (mediana de semillas): h4 0,105 (B) → 0,232 (final). Frente a
+  la persistencia, h4 pasa de −0,105 (IC −0,189 a −0,021) a +0,021 (IC −0,074 a 0,116): **ya no pierde, no la
+  supera**.
+- **Clasificación (HU0007-4):** gana la celda 2023 · h2 (recall 0,782 → 0,812) y conserva las tres de 2024.
+- **Regresión (HU0007-4):** pierde la única celda que cumplía (2023 · h4), que se perdió al entrar B3 (2c). Con
+  S4_s3 queda en frontera (razón RMSE 0,852, rango entre semillas 0,846–0,857). En el contraste 2024 la
+  magnitud empeora (razón RMSE 1,27 → 2,01 en h4).
+- **Dependencia de 2017:** las ganancias de B3 sobre B se vuelven empates al quitar las 8 primeras semanas de
+  orígenes de 2017 (2c). La de S4_s3 en h4 se mantiene sin ellas (4.3).
+
+### Estado de la HU0007-4
+
+Umbrales: clasificación P ≥ 0,60, R ≥ 0,80 y F1 ≥ 0,70 con p ≥ 0,50; regresión, razón MAE y razón RMSE ≤ 0,85
+frente a la persistencia. Mediana de las 5 semillas.
+
+| Temporada | h | Clasificación B → C3·S4_s2 → final | Regresión B → C3·S4_s2 → final |
+|---|---|---|---|
+| 2022 | 2 / 3 / 4 | no / no / no en las tres | no / no / no en las tres |
+| 2023 | 2 | no → **sí** → **sí** | no → no → no |
+| 2023 | 3 | no → no → no | no → no → no |
+| 2023 | 4 | no → no → no | **sí** (0,793 / 0,846) → no (0,796 / 0,876) → no, frontera (0,764 / 0,852) |
+| 2024 (contraste) | 2 / 3 / 4 | sí → sí → sí en las tres | no → no → no en las tres |
+
+- **Clasificación:** cumple en 4 de 9 celdas (2023 h2 y 2024 h2/h3/h4). Lo que falla en el resto es el recall
+  (2022 h4: 0,399).
+- **Regresión:** no cumple en ninguna celda con la configuración final.
+- **Precisión a la HU:** la HU habla de «temporada 2025-2026». El test independiente es solo la parte publicada
+  después del congelamiento (ver más abajo). 2022–2023 son temporadas de selección (optimistas) y 2024 no es un
+  test virgen.
+
+### Evaluación prospectiva de 2026 (fijada ahora; todavía no se aplica a nada)
+
+- **Test independiente:** las semanas objetivo publicadas por MINSA después del 2026-10-27.
+- **No son independientes** las semanas 35–53 de 2025: ya están en el panel y se miraron como sensibilidad de
+  conteos (`calendario_2025`). Aunque la HU0007-4 hable de «temporada 2025-2026», no cuentan.
+- **Reporte:** cada métrica con su número de positivos (semanas brote o inicios limpios) y un IC bootstrap.
+- **Mínimos** (`EVALUACION_2026["minimos"]`):
+  - clasificación y regresión: **30 semanas brote** por horizonte;
+  - antelación: **20 inicios limpios** por horizonte;
+  - por debajo del mínimo, la celda es «no evaluable» en vez de «cumple / no cumple».
+- **Justificación de los mínimos:**
+  - `calendario_2025` tuvo 3 semanas brote por horizonte (2 de inicio). F1 dio 0 en h2 y h4 y 0,14 en h3, con
+    0,12 de rango entre semillas: una sola semana cambiaba el veredicto.
+  - Con 30 semanas brote, una semana mueve el recall 0,033; con 20 inicios, una alerta mueve la antelación 0,05.
+  - Ambos mínimos quedan por debajo de los bloques que sí se evaluaron: temporada_2024 tuvo 23 inicios y 857
+    semanas brote; temporada_2021, de calibración, 90 semanas brote.
+  - Aun en el mínimo, el IC del recall es ancho (± 0,14 alrededor de 0,80 con 30 positivos). Por eso el IC va
+    siempre junto a la cifra.
+
+### Cambios propuestos, sin implementar
+
+Los ejecuta el equipo. Complementan «Cambios que implicaría la arquitectura elegida» de
+`arquitectura_horizontes.md`, que sigue vigente.
+
+**Gold y feature engineering (`features.py`, notebook 22):**
+- E3 se entrena solo con **gold h=2**. Los objetivos t+3 y t+4 salen de `tabla_origenes` y el umbral de
+  cualquier semana objetivo, de `umbral_brote_futuro`. **No hace falta un gold h=3.**
+- Agregar a gold h=2 las 3 columnas de B3 (`propia_semanas_desde_ultimo_caso`, `propia_pendiente_4`,
+  `propia_log_casos_temporada_anterior`), con la misma definición que `features_inicio` (ver el diccionario).
+- `construir_gold` tiene que leer el histórico epi previo a 2017 (`SILVER_EPI_HISTORICO`, el mismo del manifest
+  de la regla de brote) para la temporada anterior de 2017.
+- Test de regresión: gold h=2 regenerado igual, bit a bit, a lo que da `features_inicio` en memoria; mantener
+  `test_no_fuga_por_perturbacion`.
+- Regenerar `manifest_fase6.json` con las columnas nuevas y su procedencia.
+- Gold h=4 se puede conservar solo para comparar; deja de ser entrada del modelo.
+
+**Validación GX (`src/validation/expectations_gold.py`):**
+- `propia_semanas_desde_ultimo_caso` entero entre 0 y 52, sin nulos.
+- `propia_pendiente_4` finita.
+- `propia_log_casos_temporada_anterior` ≥ 0, con nulos solo donde falte la historia.
+- `ubigeo` de 6 dígitos como texto, como ya se exige.
+
+**`config/config.yaml`:**
+- `serving.horizontes: [2, 3, 4]`.
+- `serving.variantes`: reemplazar `base_6_poblacion_2017` / `base_6` por una sola entrada para la configuración
+  congelada (C3·E3·S4_s3). Ya no hay clasificador.
+
+**Artefacto:**
+- Un paquete con el booster multi-salida, las 3 α NB2 (una por horizonte), los 3 calibradores Platt, la regla de
+  k, la lista de columnas y la huella de `CONFIGURACION_2026`, con un solo SHA-256.
+- **Nuevo con S4_s3:** el artefacto declara que necesita los **casos de la semana de origen** para el
+  `base_margin`. Sin ellos no hay predicción. Hoy `hist_lag_a` es ese mismo dato, pero el `base_margin` se pasa
+  aparte del vector de variables.
+
+**Serving (`src/serving/`):**
+- `inferencia.vectores_desde_bd`: entregar las 9 columnas (incluidas las de B3, que necesitan la historia
+  completa del distrito y la temporada anterior) y los casos del origen.
+- `publicar.py`: ajuste final con etiquetas cerradas al último corte; calibradores desde las predicciones OOS
+  del protocolo.
+- BD: la «propuesta A» de `arquitectura_horizontes.md` (6 filas de `version_modelo` con el mismo artefacto).
+- Interfaz y HU0008: mostrar los casos esperados como orden de magnitud o como apoyo de la alerta, no como
+  estimación precisa. La razón RMSE de 2024 es 1,67 / 1,89 / 2,01. Las explicaciones por variable del modelo de
+  conteo deben llevar esa advertencia.
+
+### Limitaciones del encargo
+
+- **Dependencia de 2017:** la selección de C3 descansa en buena parte en los inicios de 2017. Al quitar las 8
+  primeras semanas de orígenes de 2017, las victorias de B3 pasan a empate.
+- **Optimismo:** la selección de variables, hiperparámetros, α y formulación usó 2022–2023. Las cifras de esas
+  temporadas son optimistas.
+- **Conteo:** S4_s3 avisa antes a cambio de estimar peor la magnitud fuera de 2023.
+- **`max_delta_step`** quedó en el tope del rango de búsqueda (fase 3); queda como trabajo futuro.
+- **Pseudo-bloque 2020:** temporada tranquila al inicio de la pandemia. Su α OOS activó el respaldo, así que la
+  4.2 no pudo distinguir entre las dos α.
+- **Pocos brotes:** 2017 y 2023 concentran la mayor parte de los casos. 2026 dirá la magnitud real de la mejora.
+- **Sin lenguaje causal:** las mejoras son asociaciones en las temporadas evaluadas.
