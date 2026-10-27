@@ -173,3 +173,78 @@ brotes nuevos), contra la referencia B, sin búsqueda hacia adelante.
 **Comparaciones previstas: 15.** Son 7 del bloque A, 7 del bloque B (5 contra la referencia B y 2 contra la
 familia A que extienden) y 1 de la combinada; cada una se evalúa en h=2, 3 y 4. Más una condicional (B6),
 con aprobación. 2024 se reporta como contraste y no decide.
+
+## Fase 2a · Re-ensayo del bloque A sobre E3·S4_s2
+
+Cada familia se suma a `base_6` y se compara contra la referencia B con la regla simétrica del protocolo:
+5 semillas, mismos bloques e hiperparámetros fijos, `estrategias_horizonte.decidir_frente_a_referencia`. A3
+excluye 65 filas de entrenamiento (la primera semana de 2017 de cada distrito, sin `media5`) y se compara contra
+**B∩A3**, entrenada sin esas filas. El CP1 de A7 se ajusta, con estandarización incluida, solo con los orígenes
+de entrenamiento de cada bloque: explica entre el 57 % y el 61 % de la varianza. Comparaciones hechas: **7 de 15**.
+
+### Veredictos (regla simétrica)
+
+| Id | Familia | h=2 | h=3 | h=4 | Antecedente S1 (no comparable) |
+|---|---|---|---|---|---|
+| A1 | Vecinos | empate | empate | empate | no elegida; ΔF1 val +0,003 / +0,000 |
+| A2 | Jerarquía | empate | **pierde** | compensa (empate) | elegida (reg. y cls.); +0,010 / +0,012 |
+| A3 | Clima de gold | empate | empate | empate | no elegida; −0,024 / −0,057 |
+| A4 | Población 2017 | empate | empate | empate | elegida (fija); +0,003 / +0,063 |
+| A5 | Población anual† | empate | empate | empate | elegida para cls. (anual); −0,002 / +0,071 |
+| A6 | Fracciones 2017 | empate | empate | empate | no elegida; +0,002 / −0,001 |
+| A7 | Fracciones anuales (CP1)† | empate | empate | empate | `anual_eje` no elegida; +0,004 / −0,003 |
+
+Ninguna familia gana en ningún horizonte. Ninguna recibe la marca de «posible señal de temporada», porque
+ninguna mejora el F1 según la regla en ambas temporadas. Ninguna mejora la antelación ni el recall en brotes
+nuevos en ambas temporadas. † A5 y A7 usan fracciones reconstruidas retrospectivamente con 2025: aunque hubieran
+ganado, no serían pronósticos que se habrían podido emitir.
+
+### Lectura por familia (observaciones; no cambian los veredictos)
+
+- **A1, vecinos: la mejora es solo de 2022.**
+  - F1: +0,036 / +0,055 / +0,097 en h=2/3/4, por encima del rango entre semillas (0,019 / 0,008 / 0,030).
+  - Recall en brotes nuevos: +0,04 a +0,08.
+  - Recall en todas las fases de la curva: sube.
+  - Antelación en h=2: 0,158 frente a 0,053.
+
+  En 2023 no cambia nada (ΔF1 entre −0,007 y +0,002; antelación igual). La regla exige mejora en ambas
+  temporadas, así que el veredicto es empate. **Con una sola temporada a favor, la regla no permite separar esta
+  mejora de una particularidad de 2022.**
+- **A2, jerarquía: descartada por perder en h=3.** Empeora el F1 en ambas temporadas en h=3 (−0,046 / −0,015)
+  y en h=4 (−0,096 / −0,022). En h=4 la mejora de AUPRC la deja en «compensa». **El veredicto cambió frente a
+  S1**, donde era la elegida en validación.
+- **A3, clima de gold: relevante para la parte de regresión de la HU0007-4.** El F1 queda en empate (baja en
+  2022, sube en 2023). En cambio, la razón MAE frente a la persistencia baja en 2022 y 2023, en los 3 horizontes,
+  por encima del umbral de empate (rango entre semillas ≤ 0,057). Es una guarda: no da victoria según la regla.
+  Medianas de semillas, A3 frente a B∩A3:
+
+  | Temporada | h | MAE/pers. A3 | MAE/pers. B∩A3 | RMSE/pers. A3 | RMSE/pers. B∩A3 |
+  |---|---|---|---|---|---|
+  | 2022 | 2 | 0,965 | 1,055 | 1,007 | 1,178 |
+  | 2022 | 3 | 0,980 | 1,157 | 1,088 | 1,394 |
+  | 2022 | 4 | 1,028 | 1,297 | 1,228 | 1,678 |
+  | 2023 | 2 | 0,955 | 1,008 | 1,109 | 1,171 |
+  | 2023 | 3 | 0,816 | 0,864 | 0,897 | 0,963 |
+  | 2023 | 4 | 0,753 | 0,793 | 0,792 | 0,845 |
+  | 2024 (contraste) | 2 | 0,976 | 1,355 | 0,997 | 1,816 |
+  | 2024 (contraste) | 3 | 0,937 | 1,467 | 0,955 | 1,911 |
+  | 2024 (contraste) | 4 | 0,884 | 1,499 | 0,895 | 1,868 |
+
+  - La razón RMSE se describe sin umbral de empate: el protocolo calcula rangos entre semillas para el RMSE
+    absoluto, no para la razón.
+  - Frente al criterio de regresión de la HU0007-4 (razones ≤ 0,85), A3 cumple solo en 2023 con h=4, igual que
+    B∩A3. En 2023 con h=3 cumple la razón MAE pero no la RMSE.
+  - En 2024 la caída es grande (RMSE/pers. de 1,82–1,91 a 0,90–1,00), pero no llega a 0,85 y 2024 no decide.
+  - El preregistro ya incluye **B5 frente a `base_6`+A3**, que medirá si el clima de incubación aporta además
+    del clima de gold. **Cambió frente a S1**, donde el clima empeoraba.
+- **A4, población 2017:** empate, con veto por empeorar MAE en h=2 y h=3. En S1 ayudaba al clasificador
+  (+0,063), que S4 ya no tiene.
+- **A5, A6 y A7:** empate. Las diferencias de F1 son negativas y chicas en 2022 (−0,002 a −0,030) y nulas en
+  2023. A5 tiene un veto por Brier en h=4.
+- **2024 (contraste, no decide):** el F1 de todas las variantes queda dentro de ±0,007 del de B.
+
+### Implicaciones para lo que sigue (hipótesis, no decisiones)
+
+- No hay ninguna familia del bloque A que **gane**. Para la combinada (2c) solo entrarían familias que ganen o que
+  empaten con mejor antelación o recall en nuevos según la regla; en el bloque A no hay ninguna.
+- B1 se compara también contra `base_6`+A1+A2 y B5 contra `base_6`+A3. Esas dos referencias se ajustan en 2b.

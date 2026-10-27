@@ -172,7 +172,8 @@ def predecir_e1(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: st
 
 def predecir_e3(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: str,
                 devolver_modelos: bool = False, columnas: list[str] | None = None,
-                origenes: pd.DataFrame | None = None, hiperparametros: dict | None = None):
+                origenes: pd.DataFrame | None = None, hiperparametros: dict | None = None,
+                preparar_bloque=None):
     """E3 (multi-salida desde el mismo origen) con la formulación indicada.
 
     En S3 el ``base_margin`` tiene una columna por salida; las tres valen
@@ -183,22 +184,30 @@ def predecir_e3(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: st
     de FE e hiperparámetros pasa ``columnas`` (``base_6`` + variables nuevas),
     ``origenes`` (``eh.tabla_origenes`` con esas columnas ya agregadas, en
     nombres genéricos) e ``hiperparametros`` (sobrescriben los fijos).
+    ``preparar_bloque(origenes, corte)`` devuelve los orígenes con las columnas
+    que dependen de una transformación aprendida (p. ej. el CP1 socio),
+    ajustada solo con lo cerrado al ``corte`` del bloque.
     """
     f = FORMULACIONES[formulacion]
     H = eh.HORIZONTES_ESTRATEGIA
-    origenes = eh.tabla_origenes(matrices[2]) if origenes is None else origenes
+    base_origenes = eh.tabla_origenes(matrices[2]) if origenes is None else origenes
     col_reg = list(eh.GENERICAS) if columnas is None else list(columnas)
     col_cls = [*col_reg, eh.POBLACION]
-    faltan = [c for c in col_reg if c not in origenes]
-    if faltan:
-        raise ValueError(f"Columnas ausentes en la tabla de orígenes: {faltan}")
+    if preparar_bloque is None:
+        faltan = [c for c in col_reg if c not in base_origenes]
+        if faltan:
+            raise ValueError(f"Columnas ausentes en la tabla de orígenes: {faltan}")
     objetivos = [f"semana_inicio_h{h}" for h in H]
     extra = {"multi_strategy": "multi_output_tree", **(hiperparametros or {})}
-    margen_todo = (np.repeat(margen_persistencia(origenes.hist_lag_a)[:, None], len(H), axis=1)
+    margen_todo = (np.repeat(margen_persistencia(base_origenes.hist_lag_a)[:, None], len(H), axis=1)
                    if f["conteo"] == "poisson_margen" else None)
     partes, modelos = [], {}
     for bloque, tipo, periodo in eh.bloques():
         pruebas, corte = eh._cortes_comunes(matrices, tipo, periodo)
+        origenes = base_origenes if preparar_bloque is None else preparar_bloque(base_origenes, corte)
+        if preparar_bloque is not None and (len(origenes) != len(base_origenes)
+                                            or not origenes.index.equals(base_origenes.index)):
+            raise ValueError("preparar_bloque no puede quitar ni reordenar orígenes")
         completas = origenes.dropna(subset=objetivos)
         ultima = completas[f"semana_inicio_h{H[-1]}"]
         sel = (ultima + pd.Timedelta(days=6)).le(corte)

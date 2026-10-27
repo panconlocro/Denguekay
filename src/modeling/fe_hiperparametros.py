@@ -60,7 +60,7 @@ def insumos(panel: pd.DataFrame, regla: dict) -> dict:
 
 def evaluar_variante(matrices: dict[int, pd.DataFrame], serie: pd.DataFrame, *,
                      columnas: list[str] | None = None, origenes: pd.DataFrame | None = None,
-                     hiperparametros: dict | None = None,
+                     hiperparametros: dict | None = None, preparar_bloque=None,
                      semillas: tuple[int, ...] = pa.SEMILLAS) -> dict:
     """Predice con E3·S4_s2 y aplica el protocolo congelado, una vez por semilla.
 
@@ -70,7 +70,8 @@ def evaluar_variante(matrices: dict[int, pd.DataFrame], serie: pd.DataFrame, *,
     predicciones, evaluaciones = {}, {}
     for semilla in semillas:
         pred = sp.predecir_e3(matrices, semilla, FORMULACION, columnas=columnas,
-                              origenes=origenes, hiperparametros=hiperparametros)
+                              origenes=origenes, hiperparametros=hiperparametros,
+                              preparar_bloque=preparar_bloque)
         predicciones[semilla] = pred
         evaluaciones[semilla] = pa.evaluar(pred, serie, calibracion)
     return {"predicciones": predicciones, "evaluaciones": evaluaciones}
