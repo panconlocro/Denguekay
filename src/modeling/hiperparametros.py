@@ -154,7 +154,9 @@ def estudio(matrices, serie, origenes, columnas, storage: str, nombre: str = "fa
                 trial.set_user_attr(k, v)
         return r["objetivo"] if math.isfinite(r["objetivo"]) else float("nan")
 
-    restantes = n_trials - len(st.trials)
+    # El trial encolado (WAITING) no cuenta como hecho hasta que se ejecuta.
+    hechos = sum(t.state != optuna.trial.TrialState.WAITING for t in st.trials)
+    restantes = n_trials - hechos
     if restantes > 0:
         st.optimize(funcion, n_trials=restantes, catch=(Exception,))
     return st
@@ -212,6 +214,14 @@ def huella_trials(trials: pd.DataFrame) -> str:
 
     columnas = ["numero", "estado", "objetivo", *sorted(c for c in trials if c.startswith("param_"))]
     texto = trials[columnas].sort_values("numero").to_json(orient="records", double_precision=15)
+    return hashlib.sha256((texto + json.dumps(PREREGISTRO_FASE3, sort_keys=True, default=str)).encode()).hexdigest()
+
+
+def huella_top(mejores: list) -> str:
+    """Huella de las mejores configuraciones (número y parámetros): la selección se recalcula solo si cambian."""
+    import hashlib
+
+    texto = json.dumps([[t.number, t.params] for t in mejores], sort_keys=True, default=float)
     return hashlib.sha256((texto + json.dumps(PREREGISTRO_FASE3, sort_keys=True, default=str)).encode()).hexdigest()
 
 

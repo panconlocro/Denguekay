@@ -78,6 +78,43 @@ class TestEspacioYEstudio(unittest.TestCase):
         self.assertEqual(estados, ["COMPLETE", "FAIL", "FAIL"])
 
 
+class TestConteoDelEstudio(unittest.TestCase):
+    def test_termina_con_n_trials_ejecutados_y_reanuda(self):
+        """El trial 0 encolado cuenta solo al ejecutarse; reanudar completa hasta ``n_trials``."""
+        import tempfile
+        from pathlib import Path
+        from unittest import mock
+
+        import optuna
+
+        valores = iter([0.3, float("nan"), *np.linspace(0.2, 0.1, 20)])
+
+        def falso(*_args, **_kwargs):
+            return {"objetivo": next(valores)}
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, \
+                mock.patch.object(hp, "evaluar_configuracion", return_value=None), \
+                mock.patch.object(hp, "resumen_trial", side_effect=falso):
+            storage = f"sqlite:///{(Path(tmp) / 'estudio.db').as_posix()}"
+            st = hp.estudio(None, None, None, None, storage, nombre="prueba", n_trials=5)
+            hechos = [t for t in st.trials if t.state in (optuna.trial.TrialState.COMPLETE, optuna.trial.TrialState.FAIL)]
+            self.assertEqual(len(st.trials), 5)
+            self.assertEqual(len(hechos), 5)
+            self.assertTrue(st.trials[0].user_attrs["es_base"])
+            self.assertEqual(st.trials[1].state, optuna.trial.TrialState.FAIL)
+            st = hp.estudio(None, None, None, None, storage, nombre="prueba", n_trials=7)
+            self.assertEqual(len(st.trials), 7)
+            st = hp.estudio(None, None, None, None, storage, nombre="prueba", n_trials=7)
+            self.assertEqual(len(st.trials), 7)
+
+    def test_huella_top_cambia_solo_con_la_seleccion(self):
+        from types import SimpleNamespace as N
+
+        a = [N(number=1, params={"x": 1.0}), N(number=2, params={"x": 2.0})]
+        self.assertEqual(hp.huella_top(a), hp.huella_top([N(number=1, params={"x": 1.0}), N(number=2, params={"x": 2.0})]))
+        self.assertNotEqual(hp.huella_top(a), hp.huella_top([a[0], N(number=3, params={"x": 3.0})]))
+
+
 class TestAdopcion(unittest.TestCase):
     @staticmethod
     def _v(*veredictos):

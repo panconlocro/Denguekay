@@ -477,3 +477,68 @@ Fuente de verdad: `src/modeling/hiperparametros.py → PREREGISTRO_FASE3`. Se co
   1500 × 8, unos 104 s. Con unos 30 s esperados por trial, alcanza para 100.
 - **Límite:** la búsqueda usa las mismas temporadas de selección (2022–2023), así que las métricas de la
   candidata son optimistas. 2024 es solo de contraste.
+
+## Fase 3 · Resultados
+
+Notebook `33_modelado_hiperparametros.ipynb`; cifras en `metricas/fe_hiperparametros.json → fase3_hiperparametros`;
+figuras `curva_optimizacion_fase3.png` e `importancia_hiperparametros_fase3.png`.
+
+- **Trials:** 100 completos y 0 fallidos, como en el preregistro.
+  - *Defecto y corrección (2026-10-27):* la primera corrida terminó con 99 trials. `estudio` contaba el trial 0
+    encolado (en estado WAITING) como ya hecho y pedía 99. Se corrigió: un trial encolado cuenta solo cuando se
+    ejecuta. El test `TestConteoDelEstudio` comprueba que el estudio termina con exactamente `n_trials` trials
+    completos o fallidos y que reanudar no agrega de más.
+  - El estudio se reanudó desde el almacén SQLite y se corrió el trial 99. Dio 0,210366, el 11.º mejor, así que
+    no entra al top 5: la selección, la candidata y la regla no cambian.
+  - En MLflow, el estudio de 99 trials (`adf16508…`) y sus hijos quedan marcados con `obsoleta = true`. El
+    vigente es `d1a4f93b6d274ffc830a61a37f122cba` (padre + 100 hijos).
+- **Base exacta (C3, `reg_alpha` = 0):** objetivo por semilla 0,220007 / 0,220112 / 0,219951 / 0,220917 /
+  0,221031; mediana 0,220112. El trial 0 (`reg_alpha` = 1e-3) da 0,220007, igual a la base exacta con semilla 17.
+- **Mejor trial:** n.º 86, objetivo 0,209188 con semilla 17.
+- **Importancia (fANOVA, 100 trials):** `n_estimators` 0,67; `min_child_weight` 0,15; `max_delta_step` 0,09; el
+  resto < 0,04.
+- **Zona de las mejores:** las 10 mejores tienen profundidad 3–4, `learning_rate` 0,014–0,021, 918–1104 árboles,
+  `min_child_weight` 25–44, `gamma` 1,9–3,0 y `max_delta_step` 1,68–1,97.
+- **Top 5 con 5 semillas:** medianas 0,2095 (trials 86 y 91), 0,2097 (75 y 82) y 0,2100 (62). La candidata es
+  el trial 86 (mejor mediana, 0,209471; complejidad 1103 × 3 = 3309, frente a 160 × 3 = 480 de la base).
+
+### Veredicto y su costo en el conteo
+
+- **Regla simétrica contra la base exacta (comparación 17 de 17): empate en h=2, h=3 y h=4.**
+  - F1 a 0,50, delta 2022 / 2023: h2 −0,004 / +0,008; h3 +0,015 / +0,018; h4 +0,022 / +0,029. En h3 y h4 ambos
+    deltas son positivos, pero el de 2022 no supera el rango entre semillas (umbrales 0,015 y 0,036).
+  - Brier: mejora en las 6 celdas y supera el rango entre semillas en h2 y h3 (marcado como veto contra la base),
+    pero Brier es una guarda y no decide.
+  - Antelación h4: diferencia +0,074 (IC95 0,021 a 0,137), pero en 2022 la diferencia es 0, así que no cuenta
+    como mejora (la regla pide ambas temporadas).
+- **Adopción: se queda la base** (empata y la candidata es más compleja).
+- **Costo en el conteo (HU0007-4):** la candidata empata en la alerta, pero empeora el conteo fuera de 2023.
+  - Razón MAE: empeora en 2022 (+0,05 a +0,07) y mejora en 2023 (−0,03 a −0,06).
+  - En el contraste 2024, MAE y RMSE son peores en los tres horizontes. Razón MAE h2/h3/h4: 1,18 → 1,35;
+    1,23 → 1,46; 1,30 → 1,55. Razón RMSE: 1,24 → 1,58; 1,25 → 1,67; 1,27 → 1,72.
+  - La búsqueda optimiza la probabilidad calibrada, no el conteo, y la candidata lo paga en conteo. Aunque la
+    regla hubiera dado gana, este costo habría que ponerlo junto al veredicto.
+- **Recall de brotes nuevos (lectura, no decide).** 2 primeras semanas, 2022 / 2023: h3 0,02 → 0,04 /
+  0,14 → 0,17; h4 0 → 0 / 0,13 → 0,20. No pasa el criterio de `mejora_recall_nuevos`.
+- **Robustez (solo lectura), sin las 8 primeras semanas de orígenes de 2017:** la regla daría gana en h2 y h3
+  y empate en h4. Los signos de F1 y antelación son ≥ 0 en las 6 celdas, mientras que sin recorte F1 h2 2022 es
+  negativo. Con esos orígenes la candidata se parece más a la base; sin ellos se separa algo más. No cambia la
+  decisión.
+
+### Cobertura de la HU0007-3
+
+La HU0007-3 queda cubierta aunque la candidata no se adopte. Hubo búsqueda sistemática preregistrada (TPE, 100
+trials), con los mejores parámetros, la curva de optimización, la importancia de cada hiperparámetro y la
+comparación con la base bajo la regla. Todo está registrado en MLflow (`fe_hiperparametros_fase3_estudio`:
+padre con los mejores parámetros, la candidata, la adopción y las tablas; un hijo por trial con su estado). Que
+la configuración final conserve los hiperparámetros heredados es el resultado de esa búsqueda, no la falta de
+búsqueda.
+
+### Limitaciones y trabajo futuro
+
+- **`max_delta_step` en el tope del rango:** en las 10 mejores va de 1,68 a 1,97, contra un máximo de 2,0. El
+  óptimo de ese hiperparámetro podría estar fuera del rango preregistrado. El rango no se amplía en esta
+  tesis: queda como limitación. Como trabajo futuro, una búsqueda con un tope mayor, preregistrada aparte.
+- **Optimismo:** la búsqueda y la regla usan las mismas temporadas (2022–2023), así que las métricas de la
+  candidata son optimistas. Aun así, empata.
+- **Una sola semilla de XGBoost en la búsqueda** (17). Las 5 semillas se usan solo en el top 5.
