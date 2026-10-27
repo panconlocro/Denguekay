@@ -216,8 +216,10 @@ def comparaciones() -> dict:
     return {"bloque_A": sum(len(v["comparar_contra"]) for v in VARIANTES if v["bloque"] == "A"),
             "bloque_B": sum(len(v["comparar_contra"]) for v in VARIANTES if v["bloque"] == "B"),
             "combinada": 2, "total": por_variante + 2, "condicional_B6": 1,
-            "fase3_hiperparametros": 1, "fase4": 2, "total_encargo": por_variante + 2 + 1 + 2,
-            "nota_encargo": "total (fases 2a–2c) + 1 de la fase 3 + 2 de la fase 4 (4.2 y 4.3); la 4.1 no se corre",
+            "fase3_hiperparametros": 1, "fase4": 2, "complemento_clima": 1,
+            "total_encargo": por_variante + 2 + 1 + 2 + 1,
+            "nota_encargo": "total (fases 2a–2c) + 1 de la fase 3 + 2 de la fase 4 (4.2 y 4.3; la 4.1 no se corre) "
+                            "+ 1 del complemento de clima (F+A3 frente a F∩A3)",
             "nota_combinada": "C frente a B y C frente a C3; C3 frente a B reutiliza B3 frente a B (2b)",
             "nota": "cada comparación se evalúa por horizonte (h=2, 3, 4); 2024 no decide"}
 

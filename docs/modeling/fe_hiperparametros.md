@@ -925,3 +925,34 @@ ni los JSON de métricas.
     registraron runs nuevos.
   - Ninguna métrica del JSON cambió; solo los tiempos de la fase 0.
 - **Suite completa:** 389 tests, OK, sin omitidos (PostgreSQL arriba).
+
+## Encargo complementario · clima para el conteo
+
+### Preregistro (2026-10-27, antes de correr)
+
+Fuente de verdad: `src/modeling/complemento_clima.py → PREREGISTRO_COMPLEMENTO`. Es una sola comparación, la
+**20 del encargo**. El protocolo (`protocolo_arquitectura.py`) no cambia.
+
+- **Motivo:** el punto débil de la configuración final es el conteo. Con ella ninguna celda cumple la regresión
+  de la HU0007-4, y fuera de 2023 las razones son > 1. En la 2a, A3 (clima de gold) bajó las razones MAE y RMSE
+  sobre la referencia B en 2022 y 2023, pero nunca se probó sobre la configuración final.
+- **Referencia F∩A3:** la configuración final (C3, 9 columnas) reentrenada sin las 65 filas con nulos de
+  arranque de A3 (primera semana de 2017). F completa se reporta solo como lectura.
+- **Candidata F+A3:** C3 + `hum_rel_media_media5_h2` y `precip_total_mm_media5_h2` (11 columnas). Todo lo demás
+  queda idéntico: E3 · S4_s3 · α dentro de la muestra · hiperparámetros heredados · Platt · p ≥ 0,50 · 5
+  semillas.
+- **Umbral de empate:** por métrica, horizonte y temporada, el mayor rango entre semillas de las dos variantes.
+  Para las razones MAE y RMSE se calcula sobre la razón por semilla. El delta es la mediana de semillas de F+A3
+  menos la de F∩A3. Las desigualdades son estrictas.
+- **Condición 1, conteo:**
+  - mejora en un horizonte si la razón MAE **y** la razón RMSE bajan más que su umbral en 2022 **y** en 2023;
+  - empeora si la razón MAE **o** la razón RMSE suben más que su umbral en 2022 y en 2023;
+  - se cumple si mejora en al menos un horizonte y no empeora en ninguno.
+- **Condición 2, la alerta no pierde:** se aplica la regla simétrica del protocolo a F+A3 frente a F∩A3. Se
+  cumple si ningún horizonte da «pierde»; gana, empate y compensa son aceptables.
+- **Decisión:**
+  - si se cumplen las dos condiciones, se adopta F+A3 y hay una configuración congelada nueva, con fecha igual
+    a la del commit de la constante nueva;
+  - si no, se queda F y el congelamiento sigue en 2026-10-27.
+- **No decide:** 2024 (contraste), 2025 (sensibilidad de conteos), la robustez sin las 8 primeras semanas de
+  2017, SHAP, la antelación, el recall de brotes nuevos y el conteo por fase de la curva.
