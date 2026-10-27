@@ -986,11 +986,11 @@ de F+A3: la guarda mejora más que el rango entre semillas.
 
 #### El costo en la alerta, que la regla no mide
 
-La regla pide que la alerta empeore en las dos temporadas para declarar «pierde». En 2022 empeora y en 2023 no
-se mueve:
+La regla pide que la alerta empeore en las dos temporadas para declarar «pierde». En 2022 empeora; en 2023 sube
+un poco (F1 supera su rango hacia arriba en h2 y h4, por menos de 0,01):
 
 - **F1 a 0,50, Δ 2022 / 2023:** h2 +0,007 / +0,006; h3 −0,048 / +0,002; h4 **−0,192** / +0,009. En 2022 · h4 la
-  caída supera el umbral de empate (0,061); en 2023, no.
+  caída supera el umbral de empate (0,060).
 - **Recall 2022:** h4 0,376 → **0,202**; h3 0,531 → 0,462.
 - **AUPRC 2022:** −0,006 / −0,008 / −0,009. **Brier 2022:** +0,001 / +0,002 / +0,005. Ninguna supera su rango en
   las dos temporadas.
@@ -1017,6 +1017,29 @@ se mueve:
 
 En resumen: F+A3 estima mucho mejor la magnitud, pero alerta menos en 2022 · h4. La regla preregistrada da más
 peso al conteo y acepta ese costo porque no se repite en 2023.
+
+#### Auditoría del complemento (`revisor-modelado`, 2026-10-27)
+
+- **Coinciden:**
+  - la decisión: las dos condiciones se cumplen en h2, h3 y h4;
+  - los 12 deltas del conteo, que superan su umbral por un factor de 4 a 12;
+  - la condición 2 (empate en los tres horizontes);
+  - la tabla de métricas (F1, razones, MAE y RMSE en casos);
+  - el recall y el recall de brotes nuevos;
+  - la HU0007-4: en 2023 · h3 y h4, F+A3 cumple en las 5 semillas, no en la frontera;
+  - la ausencia de fuga;
+  - el orden de los commits (preregistro `e5d90be` antes que los resultados `424a148`).
+- **Diferencias de lectura, las mismas del encargo principal:** antelación en h3 (1 inicio de 95) y frente a la
+  persistencia en h4 (con la lectura del revisor, −0,042, IC −0,137 a 0,053). No cambian ninguna conclusión.
+- **Márgenes y fragilidades:**
+  - Antelación de F+A3 frente a F∩A3 en h3: el extremo superior del IC es exactamente 0,000. Con «≤ 0» habría
+    «empeora en antelación» y el veredicto sería «compensa» (por el veto de la razón MAE), no «pierde». La
+    condición 2 se cumple igual.
+  - El costo en 2022 · h4 depende del recorte del logit en Platt, un detalle que el texto del protocolo no fija
+    (el código usa 1e-6). El 12 % de las probabilidades sin calibrar de F+A3 son < 1e-6. Con un recorte de 1e-12,
+    F1 2022 · h4 baja a 0,254 en lugar de 0,333. El veredicto no cambia, pero **el costo en la alerta podría ser
+    mayor que el reportado**.
+- **No verificable sin reentrenar:** robustez, SHAP y conteo por fase.
 
 #### Métricas (mediana de semillas, F∩A3 → F+A3)
 
