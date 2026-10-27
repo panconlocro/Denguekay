@@ -62,20 +62,24 @@ def insumos(panel: pd.DataFrame, regla: dict) -> dict:
 def evaluar_variante(matrices: dict[int, pd.DataFrame], serie: pd.DataFrame, *,
                      columnas: list[str] | None = None, origenes: pd.DataFrame | None = None,
                      hiperparametros: dict | None = None, preparar_bloque=None,
-                     semillas: tuple[int, ...] = pa.SEMILLAS) -> dict:
-    """Predice con E3·S4_s2 y aplica el protocolo congelado, una vez por semilla.
+                     semillas: tuple[int, ...] = pa.SEMILLAS, formulacion: str = FORMULACION,
+                     dispersion: str = "dentro_muestra") -> dict:
+    """Predice con E3 (por defecto S4_s2) y aplica el protocolo congelado, una vez por semilla.
 
-    Devuelve ``{"predicciones": {semilla: df}, "evaluaciones": {semilla: dict}}``.
+    Devuelve ``{"predicciones": {semilla: df}, "evaluaciones": {semilla: dict},
+    "alfas": df}`` (α de cada bloque, horizonte y semilla).
     """
-    calibracion = sp.FORMULACIONES[FORMULACION]["calibracion"]
-    predicciones, evaluaciones = {}, {}
+    calibracion = sp.FORMULACIONES[formulacion]["calibracion"]
+    predicciones, evaluaciones, alfas = {}, {}, []
     for semilla in semillas:
-        pred = sp.predecir_e3(matrices, semilla, FORMULACION, columnas=columnas,
+        pred = sp.predecir_e3(matrices, semilla, formulacion, columnas=columnas,
                               origenes=origenes, hiperparametros=hiperparametros,
-                              preparar_bloque=preparar_bloque)
+                              preparar_bloque=preparar_bloque, dispersion=dispersion)
+        alfas.append(pred.attrs.pop("alfas", pd.DataFrame()))
         predicciones[semilla] = pred
         evaluaciones[semilla] = pa.evaluar(pred, serie, calibracion)
-    return {"predicciones": predicciones, "evaluaciones": evaluaciones}
+    return {"predicciones": predicciones, "evaluaciones": evaluaciones,
+            "alfas": pd.concat(alfas, ignore_index=True)}
 
 
 def resumir_variante(evaluaciones: dict[int, dict], serie: pd.DataFrame) -> dict:

@@ -170,19 +170,61 @@ COMBINADA = {
 }
 
 
+FASE4 = {
+    "fecha": "2026-10-27, antes de cualquier corrida de la fase 4 (aprobado por Rosa)",
+    "configuracion_de_partida": "C3·S4_s2 (base_6 + B3), hiperparámetros heredados (la fase 3 dejó la base), "
+                                "α dentro de la muestra",
+    "4.1_interaccion": "no se corre: los hiperparámetros elegidos en la fase 3 son los mismos que usó la fase 2, "
+                       "así que reevaluar las familias con ellos daría exactamente las mismas predicciones (mismos "
+                       "datos, semillas y parámetros) y no agrega información",
+    "4.2_alfa": {
+        "candidata": "C3·S4_s2 con α OOS", "referencia": "C3·S4_s2 con α dentro de la muestra",
+        "alfa_oos": "por bloque y horizonte, máxima verosimilitud NB2 con las predicciones fuera de muestra de "
+                    "todos los bloques anteriores (acumuladas) cuya semana objetivo cerró en el corte del bloque",
+        "primer_bloque": "temporada_2021 usa el pseudo-bloque temporada_2020 (entrenado con lo cerrado al "
+                         "2019-08-03), que solo estima α: no se evalúa ni entra en Platt",
+        "respaldo": "si la α OOS de un bloque y horizonte no converge, queda a menos de 1e-3 (en log α) de un "
+                    "límite del optimizador [-12, 6], o sale de [mín / 5, máx × 5] de las α dentro de la muestra "
+                    "de 2021–2024 (mismo horizonte y semilla), ese bloque usa la α dentro de la muestra y se "
+                    "reporta (salida_probabilistica.alfas_oos); fijado en el código antes de ver ninguna α OOS",
+        "nota_rango": "el rango usa las α dentro de la muestra de los 4 bloques, incluidos los posteriores al "
+                      "bloque que se revisa; es solo un control de validez, no entra en ninguna predicción",
+        "adopcion": "gana → α OOS; empate o pierde → α dentro de la muestra (más simple: sin pseudo-bloque)",
+        "limitacion": "2020 tiene solo 2 semanas brote y cruza el inicio de la pandemia (posible subregistro, "
+                      "hipótesis); la dispersión de una temporada tranquila puede no representar la de una "
+                      "epidémica, y esa α entra en la cadena de Platt de 2022",
+        "lectura": "α por bloque y horizonte con los dos métodos, incluida la de 2021 (OOS desde 2020)",
+    },
+    "4.3_s4_s3": {
+        "candidata": "C3·S4_s3", "referencia": "C3·S4_s2",
+        "alfa": "la que salga de la 4.2, en las dos ramas",
+        "adopcion": "gana → S4_s3; empate → S4_s2 (más simple: sin margen de persistencia); pierde → S4_s2",
+    },
+    "4.4_rangos": "mínimo, mediana, máximo y rango de las 5 semillas de la configuración final por métrica, "
+                  "bloque (2022–2025) y horizonte, más antelación, recall de brotes nuevos y α; si la "
+                  "configuración final no cambia, se reutilizan las semillas de la base de la fase 3",
+    "lecturas_que_no_deciden": ["antelación", "recall de brotes nuevos", "posible señal de temporada",
+                                "costo en el conteo con el contraste 2024",
+                                "robustez sin las 8 primeras semanas de orígenes de 2017"],
+    "regla": "simétrica del protocolo, 5 semillas, por horizonte; 2024 no decide",
+}
+
+
 def comparaciones() -> dict:
     """Número de comparaciones preregistradas (cada una se evalúa en h=2, 3 y 4)."""
     por_variante = sum(len(v["comparar_contra"]) for v in VARIANTES)
     return {"bloque_A": sum(len(v["comparar_contra"]) for v in VARIANTES if v["bloque"] == "A"),
             "bloque_B": sum(len(v["comparar_contra"]) for v in VARIANTES if v["bloque"] == "B"),
             "combinada": 2, "total": por_variante + 2, "condicional_B6": 1,
+            "fase3_hiperparametros": 1, "fase4": 2, "total_encargo": por_variante + 2 + 1 + 2,
+            "nota_encargo": "total (fases 2a–2c) + 1 de la fase 3 + 2 de la fase 4 (4.2 y 4.3); la 4.1 no se corre",
             "nota_combinada": "C frente a B y C frente a C3; C3 frente a B reutiliza B3 frente a B (2b)",
             "nota": "cada comparación se evalúa por horizonte (h=2, 3, 4); 2024 no decide"}
 
 
 def como_dict() -> dict:
     """Preregistro completo, listo para guardar en el JSON de métricas."""
-    return {"variantes": VARIANTES, "b6": B6_CONDICIONAL, "combinada": COMBINADA,
+    return {"variantes": VARIANTES, "b6": B6_CONDICIONAL, "combinada": COMBINADA, "fase4": FASE4,
             "aclaracion_extension": ACLARACION_EXTENSION,
             "comparaciones": comparaciones(),
             "reglas": ["ventanas a priori, sin elegir el rezago que más resaltó",

@@ -173,10 +173,11 @@ def figura_deltas(metricas: pd.DataFrame, referencias: dict[str, str], metrica: 
     return fig
 
 
-def evaluar_y_resumir(matrices, serie, *, columnas, origenes, preparar_bloque=None, hiperparametros=None) -> dict:
+def evaluar_y_resumir(matrices, serie, *, columnas, origenes, preparar_bloque=None, hiperparametros=None,
+                      formulacion=fh.FORMULACION, dispersion="dentro_muestra") -> dict:
     """``fe_hiperparametros.evaluar_variante`` + ``resumir_variante`` en un paso."""
     r = fh.evaluar_variante(matrices, serie, columnas=columnas, origenes=origenes, preparar_bloque=preparar_bloque,
-                            hiperparametros=hiperparametros)
+                            hiperparametros=hiperparametros, formulacion=formulacion, dispersion=dispersion)
     return {**r, "resumen": fh.resumir_variante(r["evaluaciones"], serie)}
 
 

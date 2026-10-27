@@ -27,6 +27,15 @@ distribución predicha en probabilidad, nunca como variable de entrada. La
 dispersión de la binomial negativa se estima por máxima verosimilitud con las
 predicciones dentro de la muestra de entrenamiento del bloque (causal, aunque
 puede subestimarla); la calibración Platt posterior corrige la escala.
+
+Con ``dispersion="oos"`` (fase 4.2 del encargo de FE) la α de cada bloque se
+estima con las predicciones fuera de muestra de los bloques anteriores cuya
+semana objetivo ya cerró en el corte (acumuladas). El primer bloque
+(temporada 2021) usa un pseudo-bloque ``temporada_2020`` que solo sirve para
+eso. Respaldo preregistrado: si la α OOS de un bloque y horizonte no converge,
+queda en el límite del optimizador o sale de [mín / 5, máx × 5] de las α dentro
+de la muestra de 2021–2024 (mismo horizonte y semilla), ese bloque usa la α
+dentro de la muestra y se marca.
 """
 
 import numpy as np
@@ -49,6 +58,13 @@ FORMULACIONES = {
     "S5_iso": {"conteo": "log1p", "probabilidad": "clasificador", "calibracion": "isotonica"},
     "S5_spw": {"conteo": "log1p", "probabilidad": "clasificador_spw", "calibracion": "platt"},
 }
+DISPERSIONES = ("dentro_muestra", "oos")
+# Pseudo-bloque que solo estima la α OOS del primer bloque; no se evalúa ni entra en Platt.
+BLOQUE_ALFA_INICIAL = ("temporada_2020", "temporada", 2020)
+LIMITES_LOG_ALFA = (-12.0, 6.0)
+TOLERANCIA_LIMITE_LOG_ALFA = 1e-3
+FACTOR_RANGO_ALFA = 5.0
+BLOQUES_RANGO_ALFA = ("temporada_2021", "temporada_2022", "temporada_2023", "temporada_2024")
 # Modelos que se entrenan y despliegan por estrategia (S4 no usa clasificador).
 MODELOS = {(e, f): (n // 2 if FORMULACIONES[f]["probabilidad"] == "binomial_negativa" else n)
            for e, n in eh.MODELOS_POR_ESTRATEGIA.items() for f in FORMULACIONES}
@@ -99,6 +115,11 @@ def predecir_conteo(modelo: XGBRegressor, x, conteo: str, margen=None) -> np.nda
 
 def dispersion_binomial_negativa(mu, y) -> float:
     """α de la binomial negativa NB2 (var = μ + αμ²) por máxima verosimilitud."""
+    return dispersion_binomial_negativa_detalle(mu, y)["alpha"]
+
+
+def dispersion_binomial_negativa_detalle(mu, y) -> dict:
+    """α NB2 por máxima verosimilitud, con convergencia y si quedó en un límite del optimizador."""
     mu = np.clip(np.asarray(mu, float).ravel(), 1e-6, None)
     y = np.asarray(y, float).ravel()
 
@@ -107,8 +128,46 @@ def dispersion_binomial_negativa(mu, y) -> float:
         r = 1 / a
         return -np.sum(special.gammaln(y + r) - special.gammaln(r) - special.gammaln(y + 1)
                        + r * np.log(r / (r + mu)) + y * np.log(mu / (r + mu)))
-    resultado = optimize.minimize_scalar(nll, bounds=(-12, 6), method="bounded")
-    return float(np.exp(resultado.x))
+    lo, hi = LIMITES_LOG_ALFA
+    resultado = optimize.minimize_scalar(nll, bounds=(lo, hi), method="bounded")
+    x = float(resultado.x)
+    return {"alpha": float(np.exp(x)), "convergio": bool(resultado.success) and np.isfinite(x),
+            "en_limite": min(x - lo, hi - x) < TOLERANCIA_LIMITE_LOG_ALFA, "n": int(mu.size)}
+
+
+def alfas_oos(pruebas_por_bloque: dict, cortes: dict, alfas_dentro: dict) -> pd.DataFrame:
+    """α OOS por bloque y horizonte, con el respaldo preregistrado.
+
+    ``pruebas_por_bloque[bloque][h]`` tiene ``semana_inicio``, ``casos_predichos`` y
+    ``casos_Dengue`` de la prueba del bloque, en orden cronológico de bloques (el
+    pseudo-bloque primero). Para cada bloque evaluado se juntan las pruebas de los
+    bloques anteriores con la semana objetivo cerrada en su corte.
+    """
+    nombres = list(pruebas_por_bloque)
+    filas = []
+    for i, bloque in enumerate(nombres):
+        if bloque == BLOQUE_ALFA_INICIAL[0]:
+            continue
+        corte = cortes[bloque]
+        for h, a_dentro in alfas_dentro[bloque].items():
+            previas = pd.concat([pruebas_por_bloque[b][h] for b in nombres[:i]], ignore_index=True)
+            previas = previas[(previas.semana_inicio + pd.Timedelta(days=6)).le(corte)]
+            rango = [alfas_dentro[b][h] for b in BLOQUES_RANGO_ALFA if b in alfas_dentro]
+            minimo, maximo = min(rango) / FACTOR_RANGO_ALFA, max(rango) * FACTOR_RANGO_ALFA
+            if previas.empty:
+                d = {"alpha": np.nan, "convergio": False, "en_limite": False, "n": 0}
+            else:
+                d = dispersion_binomial_negativa_detalle(previas.casos_predichos, previas.casos_Dengue)
+            en_rango = bool(np.isfinite(d["alpha"]) and minimo <= d["alpha"] <= maximo)
+            respaldo = not (d["convergio"] and not d["en_limite"] and en_rango)
+            filas.append({"bloque": bloque, "horizonte": h, "alpha_dentro_muestra": a_dentro,
+                          "alpha_oos": d["alpha"], "n_oos": d["n"], "convergio": d["convergio"],
+                          "en_limite": d["en_limite"], "rango_minimo": minimo, "rango_maximo": maximo,
+                          "en_rango": en_rango, "respaldo": respaldo,
+                          "alpha_usada": a_dentro if respaldo else d["alpha"],
+                          "bloques_previos": ",".join(sorted(previas.bloque_origen.unique()))
+                          if not previas.empty else ""})
+    return pd.DataFrame(filas)
 
 
 def umbral_conteo(umbral_brote) -> np.ndarray:
@@ -173,7 +232,7 @@ def predecir_e1(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: st
 def predecir_e3(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: str,
                 devolver_modelos: bool = False, columnas: list[str] | None = None,
                 origenes: pd.DataFrame | None = None, hiperparametros: dict | None = None,
-                preparar_bloque=None):
+                preparar_bloque=None, dispersion: str = "dentro_muestra"):
     """E3 (multi-salida desde el mismo origen) con la formulación indicada.
 
     En S3 el ``base_margin`` tiene una columna por salida; las tres valen
@@ -187,8 +246,17 @@ def predecir_e3(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: st
     ``preparar_bloque(origenes, corte)`` devuelve los orígenes con las columnas
     que dependen de una transformación aprendida (p. ej. el CP1 socio),
     ajustada solo con lo cerrado al ``corte`` del bloque.
+
+    ``dispersion`` (solo S4): ``"dentro_muestra"`` (por defecto) u ``"oos"``
+    (ver el docstring del módulo). Las α de cada bloque y horizonte quedan en
+    ``salida.attrs["alfas"]``.
     """
     f = FORMULACIONES[formulacion]
+    if dispersion not in DISPERSIONES:
+        raise ValueError(f"Dispersión desconocida: {dispersion}")
+    if dispersion == "oos" and f["probabilidad"] != "binomial_negativa":
+        raise ValueError("La α OOS solo aplica a las formulaciones S4")
+    oos = dispersion == "oos"
     H = eh.HORIZONTES_ESTRATEGIA
     base_origenes = eh.tabla_origenes(matrices[2]) if origenes is None else origenes
     col_reg = list(eh.GENERICAS) if columnas is None else list(columnas)
@@ -202,8 +270,12 @@ def predecir_e3(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: st
     margen_todo = (np.repeat(margen_persistencia(base_origenes.hist_lag_a)[:, None], len(H), axis=1)
                    if f["conteo"] == "poisson_margen" else None)
     partes, modelos = [], {}
-    for bloque, tipo, periodo in eh.bloques():
+    pruebas_oos, cortes, alfas_dentro, pendientes = {}, {}, {}, []
+    lista = [BLOQUE_ALFA_INICIAL, *eh.bloques()] if oos else eh.bloques()
+    for bloque, tipo, periodo in lista:
+        pseudo = bloque == BLOQUE_ALFA_INICIAL[0]
         pruebas, corte = eh._cortes_comunes(matrices, tipo, periodo)
+        cortes[bloque] = corte
         origenes = base_origenes if preparar_bloque is None else preparar_bloque(base_origenes, corte)
         if preparar_bloque is not None and (len(origenes) != len(base_origenes)
                                             or not origenes.index.equals(base_origenes.index)):
@@ -223,11 +295,13 @@ def predecir_e3(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: st
         if f["probabilidad"] == "binomial_negativa":
             ajuste = predecir_conteo(reg, train[col_reg], f["conteo"], m_tr)
             alphas = [dispersion_binomial_negativa(ajuste[:, i], y_casos[:, i]) for i in range(len(H))]
+            if not pseudo:
+                alfas_dentro[bloque] = dict(zip(H, alphas))
         else:
             spw = _spw(y_brote) if f["probabilidad"] == "clasificador_spw" else None
             cls = _clasificador(semilla, spw, **extra).fit(train[col_cls], y_brote)
             prob_todo = cls.predict_proba(origenes[col_cls])
-        if devolver_modelos:
+        if devolver_modelos and not pseudo:
             modelos[bloque] = {"regresor": reg, "clasificador": cls, "alphas": alphas,
                                "x_reg": train[col_reg], "x_cls": train[col_cls]}
         for paso, h in enumerate(H):
@@ -239,11 +313,28 @@ def predecir_e3(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: st
                                     how="left", validate="one_to_one")
             if test.casos_predichos.isna().any() or not test.origen_cierre_mimo.eq(test.origen_cierre).all():
                 raise ValueError(f"Predicciones multi-salida incompletas o con origen distinto en h={h}")
+            if oos:
+                pruebas_oos.setdefault(bloque, {})[h] = test[["semana_inicio", "casos_predichos", "casos_Dengue"]] \
+                    .assign(bloque_origen=bloque)
+                if not pseudo:
+                    pendientes.append((bloque, h, test))
+                continue
             if cls is None:
                 test["probabilidad_brote"] = probabilidad_binomial_negativa(
                     test.casos_predichos, alphas[paso], test.umbral_brote_casos)
             partes.append(eh._salida(test, bloque, test.casos_predichos, test.probabilidad_brote))
+    if oos:
+        alfas = alfas_oos(pruebas_oos, cortes, alfas_dentro)
+        usada = alfas.set_index(["bloque", "horizonte"]).alpha_usada
+        for bloque, h, test in pendientes:
+            test["probabilidad_brote"] = probabilidad_binomial_negativa(
+                test.casos_predichos, usada[(bloque, h)], test.umbral_brote_casos)
+            partes.append(eh._salida(test, bloque, test.casos_predichos, test.probabilidad_brote))
+    else:
+        alfas = pd.DataFrame([{"bloque": b, "horizonte": h, "alpha_dentro_muestra": a, "alpha_usada": a}
+                              for b, d in alfas_dentro.items() for h, a in d.items()])
     salida = pd.concat(partes, ignore_index=True).assign(estrategia="E3", formulacion=formulacion, semilla=semilla)
+    salida.attrs["alfas"] = alfas.assign(dispersion=dispersion, semilla=semilla) if len(alfas) else alfas
     return (salida, modelos) if devolver_modelos else salida
 
 
