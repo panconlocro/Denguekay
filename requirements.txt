@@ -17,6 +17,7 @@ xgboost>=3,<4
 scikit-learn>=1.6,<2
 mlflow>=3,<4
 great_expectations>=1.5,<2
+optuna>=4.5,<5
 nbstripout
 
 # Backend: PostgreSQL/Supabase, API y verificación.

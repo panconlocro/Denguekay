@@ -10,14 +10,14 @@ Datos: panel **distrito × semana epidemiológica**, 65 distritos de Piura, 2017
 bronze  -> crudo tal cual llegó de la fuente
 silver  -> limpio, un dataset por fuente
 silver/integrado -> fuentes silver unidas (meteo+socio+epi), SIN features derivadas
-gold    -> SOLO el dataset con feature engineering ya aplicado. HOY ESTÁ VACÍO.
+gold    -> dataset con feature engineering: h2 y h4 (+ manifest_fase6.json). Lo regenera el equipo (notebook 22).
 ```
-Por indicación del asesor de tesis, gold no se toca hasta que el equipo haga el feature engineering. **Dataset de trabajo para el EDA:** `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar siempre con `src.eda.carga.cargar_integrado()`).
+Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `features.py`/notebook 22; Claude propone los cambios. **Dataset de trabajo para el EDA:** `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar siempre con `src.eda.carga.cargar_integrado()`).
 
 ## Reglas duras
 1. **Estructura:** antes de crear cualquier archivo lee `docs/estructuraRepo.md` y respétalo. Si algo nuevo no cabe en esa estructura, propón el cambio a Rosa y actualiza ese documento en el mismo cambio; no inventes carpetas por tu cuenta.
 2. **Los datos son de solo lectura.** Nunca escribas, borres ni modifiques nada dentro de `data/` (ni bronze, ni silver, ni reference, ni gold). Si el análisis exige corregir datos, lo **reportas y propones** el cambio en el pipeline (notebooks 03–09 / `src/processing`); no lo haces tú.
-3. **Nada de feature engineering.** No construyas ni guardes lags, medias móviles, tasas, dummies ni ninguna columna derivada como parte del dataset. Para *analizar* puedes calcular lags o tasas en memoria dentro de un notebook; nunca se persisten en `data/`. El EDA recomienda, el feature engineering (fase posterior, decidida por el equipo) implementa.
+3. **Variables derivadas: solo en memoria.** En el EDA no se construyen features. En el modelado sí se calculan variables nuevas, pero solo en memoria, con funciones de `src/modeling/` y un test de no fuga por perturbación. Nunca se guardan en `data/`. Si una variable entra a la configuración final, se **propone** el cambio en `features.py` y el equipo regenera gold.
 4. **`ubigeo` es string de 6 dígitos** (con ceros a la izquierda) en todo el pipeline. Nunca lo castees a int.
 5. **Rutas** siempre desde `src/utils/paths.py`. Nada de rutas absolutas ni `C:\...` en código.
 6. **`src/` vs `notebooks/`:** si la lógica se reutiliza o pasa de ~10 líneas, va en `src/` (para EDA: `src/eda/`) con un test simple en `tests/` si tiene lógica no trivial. El notebook orquesta, muestra y comenta.

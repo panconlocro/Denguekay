@@ -171,19 +171,29 @@ def predecir_e1(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: st
 # ---------------------------------------------------------------------------
 
 def predecir_e3(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: str,
-                devolver_modelos: bool = False):
+                devolver_modelos: bool = False, columnas: list[str] | None = None,
+                origenes: pd.DataFrame | None = None, hiperparametros: dict | None = None):
     """E3 (multi-salida desde el mismo origen) con la formulación indicada.
 
     En S3 el ``base_margin`` tiene una columna por salida; las tres valen
     ``log(casos del origen + 0,5)`` porque la persistencia de h=2, 3 y 4 es
     el mismo dato observado en el origen.
+
+    Sin argumentos opcionales reproduce el encargo de arquitectura. El encargo
+    de FE e hiperparámetros pasa ``columnas`` (``base_6`` + variables nuevas),
+    ``origenes`` (``eh.tabla_origenes`` con esas columnas ya agregadas, en
+    nombres genéricos) e ``hiperparametros`` (sobrescriben los fijos).
     """
     f = FORMULACIONES[formulacion]
     H = eh.HORIZONTES_ESTRATEGIA
-    origenes = eh.tabla_origenes(matrices[2])
-    col_reg, col_cls = list(eh.GENERICAS), [*eh.GENERICAS, eh.POBLACION]
+    origenes = eh.tabla_origenes(matrices[2]) if origenes is None else origenes
+    col_reg = list(eh.GENERICAS) if columnas is None else list(columnas)
+    col_cls = [*col_reg, eh.POBLACION]
+    faltan = [c for c in col_reg if c not in origenes]
+    if faltan:
+        raise ValueError(f"Columnas ausentes en la tabla de orígenes: {faltan}")
     objetivos = [f"semana_inicio_h{h}" for h in H]
-    extra = {"multi_strategy": "multi_output_tree"}
+    extra = {"multi_strategy": "multi_output_tree", **(hiperparametros or {})}
     margen_todo = (np.repeat(margen_persistencia(origenes.hist_lag_a)[:, None], len(H), axis=1)
                    if f["conteo"] == "poisson_margen" else None)
     partes, modelos = [], {}

@@ -80,6 +80,10 @@ PREDICCIONES_COMPACTAS = MODELS / "experimentos" / "validacion_temporal_compacta
 METRICAS_ARQUITECTURA = DOCS / "modeling" / "metricas" / "arquitectura_horizontes.json"
 FIGURAS_ARQUITECTURA = DOCS / "modeling" / "figuras" / "arquitectura_horizontes"
 EXPERIMENTOS_ARQUITECTURA = MODELS / "experimentos" / "arquitectura_horizontes"
+# Encargo de feature engineering e hiperparámetros sobre E3·S4_s2 (docs/modeling/fe_hiperparametros.md)
+METRICAS_FE_HIPERPARAMETROS = DOCS / "modeling" / "metricas" / "fe_hiperparametros.json"
+FIGURAS_FE_HIPERPARAMETROS = DOCS / "modeling" / "figuras" / "fe_hiperparametros"
+EXPERIMENTOS_FE_HIPERPARAMETROS = MODELS / "experimentos" / "fe_hiperparametros"
 SERVING_EJECUCIONES =SERVING_MODELS / "ejecuciones"
 SERVING_PROTOCOLO_REGENERADO = SERVING_MODELS / "protocolo_regenerado"
 EDA_DOCS = DOCS / "eda"
