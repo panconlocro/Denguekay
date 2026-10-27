@@ -106,10 +106,12 @@ VARIANTES = [
                         "no observada y es una segunda diferencia de conteos chicos (más ruido que la pendiente)",
      "comparar_contra": ["referencia_B"]},
     {"id": "B4", "bloque": "B", "fuente": "epidemiologica", "familia": "linea_base_estacional",
-     "columnas": ["linea_base_log_media_h2", "linea_base_log_media_h3", "linea_base_log_media_h4",
-                  "linea_base_log_umbral_h2", "linea_base_log_umbral_h3", "linea_base_log_umbral_h4"],
-     "regla": "log(1 + media) y log(1 + umbral) de la misma semana objetivo t+h en los 5 años previos "
-              "(etiqueta_brote, con su test de no fuga), una columna por salida h=2, 3, 4",
+     "columnas": ["linea_base_log_umbral_h2", "linea_base_log_umbral_h3", "linea_base_log_umbral_h4"],
+     "regla": "log(1 + umbral) de la misma semana objetivo t+h en los 5 años previos (etiqueta_brote, con "
+              "su test de no fuga), una columna por salida h=2, 3, 4, todas conocidas en el origen",
+     "correccion": "2026-10-27, antes de cualquier resultado de la fase 2 (aprobada por Rosa): versión "
+                   "anterior con 6 columnas (log(1 + media) y log(1 + umbral) por h); se deja solo el umbral "
+                   "porque ya contiene la media (media + 1,5 DE) y conviene menos columnas con solo 5 años previos",
      "ventana": "años previos a la semana objetivo (se conoce al emitir)",
      "por_que": "lleva al modelo de conteo la referencia estacional que hoy solo usa la binomial negativa",
      "evidencia_fase1": "no aplica (no es dinámica previa al inicio)", "comparar_contra": ["referencia_B"]},

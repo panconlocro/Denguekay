@@ -152,8 +152,13 @@ anual no está verificada: su resultado no puede presentarse como un pronóstico
 | B1 | Dinámica espacial | fracción en brote de vecinos/provincia/región; nº de vecinos knn5 con casos nuevos; cambio de log(1 + casos) en 1 y 4 semanas de vecinos/provincia/región (10 columnas) | `o`; `o−1→o` y `o−4→o` | fracciones en brote, casos nuevos y cambio de 1 semana: observadas; cambios de 4 semanas: mixtos (se incluyen por simetría a priori) | B; base_6 + A1 + A2 |
 | B2 | Distritos núcleo | log(1 + casos), fracción en brote y cambio en 4 semanas de los 5 distritos con más casos del entrenamiento del bloque, excluido el propio | `o`; `o−4→o` | observada (importación: hipótesis) | B |
 | B3 | Historia propia ampliada | semanas desde el último caso (tope 52), pendiente MCO de 4 semanas, log(1 + casos) de la temporada anterior | hasta `o` | semanas desde el último caso: observada; pendiente: no observada (hipótesis a priori); temporada anterior: no evaluable | B |
-| B4 | Línea base estacional | log(1 + media) y log(1 + umbral) de la semana objetivo `t+h` en los 5 años previos, una columna por h (6) | años previos | no aplica (se conoce al emitir) | B |
+| B4 | Línea base estacional | log(1 + umbral) de la semana objetivo `t+h` en los 5 años previos, una columna por h (3)‡ | años previos | no aplica (se conoce al emitir) | B |
 | B5 | Clima de incubación | media de la anomalía (climatología del bloque) de temperatura media y mínima, humedad y precipitación en `o−4..o` y `o−8..o−4` (8 columnas) | k = h..h+4 y h+4..h+8 (en h=4: 4–8 y 8–12) | anomalías de temperatura media y humedad: observadas; temperatura mínima y precipitación: hipótesis solo 2017 | B; base_6 + A3 |
+
+‡ **Corrección del 2026-10-27, anterior a cualquier resultado de la fase 2** (aprobada por Rosa): la versión
+anterior de B4 tenía 6 columnas, `log(1 + media)` y `log(1 + umbral)` para h=2, 3 y 4. Quedan solo las 3 del
+umbral, porque el umbral ya contiene la media (media + 1,5 DE) y conviene tener menos columnas con solo 5 años
+previos de historia. El número de comparaciones no cambia (15). Con esto, el preregistro queda congelado.
 
 Descartes sin probar:
 - **Aceleración de la historia propia:** no observada y es una segunda diferencia de conteos chicos.
