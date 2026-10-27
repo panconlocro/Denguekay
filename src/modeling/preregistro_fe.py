@@ -98,7 +98,9 @@ VARIANTES = [
     {"id": "B3", "bloque": "B", "fuente": "epidemiologica", "familia": "historia_propia_ampliada",
      "columnas": ["propia_semanas_desde_ultimo_caso", "propia_pendiente_4", "propia_log_casos_temporada_anterior"],
      "regla": "semanas desde la última semana con casos (tope 52), pendiente MCO de log(1 + casos) en "
-              "o−3..o, y log(1 + casos) de la temporada anterior completa",
+              "o−3..o, y log(1 + casos) de la temporada anterior completa; antes del panel (temporada 2016) "
+              "con la historia de la regla de brote (epi_piura_semanal.csv del manifest, sin registro = cero); "
+              "si no hay historia, nulo sin excluir la fila",
      "ventana": "hasta o; temporada anterior cerrada",
      "por_que": "base_6 resume 4 semanas; esto agrega cuánto lleva el distrito sin casos y su nivel previo",
      "evidencia_fase1": "semanas desde el último caso: observada; pendiente: no observada (se mantiene a "
@@ -116,11 +118,14 @@ VARIANTES = [
      "por_que": "lleva al modelo de conteo la referencia estacional que hoy solo usa la binomial negativa",
      "evidencia_fase1": "no aplica (no es dinámica previa al inicio)", "comparar_contra": ["referencia_B"]},
     {"id": "B5", "bloque": "B", "fuente": "meteorologica", "familia": "clima_incubacion",
-     "columnas": [f"{c}_anomalia_{v}" for v in ("o4_o", "o8_o4")
+     "columnas": [f"{c}_anomalia_{v}" for v in ("o4_o", "o9_o5")
                   for c in ("temp_media", "temp_min", "hum_rel_media", "precip_total_mm")],
      "regla": "media semanal de la anomalía (valor − climatología distrito × semana ajustada con el "
-              "entrenamiento del bloque) en o−4..o y en o−8..o−4",
-     "ventana": "o−4..o y o−8..o−4: k = h..h+4 y h+4..h+8; en h=4 coinciden con las ventanas a priori 4–8 y 8–12",
+              "entrenamiento del bloque) en o−4..o y en o−9..o−5 (5 semanas cada una, sin solaparse)",
+     "ventana": "o−4..o y o−9..o−5: k = h..h+4 y h+5..h+9; en h=4, 4–8 y 9–13 (las ventanas a priori 4–8 y 8–12 "
+                "sin la semana compartida)",
+     "correccion": "2026-10-27, antes de cualquier resultado de la fase 2b (aprobada por Rosa): versión anterior "
+                   "o−8..o−4, que compartía la semana o−4 con la otra ventana",
      "por_que": "clima con rezagos de incubación que gold no trae (temperatura) y en anomalía, que quita el "
                 "nivel propio del distrito y la semana",
      "evidencia_fase1": "anomalías de temperatura media (−) y humedad (+): observada; temperatura mínima y "
@@ -133,6 +138,11 @@ B6_CONDICIONAL = {
     "estado": "no preregistrada: solo si alguna de A4–A7 gana; en ese caso se propone a Rosa antes de correrla",
     "por_que": "la fase 1 no analizó lo socio (fijo por distrito, no describe la dinámica previa al inicio)",
 }
+
+ACLARACION_EXTENSION = (
+    "2026-10-27, antes de cualquier resultado de la fase 2b (aprobada por Rosa): en las comparaciones de "
+    "extensión el candidato es base_6 + familia A + familia B y la referencia base_6 + familia A (B1: "
+    "base_6+A1+A2+B1 frente a base_6+A1+A2; B5: base_6+A3+B5 frente a base_6+A3), para medir qué agrega lo nuevo.")
 
 COMBINADA = {
     "id": "C", "regla": "una sola variante con las familias de A y B que ganan (o empatan con mejor antelación o "
@@ -152,6 +162,7 @@ def comparaciones() -> dict:
 def como_dict() -> dict:
     """Preregistro completo, listo para guardar en el JSON de métricas."""
     return {"variantes": VARIANTES, "b6": B6_CONDICIONAL, "combinada": COMBINADA,
+            "aclaracion_extension": ACLARACION_EXTENSION,
             "comparaciones": comparaciones(),
             "reglas": ["ventanas a priori, sin elegir el rezago que más resaltó",
                        "transformaciones aprendidas ajustadas con el entrenamiento de cada bloque",
