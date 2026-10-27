@@ -78321,5 +78321,917 @@
       ]
     },
     "comparaciones_acumuladas": 19
+  },
+  "fase5_diccionario_variables": {
+    "variables": [
+      {
+        "variable": "hist_lag_a",
+        "etiqueta": "casos de dengue de la semana de origen o",
+        "columna_gold_h2": "casos_lag_2",
+        "fuente": "epidemiológica (casos de dengue, silver integrado)",
+        "definicion": "casos de dengue de la semana de origen o",
+        "ventana": "semana o",
+        "transformacion": "ninguna (conteo)",
+        "tipo": "entero ≥ 0",
+        "nulos": "en gold, las 2 primeras semanas de cada distrito; esas filas no entran a la tabla de orígenes",
+        "por_que": "persistencia: el mejor predictor simple del encargo de arquitectura (base_6)",
+        "evidencia": "base_6, referencia B (fase 0)",
+        "test_no_fuga": "tests/test_historia_calendario.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte",
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 2084.0,
+        "nulos_observados": 0,
+        "filas": 30160,
+        "periodo": "2017-01-28 a 2025-12-13"
+      },
+      {
+        "variable": "hist_lag_b",
+        "etiqueta": "casos de dengue de la semana o − 1",
+        "columna_gold_h2": "casos_lag_3",
+        "fuente": "epidemiológica",
+        "definicion": "casos de dengue de la semana o − 1",
+        "ventana": "semana o − 1",
+        "transformacion": "ninguna (conteo)",
+        "tipo": "entero ≥ 0",
+        "nulos": "en gold, las 3 primeras semanas de cada distrito; no entran a la tabla de orígenes",
+        "por_que": "tendencia inmediata junto con hist_lag_a",
+        "evidencia": "base_6, referencia B (fase 0)",
+        "test_no_fuga": "tests/test_historia_calendario.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte",
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 2084.0,
+        "nulos_observados": 0,
+        "filas": 30160,
+        "periodo": "2017-01-28 a 2025-12-13"
+      },
+      {
+        "variable": "hist_media_4",
+        "etiqueta": "media de casos de las semanas o − 3 a o",
+        "columna_gold_h2": "casos_media_4_h2",
+        "fuente": "epidemiológica",
+        "definicion": "media de casos de las semanas o − 3 a o",
+        "ventana": "semanas o − 3..o",
+        "transformacion": "media móvil de 4 semanas",
+        "tipo": "real ≥ 0",
+        "nulos": "en gold, las 5 primeras semanas de cada distrito; no entran a la tabla de orígenes",
+        "por_que": "nivel reciente menos ruidoso que un rezago",
+        "evidencia": "base_6, referencia B (fase 0)",
+        "test_no_fuga": "tests/test_historia_calendario.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen",
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 1772.25,
+        "nulos_observados": 0,
+        "filas": 30160,
+        "periodo": "2017-01-28 a 2025-12-13"
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "etiqueta": "número de semanas con al menos 1 caso entre o − 3 y o",
+        "columna_gold_h2": "casos_semanas_positivas_4_h2",
+        "fuente": "epidemiológica",
+        "definicion": "número de semanas con al menos 1 caso entre o − 3 y o",
+        "ventana": "semanas o − 3..o",
+        "transformacion": "conteo de semanas positivas (0–4)",
+        "tipo": "entero 0–4",
+        "nulos": "en gold, las 5 primeras semanas de cada distrito; no entran a la tabla de orígenes",
+        "por_que": "persistencia de la transmisión",
+        "evidencia": "base_6, referencia B (fase 0)",
+        "test_no_fuga": "tests/test_historia_calendario.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen",
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos_observados": 0,
+        "filas": 30160,
+        "periodo": "2017-01-28 a 2025-12-13"
+      },
+      {
+        "variable": "semana_epi_seno",
+        "etiqueta": "sen(2π · ((semana epi de t) − 1) mód 52 / 52)",
+        "columna_gold_h2": "semana_epi_seno",
+        "fuente": "calendario",
+        "definicion": "sen(2π · ((semana epi de t) − 1) mód 52 / 52)",
+        "ventana": "semana objetivo t (conocida de antemano)",
+        "transformacion": "codificación cíclica",
+        "tipo": "real −1..1",
+        "nulos": "ninguno",
+        "por_que": "estacionalidad sin inventar un corte de temporada",
+        "evidencia": "base_6, referencia B (fase 0)",
+        "test_no_fuga": "tests/test_historia_calendario.py · test_calendario_conocido_y_semana_53",
+        "minimo": -1.0,
+        "mediana": -3.216245299e-16,
+        "maximo": 1.0,
+        "nulos_observados": 0,
+        "filas": 30160,
+        "periodo": "2017-01-28 a 2025-12-13"
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "etiqueta": "cos(2π · ((semana epi de t) − 1) mód 52 / 52)",
+        "columna_gold_h2": "semana_epi_coseno",
+        "fuente": "calendario",
+        "definicion": "cos(2π · ((semana epi de t) − 1) mód 52 / 52)",
+        "ventana": "semana objetivo t (conocida de antemano)",
+        "transformacion": "codificación cíclica",
+        "tipo": "real −1..1",
+        "nulos": "ninguno",
+        "por_que": "pareja del seno: ubica la semana en el círculo",
+        "evidencia": "base_6, referencia B (fase 0)",
+        "test_no_fuga": "tests/test_historia_calendario.py · test_calendario_conocido_y_semana_53",
+        "minimo": -1.0,
+        "mediana": -1.836970199e-16,
+        "maximo": 1.0,
+        "nulos_observados": 0,
+        "filas": 30160,
+        "periodo": "2017-01-28 a 2025-12-13"
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "etiqueta": "Propio: semanas desde el último caso (tope 52)",
+        "columna_gold_h2": "no está en gold (propuesta)",
+        "fuente": "epidemiológica (en memoria, features_inicio)",
+        "definicion": "semanas transcurridas desde la última semana con casos del distrito, hasta o",
+        "ventana": "semanas ≤ o",
+        "transformacion": "tope 52 semanas",
+        "tipo": "entero 0–52",
+        "nulos": "ninguno (sin caso previo = tope)",
+        "por_que": "cuánto lleva el distrito sin transmisión antes de un inicio",
+        "evidencia": "B3: gana a B en h2 y h3 (fase 2b); C3 elegida (fase 2c); 3.ª por SHAP",
+        "test_no_fuga": "tests/test_features_inicio.py · test_no_fuga_por_perturbacion y test_no_fuga_por_perturbacion_en_origenes",
+        "minimo": 0.0,
+        "mediana": 21.0,
+        "maximo": 52.0,
+        "nulos_observados": 0,
+        "filas": 30160,
+        "periodo": "2017-01-28 a 2025-12-13"
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "etiqueta": "Propio: pendiente 4 semanas (log)",
+        "columna_gold_h2": "no está en gold (propuesta)",
+        "fuente": "epidemiológica (en memoria, features_inicio)",
+        "definicion": "pendiente MCO de log(1 + casos) en las semanas o − 3..o",
+        "ventana": "semanas o − 3..o",
+        "transformacion": "log1p y pendiente lineal de 4 puntos",
+        "tipo": "real",
+        "nulos": "nulo si faltan semanas de historia; ver el conteo de nulos en la tabla de orígenes",
+        "por_que": "dirección del cambio reciente (a priori; no observada en la fase 1)",
+        "evidencia": "B3 (fase 2b), C3 (fase 2c)",
+        "test_no_fuga": "tests/test_features_inicio.py · test_no_fuga_por_perturbacion",
+        "minimo": -1.1711315408,
+        "mediana": 0.0,
+        "maximo": 1.3463477947,
+        "nulos_observados": 0,
+        "filas": 30160,
+        "periodo": "2017-01-28 a 2025-12-13"
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "etiqueta": "Propio: log(1 + casos de la temporada anterior)",
+        "columna_gold_h2": "no está en gold (propuesta)",
+        "fuente": "epidemiológica (en memoria; para 2017, histórico epi previo al panel)",
+        "definicion": "log(1 + casos de la temporada anterior completa del distrito)",
+        "ventana": "temporada anterior, cerrada antes de o",
+        "transformacion": "suma de la temporada y log1p",
+        "tipo": "real ≥ 0",
+        "nulos": "nulo solo si falta en la historia un año necesario; la fila no se excluye",
+        "por_que": "nivel previo del distrito (memoria de una temporada)",
+        "evidencia": "B3 (fase 2b), C3 (fase 2c)",
+        "test_no_fuga": "tests/test_features_inicio.py · test_temporada_2017_usa_la_historia y test_no_fuga_por_perturbacion",
+        "minimo": 0.0,
+        "mediana": 1.3862943611,
+        "maximo": 9.4701629475,
+        "nulos_observados": 0,
+        "filas": 30160,
+        "periodo": "2017-01-28 a 2025-12-13"
+      }
+    ],
+    "por_temporada": [
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2017,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 2084.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2018,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 26.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2019,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2020,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 6.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2021,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 154.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2022,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 161.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2023,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 1527.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2024,
+        "minimo": 0.0,
+        "mediana": 1.0,
+        "maximo": 482.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2025,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 41.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_a",
+        "temporada": 2026,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 8.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2017,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 2084.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2018,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 26.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2019,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2020,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 6.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2021,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 154.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2022,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 161.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2023,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 1527.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2024,
+        "minimo": 0.0,
+        "mediana": 1.0,
+        "maximo": 482.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2025,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 41.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_lag_b",
+        "temporada": 2026,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 8.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2017,
+        "minimo": 0.0,
+        "mediana": 0.5,
+        "maximo": 1772.25,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2018,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 21.75,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2019,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 2.25,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2020,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 2.5,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2021,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 125.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2022,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 125.75,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2023,
+        "minimo": 0.0,
+        "mediana": 0.25,
+        "maximo": 1319.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2024,
+        "minimo": 0.0,
+        "mediana": 1.0,
+        "maximo": 411.25,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2025,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 28.5,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_media_4",
+        "temporada": 2026,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 5.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2017,
+        "minimo": 0.0,
+        "mediana": 2.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2018,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2019,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2020,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2021,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2022,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2023,
+        "minimo": 0.0,
+        "mediana": 1.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2024,
+        "minimo": 0.0,
+        "mediana": 2.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2025,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "hist_semanas_pos_4",
+        "temporada": 2026,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 4.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2017,
+        "minimo": 0.0,
+        "mediana": 3.1354942159,
+        "maximo": 7.0842264221,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2018,
+        "minimo": 0.0,
+        "mediana": 3.3322045102,
+        "maximo": 9.4701629475,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2019,
+        "minimo": 0.0,
+        "mediana": 0.6931471806,
+        "maximo": 9.4701629475,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2020,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 5.2832037287,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2021,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 3.7376696183,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2022,
+        "minimo": 0.0,
+        "mediana": 0.6931471806,
+        "maximo": 7.3185395486,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2023,
+        "minimo": 0.0,
+        "mediana": 2.6390573296,
+        "maximo": 7.4460014983,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2024,
+        "minimo": 0.0,
+        "mediana": 5.1590552992,
+        "maximo": 9.3802519087,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2025,
+        "minimo": 0.0,
+        "mediana": 4.6728288345,
+        "maximo": 9.3802519087,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_log_casos_temporada_anterior",
+        "temporada": 2026,
+        "minimo": 0.0,
+        "mediana": 1.6094379124,
+        "maximo": 8.5259546971,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2017,
+        "minimo": -1.073922768,
+        "mediana": 0.0,
+        "maximo": 0.9531209771,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2018,
+        "minimo": -0.7749457154,
+        "mediana": 0.0,
+        "maximo": 0.6628041376,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2019,
+        "minimo": -0.5545177444,
+        "mediana": 0.0,
+        "maximo": 0.4852030264,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2020,
+        "minimo": -0.5521460918,
+        "mediana": 0.0,
+        "maximo": 0.6530877628,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2021,
+        "minimo": -0.9757305042,
+        "mediana": 0.0,
+        "maximo": 1.3463477947,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2022,
+        "minimo": -1.0223982835,
+        "mediana": 0.0,
+        "maximo": 1.2124428656,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2023,
+        "minimo": -1.1650511128,
+        "mediana": 0.0,
+        "maximo": 1.3076308968,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2024,
+        "minimo": -1.1711315408,
+        "mediana": 0.0,
+        "maximo": 1.0373491182,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2025,
+        "minimo": -0.8610319169,
+        "mediana": 0.0,
+        "maximo": 0.9015784278,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_pendiente_4",
+        "temporada": 2026,
+        "minimo": -0.7025538315,
+        "mediana": 0.0,
+        "maximo": 0.4852030264,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2017,
+        "minimo": 0.0,
+        "mediana": 1.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2018,
+        "minimo": 0.0,
+        "mediana": 17.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2019,
+        "minimo": 0.0,
+        "mediana": 52.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2020,
+        "minimo": 0.0,
+        "mediana": 52.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2021,
+        "minimo": 0.0,
+        "mediana": 52.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2022,
+        "minimo": 0.0,
+        "mediana": 8.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2023,
+        "minimo": 0.0,
+        "mediana": 3.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2024,
+        "minimo": 0.0,
+        "mediana": 0.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2025,
+        "minimo": 0.0,
+        "mediana": 10.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "propia_semanas_desde_ultimo_caso",
+        "temporada": 2026,
+        "minimo": 0.0,
+        "mediana": 26.0,
+        "maximo": 52.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2017,
+        "minimo": -1.0,
+        "mediana": -0.6631226582,
+        "maximo": 0.8229838659,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2018,
+        "minimo": -1.0,
+        "mediana": -1.722546424e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2019,
+        "minimo": -1.0,
+        "mediana": -1.722546424e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2020,
+        "minimo": -1.0,
+        "mediana": -1.722546424e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2021,
+        "minimo": -1.0,
+        "mediana": -1.60812265e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2022,
+        "minimo": -1.0,
+        "mediana": -1.722546424e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2023,
+        "minimo": -1.0,
+        "mediana": -1.722546424e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2024,
+        "minimo": -1.0,
+        "mediana": -1.722546424e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2025,
+        "minimo": -1.0,
+        "mediana": -1.722546424e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_coseno",
+        "temporada": 2026,
+        "minimo": -0.5680647467,
+        "mediana": 0.4096640295,
+        "maximo": 0.9927088741,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2017,
+        "minimo": -0.7485107482,
+        "mediana": 0.6631226582,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2018,
+        "minimo": -1.0,
+        "mediana": -1.60812265e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2019,
+        "minimo": -1.0,
+        "mediana": -1.60812265e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2020,
+        "minimo": -1.0,
+        "mediana": -1.60812265e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2021,
+        "minimo": -1.0,
+        "mediana": 0.0,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2022,
+        "minimo": -1.0,
+        "mediana": -1.60812265e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2023,
+        "minimo": -1.0,
+        "mediana": -1.60812265e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2024,
+        "minimo": -1.0,
+        "mediana": -1.60812265e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2025,
+        "minimo": -1.0,
+        "mediana": -1.60812265e-16,
+        "maximo": 1.0,
+        "nulos": 0
+      },
+      {
+        "variable": "semana_epi_seno",
+        "temporada": 2026,
+        "minimo": -1.0,
+        "mediana": -0.8542199458,
+        "maximo": -0.1205366803,
+        "nulos": 0
+      }
+    ],
+    "insumo_inferencia": {
+      "nombre": "margen_persistencia (no es columna del modelo)",
+      "definicion": "log(casos de la semana de origen + 0,5); base_margin de las tres salidas en S4_s3",
+      "uso": "obligatorio en entrenamiento e inferencia: sin los casos del origen no se puede predecir",
+      "test_no_fuga": "tests/test_salida_probabilistica.py · test_s4_y_s3_sin_fuga_por_perturbacion_del_futuro"
+    }
   }
 }
