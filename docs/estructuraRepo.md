@@ -207,6 +207,7 @@ modeling/
 ├── preregistro_fe.py        # lista cerrada de variantes A/B y número de comparaciones (fase 1 del encargo de FE)
 ├── experimentos_variables.py # orígenes por variante, CP1 por bloque, veredicto y lectura de temporada (fase 2 del encargo de FE)
 ├── features_inicio.py       # variables B1–B5 en memoria desde el estado de la semana de origen; B2/B5 por bloque (fase 2b)
+├── hiperparametros.py       # preregistro, espacio, objetivo, estudio TPE y regla de adopción de la fase 3 (HU0007-3)
 └── seguimiento_mlflow.py    # registra cada reporte de experimento en MLflow (runs anidados)
 ```
 **Va acá:** el feature engineering para el modelo y todo lo relacionado con entrenamiento y evaluación. `features.py` integra los candidatos de fase 6; `train.py` entrena los dos primeros objetivos XGBoost, `evaluate.py` contiene métricas compartidas, `ablacion_espacial.py` contrasta vecinos y jerarquía, `ablacion_clima.py` contrasta clima observado y anomalías, `ablacion_sociodemografica.py` compara bloques demográficos, `ablacion_fracciones.py` criba las 15 fracciones una por una, `ablacion_poblacion_sin_seguro.py` compara las dos candidatas fijas por separado y juntas, y `validacion_temporal_compacta.py` calibra umbrales con temporadas previas y compara matrices pequeñas. Cuando prueben un modelo nuevo, la lógica compartida (split train/test, métricas) se conserva en un solo lugar. `seguimiento_mlflow.py` registra en MLflow el reporte de cualquier experimento con la forma estándar `horizontes → variantes → folds`.
@@ -320,7 +321,8 @@ notebooks/
 ├── 29_modelado_ablacion_poblacion_sin_seguro.ipynb
 ├── 30_modelado_validacion_temporal_compacta.ipynb
 ├── 31_modelado_arquitectura_horizontes.ipynb
-└── 32_modelado_fe_inicios.ipynb
+├── 32_modelado_fe_inicios.ipynb
+└── 33_modelado_hiperparametros.ipynb
 ```
 
 Los notebooks `10`–`16` son el EDA (Hito 2, Data Understanding) y **leen** `silver/integrado/`; no escriben en `data/`. El notebook `17` audita el contrato temporal y el objetivo de la primera fase de feature engineering. El `18` construye y compara historia propia y calendario en memoria para la segunda fase. El `19` construye y audita vecinos y contexto provincial/regional rezagado. El `20` construye ventanas climáticas y compara su aporte en cortes temporales, con climatologías ajustadas antes de cada prueba. El `21` compara rasgos fijos de 2017 y anuales reconstruidos, con CP1 ajustado por fold. El `22` genera y valida gold por horizonte. El `23` audita los archivos persistidos, sintetiza variables y entrega el contrato de modelado. El `24` orquesta el primer XGBoost de conteos y alerta; el `25` compara bloques espaciales, el `26` compara clima con anomalías ajustadas por fold, el `27` compara demografía fija y anual reconstruida, el `28` criba las 15 fracciones individualmente, el `29` contrasta población censal fija y fracción sin seguro de 2017, solas y juntas, y el `30` evalúa matrices compactas con calibración progresiva. El `31` orquesta el encargo de arquitectura multi-horizonte (`docs/modeling/plan_arquitectura_horizontes.md`), fase por fase. El `32` orquesta el encargo de feature engineering sobre E3·S4_s2 (línea base, diagnóstico de inicios y experimentos de variables); el `33` hará la búsqueda de hiperparámetros. El plan y los criterios de cierre del FE están en `docs/feature_engineering/plan.md`.

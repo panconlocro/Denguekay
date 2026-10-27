@@ -402,6 +402,57 @@ def _registrar_datasets(reporte: dict, gold_dir: Path) -> None:
             mlflow.log_input(dataset, context=f"gold_h{h}")
 
 
+def registrar_estudio(
+    experimento: str, trials, *, padre: dict, artefactos: list[Path] = (), tablas: dict | None = None,
+    huella: str | None = None, descripcion: str | None = None, tracking_uri: str | None = None,
+) -> str:
+    """Registra un estudio de hiperparámetros: un run padre y un run hijo por trial.
+
+    ``trials`` es una tabla con ``numero``, ``estado``, ``objetivo``, columnas
+    ``param_*`` y métricas numéricas por trial. Los trials no completados se
+    registran con ``estado`` como etiqueta y sin objetivo, para que no se
+    pierdan en silencio. ``padre`` trae ``params`` y ``metricas`` del estudio
+    (mejores parámetros, valor de la base, número de fallidos...). Con
+    ``huella``, no se duplica un estudio ya registrado.
+    """
+    import mlflow
+
+    nombre_experimento = f"{PREFIJO_EXPERIMENTO}/{experimento}"
+    experiment_id = configurar_experimento(nombre_experimento, tracking_uri)
+    if huella is not None:
+        existente = run_con_huella(experiment_id, huella)
+        if existente is not None:
+            print(f"MLflow: ya existe el run {existente} con huella {huella[:12]} en '{nombre_experimento}'; "
+                  "no se registra otro")
+            return existente
+    etiquetas = {"experimento": experimento, "nivel": "estudio", **etiquetas_entorno()}
+    if huella is not None:
+        etiquetas[ETIQUETA_HUELLA] = huella
+    if descripcion:
+        etiquetas["mlflow.note.content"] = descripcion
+    with mlflow.start_run(experiment_id=experiment_id, run_name=experimento, tags=etiquetas) as run_padre:
+        mlflow.log_params({k: _texto_param(v) for k, v in padre.get("params", {}).items()})
+        mlflow.log_metrics({k: float(v) for k, v in padre.get("metricas", {}).items()
+                            if _numero(v) is not None})
+        for ruta in artefactos:
+            if Path(ruta).exists():
+                mlflow.log_artifact(str(ruta), "estudio")
+        for nombre, tabla in (tablas or {}).items():
+            mlflow.log_dict(json.loads(tabla.to_json(orient="records", force_ascii=False)), f"tablas/{nombre}.json")
+        for fila in trials.sort_values("numero").to_dict("records"):
+            estado = str(fila["estado"])
+            with mlflow.start_run(experiment_id=experiment_id, run_name=f"trial {int(fila['numero'])}", nested=True,
+                                  tags={"nivel": "trial", "estado": estado, "es_base": str(bool(fila.get("es_base")))}):
+                mlflow.log_params({k[len("param_"):]: _texto_param(v) for k, v in fila.items()
+                                   if k.startswith("param_") and v is not None and not (isinstance(v, float) and v != v)})
+                metricas = {k: _numero(v) for k, v in fila.items()
+                            if k not in ("numero", "estado", "es_base") and not k.startswith("param_")}
+                mlflow.log_metrics({k: v for k, v in metricas.items() if v is not None})
+        run_id = run_padre.info.run_id
+    print(f"MLflow: estudio {run_id} en '{nombre_experimento}' ({uri_seguimiento()})")
+    return run_id
+
+
 def registrar_o_avisar(experimento: str, reporte: dict, **kwargs) -> str | None:
     """Registra en MLflow; si falla, avisa sin perder las salidas ya escritas.
 

@@ -149,6 +149,36 @@ class RegistroTests(unittest.TestCase):
             self.assertEqual(variante["tags.seleccionada_en_validacion"], "regresion")
             self.assertTrue((tmp / "mlartifacts").exists())
 
+    def test_registra_estudio_con_trials_y_fallidos(self):
+        import mlflow
+        import pandas as pd
+        from src.modeling.seguimiento_mlflow import registrar_estudio
+
+        trials = pd.DataFrame({"numero": [0, 1, 2], "estado": ["COMPLETE", "FAIL", "COMPLETE"],
+                               "objetivo": [0.30, None, 0.28], "es_base": [True, False, False],
+                               "param_max_depth": [3, 5, 4], "logloss_h2_2022": [0.31, None, 0.29]})
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            uri = f"sqlite:///{(tmp / 'mlflow.db').as_posix()}"
+            anterior = os.environ.pop("MLFLOW_TRACKING_URI", None)
+            try:
+                kw = dict(padre={"params": {"mejor.max_depth": 4}, "metricas": {"fallidos": 1, "mejor_objetivo": 0.28}},
+                          tablas={"comparacion": pd.DataFrame({"a": [1]})}, huella="e1", tracking_uri=uri)
+                primero = registrar_estudio("estudio", trials, **kw)
+                repetido = registrar_estudio("estudio", trials, **kw)
+                runs = mlflow.search_runs(experiment_names=["denguekay/estudio"])
+            finally:
+                if anterior is not None:
+                    os.environ["MLFLOW_TRACKING_URI"] = anterior
+                cerrar_motores_mlflow(tmp)
+        self.assertEqual(primero, repetido)
+        self.assertEqual(len(runs), 4)
+        hijos = runs[runs["tags.nivel"].eq("trial")]
+        self.assertEqual(sorted(hijos["tags.estado"]), ["COMPLETE", "COMPLETE", "FAIL"])
+        self.assertTrue(hijos.loc[hijos["tags.estado"].eq("FAIL"), "metrics.objetivo"].isna().all())
+        padre = runs[runs["tags.nivel"].eq("estudio")].iloc[0]
+        self.assertEqual(padre["metrics.fallidos"], 1)
+
     def test_no_duplica_un_run_con_la_misma_huella(self):
         import mlflow
 

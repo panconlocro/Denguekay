@@ -440,3 +440,40 @@ truncada al inicio de 2017, porque no usa la historia previa al panel; afecta so
 - **Sobre «semanas desde el último caso»:** es la tercera variable por importancia SHAP en el modelo de conteo y
   su inclusión se asocia a la mejora observada. Eso describe cómo usa el modelo la variable; no muestra que el
   tiempo sin casos tenga relación causal con el inicio de un brote.
+
+## Fase 3 · Preregistro de la optimización de hiperparámetros (HU0007-3)
+
+Fuente de verdad: `src/modeling/hiperparametros.py → PREREGISTRO_FASE3`. Se commiteó antes del estudio
+(aprobado por Rosa, 2026-10-27).
+
+- **Matriz:** C3 = `base_6` + B3.
+- **Base de comparación:** C3 con los hiperparámetros heredados: 160 árboles, profundidad 3, learning rate 0,05,
+  subsample 0,8, colsample 0,9, min_child_weight 5, reg_lambda 5. Además, `reg_alpha` = `gamma` = 0 y
+  `max_delta_step` = 0,7, que es el valor por defecto de XGBoost con `count:poisson`; los tres se fijan
+  explícitamente.
+- **Objetivo:** log-loss de la probabilidad calibrada (Poisson → binomial negativa con α dentro de la muestra →
+  Platt cronológico), promediado sobre h=2/3/4 × 2022 y 2023. F1 a 0,50 y AUPRC se registran por trial, pero no
+  se optimizan.
+- **Espacio:**
+  - `max_depth` 2–8; `min_child_weight` 1–50 (log); `learning_rate` 0,01–0,3 (log); `n_estimators` 100–1500;
+  - `subsample` y `colsample_bytree` 0,5–1; `reg_lambda` y `reg_alpha` 1e-3–10 (log); `gamma` 0–5;
+  - `max_delta_step` **0,3–2** (lineal). No es 0–2 porque con `count:poisson` el 0 significa «sin límite» y puede
+    volver inestable la optimización; el rango incluye el 0,7 de la base.
+- **Estudio:** TPE con semilla 20261027, XGBoost con semilla 17, 100 trials, sin pruning ni early stopping. Un
+  trial que falle o dé un objetivo no finito queda como FAIL en Optuna y en MLflow, y se reporta.
+- **Trial 0:** la base con `reg_alpha = 1e-3`, porque Optuna no admite 0 en escala log. Medido antes del estudio,
+  con semilla 17: objetivo 0,220007, igual al sexto decimal que con `reg_alpha = 0`; F1 y AUPRC idénticos en las 6
+  celdas; diferencia máxima de casos predichos 0,0024. La regla compara contra la **base exacta** (C3 de la 2c,
+  `reg_alpha = 0`). El trial 0 solo sitúa el arranque de la curva, donde se muestran los dos.
+- **Selección:** las 5 mejores por el objetivo se reentrenan con las 5 semillas y se elige la de mejor mediana
+  del objetivo. Solo esa pasa por la regla simétrica contra la base: +1 comparación, **17 en total**.
+- **Adopción:**
+  - si la candidata gana, se adopta;
+  - si empata, se queda la base, salvo que la candidata sea igual o más simple (árboles × profundidad);
+  - si pierde, se queda la base.
+- **Robustez (solo lectura):** la candidata final frente a la base sin las 8 primeras semanas de orígenes de 2017;
+  se reportan los signos de la diferencia.
+- **Tiempos medidos antes del estudio** (5 bloques × 1 semilla con el protocolo): base 6,5 s; 800 × 5, unos 30 s;
+  1500 × 8, unos 104 s. Con unos 30 s esperados por trial, alcanza para 100.
+- **Límite:** la búsqueda usa las mismas temporadas de selección (2022–2023), así que las métricas de la
+  candidata son optimistas. 2024 es solo de contraste.
