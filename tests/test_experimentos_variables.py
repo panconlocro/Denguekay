@@ -63,6 +63,25 @@ class TestLectura(unittest.TestCase):
         self.assertFalse(solo_una.mejora_recall_nuevos.iloc[0])
 
 
+class TestVerificacionCruzada(unittest.TestCase):
+    def test_rangos_y_resumen_de_alfas(self):
+        evaluaciones = {s: {"metricas": pd.DataFrame({"horizonte": [2, 2], "bloque": ["temporada_2022", "temporada_2023"],
+                                                      "f1_050": [0.5 + d, 0.6], "auprc": 0.7, "brier": 0.05,
+                                                      "razon_mae": 1.0, "razon_rmse": 1.0})}
+                        for s, d in ((17, 0.0), (29, 0.1), (41, 0.04))}
+        r = ev.rangos_configuracion(evaluaciones).set_index(["metrica", "bloque", "horizonte"])
+        fila = r.loc[("f1_050", "temporada_2022", 2)]
+        self.assertAlmostEqual(fila.minimo, 0.5)
+        self.assertAlmostEqual(fila.mediana, 0.54)
+        self.assertAlmostEqual(fila.rango, 0.1)
+        self.assertEqual(r.loc[("f1_050", "temporada_2023", 2)].rango, 0)
+        alfas = pd.DataFrame({"bloque": "temporada_2021", "horizonte": 2, "alpha_dentro_muestra": [1.0, 2.0, 3.0],
+                              "alpha_oos": [4.0, 5.0, 6.0], "alpha_usada": [4.0, 2.0, 6.0],
+                              "respaldo": [False, True, False]})
+        a = ev.resumen_alfas(alfas).iloc[0]
+        self.assertEqual((a.alpha_dentro_muestra, a.alpha_oos, a.semillas_con_respaldo), (2.0, 5.0, 1))
+
+
 class TestCombinada(unittest.TestCase):
     @staticmethod
     def _v(*veredictos):

@@ -240,6 +240,51 @@ def signos_por_temporada(resumen_a: dict, resumen_b: dict, bloques: tuple[str, .
     return pd.DataFrame(filas)
 
 
+# ---------------------------------------------------------------------------
+# Verificación cruzada (fase 4)
+# ---------------------------------------------------------------------------
+
+def rangos_configuracion(evaluaciones: dict[int, dict],
+                         metricas: tuple[str, ...] = ("f1_050", "auprc", "brier", "razon_mae", "razon_rmse")
+                         ) -> pd.DataFrame:
+    """Mínimo, mediana, máximo y rango entre semillas por métrica, bloque y horizonte (4.4)."""
+    todas = pd.concat([r["metricas"].assign(semilla=s) for s, r in evaluaciones.items()], ignore_index=True)
+    largo = todas.melt(id_vars=["horizonte", "bloque", "semilla"], value_vars=list(metricas), var_name="metrica")
+    tabla = (largo.groupby(["metrica", "bloque", "horizonte"]).value
+             .agg(minimo="min", mediana="median", maximo="max").reset_index())
+    return tabla.assign(rango=tabla.maximo - tabla.minimo)
+
+
+def resumen_alfas(alfas: pd.DataFrame) -> pd.DataFrame:
+    """α por bloque y horizonte: mediana de semillas de cada método y semillas con respaldo."""
+    columnas = [c for c in ("alpha_dentro_muestra", "alpha_oos", "alpha_usada") if c in alfas]
+    tabla = alfas.groupby(["bloque", "horizonte"])[columnas].median()
+    if "respaldo" in alfas:
+        tabla["semillas_con_respaldo"] = alfas.groupby(["bloque", "horizonte"]).respaldo.sum().astype(int)
+    return tabla.reset_index()
+
+
+def figura_alfas(resumen: pd.DataFrame, titulo: str):
+    """α dentro de la muestra frente a α OOS por bloque, un panel por horizonte (escala log)."""
+    import matplotlib.pyplot as plt
+
+    horizontes = sorted(resumen.horizonte.unique())
+    fig, ejes = plt.subplots(1, len(horizontes), figsize=(5 * len(horizontes), 3.8), squeeze=False, sharey=True)
+    for ax, h in zip(ejes.ravel(), horizontes):
+        t = resumen[resumen.horizonte.eq(h)].reset_index(drop=True)
+        x = np.arange(len(t))
+        ax.bar(x - 0.2, t.alpha_dentro_muestra, 0.4, label="Dentro de la muestra")
+        ax.bar(x + 0.2, t.alpha_oos, 0.4, label="OOS (bloques previos)")
+        ax.set_xticks(x, [b.replace("temporada_", "T ").replace("calendario_", "C ") for b in t.bloque])
+        ax.set_yscale("log")
+        ax.set_title(f"h={h}")
+    ejes[0, 0].set_ylabel("α de la binomial negativa (mediana de semillas)")
+    ejes[0, 0].legend(fontsize=8)
+    fig.suptitle(titulo)
+    fig.tight_layout()
+    return fig
+
+
 def figura_shap(shap: dict[str, pd.DataFrame], titulo: str):
     """Media de |SHAP| por variable y horizonte (filas = horizontes), un panel por bloque."""
     import matplotlib.pyplot as plt

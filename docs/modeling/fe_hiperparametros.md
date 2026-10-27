@@ -542,3 +542,186 @@ búsqueda.
 - **Optimismo:** la búsqueda y la regla usan las mismas temporadas (2022–2023), así que las métricas de la
   candidata son optimistas. Aun así, empata.
 - **Una sola semilla de XGBoost en la búsqueda** (17). Las 5 semillas se usan solo en el top 5.
+
+## Fase 4 · Preregistro (verificación cruzada)
+
+Fuente de verdad: `src/modeling/preregistro_fe.py → FASE4`, commiteado antes de correr (aprobado por Rosa,
+2026-10-27). Configuración de partida: C3·S4_s2, hiperparámetros heredados, α dentro de la muestra.
+
+- **4.1 Interacción: no se corre.** La fase 3 dejó los hiperparámetros que ya usó la fase 2. Reevaluar las
+  familias con ellos daría exactamente las mismas predicciones (mismos datos, semillas y parámetros), así que no
+  agrega información.
+- **4.2 α dentro de la muestra frente a α OOS** (C3·S4_s2, 5 semillas, regla simétrica).
+  - α OOS de un bloque: máxima verosimilitud NB2, por horizonte, con las predicciones fuera de muestra de todos
+    los bloques anteriores (acumuladas) cuya semana objetivo cerró en el corte del bloque.
+  - Primer bloque (2021): pseudo-bloque `temporada_2020`, entrenado con lo cerrado al 2019-08-03. Solo estima
+    α: no se evalúa ni entra en Platt.
+  - **Respaldo** (fijado en el código antes de ver ninguna α OOS): si la α OOS de un bloque y horizonte no
+    converge, queda a menos de 1e-3 (en log α) de un límite del optimizador, o sale de [mín / 5, máx × 5] de las
+    α dentro de la muestra de 2021–2024 (mismo horizonte y semilla), ese bloque usa la α dentro de la muestra y se
+    reporta. El rango usa también los bloques posteriores al revisado; es solo un control de validez y no entra
+    en ninguna predicción.
+  - Adopción: gana → α OOS; empate o pierde → α dentro de la muestra (más simple).
+  - **Limitación del pseudo-bloque:** 2020 tiene solo 2 semanas brote y cruza el inicio de la pandemia (posible
+    subregistro, *hipótesis*). La dispersión de una temporada tranquila puede no representar la de una
+    epidémica, y esa α entra en la cadena de Platt de 2022.
+- **4.3 S4_s3 frente a S4_s2** (C3, con la α de la 4.2 en las dos ramas). Gana → S4_s3; empate o pierde → S4_s2.
+- **4.4** Rangos entre semillas de la configuración final.
+- Comparaciones del encargo: 17 + 2 = **19**.
+
+## Fase 4 · Resultados
+
+Notebook `34_modelado_verificacion_cruzada.ipynb`; cifras en `metricas/fe_hiperparametros.json →
+fase4_verificacion`; figura `alfas_fase4.png`; MLflow `fe_hiperparametros_fase4_verificacion`
+(`cda23d281501422986cdf4b47e121320`).
+
+### 4.2 · α OOS: empate, se queda la α dentro de la muestra (comparación 18 de 19)
+
+α por bloque y horizonte (mediana de las 5 semillas), h = 2 / 3 / 4:
+
+| Bloque | Dentro de la muestra | OOS | Respaldo (semillas) |
+|---|---|---|---|
+| temporada_2021 (OOS desde el pseudo-bloque 2020) | 0,53 / 0,89 / 1,40 | 62,9 / 65,5 / 69,9 | 5 / 5 / 5 |
+| temporada_2022 | 0,83 / 1,42 / 2,29 | 6,78 / 11,4 / 15,7 | 5 / 5 / 5 |
+| temporada_2023 | 0,75 / 1,34 / 2,10 | 1,24 / 2,31 / 3,58 | 0 |
+| temporada_2024 | 0,90 / 1,57 / 2,35 | 1,05 / 1,92 / 2,90 | 0 |
+| calendario_2025 | 0,72 / 1,21 / 1,80 | 0,84 / 1,43 / 2,09 | 0 |
+
+- **El respaldo actuó en 30 de 75 casos** (semilla × bloque × horizonte): en 2021 y 2022, en todas las semillas
+  y horizontes, porque la α OOS salió por encima del rango (máx × 5: 4,5 / 7,9 / 11,8). En todos los casos
+  convergió y no quedó en el límite del optimizador.
+- **Lectura de la α de 2021:** la estimada con el pseudo-bloque 2020 es unas 50–120 veces la de dentro de la
+  muestra. Es lo que la limitación anticipaba: el modelo entrenado con 2017–2019 predice en una temporada
+  tranquila mucho más de lo que ocurre, y la binomial negativa absorbe esa diferencia como dispersión. En 2022
+  el conjunto OOS aún incluye 2020 y sigue fuera de rango. Desde 2023, la α OOS es entre 1,2 y 1,7 veces la de
+  dentro de la muestra. Esto coincide con la *hipótesis* de que la α dentro de la muestra subestima la
+  dispersión.
+- **Veredicto: empate en h=2, h=3 y h=4.**
+  - Como 2021 y 2022 usan el respaldo, la candidata es idéntica a la referencia en 2022 (todas las deltas
+    valen 0). La regla pide mejora o empeora en las dos temporadas de selección, así que **en esta corrida no
+    podía dar gana ni pierde**. El empate es una consecuencia del respaldo, no evidencia de equivalencia.
+  - En 2023, la única temporada donde difieren, la α OOS empeora F1 (−0,013 / −0,051 / −0,059) y Brier (+0,005 /
+    +0,011 / +0,015). La antelación también baja: h3 −0,053 (IC −0,095 a −0,011) y h4 −0,084 (IC −0,137 a
+    −0,032). Ese descenso no cuenta como empeora porque en 2022 la diferencia es 0.
+  - Conteo: idéntico por construcción (la α solo cambia la probabilidad).
+- **Adopción: α dentro de la muestra.** Lo que se observa en 2023 va en contra de la OOS, no a favor.
+- **Robustez (solo lectura), sin las 8 primeras semanas de 2017:** empate en los tres horizontes, con los mismos
+  signos (F1 y antelación ≤ 0 en 2023).
+
+### 4.3 · S4_s3: gana en h=4, se adopta S4_s3 (comparación 19 de 19)
+
+Con α dentro de la muestra en las dos ramas, C3·S4_s3 frente a C3·S4_s2:
+
+| h | Veredicto | Motivo | Lectura |
+|---|---|---|---|
+| 2 | empate | sin mejora primaria; S4_s3 empeora AUPRC y Brier por encima del rango entre semillas (vetos) | F1 −0,017 / −0,004 |
+| 3 | empate | F1 +0,047 en 2022, pero −0,001 en 2023 | recall de brotes nuevos sube en 2022 y 2023 (`mejora_recall_nuevos`) |
+| 4 | **gana** | antelación: +0,095 (IC 0,032 a 0,158), positiva en 2022 (+0,053) y en 2023 (+0,123) | F1 +0,080 / +0,007 (dentro del rango en 2023) |
+
+- **Adopción: S4_s3** (gana en h=4 y no pierde en ninguno).
+- **Antelación** (inicios limpios avisados, mediana de semillas), S4_s2 → S4_s3, selección 2022–2023: h2 0,147 →
+  0,137; h3 0,126 → 0,211; h4 0,137 → 0,232. En el contraste 2024: h2 0,174 → 0,435; h3 0,391 → 0,565; h4
+  0,348 → 0,478.
+- **Recall de brotes nuevos** (2 primeras semanas), 2022 / 2023: h3 0,02 → 0,08 / 0,14 → 0,17; h4 0 → 0,04 /
+  0,13 → 0,16.
+- **Costo en el conteo (HU0007-4), va junto al veredicto:**
+  - La razón MAE empeora en 2022 (+0,07 / +0,10 / +0,09) y mejora en 2023 (−0,13 / −0,06 / −0,03).
+  - Contraste 2024: razón MAE 1,18 → 1,35, 1,23 → 1,52, 1,30 → 1,62; razón RMSE 1,24 → 1,67, 1,25 → 1,89,
+    1,27 → 2,01.
+  - S4_s3 avisa antes, pero estima peor la magnitud fuera de 2023. Es el mismo patrón que la candidata de la
+    fase 3, más marcado.
+- **Robustez (solo lectura), sin las 8 primeras semanas de 2017:** gana en h3 y h4, empate en h2. La antelación
+  en h3 y h4 sigue siendo positiva en 2022 y 2023. La ganancia en h4 no depende de esos orígenes de 2017.
+- **Contexto:** con `base_6` (notebook 31), S4_s2 y S4_s3 empataban en los tres horizontes. Con C3, S4_s3 pasa a
+  ganar en h4 por antelación. *Hipótesis*, sin prueba causal: B3 y el margen de persistencia se complementan.
+
+### Decisión de Rosa sobre la configuración final (2026-10-27)
+
+Se sigue la regla preregistrada: **C3 · E3 · S4_s3 · α dentro de la muestra · hiperparámetros heredados · Platt ·
+p ≥ 0,50.** El conteo no cambia la decisión. La regla lo trata como guarda y no hubo veto, así que descartar
+S4_s3 por el conteo sería cambiar el criterio después de ver los resultados.
+
+### 4.4 · Configuración final y rangos entre semillas
+
+**Configuración final:** C3 (`base_6` + B3, 9 columnas) · E3 multi-salida · **S4_s3** (Poisson con margen
+`log(persistencia + 0,5)`, binomial negativa) · α dentro de la muestra · hiperparámetros heredados · Platt
+cronológico · alerta p ≥ 0,50.
+
+Mediana [rango entre semillas], h = 2 / 3 / 4:
+
+| Métrica | 2022 | 2023 | 2024 (contraste) |
+|---|---|---|---|
+| F1 a 0,50 | 0,711 [0,007] / 0,658 [0,018] / 0,546 [0,008] | 0,852 [0,001] / 0,828 [0,003] / 0,803 [0,005] | 0,796 [0,003] / 0,778 [0,002] / 0,745 [0,002] |
+| AUPRC | 0,789 [0,002] / 0,781 [0,004] / 0,753 [0,005] | 0,947 [0,001] / 0,928 [0,001] / 0,917 [0,002] | 0,891 [0,001] / 0,870 [0,001] / 0,831 [0,001] |
+| Brier | 0,053 / 0,057 / 0,062 [≤ 0,001] | 0,062 / 0,075 / 0,084 [≤ 0,001] | 0,076 / 0,086 / 0,098 [≤ 0,001] |
+| Razón MAE | 1,001 [0,004] / 1,021 [0,019] / 1,040 [0,028] | 0,881 [0,012] / 0,808 [0,009] / 0,764 [0,012] | 1,352 [0,037] / 1,515 [0,049] / 1,622 [0,052] |
+| Razón RMSE | 1,106 [0,006] / 1,232 [0,033] / 1,380 [0,053] | 0,987 [0,023] / 0,913 [0,014] / 0,852 [0,011] | 1,673 [0,126] / 1,890 [0,149] / 2,014 [0,136] |
+
+- **Antelación** (mediana [mín–máx]): 2022–2023 h2 0,137 [0,126–0,158], h3 0,211 [0,200–0,211], h4 0,232
+  [0,221–0,232]; 2024 h2 0,435, h3 0,565, h4 0,478 [0,478–0,522].
+- **Recall de brotes nuevos** (mediana [mín–máx]): 2022 h2 0,10 [0,08–0,14], h3 0,08, h4 0,04; 2023 h2 0,12, h3
+  0,17 [0,16–0,17], h4 0,16 [0,15–0,20].
+- **α** (S4_s3, dentro de la muestra, mediana [mín–máx]), h = 2 / 3 / 4: 2022 0,84 / 1,30 / 1,89; 2023 0,76 /
+  1,22 / 1,73; 2024 0,81 / 1,30 / 1,83; los rangos entre semillas son ≤ 0,05.
+- **Calendario 2025** (sensibilidad): F1 a 0,50 es 0 en h2 y h4 y 0,14 en h3, con un rango de 0,12 entre
+  semillas. Hay muy pocas semanas brote, así que no es interpretable.
+- Los rangos entre semillas son pequeños en la alerta (F1 ≤ 0,018 en selección) y mayores en el conteo del
+  contraste 2024 (razón RMSE 0,13–0,15).
+
+### Configuración final frente a la persistencia (antelación, semilla 17)
+
+Diferencia pareada modelo − persistencia en los 95 inicios limpios de 2022–2023, con el IC bootstrap estratificado
+del protocolo:
+
+| h | C3·S4_s3 (final) | C3·S4_s2 | Final, 2022 / 2023 |
+|---|---|---|---|
+| 2 | +0,011 (IC −0,053 a 0,074) | +0,042 (IC −0,021 a 0,105) | 0,000 / +0,018 |
+| 3 | +0,063 (IC −0,011 a 0,137) | +0,011 (IC −0,053 a 0,074) | 0,000 / +0,105 |
+| 4 | +0,021 (IC −0,074 a 0,116) | −0,074 (IC −0,147 a 0,000) | −0,211 / +0,175 |
+
+- **En h=4, la configuración final ya no pierde frente a la persistencia.** Antes, con E3·S4_s2 y `base_6`, la
+  diferencia era −0,105 (IC −0,189 a −0,021). Ahora es +0,021 con un IC que incluye 0. Eso no significa que la
+  supere.
+- En ningún horizonte el IC excluye 0, así que tampoco la supera en h=2 ni en h=3.
+- El signo de h=4 no es estable entre temporadas: en 2022 la persistencia sigue avisando más inicios (−0,211) y
+  en 2023 avisa más la configuración final (+0,175).
+
+### HU0007-4: C3·S4_s3 frente a C3·S4_s2 (medianas de semillas)
+
+Clasificación: P ≥ 0,60, R ≥ 0,80 y F1 ≥ 0,70 con p ≥ 0,50. Regresión: razón MAE y razón RMSE ≤ 0,85.
+
+| Temporada | h | Clasificación S4_s2 → S4_s3 | P / R / F1 de S4_s3 | Regresión S4_s2 → S4_s3 | MAE / RMSE de S4_s3 |
+|---|---|---|---|---|---|
+| 2022 | 2 | no → no | 0,725 / 0,696 / 0,711 | no → no | 1,001 / 1,106 |
+| 2022 | 3 | no → no | 0,801 / 0,559 / 0,658 | no → no | 1,021 / 1,232 |
+| 2022 | 4 | no → no | 0,870 / 0,399 / 0,546 | no → no | 1,040 / 1,380 |
+| 2023 | 2 | sí → sí | 0,896 / 0,812 / 0,852 | no → no | 0,881 / 0,987 |
+| 2023 | 3 | no → no | 0,890 / 0,774 / 0,828 | no → no | 0,808 / 0,913 |
+| 2023 | 4 | no → no | 0,900 / 0,724 / 0,803 | no → no | 0,764 / 0,852 |
+| 2024 | 2 | sí → sí | 0,737 / 0,866 / 0,796 | no → no | 1,352 / 1,673 |
+| 2024 | 3 | sí → sí | 0,702 / 0,873 / 0,778 | no → no | 1,515 / 1,890 |
+| 2024 | 4 | sí → sí | 0,667 / 0,846 / 0,745 | no → no | 1,622 / 2,014 |
+
+- **Clasificación:** S4_s3 cumple en las mismas celdas que S4_s2 (2023 h2 y 2024 h2/h3/h4); no gana ni pierde
+  ninguna. Lo que falla en el resto es el recall, que en 2022 sube con S4_s3 (h4 0,316 → 0,399) pero sigue lejos
+  de 0,80.
+- **Regresión, celda h=4 · 2023:** la referencia B (`base_6`·S4_s2) era la única celda que cumplía (0,793 /
+  0,846). **Se perdió en la 2c, al entrar B3:** C3·S4_s2 da una razón RMSE de 0,876. S4_s3 la acerca a 0,852, a
+  0,002 del umbral. Con la mediana no cumple, pero el umbral 0,85 cae dentro del rango entre semillas (razón RMSE
+  0,846–0,857). Es una celda de frontera: no se puede decir que cumpla.
+- **Con la configuración final, ninguna celda cumple el criterio de regresión de la HU0007-4.**
+
+### Compromiso explícito de la configuración final
+
+**S4_s3 avisa antes a cambio de estimar peor la magnitud fuera de 2023.** En h=4, la antelación en 2022–2023 sube
+de 0,137 a 0,232 y deja de perder frente a la persistencia. En cambio, la razón RMSE del contraste 2024 es 1,67 /
+1,89 / 2,01 (h2 / h3 / h4), frente a 1,24 / 1,25 / 1,27 de S4_s2, y en 2022 la razón MAE pasa de 0,93–0,95 a
+1,00–1,04.
+
+**Limitación del conteo para la interfaz y las HU0008:**
+- Los casos predichos de la configuración final no deben presentarse como una estimación precisa de la
+  magnitud. Fuera de 2023, el error es mayor que el de repetir los casos de la semana de origen (razones > 1).
+- La interfaz debería mostrar los casos esperados como orden de magnitud o como apoyo de la alerta, y basar la
+  alerta en la probabilidad calibrada.
+- Cualquier explicación por variable (HU0008) sobre el modelo de conteo describe un modelo cuya magnitud es poco
+  fiable fuera de 2023.
