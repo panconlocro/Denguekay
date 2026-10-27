@@ -101,3 +101,72 @@ def etiquetar_brote_estacional(
     salida["brote"] = ((actual.casos_Dengue.to_numpy() > salida.umbral_brote_casos.to_numpy())
                        & (actual.casos_Dengue.to_numpy() >= minimo_casos)).astype("int8")
     return salida[CLAVE + ["umbral_brote_casos", "brote"]]
+
+
+def umbral_brote_futuro(
+    panel: pd.DataFrame, historia: pd.DataFrame, objetivos: pd.DataFrame, *,
+    multiplicador: float, anios_previos: int = 5,
+) -> pd.Series:
+    """Umbral de brote de cualquier semana objetivo, dentro o fuera del panel.
+
+    Misma regla que ``etiquetar_brote_estacional``: misma semana
+    epidemiológica de los ``anios_previos`` años anteriores (la 53 se suma a la
+    52), media + ``multiplicador`` · DE muestral (``ddof=1``), ausencias de la
+    historia previa al panel como cero. Solo usa años anteriores al de la
+    semana objetivo, así que sirve para semanas que aún no están en el panel
+    (p. ej. las primeras de 2026 emitidas desde diciembre de 2025).
+
+    ``objetivos`` trae ``ubigeo``, ``anio`` y ``semana``; devuelve una serie
+    alineada con sus filas. Falla si algún año necesario no está cubierto: un
+    año del panel debe llegar al menos a la semana de referencia, y los años
+    previos al panel deben existir en ``historia``.
+    """
+    if not np.isfinite(multiplicador) or multiplicador <= 0:
+        raise ValueError("multiplicador debe ser positivo y finito")
+    if not isinstance(anios_previos, int) or anios_previos < 2:
+        raise ValueError("anios_previos >= 2 es obligatorio")
+    actual = _validar_casos(panel, "panel")
+    previo = _validar_casos(historia, "historia")
+    destino = objetivos[["ubigeo", "anio", "semana"]].copy()
+    destino["ubigeo"] = destino.ubigeo.astype("string").str.zfill(6)
+    destino["anio"] = pd.to_numeric(destino.anio, errors="raise").astype(int)
+    destino["semana"] = pd.to_numeric(destino.semana, errors="raise").astype(int)
+    if not destino.semana.between(1, 53).all():
+        raise ValueError("objetivos contiene semanas inválidas")
+    primero, ultimo = int(actual.anio.min()), int(actual.anio.max())
+    if not previo.anio.lt(primero).all():
+        raise ValueError("La historia debe terminar antes del primer año del panel")
+    distritos = sorted(actual.ubigeo.unique())
+    if not destino.ubigeo.isin(distritos).all():
+        raise ValueError("Hay objetivos de distritos fuera del panel")
+    previo = previo.loc[previo.ubigeo.isin(distritos)]
+    destino["semana_ref"] = destino.semana.clip(upper=52)
+    necesarios = {a for y in destino.anio.unique() for a in range(int(y) - anios_previos, int(y))}
+    faltan_hist = sorted(a for a in necesarios if a < primero and a not in set(previo.anio))
+    if faltan_hist:
+        raise ValueError(f"Faltan años de historia: {faltan_hist}")
+    if max(necesarios) > ultimo:
+        raise ValueError("Un objetivo necesita años posteriores al último año del panel")
+    cubierta = actual.assign(semana_ref=actual.semana.clip(upper=52)).groupby("anio").semana_ref.max()
+    usa_ultimo = destino[destino.anio.gt(ultimo)]
+    if not usa_ultimo.empty and usa_ultimo.semana_ref.max() > cubierta.loc[ultimo]:
+        raise ValueError("El último año del panel no cubre la semana de referencia de algún objetivo")
+    todo = pd.concat([previo, actual], ignore_index=True)
+    todo["semana_ref"] = todo.semana.clip(upper=52)
+    anual = todo.groupby(["ubigeo", "anio", "semana_ref"], as_index=False).casos_Dengue.sum()
+    indice = pd.MultiIndex.from_product([distritos, range(1, 53)], names=["ubigeo", "semana_ref"])
+    # Mismas columnas que etiquetar_brote_estacional para obtener exactamente los mismos números.
+    anios = range(min(primero - anios_previos, min(necesarios)), ultimo + 1)
+    matriz = anual.pivot(index=["ubigeo", "semana_ref"], columns="anio", values="casos_Dengue")
+    matriz = matriz.reindex(index=indice, columns=anios).fillna(0)
+    salidas = []
+    for anio in sorted(destino.anio.unique()):
+        ventana = matriz[list(range(anio - anios_previos, anio))]
+        umbral = ventana.mean(axis=1) + multiplicador * ventana.std(axis=1, ddof=1)
+        salidas.append(umbral.rename(anio))
+    tabla = pd.concat(salidas, axis=1).stack().rename("umbral_brote_casos").reset_index()
+    tabla = tabla.rename(columns={"level_2": "anio"})
+    salida = destino.merge(tabla, on=["ubigeo", "anio", "semana_ref"], how="left", validate="many_to_one", sort=False)
+    if len(salida) != len(destino) or salida.umbral_brote_casos.isna().any():
+        raise ValueError("No se pudo asignar umbral a todos los objetivos")
+    return pd.Series(salida.umbral_brote_casos.to_numpy(), index=objetivos.index, name="umbral_brote_casos")
