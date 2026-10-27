@@ -6,9 +6,11 @@ de arranque de A3). El protocolo (``protocolo_arquitectura``) no cambia; la
 regla de este módulo se preregistró antes de correr (``PREREGISTRO_COMPLEMENTO``).
 """
 
+import numpy as np
 import pandas as pd
 
 from src.modeling import preregistro_fe as pr
+from src.modeling.evaluate import metricas_alerta
 from src.modeling import protocolo_arquitectura as pa
 
 COLUMNAS_A3 = next(list(v["columnas"]) for v in pr.VARIANTES if v["id"] == "A3")
@@ -96,3 +98,30 @@ def tabla_lectura(evaluaciones: dict[int, dict], nombre: str,
     t = t[t.bloque.isin(bloques)]
     g = t.groupby(["horizonte", "bloque"])[columnas]
     return (g.median().join((g.max() - g.min()).add_prefix("rango_")).reset_index().assign(variante=nombre))
+
+
+def diagnostico_celda(evaluaciones: dict[int, dict], horizonte: int, bloque: str,
+                      banda: tuple[float, float] = (0.40, 0.50)) -> pd.DataFrame:
+    """¿Discriminación o calibración? Una fila por semilla para una celda (lectura, no decide).
+
+    AUPRC (la misma con la probabilidad calibrada o sin calibrar: Platt es monótono),
+    Brier calibrado y sin calibrar, probabilidad calibrada media frente a la
+    prevalencia, P / R / F1 a 0,50 y semanas brote con probabilidad calibrada en
+    ``[banda[0], banda[1])``.
+    """
+    filas = []
+    for s, r in evaluaciones.items():
+        g = r["datos"]
+        g = g[g.horizonte.eq(horizonte) & g.bloque.eq(bloque)]
+        y = g.brote.to_numpy(int)
+        cal, cruda = g.probabilidad_calibrada.to_numpy(float), g.probabilidad_brote.to_numpy(float)
+        m = metricas_alerta(y, (cal >= pa.UMBRAL_ALERTA).astype(int), puntaje=cal)
+        en_banda = (cal >= banda[0]) & (cal < banda[1])
+        filas.append({"semilla": s, "semanas": len(y), "semanas_brote": int(y.sum()), "prevalencia": float(y.mean()),
+                      "probabilidad_calibrada_media": float(cal.mean()), "probabilidad_cruda_media": float(cruda.mean()),
+                      "auprc": m["auprc"], "brier_calibrado": float(np.mean((cal - y) ** 2)),
+                      "brier_sin_calibrar": float(np.mean((cruda - y) ** 2)),
+                      "precision_050": m["precision"], "recall_050": m["recall"], "f1_050": m["f1"],
+                      "brote_en_banda": int((en_banda & (y == 1)).sum()),
+                      "brote_con_alerta": int(((cal >= pa.UMBRAL_ALERTA) & (y == 1)).sum())})
+    return pd.DataFrame(filas)

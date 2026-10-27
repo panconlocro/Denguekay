@@ -1018,6 +1018,47 @@ un poco (F1 supera su rango hacia arriba en h2 y h4, por menos de 0,01):
 En resumen: F+A3 estima mucho mejor la magnitud, pero alerta menos en 2022 · h4. La regla preregistrada da más
 peso al conteo y acepta ese costo porque no se repite en 2023.
 
+#### Diagnóstico de 2022 · h4: ¿discriminación o calibración? (lectura, no cambia la decisión)
+
+Mediana de las 5 semillas, F∩A3 → F+A3. Las dos variantes tienen 3380 semanas, de las cuales 431 son brote
+(prevalencia 0,128). El Platt de 2022 se ajusta solo con 2021.
+
+| Métrica | F∩A3 | F+A3 |
+|---|---|---|
+| AUPRC (igual con o sin calibrar: Platt es monótono) | 0,750 | 0,741 |
+| Brier calibrado | 0,063 | 0,068 |
+| Brier sin calibrar | 0,060 | 0,062 |
+| Probabilidad calibrada media (prevalencia 0,128) | 0,122 | 0,109 |
+| Probabilidad sin calibrar media | 0,100 | 0,095 |
+| Precisión a 0,50 | 0,871 | 0,960 |
+| Recall a 0,50 | 0,376 | 0,202 |
+| F1 a 0,50 | 0,525 | 0,333 |
+| Semanas brote con alerta (p calibrada ≥ 0,50) | 162 | 87 |
+| Semanas brote con p calibrada en [0,40, 0,50) | 86 | 93 |
+
+- **Viene sobre todo de la calibración, no de la discriminación.**
+  - La AUPRC apenas baja (−0,009, alrededor del 1 %): el orden de las semanas casi no cambia.
+  - Las probabilidades calibradas de F+A3 quedan más bajas: media 0,109 frente a 0,122, y las dos por debajo de
+    la prevalencia.
+  - Al cruzar el corte de 0,50, la precisión sube (0,871 → 0,960) y el recall cae a la mitad. Es el patrón de un
+    desplazamiento del umbral efectivo, no de un peor ordenamiento.
+- **Cerca del corte:** con F+A3 hay 93 semanas brote con p calibrada entre 0,40 y 0,50, que con el corte de
+  0,50 quedan sin alerta.
+- En las dos variantes, el Brier calibrado es peor que el sin calibrar. El Platt ajustado solo con 2021, una
+  temporada chica, no mejora la escala de 2022.
+- Es una *hipótesis*, no verificada: el cambio de escala viene de cómo A3 desplaza los casos predichos en 2021,
+  con los que se ajusta Platt. No se evaluó otra calibración, porque el protocolo es fijo.
+
+#### Límite de la regla del complemento (declarado después de ver el resultado)
+
+- La condición 2 («la alerta no pierde») aplica la regla simétrica, que exige que la alerta empeore **en 2022 y
+  en 2023** para declarar «pierde». Por eso permite una caída grande en **una sola** temporada, como la de
+  2022 · h4 (F1 0,525 → 0,333).
+- Es una limitación del diseño de la regla, reconocida después de ver el resultado. La decisión no cambia: se
+  aplicó la regla tal como estaba preregistrada.
+- **Advertencia de la auditoría:** el tamaño de esa caída depende del recorte del logit en Platt, que el texto
+  del protocolo no fija. Con el recorte del código (1e-6), F1 2022 · h4 es 0,333; con 1e-12 sería 0,254.
+
 #### Auditoría del complemento (`revisor-modelado`, 2026-10-27)
 
 - **Coinciden:**
@@ -1136,8 +1177,16 @@ completa y F∩A3 difieren muy poco: solo cambian las 65 filas.
   multi-salida, 3 α, 3 Platt, regla de k, casos del origen para el `base_margin`).
 - **`inferencia.vectores_desde_bd`:** ahora también necesita el **clima de las semanas o − 4..o** de cada
   distrito. Sin él no hay predicción; no se imputa.
-- **Ingesta meteo:** hace falta una ingesta periódica (hoy el rango es fijo hasta 2025-12-31) y verificar el
-  rezago de la *archive API* (ver la limitación de arriba).
+- **Ingesta meteo:** hace falta una ingesta periódica; hoy el rango de descarga es fijo hasta 2025-12-31.
+- **Requisito operativo del clima, que bloquea la V2 si no se cumple:**
+  - El modelo V2 necesita el clima diario de las semanas o − 4 a o en el momento de emitir.
+  - Antes del pilotaje hay que verificar, **según la documentación de Open-Meteo** (sin llamadas de red desde el
+    código), con qué rezago el archivo histórico publica los días de una semana cerrada.
+  - Ese rezago se compara con el día en que se emite la predicción semanal, después del scraping de la Sala
+    Situacional.
+  - Si no alcanza, la V2 queda **bloqueada en operación** y hay que decidir una alternativa antes del pilotaje.
+    Cualquier alternativa (correr la ventana una semana, otra fuente para los días recientes o volver a la V1)
+    sería un encargo nuevo con su preregistro.
 - **Interfaz y HU0008:** la advertencia sobre el conteo se suaviza. En 2024 las razones quedan cerca de 1, no
   por debajo; los casos esperados siguen siendo orientativos. Además, hay que advertir que en 2022 la alerta en
   h4 fue más tardía.

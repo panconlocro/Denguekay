@@ -53,6 +53,17 @@ class TestReglaConteo(unittest.TestCase):
         self.assertEqual(cc.decidir(conteo.assign(empeora_conteo=[False, True, False]), empate)["adoptada"], "F")
         self.assertEqual(cc.decidir(conteo.assign(mejora_conteo=False), empate)["adoptada"], "F")
 
+    def test_diagnostico_celda(self):
+        datos = pd.DataFrame({"horizonte": 4, "bloque": "temporada_2022", "brote": [1, 1, 0, 0],
+                              "probabilidad_calibrada": [0.45, 0.6, 0.1, 0.55], "probabilidad_brote": [0.2, 0.3, 0.1, 0.2]})
+        otra = datos.assign(bloque="temporada_2023")
+        d = cc.diagnostico_celda({17: {"datos": pd.concat([datos, otra])}}, 4, "temporada_2022").iloc[0]
+        self.assertEqual((d.semanas, d.semanas_brote, d.brote_en_banda, d.brote_con_alerta), (4, 2, 1, 1))
+        self.assertAlmostEqual(d.prevalencia, 0.5)
+        self.assertAlmostEqual(d.probabilidad_calibrada_media, 0.425)
+        self.assertAlmostEqual(d.brier_calibrado, (0.55 ** 2 + 0.4 ** 2 + 0.1 ** 2 + 0.55 ** 2) / 4)
+        self.assertAlmostEqual(d.f1_050, 0.5)
+
     def test_columnas_a3(self):
         self.assertEqual(cc.COLUMNAS_A3, ["hum_rel_media_media5_h2", "precip_total_mm_media5_h2"])
 
