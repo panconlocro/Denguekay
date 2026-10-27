@@ -12,7 +12,7 @@ class TestPreregistro(unittest.TestCase):
         self.assertEqual([v["id"] for v in pr.VARIANTES], ["A1", "A2", "A3", "A4", "A5", "A6", "A7",
                                                            "B1", "B2", "B3", "B4", "B5"])
         c = pr.comparaciones()
-        self.assertEqual((c["bloque_A"], c["bloque_B"], c["total"]), (7, 7, 15))
+        self.assertEqual((c["bloque_A"], c["bloque_B"], c["combinada"], c["total"]), (7, 7, 2, 16))
 
     def test_columnas_de_gold_existen_en_el_contrato(self):
         gold = {c for cols in familias_predictoras(2).values() for c in cols}

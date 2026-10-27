@@ -179,12 +179,27 @@ Descartes sin probar:
 - **B6 (socio nueva):** no se preregistra. Solo se propone a Rosa si alguna de A4–A7 gana; la fase 1 no
   analizó lo socio porque es fijo por distrito.
 
-**Combinada (2c):** una sola variante con las familias que ganan (o empatan con mejor antelación o recall en
-brotes nuevos), contra la referencia B, sin búsqueda hacia adelante.
+**Combinada (2c), preregistrada el 2026-10-27 antes de correr nada de la 2c** (aprobada por Rosa):
+- **Candidatas:** **C** = `base_6`+B1+B2+B3 (las que ganan, más B2, que empata con mejor recall en brotes
+  nuevos) y **C3** = `base_6`+B3.
+- **Comparaciones** (regla simétrica, 5 semillas, intersección de filas de cada par):
+  1. C frente a B (sobre B∩C).
+  2. C3 frente a B: se reutiliza B3 frente a B de la 2b, porque las filas son las mismas.
+  3. C frente a C3 (sobre C3∩C).
+- **Decisión.** «Gana a X» significa adoptable frente a X: gana en algún horizonte y no pierde en ninguno.
+  - Si ni C ni C3 ganan a B, se mantiene `base_6`.
+  - Si solo una gana a B, se elige esa.
+  - Si ambas ganan a B: C si gana a C3; si C empata o pierde frente a C3, se elige C3.
+  - Ante empate entre candidatas del mismo nivel gana la de menos columnas. Es la versión por variables de la
+    regla de simplicidad del protocolo.
+- **Robustez (solo lectura, no decide).** Para la elegida frente a B: quitar del entrenamiento, una a la vez,
+  las primeras 8 semanas de orígenes de 2017 y la temporada 2018 (5 semillas), y reportar si se mantiene el
+  signo de la diferencia de F1 y de antelación en 2022 y 2023.
+- **SHAP** por horizonte de la elegida (HU0008-4).
 
-**Comparaciones previstas: 15.** Son 7 del bloque A, 7 del bloque B (5 contra la referencia B y 2 contra la
-familia A que extienden) y 1 de la combinada; cada una se evalúa en h=2, 3 y 4. Más una condicional (B6),
-con aprobación. 2024 se reporta como contraste y no decide.
+**Comparaciones previstas: 16.** Son 7 del bloque A, 7 del bloque B y 2 de la combinada (C frente a B y C frente
+a C3; C3 frente a B ya está contada en la 2b), más una condicional (B6), con aprobación. Las de robustez son de
+lectura y no se cuentan. 2024 se reporta como contraste y no decide.
 
 ## Fase 2a · Re-ensayo del bloque A sobre E3·S4_s2
 

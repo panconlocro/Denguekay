@@ -145,8 +145,28 @@ ACLARACION_EXTENSION = (
     "base_6+A1+A2+B1 frente a base_6+A1+A2; B5: base_6+A3+B5 frente a base_6+A3), para medir qué agrega lo nuevo.")
 
 COMBINADA = {
-    "id": "C", "regla": "una sola variante con las familias de A y B que ganan (o empatan con mejor antelación o "
-                        "recall en brotes nuevos), comparada contra la referencia B; sin búsqueda hacia adelante",
+    "id": "C", "fecha": "2026-10-27, antes de cualquier corrida de la fase 2c (aprobado por Rosa)",
+    "regla_de_entrada": "familias de A y B que ganan (o empatan con mejor antelación o recall en brotes nuevos) "
+                        "frente a su referencia; sin búsqueda hacia adelante",
+    "candidatas": {"C": ["B1", "B2", "B3"], "C3": ["B3"]},
+    "comparaciones": [
+        {"candidata": "C", "referencia": "B", "nota": "intersección de filas de C (B∩C)"},
+        {"candidata": "C3", "referencia": "B", "nota": "es la comparación B3 frente a B de la 2b; se reutiliza "
+                                                         "porque las filas son las mismas (B3 no excluye filas)"},
+        {"candidata": "C", "referencia": "C3", "nota": "intersección de filas de C (C3∩C)"},
+    ],
+    "decision": [
+        "«gana a X» = adoptable frente a X: gana en algún horizonte y no pierde en ninguno (estrategias_horizonte.adopcion)",
+        "si ni C ni C3 ganan a B, se mantiene base_6",
+        "si solo una de las dos gana a B, se elige esa",
+        "si ambas ganan a B: C si gana a C3; si C empata o pierde frente a C3, C3",
+        "ante empate entre candidatas del mismo nivel gana la de menos columnas: es la versión por variables de "
+        "la regla de simplicidad del protocolo (menos modelos)",
+    ],
+    "robustez_solo_lectura": "para la elegida frente a B: quitar del entrenamiento, una a la vez, las primeras 8 "
+                             "semanas de orígenes de 2017 y la temporada 2018 (5 semillas) y reportar si se mantiene "
+                             "el signo de la diferencia de F1 y de antelación en 2022 y 2023; no decide",
+    "shap": "importancia SHAP por horizonte de la elegida (HU0008-4), semilla 17, bloques 2022, 2023 y 2024",
 }
 
 
@@ -155,7 +175,8 @@ def comparaciones() -> dict:
     por_variante = sum(len(v["comparar_contra"]) for v in VARIANTES)
     return {"bloque_A": sum(len(v["comparar_contra"]) for v in VARIANTES if v["bloque"] == "A"),
             "bloque_B": sum(len(v["comparar_contra"]) for v in VARIANTES if v["bloque"] == "B"),
-            "combinada": 1, "total": por_variante + 1, "condicional_B6": 1,
+            "combinada": 2, "total": por_variante + 2, "condicional_B6": 1,
+            "nota_combinada": "C frente a B y C frente a C3; C3 frente a B reutiliza B3 frente a B (2b)",
             "nota": "cada comparación se evalúa por horizonte (h=2, 3, 4); 2024 no decide"}
 
 
