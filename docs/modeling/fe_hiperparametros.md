@@ -715,7 +715,7 @@ Clasificación: P ≥ 0,60, R ≥ 0,80 y F1 ≥ 0,70 con p ≥ 0,50. Regresión:
 
 **S4_s3 avisa antes a cambio de estimar peor la magnitud fuera de 2023.** En h=4, la antelación en 2022–2023 sube
 de 0,137 a 0,232 y deja de perder frente a la persistencia. En cambio, la razón RMSE del contraste 2024 es 1,67 /
-1,89 / 2,01 (h2 / h3 / h4), frente a 1,24 / 1,25 / 1,27 de S4_s2, y en 2022 la razón MAE pasa de 0,93–0,95 a
+1,89 / 2,01 (h2 / h3 / h4), frente a 1,24 / 1,25 / 1,27 de S4_s2, y en 2022 la razón MAE pasa de 0,92–0,95 a
 1,00–1,04.
 
 **Limitación del conteo para la interfaz y las HU0008:**
@@ -872,3 +872,56 @@ Los ejecuta el equipo. Complementan «Cambios que implicaría la arquitectura el
   4.2 no pudo distinguir entre las dos α.
 - **Pocos brotes:** 2017 y 2023 concentran la mayor parte de los casos. 2026 dirá la magnitud real de la mejora.
 - **Sin lenguaje causal:** las mejoras son asociaciones en las temporadas evaluadas.
+- **Preregistro de la 2c escrito con la 2b a la vista.** La regla de la combinada (C y C3, con desempate por
+  menos columnas) se commiteó (`d30c726`) antes de correr la 2c, pero después de ver los resultados de la 2b, con
+  aprobación de Rosa. Con la regla original del preregistro de la fase 1 («una sola variante con las familias que
+  ganan», sin C3), según el revisor, se habría adoptado C, que también gana a B. La elección de C3 depende de esa enmienda.
+- **Márgenes chicos en decisiones:**
+  - Fase 3, h3 · 2022: ΔF1 0,01450 frente a un umbral de 0,01481. Si lo hubiera superado, h3 habría dado «gana»
+    y se habría adoptado la candidata.
+  - Fase 4.3: la victoria de S4_s3 en h4 descansa en +0,053 de antelación en 2022, que son 2 inicios de 38.
+
+### Auditoría independiente (`revisor-modelado`, 2026-10-27)
+
+El revisor recalculó desde las predicciones guardadas y el texto del protocolo, sin leer el código de modelado
+ni los JSON de métricas.
+
+- **Coinciden:**
+  - los 19 veredictos y las 4 adopciones (C3, base, α dentro de la muestra, S4_s3), con regla simétrica en las 19;
+  - las medianas y rangos de la configuración final (45 cifras);
+  - la tabla de la HU0007-4 (54 cifras), incluida la frontera 2023 · h4 (0,852; 0,846–0,857);
+  - los 100 trials sin fallos y el trial 86 (0,209188);
+  - que la candidata con α OOS es idéntica a la referencia en 2021 y 2022;
+  - la ausencia de fuga en los 29 archivos de predicciones.
+- **Orden de los commits:** cada preregistro es anterior a los resultados de su fase (`0fb31d2` → `092b7ba`,
+  `68c3902` → `c4b331c`, `d30c726` → `b856c06`, `af507ae` → `cd5904a`, `f6325b0` → `260f026`).
+  - `f6325b0` contiene el preregistro en código (`preregistro_fe.FASE4`). La sección del informe se escribió
+    con los resultados, en `260f026`.
+  - El orden de los commits no prueba cuándo se corrieron los experimentos.
+- **Diferencias de lectura del protocolo, sin cambio de decisiones:**
+  - El revisor no reproduce algunas cifras de antelación: la persistencia en h3/h4, S4_s3 en h3 (0,221 frente a
+    0,211) y S4_s2 en 2024 · h4. Tampoco la log-loss de la candidata de la fase 3 en h3 · 2023.
+  - Con los mismos archivos guardados, el protocolo congelado (`protocolo_arquitectura.evaluar`) da las cifras
+    del informe. La candidata con semilla 17 da 0,2091878 desde su CSV. S4_s3 en h3 da 0,200 / 0,211 / 0,200 /
+    0,211 / 0,211, con mediana 0,211.
+  - La diferencia está en la implementación del revisor: calibración y conteo de inicios en casos de borde, a
+    partir de un texto que no fija esos detalles. Los archivos son los mismos.
+  - Con su lectura, la conclusión «en h=4 la final ya no pierde frente a la persistencia y no la supera» se
+    mantiene (+0,000, IC −0,095 a 0,095). Pero C3·S4_s2 sí perdería en h4 (IC −0,179 a −0,011).
+- **Correcciones aplicadas al informe a raíz de la auditoría:** la razón MAE de S4_s2 en 2022 (0,92–0,95, no
+  0,93–0,95); la nota sobre el preregistro de la 2c escrito con la 2b a la vista; y los márgenes chicos de la
+  fase 3 (h3 · 2022) y de la 4.3 (2 inicios de 38).
+- **No verificable sin reentrenar:** SHAP, robustez, importancia fANOVA, medianas con 5 semillas de los trials
+  91/75/82/62, reproducción 615/615 de la fase 0, α (no se guardan en los archivos de predicciones) y recall de
+  brotes nuevos.
+
+### Cierre técnico
+
+- **Corrida de cierre:** notebooks 32, 33 y 34 de punta a punta, sin caché (`DENGUEKAY_FORZAR_REENTRENO=1`). El
+  33 reutiliza el estudio de 100 trials guardado en SQLite (decisión de Rosa).
+  - Tiempos: 22, 16 y 4 minutos.
+  - Sin errores.
+  - Todas las huellas de predicciones registradas en MLflow coinciden con las anteriores, así que no se
+    registraron runs nuevos.
+  - Ninguna métrica del JSON cambió; solo los tiempos de la fase 0.
+- **Suite completa:** 389 tests, OK, sin omitidos (PostgreSQL arriba).
