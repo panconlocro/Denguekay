@@ -234,6 +234,17 @@ def medir_ajuste(matrices: dict[int, pd.DataFrame], serie: pd.DataFrame, semilla
 # MLflow (forma estándar horizontes → variantes → folds)
 # ---------------------------------------------------------------------------
 
+def huella_directorio(directorio) -> str:
+    """Huella de las predicciones guardadas de una fase (todos los ``*.csv.gz``) y del protocolo."""
+    from pathlib import Path
+
+    archivos = sorted(Path(directorio).glob("*.csv.gz"))
+    if not archivos:
+        raise FileNotFoundError(f"No hay predicciones en {directorio}")
+    return huella_predicciones(pd.concat([pd.read_csv(f, dtype={"ubigeo": "string"}).assign(archivo=f.name)
+                                          for f in archivos], ignore_index=True))
+
+
 def huella_predicciones(predicciones: pd.DataFrame) -> str:
     """Huella de un registro: SHA-256 de las predicciones y de la versión del protocolo.
 
@@ -245,7 +256,7 @@ def huella_predicciones(predicciones: pd.DataFrame) -> str:
     """
     from pathlib import Path
 
-    claves = [c for c in ("ubigeo", "anio", "semana", "horizonte", "bloque", "semilla") if c in predicciones]
+    claves = [c for c in ("archivo", "ubigeo", "anio", "semana", "horizonte", "bloque", "semilla") if c in predicciones]
     canonica = predicciones.sort_values(claves).reset_index(drop=True)
     canonica = canonica[sorted(canonica.columns)]
     total = hashlib.sha256(canonica.to_csv(index=False, date_format="%Y-%m-%d").encode("utf-8"))

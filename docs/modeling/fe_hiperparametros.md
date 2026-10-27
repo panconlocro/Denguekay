@@ -260,3 +260,79 @@ ganado, no serían pronósticos que se habrían podido emitir.
 - No hay ninguna familia del bloque A que **gane**. Para la combinada (2c) solo entrarían familias que ganen o que
   empaten con mejor antelación o recall en nuevos según la regla; en el bloque A no hay ninguna.
 - B1 se compara también contra `base_6`+A1+A2 y B5 contra `base_6`+A3. Esas dos referencias se ajustan en 2b.
+
+## Fase 2b · Variables nuevas (bloque B) sobre E3·S4_s2
+
+Las variables B1–B5 se calculan en memoria en `src/modeling/features_inicio.py`, con el estado de la semana de
+origen (semanas ≤ `o`):
+- B2 (núcleo) y B5 (climatología de las anomalías) se ajustan con el corte de cada bloque.
+- B3 toma la temporada 2016 de la historia de la regla de brote.
+- B4 usa `umbral_brote_futuro`, que coincide bit a bit con el código que genera gold; contra el CSV de gold, `k`
+  y `brote` son idénticos y el valor difiere en menos de 10⁻¹² por el redondeo de la escritura.
+
+Tests de no fuga, todos aprobados antes de correr (`tests/test_features_inicio.py`):
+- perturbación sobre datos sintéticos y sobre el panel real (las variables B de orígenes ≤ D no cambian);
+- B2 y B5 por bloque (los datos posteriores a 2022 no cambian las predicciones de 2021–2022);
+- reproducción de los niveles y fracciones `_h2` de gold en el origen;
+- B4 sin nulos al final de 2025.
+
+Nulos de arranque, todos en 2017:
+- B1 y B2: 65 filas, la primera semana de origen.
+- B5: 390 filas, las primeras 6 semanas.
+- B3 y B4: ninguno.
+
+Cada variante se compara contra su B∩ en la misma intersección de filas. Comparaciones hechas: 7 (acumuladas:
+**14 de 15**).
+
+### Veredictos (regla simétrica)
+
+| Candidata | Referencia | h=2 | h=3 | h=4 | Mejora antelación | Mejora recall nuevos | Señal de temporada |
+|---|---|---|---|---|---|---|---|
+| B1 dinámica espacial | B∩B1 | **gana** | empate | empate | h=2 | — | no |
+| B2 distritos núcleo | B∩B2 | empate | empate | empate | — | h=2 | no |
+| B3 historia propia ampliada | B | **gana** | **gana** | empate | h=2, h=3 | h=2 | no |
+| B4 línea base estacional | B | empate | empate | empate | — | — | no |
+| B5 clima de incubación | B∩B5 | empate | empate | empate | — | — | no |
+| `base_6`+A1+A2+B1 | `base_6`+A1+A2 (∩) | empate | empate | empate | — | — | no |
+| `base_6`+A3+B5 | `base_6`+A3 (∩) | empate | empate | **pierde** | — | — | no |
+
+### Lectura por familia (observaciones; no cambian los veredictos)
+
+- **B3 gana en h=2 y h=3** por F1 (en ambas temporadas, por encima del rango entre semillas) y por antelación.
+  - F1 en h=2: +0,046 (2022) y +0,011 (2023); en h=3: +0,022 y +0,017.
+  - Antelación sobre inicios limpios: 0,147 frente a 0,084 en h=2 (diferencia pareada +0,074, IC95 0,031 a
+    0,126) y 0,126 frente a 0,095 en h=3 (+0,053, IC95 0,011 a 0,105).
+  - Recall en brotes nuevos en h=2: +0,061 (2022) y +0,035 (2023).
+  - En 2022 baja mucho el error de casos (MAE/pers. 1,056 → 0,929 en h=2; 1,293 → 0,947 en h=4).
+  - En h=4 empata.
+  - En 2024 (contraste) el F1 queda entre −0,008 y −0,002 frente a B.
+  - Como sube la antelación y el recall en nuevos, **no** recibe la marca de señal de temporada.
+  - Límite: «semanas desde el último caso» empieza truncada en las primeras semanas de 2017 (no usa la
+    historia previa); afecta solo filas de entrenamiento.
+- **B1 gana en h=2 solo por antelación** (0,137 frente a 0,084; +0,042, IC95 0,011 a 0,084), con más inicios
+  avisados en 2022 y en 2023.
+  - El F1 no mejora: sube en 2023 (+0,011 a +0,016) y **baja en 2022** (−0,047 / −0,093 / −0,188 en h=2/3/4).
+    Como empeora en una sola temporada, la regla no lo cuenta.
+  - La caída de 2022 en h=4 es grande (0,463 → 0,275) y debe pesar en la lectura, aunque no cambie el
+    veredicto.
+  - La extensión `base_6`+A1+A2+B1 frente a `base_6`+A1+A2 empata en los 3 horizontes: sobre A1+A2, lo nuevo
+    no agrega según la regla.
+- **B2 empata.** Mejora el recall en brotes nuevos en h=2 (+0,041 / +0,035, justo en el umbral de 2023). En
+  2022, h=4, el F1 baja (−0,063).
+- **B4 empata** en los 3 horizontes. Baja el MAE en 2022 pero lo sube en 2023.
+- **B5 empata frente a B∩B5**, pero en 2022 el F1 de h=3 y h=4 se desploma (0,360 y 0,036, frente a 0,497 y
+  0,290). La extensión `base_6`+A3+B5 **pierde** en h=4 frente a `base_6`+A3 (F1 −0,225 en 2022 y −0,008 en
+  2023). El clima de incubación no agrega sobre el clima de gold.
+
+### Observación transversal: la fragilidad de 2022 en h=4
+
+Quitar solo 390 filas de entrenamiento de comienzos de 2017 (B∩B5) baja el F1 de 2022 en h=4 de 0,478 a 0,290,
+y quitar 65 (B∩B1) lo deja en 0,463. El F1 a 0,50 de 2022 en h=4 es muy sensible a cambios chicos en el
+entrenamiento. Eso pide prudencia con cualquier diferencia grande que aparezca solo en esa celda. Es una
+observación: no cambia la regla.
+
+### Implicaciones para la 2c (según la regla preregistrada)
+
+Entran a la combinada las familias que **ganan** (B1 y B3) o que empatan con mejor antelación o recall en
+brotes nuevos (B2, por el recall en nuevos en h=2). Ninguna familia del bloque A cumple esa condición. La
+variante conjunta candidata sería `base_6`+B1+B2+B3, comparada contra la referencia B en la intersección de filas.

@@ -185,7 +185,7 @@ modeling/
 ├── diagnostico_clima.py     # ablación temporal exploratoria del clima (fase 4)
 ├── sociodemografia.py       # referencia 2017, demografía anual y eje urbano por fold (fase 5)
 ├── diagnostico_socio.py     # ablación temporal exploratoria de variantes fijas y anuales (fase 5)
-├── etiqueta_brote.py        # regla de semana elevada con historia previa
+├── etiqueta_brote.py        # regla de semana elevada con historia previa; umbral_brote_futuro para semanas fuera del panel
 ├── features.py              # integración y validación de gold; persiste solo h=2/4, construye h=1..6 en memoria
 ├── contrato_xgboost.py      # candidatos, exclusiones y auditoría de traspaso (fase 7)
 ├── dispositivo.py           # elige GPU NVIDIA (CUDA) o CPU para XGBoost según config.yaml
@@ -206,6 +206,7 @@ modeling/
 ├── diagnostico_inicios.py   # inicios limpios, controles y perfiles previos en memoria (fase 1 del encargo de FE)
 ├── preregistro_fe.py        # lista cerrada de variantes A/B y número de comparaciones (fase 1 del encargo de FE)
 ├── experimentos_variables.py # orígenes por variante, CP1 por bloque, veredicto y lectura de temporada (fase 2 del encargo de FE)
+├── features_inicio.py       # variables B1–B5 en memoria desde el estado de la semana de origen; B2/B5 por bloque (fase 2b)
 └── seguimiento_mlflow.py    # registra cada reporte de experimento en MLflow (runs anidados)
 ```
 **Va acá:** el feature engineering para el modelo y todo lo relacionado con entrenamiento y evaluación. `features.py` integra los candidatos de fase 6; `train.py` entrena los dos primeros objetivos XGBoost, `evaluate.py` contiene métricas compartidas, `ablacion_espacial.py` contrasta vecinos y jerarquía, `ablacion_clima.py` contrasta clima observado y anomalías, `ablacion_sociodemografica.py` compara bloques demográficos, `ablacion_fracciones.py` criba las 15 fracciones una por una, `ablacion_poblacion_sin_seguro.py` compara las dos candidatas fijas por separado y juntas, y `validacion_temporal_compacta.py` calibra umbrales con temporadas previas y compara matrices pequeñas. Cuando prueben un modelo nuevo, la lógica compartida (split train/test, métricas) se conserva en un solo lugar. `seguimiento_mlflow.py` registra en MLflow el reporte de cualquier experimento con la forma estándar `horizontes → variantes → folds`.

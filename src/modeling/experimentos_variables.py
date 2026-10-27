@@ -29,13 +29,15 @@ H_ULTIMO = eh.HORIZONTES_ESTRATEGIA[-1]
 # Orígenes de una variante
 # ---------------------------------------------------------------------------
 
-def origenes_con(matrices: dict[int, pd.DataFrame], columnas_extra: list[str]) -> tuple[pd.DataFrame, dict]:
+def origenes_con(matrices: dict[int, pd.DataFrame], columnas_extra: list[str],
+                 origenes: pd.DataFrame | None = None) -> tuple[pd.DataFrame, dict]:
     """Tabla de orígenes con las columnas extra; quita filas con nulos de arranque.
 
     Devuelve ``(origenes, excluidas)``. La referencia de una variante con
     exclusiones se reentrena con estos mismos orígenes (intersección de filas).
+    ``origenes`` permite pasar una tabla ya ampliada (p. ej. con variables B).
     """
-    origenes = eh.tabla_origenes(matrices[2])
+    origenes = eh.tabla_origenes(matrices[2]) if origenes is None else origenes
     faltan = [c for c in columnas_extra if c not in origenes]
     if faltan:
         raise ValueError(f"Columnas ausentes en la tabla de orígenes: {faltan}")
