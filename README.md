@@ -1,5 +1,17 @@
 # Denguekay
 
+Monorepo ([ADR 0001](docs/decisions/0001-repo-restructure.md)); la estructura completa está en
+[docs/estructuraRepo.md](docs/estructuraRepo.md):
+
+| Ruta | Contenido |
+|---|---|
+| `src/denguekay/` | Paquete instalable: `config`, `data`, `features`, `model`, `evaluation`, `db`, `serving`, `pipelines` |
+| `apps/api/` | Aplicación FastAPI; `apps/api/tools/` con el benchmark, la exportación OpenAPI y la prueba de humo |
+| `pipelines/notebooks/` | Notebooks del pipeline de datos: 01–09 (bronze → silver) y `10_silver_to_gold` |
+| `research/` | Estudios congelados (EDA, feature engineering, modelado); no se importan desde el producto |
+| `configs/` | `config.yaml` del proyecto |
+| `tests/` | Tests, con la misma estructura que el paquete (`tests/<subpaquete>/`, `tests/api/`) |
+
 ## Backend
 
 Backend local alineado al documento OE2 (sección 5, Anexo B y Tabla 2): PostgreSQL con el esquema
@@ -12,13 +24,13 @@ en PowerShell:
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m pip install -e .
 .\.venv\Scripts\python -m alembic upgrade head
-.\.venv\Scripts\python -m src.serving.cargar_datos
-.\.venv\Scripts\python -m src.serving.publicar --horizontes 2 4
-.\.venv\Scripts\python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
+.\.venv\Scripts\python -m denguekay.serving.load_data
+.\.venv\Scripts\python -m denguekay.serving.publish --horizontes 2 4
+.\.venv\Scripts\python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 La API queda en `http://127.0.0.1:8000/api/v1` (documentación en `/docs`). Con uvicorn levantado,
-`.\.venv\Scripts\python -m src.api.prueba_humo` llama a cada endpoint de la Tabla 2 y escribe
+`.\.venv\Scripts\python -m apps.api.tools.smoke_test` llama a cada endpoint de la Tabla 2 y escribe
 [evidencia_tb1.md](docs/backend/evidencia/evidencia_tb1.md). `data/` es solo lectura.
 
 Ninguna versión de modelo cumple todavía los umbrales de aceptación: se sirven como
@@ -28,11 +40,12 @@ Corte de datos publicado: 27/12/2025.
 Tests y cobertura (SQLite temporal; PostgreSQL si existe `DENGUEKAY_PG_PRUEBAS_URL`):
 
 ```powershell
-.\.venv\Scripts\python -m coverage run --source=src/db,src/serving,src/api -m unittest discover -s tests
+.\.venv\Scripts\python -m coverage run --source=src/denguekay/db,src/denguekay/serving,apps/api -m unittest discover -s tests
 .\.venv\Scripts\python -m coverage report -m
 ```
 
-La suite incluye las guardas de equivalencia de la reestructuración (`tests/test_equivalence.py`):
+La suite incluye las guardas de la reestructuración. `tests/test_layout.py` impide referencias al
+antiguo paquete `src` y que el producto importe `research/`. `tests/test_equivalence.py` comprueba:
 predicciones de V1 y V2 idénticas bit a bit (requiere los datos locales), contrato de
 `docs/backend/openapi.json`, esquema tras `alembic upgrade head` (SQLite y PostgreSQL) y prueba de humo
 contra uvicorn. Su línea base está en `tests/fixtures/equivalence/` y no se regenera.
@@ -56,7 +69,7 @@ cada horizonte se evaluará por separado. El dataset integrado de `data/silver/i
 features y `data/gold/` contiene la salida validada de la fase 6.
 
 Las fases 1–7 ya tienen notebooks ejecutados (`17`–`23`) e informes; el estudio está congelado en
-`research/02_feature_engineering/` (el notebook 22, que regenera gold, sigue en `notebooks/`). La [fase 4](research/02_feature_engineering/docs/fase4_clima.md)
+`research/02_feature_engineering/` (el antiguo notebook 22, que regenera gold, es ahora `pipelines/notebooks/10_silver_to_gold.ipynb`). La [fase 4](research/02_feature_engineering/docs/fase4_clima.md)
 prueba ventanas climáticas causales. La [fase 5](research/02_feature_engineering/docs/fase5_sociodemografia.md)
 compara demografía fija y anual reconstruida. La [fase 6](research/02_feature_engineering/docs/fase6_integracion.md)
 integra candidatos para `h=2` y `h=4`, y conserva un manifiesto de linaje.
@@ -84,7 +97,7 @@ documenta el efecto de exigir 1 o 5 casos.
 Para regenerar los dos CSV de `data/gold/` desde el silver completo:
 
 ```bash
-.venv/bin/jupyter nbconvert --to notebook --execute --inplace notebooks/22_fe_integracion.ipynb
+.venv/bin/jupyter nbconvert --to notebook --execute --inplace pipelines/notebooks/10_silver_to_gold.ipynb
 ```
 
 El gold conserva `casos_Dengue` como conteo junto a la etiqueta `brote` y su
@@ -99,13 +112,13 @@ temporal compacta son estudios cerrados: se reproducen desde su tag, como explic
 [research/03_first_models_and_ablations](research/03_first_models_and_ablations/README.md).
 Índice de todos los estudios: [research/README.md](research/README.md).
 
-Los módulos de entrenamiento que siguen en `src/modeling/` (`train`, `validacion_temporal_compacta`) validan antes sus entradas con **Great Expectations**
-y, al terminar, registra la corrida en **MLflow** (`mlflow.db` y `mlartifacts/`
+Los módulos de entrenamiento y evaluación del producto (`denguekay.model.train`, `denguekay.evaluation.compact_validation`) validan antes sus entradas con **Great Expectations**
+y, al terminar, registran la corrida en **MLflow** (`mlflow.db` y `mlartifacts/`
 locales). Para ver y comparar los experimentos:
 
 ```bash
 .venv/bin/mlflow ui --backend-store-uri sqlite:///mlflow.db --workers 1
-.venv/bin/python -m src.validation.calidad_gx   # solo calidad de datos
+.venv/bin/python -m denguekay.data.validation.gx_quality   # solo calidad de datos
 ```
 
 La guía completa está en
@@ -114,11 +127,11 @@ Las opciones `--sin-mlflow` y `--sin-validacion-datos` desactivan cada parte.
 
 XGBoost entrena en una GPU NVIDIA (CUDA) si la encuentra y, si no, en CPU con
 todos los núcleos; en Mac siempre usa CPU porque XGBoost no soporta su GPU. Se
-controla en la sección `xgboost` de `config/config.yaml` (`device: auto | cuda | cpu`).
+controla en la sección `xgboost` de `configs/config.yaml` (`device: auto | cuda | cpu`).
 Para ver qué detecta tu equipo y comparar tiempos:
 
 ```bash
-.venv/bin/python -m src.modeling.dispositivo --comparar
+.venv/bin/python -m denguekay.model.device --comparar
 ```
 
 El dispositivo queda en los parámetros de cada reporte y en MLflow (`xgb.device`),
@@ -142,7 +155,7 @@ y los nuevos casos de dengue, de la Sala Situacional MINSA/DGE.
 Instala las dependencias con `./run_setup.sh`. Desde la raíz del repositorio:
 
 ```bash
-.venv/bin/python -m src.update_dataset_module \
+.venv/bin/python -m denguekay.pipelines.weekly_update \
   --input data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv \
   --output data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv \
   --dry-run
@@ -167,7 +180,7 @@ semanas nuevas, para dejar creada esa línea base de cobertura.
 Si solo `casos_Dengue` falta en filas nuevas, la inspección indica
 `[RUN] epidemiological`, `[SKIP] weather` y `[SKIP] demographic`.
 
-El scraper reutilizable vive en `src/ingestion/scrape_minsa_dengue.py`. Sus
+El scraper reutilizable vive en `src/denguekay/data/ingestion/minsa_sala_scraper.py`. Sus
 respuestas y exportaciones normalizadas se guardan como artefactos de ejecución
 en `data/bronze/epi/sala/` y `data/silver/epi_sala_semanal.csv`; ninguno es
 necesario en Git para ejecutar el actualizador. El catálogo pequeño de UBIGEO

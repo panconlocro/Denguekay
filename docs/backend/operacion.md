@@ -22,22 +22,31 @@ Las variables del proceso tienen prioridad sobre `.env`. Ningún comando imprime
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m pip install -e .
 .\.venv\Scripts\python -m alembic upgrade head
-.\.venv\Scripts\python -m src.serving.cargar_datos
-.\.venv\Scripts\python -m src.serving.publicar --horizontes 2 4
-.\.venv\Scripts\python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
+.\.venv\Scripts\python -m denguekay.serving.load_data
+.\.venv\Scripts\python -m denguekay.serving.publish --horizontes 2 4
+.\.venv\Scripts\python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 - `alembic upgrade head` deja la BD en `0003_oe2` (esquema OE2, semillas de `parametro_sistema`,
   RLS, roles `rol_api`/`rol_pipeline` si no existen, permisos y políticas). **Reemplaza** el
   esquema 0001/0002: los datos anteriores se pierden y se recargan desde las fuentes.
-- `cargar_datos` valida GX y el linaje, y carga provincia, distrito, calendario MMWR y
+- `load_data` valida GX y el linaje, y carga provincia, distrito, calendario MMWR y
   `observacion_semanal` (65 distritos, 30 485 observaciones, corte 27/12/2025). Es idempotente:
   con las mismas fuentes reutiliza la ingesta. Siembra `seleccion_experimental` desde `config.yaml`
   sin pisar un valor existente.
-- `publicar` (≈1 min) ajusta los boosters con `src/modeling/train.py` (sin cambiar el modelo),
+- `publish` (≈1 min) ajusta los boosters con `src/denguekay/model/train.py` (sin cambiar el modelo),
   registra un run en MLflow, guarda cada booster en `models/storage/modelos/<codigo>.json` con su
   SHA-256, crea las versiones `candidata`, importa las predicciones OOS del protocolo (27 040
   filas) e infiere el corte vigente para h=2 y h=4. Repetirla con las mismas entradas se reutiliza.
+- **Primera publicación tras la reestructuración (decisión D6 del
+  [ADR 0001](../decisions/0001-repo-restructure.md)).** La huella de una publicación incluye el
+  SHA-256 de todo el código de `src/denguekay/` (`code_hashes()` de `denguekay.serving.publish`).
+  La fase 3 movió y tradujo ese código sin cambiar su comportamiento, pero cambió sus bytes: la
+  primera `publish` posterior no reutiliza la publicación anterior y registra un
+  `reentrenamiento` y un run de MLflow nuevos. Las versiones de modelo se reutilizan si el booster
+  sale idéntico byte a byte (mismo equipo, dispositivo y `n_jobs`); si sale distinto (otro equipo
+  o GPU/CPU), se crean versiones `candidata` nuevas y hay que actualizar
+  `parametro_sistema.seleccion_experimental`. Es esperado y no indica un cambio del modelo.
 - La API queda en `http://127.0.0.1:8000/api/v1`; documentación en `/docs` y `/openapi.json`.
 
 Con la BD ya poblada basta el último comando.
@@ -47,12 +56,12 @@ Con la BD ya poblada basta el último comando.
 Con uvicorn levantado y `API_KEY` definida:
 
 ```powershell
-.\.venv\Scripts\python -m src.api.prueba_humo --url http://127.0.0.1:8000
+.\.venv\Scripts\python -m apps.api.tools.smoke_test --url http://127.0.0.1:8000
 ```
 
 Llama a cada endpoint de la Tabla 2 y escribe [evidencia_tb1.md](evidencia/evidencia_tb1.md)
 (sin credenciales). La evidencia SQL de la migración se regenera con
-`.\.venv\Scripts\python -m src.db.exportar_sql_migracion` (no se conecta a ninguna BD).
+`.\.venv\Scripts\python -m denguekay.db.export_migration_sql` (no se conecta a ninguna BD).
 
 ## Inferencia y activación desde la API
 
@@ -72,9 +81,9 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/admin/modelos/1
 
 ```powershell
 $env:DENGUEKAY_PG_PRUEBAS_URL = [Environment]::GetEnvironmentVariable('DENGUEKAY_PG_PRUEBAS_URL','User')
-.\.venv\Scripts\python -m coverage run --source=src/db,src/serving,src/api -m unittest discover -s tests
+.\.venv\Scripts\python -m coverage run --source=src/denguekay/db,src/denguekay/serving,apps/api -m unittest discover -s tests
 .\.venv\Scripts\python -m coverage report -m
-.\.venv\Scripts\python -m src.api.benchmark --horizontes 2 4 --incluir-escrituras --salida docs/backend/benchmark_postgresql.json
+.\.venv\Scripts\python -m apps.api.tools.benchmark --horizontes 2 4 --incluir-escrituras --salida docs/backend/benchmark_postgresql.json
 ```
 
 Los tests usan SQLite temporal y, si existe `DENGUEKAY_PG_PRUEBAS_URL`, repiten esquema e
@@ -88,8 +97,8 @@ con `--incluir-escrituras` agrega ejecuciones: úselo sobre una copia o la BD de
   roles, que son globales del clúster).
 - **Artefacto alterado o ausente:** la inferencia responde 409 `artefacto_invalido`; restaure el
   archivo desde el respaldo o vuelva a publicar.
-- **Datos nuevos:** regenerar silver/gold con el pipeline (fuera del backend), luego `cargar_datos`
-  y `publicar`. Las métricas de las versiones siguen siendo las del protocolo temporal guardado;
+- **Datos nuevos:** regenerar silver/gold con el pipeline (fuera del backend), luego `load_data`
+  y `publish`. Las métricas de las versiones siguen siendo las del protocolo temporal guardado;
   una evaluación nueva requiere repetir el protocolo (fase de modelado).
 - **Auditoría:** cada carga, publicación, inferencia y activación es una fila de `ejecucion`
   (`tipo`, `estado`, `detalle`, `mensaje_error`).

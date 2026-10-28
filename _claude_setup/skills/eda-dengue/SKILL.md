@@ -13,7 +13,7 @@ Antes de empezar lee, en este orden: `CLAUDE.md`, `docs/estructuraRepo.md`, `ref
 
 ## Contrato de trabajo
 - **Una fase a la vez.** Ejecuta una fase, presenta el resumen y **detente hasta que Rosa confirme**. No adelantes fases ni "aprovechando que estás".
-- **Solo lectura sobre `data/`.** Carga con `src.eda.carga.cargar_integrado()`. No escribas en `data/`, no toques gold, no agregues columnas derivadas al dataset. Lags, tasas y anomalías se calculan en memoria solo para analizar.
+- **Solo lectura sobre `data/`.** Carga con `denguekay.data.loading.load_integrated()`. No escribas en `data/`, no toques gold, no agregues columnas derivadas al dataset. Lags, tasas y anomalías se calculan en memoria solo para analizar.
 - **No arregles datos.** Si encuentras un problema, va a la lista "Problemas y propuestas de corrección" de `research/01_eda/docs/hallazgos.md` con evidencia y una propuesta; Rosa decide.
 - **No hagas feature engineering ni modelado.** Puedes cuantificar qué lags o transformaciones *parecen* útiles; no los implementas como features ni entrenas modelos. Una línea base ingenua (persistencia, estacional) solo para dimensionar la dificultad está permitida si la fase lo pide.
 

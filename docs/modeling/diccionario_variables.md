@@ -1,6 +1,6 @@
 # Diccionario de variables de la configuración final (HU0006-3)
 
-> Generado por `python -m src.modeling.diccionario_variables`; no editar a mano.
+> Generado por `python -m denguekay.model.variable_dictionary`; no editar a mano.
 
 Configuración: C3 + A3 = base_6 + B3 + clima de gold (humedad y precipitación, media de 5 semanas hasta o) · E3 (un regresor multi-salida, multi_output_tree, t+2/t+3/t+4 desde el origen o = t − 2) · S4_s3 · α dentro_muestra. El origen es `o = t − 2` (fila h=2); las tres salidas (t+2, t+3, t+4) usan las mismas variables.
 

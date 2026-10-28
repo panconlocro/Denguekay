@@ -1,6 +1,6 @@
 # MLflow y Great Expectations en el entrenamiento
 
-**Estado al 1 de octubre de 2026.** Este documento explica cómo quedaron integrados **MLflow** (seguimiento de experimentos) y **Great Expectations** (calidad de datos) en el flujo de modelado, cómo usarlos y qué falta. Implementa la migración propuesta en el [inventario](../../research/03_first_models_and_ablations/docs/inventario_entrenamiento_mlflow.md) **sin cambiar el protocolo estadístico**: cortes temporales, hiperparámetros, criterios de selección y métricas siguen definidos en `src/modeling/`.
+**Estado al 1 de octubre de 2026.** Este documento explica cómo quedaron integrados **MLflow** (seguimiento de experimentos) y **Great Expectations** (calidad de datos) en el flujo de modelado, cómo usarlos y qué falta. Implementa la migración propuesta en el [inventario](../../research/03_first_models_and_ablations/docs/inventario_entrenamiento_mlflow.md) **sin cambiar el protocolo estadístico**: cortes temporales, hiperparámetros, criterios de selección y métricas siguen definidos en el paquete (`src/denguekay/model/` y `src/denguekay/evaluation/`).
 
 Todavía **no hay modelo final**. Por eso no se usa el *Model Registry* de MLflow: cada corrida queda como experimento exploratorio comparable con las demás.
 
@@ -20,7 +20,7 @@ gold h2/h4 (+ silver integrado si el módulo lo usa)
 
 Los siete módulos están instrumentados: `train` (primer XGBoost), `ablacion_espacial`, `ablacion_clima`, `ablacion_sociodemografica`, `ablacion_fracciones`, `ablacion_poblacion_sin_seguro` y `validacion_temporal_compacta`. Los notebooks 24–30 llaman a esas funciones con los valores por defecto, así que **también registran en MLflow sin cambiar una línea**.
 
-> **Desde la reestructuración** ([ADR 0001](../decisions/0001-repo-restructure.md)), las ablaciones, los notebooks 24–30 y sus métricas están congelados en `research/03_first_models_and_ablations/`; `train` y `validacion_temporal_compacta` siguen en `src/modeling/`. Los ejemplos de esta guía conservan los nombres de módulo de entonces.
+> **Desde la reestructuración** ([ADR 0001](../decisions/0001-repo-restructure.md)), las ablaciones, los notebooks 24–30 y sus métricas están congelados en `research/03_first_models_and_ablations/`; en la fase 3, `train` y `validacion_temporal_compacta` pasaron a `denguekay.model.train` y `denguekay.evaluation.compact_validation`. Los comandos y rutas de esta guía usan ya los nombres nuevos; las cifras y corridas citadas son las de su fecha.
 
 Se comprobó que la instrumentación no altera resultados: con el mismo equipo, los siete JSON de métricas generados antes y después de los cambios son idénticos (ver §7).
 
@@ -38,12 +38,12 @@ Se comprobó que la instrumentación no altera resultados: con el mismo equipo, 
 
 | Archivo | Contenido |
 |---|---|
-| [`src/validation/expectations_gold.py`](../../src/validation/expectations_gold.py) | Suite `gold_h{h}` para cada gold por horizonte. |
-| [`src/validation/expectations_integrado.py`](../../src/validation/expectations_integrado.py) | Además de las comprobaciones previas del actualizador, `expectativas_integrado_gx()` define la suite `silver_integrado`. |
-| [`src/validation/calidad_gx.py`](../../src/validation/calidad_gx.py) | Abre el contexto de GX, registra las suites, valida, genera Data Docs y expone la CLI y `validar_entradas_modelado()`. |
+| [`src/denguekay/data/validation/gold_expectations.py`](../../src/denguekay/data/validation/gold_expectations.py) | Suite `gold_h{h}` para cada gold por horizonte. |
+| [`src/denguekay/data/validation/integrated_expectations.py`](../../src/denguekay/data/validation/integrated_expectations.py) | Además de las comprobaciones previas del actualizador, `integrated_gx_expectations()` define la suite `silver_integrado`. |
+| [`src/denguekay/data/validation/gx_quality.py`](../../src/denguekay/data/validation/gx_quality.py) | Abre el contexto de GX, registra las suites, valida, genera Data Docs y expone la CLI y `validate_modeling_inputs()`. |
 | `great_expectations/gx/` | Contexto generado por GX: suites, checkpoints, resultados y Data Docs. **No se versiona** (ver §3.4). |
 
-Las suites son **complementarias** a los controles estrictos que ya existían (`preparar_gold`, `auditar_traspaso`, `validate_complete`). Esos controles detienen el código con un error puntual; GX deja además un reporte declarativo, legible en HTML, que se adjunta a cada run de MLflow. Las suites solo **leen** `data/`.
+Las suites son **complementarias** a los controles estrictos que ya existían (`prepare_gold`, `audit_handoff`, `validate_complete`). Esos controles detienen el código con un error puntual; GX deja además un reporte declarativo, legible en HTML, que se adjunta a cada run de MLflow. Las suites solo **leen** `data/`.
 
 ### 3.2 Qué valida cada suite
 
@@ -57,7 +57,7 @@ Las suites son **complementarias** a los controles estrictos que ya existían (`
 
 **`gold_h2` y `gold_h4`** (92 expectativas cada una):
 
-- Esquema **exacto**: las columnas coinciden con `columnas_gold(h, con_brote=True)`.
+- Esquema **exacto**: las columnas coinciden con `gold_columns(h, with_outbreak=True)`.
 - Llave única, `ubigeo` válido y del catálogo, 65 distritos, `anio ≥ 2017`, `semana` 1–53.
 - Objetivos: `casos_Dengue ≥ 0`, `umbral_brote_casos ≥ 0`, `brote ∈ {0, 1}`.
 - **Sin fuga temporal**: `semana_inicio > origen_cierre` en toda fila con origen.
@@ -71,21 +71,21 @@ Con los datos actuales las tres suites pasan al 100 %.
 Desde la raíz del repo:
 
 ```powershell
-.\.venv\Scripts\python -m src.validation.calidad_gx             # silver integrado + gold h2/h4
-.\.venv\Scripts\python -m src.validation.calidad_gx --sin-gold  # solo silver integrado
+.\.venv\Scripts\python -m denguekay.data.validation.gx_quality             # silver integrado + gold h2/h4
+.\.venv\Scripts\python -m denguekay.data.validation.gx_quality --sin-gold  # solo silver integrado
 ```
 
 Imprime `[OK]` o `[FALLA]` por suite con los ejemplos inesperados, y sale con código 1 si algo falla. El reporte HTML queda en `great_expectations/gx/uncommitted/data_docs/local_site/index.html` (abrir con el navegador).
 
-Conviene correrlo después de regenerar silver (notebook 09 o `src.update_dataset_module`) o gold (notebook 22). Los módulos de entrenamiento lo ejecutan solos antes de entrenar.
+Conviene correrlo después de regenerar silver (notebook 09 o `denguekay.pipelines.weekly_update`) o gold (notebook 10, `pipelines/notebooks/10_silver_to_gold.ipynb`). Los módulos de entrenamiento lo ejecutan solos antes de entrenar.
 
 ### 3.4 Por qué `great_expectations/gx/` no se versiona
 
-GX reescribe sus archivos de configuración con identificadores nuevos en cada ejecución, lo que generaría cambios en Git sin contenido real. La **fuente de verdad son las suites en `src/validation/`**: el contexto se reconstruye solo la primera vez que se ejecuta cualquier validación.
+GX reescribe sus archivos de configuración con identificadores nuevos en cada ejecución, lo que generaría cambios en Git sin contenido real. La **fuente de verdad son las suites en `src/denguekay/data/validation/`**: el contexto se reconstruye solo la primera vez que se ejecuta cualquier validación.
 
 ### 3.5 Agregar o cambiar una expectativa
 
-Editar la lista que devuelve `expectativas_gold()` o `expectativas_integrado_gx()` y agregar un caso a `tests/test_calidad_gx.py`. No ajustar los límites a los valores observados para que "pase": cada límite debe tener una justificación física, lógica o del contrato de datos.
+Editar la lista que devuelve `expectations_for_gold()` o `integrated_gx_expectations()` y agregar un caso a `tests/data/test_gx_quality.py`. No ajustar los límites a los valores observados para que "pase": cada límite debe tener una justificación física, lógica o del contrato de datos.
 
 ## 4. MLflow (seguimiento de experimentos)
 
@@ -93,11 +93,11 @@ Editar la lista que devuelve `expectativas_gold()` o `expectativas_integrado_gx(
 
 | Archivo | Contenido |
 |---|---|
-| [`src/modeling/seguimiento_mlflow.py`](../../src/modeling/seguimiento_mlflow.py) | Recorre el reporte de cualquier experimento y lo registra. Contiene funciones puras de aplanado (testeadas) y `registrar_reporte()`. |
+| [`src/denguekay/model/tracking.py`](../../src/denguekay/model/tracking.py) | Recorre el reporte de cualquier experimento y lo registra. Contiene funciones puras de aplanado (testeadas) y `log_report()`. |
 | `mlflow.db` | Base SQLite con experimentos, runs, parámetros, métricas y etiquetas. Local, no se versiona. |
 | `mlartifacts/` | Archivos adjuntos a cada run (JSON de métricas, predicciones, modelos, resultado de GX). Local, no se versiona. |
 
-Las rutas son absolutas desde `src/utils/paths.py`, así que un notebook (que corre desde `notebooks/`) y la CLI (desde la raíz) escriben en la misma base. Para usar un servidor compartido con Nicolás, basta definir la variable `MLFLOW_TRACKING_URI` antes de ejecutar; si no está definida, se usa la base local.
+Las rutas son absolutas desde `src/denguekay/config/paths.py`, así que un notebook (que corre desde `pipelines/notebooks/`) y la CLI (desde la raíz) escriben en la misma base. Para usar un servidor compartido con Nicolás, basta definir la variable `MLFLOW_TRACKING_URI` antes de ejecutar; si no está definida, se usa la base local.
 
 ### 4.2 Estructura de los runs
 
@@ -135,9 +135,9 @@ Desde Python o un notebook:
 
 ```python
 import mlflow
-from src.modeling.seguimiento_mlflow import uri_seguimiento
+from denguekay.model.tracking import default_tracking_uri
 
-mlflow.set_tracking_uri(uri_seguimiento())
+mlflow.set_tracking_uri(default_tracking_uri())
 runs = mlflow.search_runs(
     experiment_names=["denguekay/validacion_temporal_compacta"],
     filter_string="tags.nivel = 'variante'",
@@ -148,22 +148,22 @@ runs[["tags.mlflow.runName", "metrics.validacion_media.cls_f1",
 
 ### 4.5 Desactivar en una corrida
 
-Cada función `ejecutar_*` acepta `validar_datos=False` y `registrar_mlflow=False`. En la CLI:
+Cada función de entrenamiento (por ejemplo `denguekay.model.train.run_experiment`) acepta `validate_data=False` y `log_mlflow=False`. En la CLI:
 
 ```powershell
-.\.venv\Scripts\python -m src.modeling.train --sin-mlflow
-.\.venv\Scripts\python -m src.modeling.train --sin-validacion-datos
+.\.venv\Scripts\python -m denguekay.model.train --sin-mlflow
+.\.venv\Scripts\python -m denguekay.model.train --sin-validacion-datos
 ```
 
 Si el registro en MLflow falla (por ejemplo, la base está bloqueada), el módulo imprime un `AVISO` y **no pierde nada**: el JSON, las predicciones y los modelos ya se guardaron en `docs/` y `models/` antes de registrar. En cambio, si falla Great Expectations, el experimento no entrena.
 
 ## 5. Agregar un experimento nuevo
 
-Mientras el reporte siga la forma de los actuales (`reporte["horizontes"][h]["variantes"][variante]` con folds producidos por `evaluar_fold`), el registro funciona sin tocar `seguimiento_mlflow.py`. Hay que:
+Mientras el reporte siga la forma de los actuales (`reporte["horizontes"][h]["variantes"][variante]` con folds producidos por `evaluate_fold`), el registro funciona sin tocar `tracking.py`. Hay que:
 
-1. Agregar a la firma `validar_datos: bool = True, registrar_mlflow: bool = True`.
-2. Tras `auditar_traspaso`, ejecutar `calidad = validar_entradas_modelado(gold_dir=gold_dir, silver_path=...) if validar_datos else None`.
-3. Después de escribir el JSON, llamar a `registrar_o_avisar("<nombre>", reporte, metricas_path=..., salida_dir=..., gold_dir=gold_dir, calidad_datos=calidad)`.
+1. Agregar a la firma `validate_data: bool = True, log_mlflow: bool = True`.
+2. Tras `audit_handoff`, ejecutar `quality = validate_modeling_inputs(gold_dir=gold_dir, silver_path=...) if validate_data else None`.
+3. Después de escribir el JSON, llamar a `log_or_warn("<nombre>", report, metrics_path=..., output_dir=..., gold_dir=gold_dir, data_quality=quality)`.
 4. Guardar los modelos con el patrón `xgb_h{h}_{variante}_{regresion|clasificacion}_{bloque}.json` para que se adjunten al fold correcto.
 
 Cualquiera de los siete módulos sirve de ejemplo.
@@ -172,7 +172,7 @@ Cualquiera de los siete módulos sirve de ejemplo.
 
 - **Sin Model Registry todavía.** Cuando el equipo apruebe un modelo final, el paso natural es registrarlo con `mlflow.xgboost.log_model(...)` y `mlflow.register_model(...)`. No se implementó porque no hay modelo aprobado y porque 2024 ya se consultó varias veces: no es un test independiente.
 - **Experimentos históricos.** Los resultados anteriores a esta integración siguen en los `metricas/*.json` de cada estudio (`research/03_first_models_and_ablations/docs/metricas/` y `docs/modeling/metricas/validacion_temporal_compacta.json`). No se importaron a MLflow para no presentarlos como si se hubieran ejecutado con él. Al volver a correr los módulos, quedan registrados.
-- **Reproducibilidad entre equipos.** En el mismo equipo, dos corridas dan métricas idénticas. Entre equipos no. `config/config.yaml` deja `device: auto`: XGBoost usa la GPU NVIDIA (CUDA) si existe y la CPU si no; en una Mac con Apple Silicon entrena en CPU. GPU y CPU no suman en el mismo orden al construir los histogramas, y también se observaron diferencias entre dos CPU distintas. El número de hilos no cambia resultados. Los JSON actuales de `docs/modeling/metricas/` se generaron en el equipo de Rosa con GPU (`device="cuda"`, `n_jobs=12`), y los informes de `docs/modeling/` citan esas cifras. Con la misma versión de XGBoost (3.4.1) se compararon tres corridas: la que respaldaba la versión anterior de los informes (CPU), una corrida en el entorno Linux de esta integración (CPU) y la actual (GPU). Las diferencias movieron métricas en milésimas, desplazaron algunos umbrales de probabilidad un paso de la rejilla (por ejemplo, `h=2 / historia_4_mas_2` dio 0,150 en Linux y 0,175 en las otras dos) y cambiaron estas elecciones de variante:
+- **Reproducibilidad entre equipos.** En el mismo equipo, dos corridas dan métricas idénticas. Entre equipos no. `configs/config.yaml` deja `device: auto`: XGBoost usa la GPU NVIDIA (CUDA) si existe y la CPU si no; en una Mac con Apple Silicon entrena en CPU. GPU y CPU no suman en el mismo orden al construir los histogramas, y también se observaron diferencias entre dos CPU distintas. El número de hilos no cambia resultados. Los JSON actuales de `docs/modeling/metricas/` se generaron en el equipo de Rosa con GPU (`device="cuda"`, `n_jobs=12`), y los informes de `docs/modeling/` citan esas cifras. Con la misma versión de XGBoost (3.4.1) se compararon tres corridas: la que respaldaba la versión anterior de los informes (CPU), una corrida en el entorno Linux de esta integración (CPU) y la actual (GPU). Las diferencias movieron métricas en milésimas, desplazaron algunos umbrales de probabilidad un paso de la rejilla (por ejemplo, `h=2 / historia_4_mas_2` dio 0,150 en Linux y 0,175 en las otras dos) y cambiaron estas elecciones de variante:
 
   | Experimento | h | Elección | Versión anterior (CPU) | Linux (CPU) | JSON actual (GPU) |
   |---|---|---|---|---|---|
@@ -196,6 +196,6 @@ Cualquiera de los siete módulos sirve de ejemplo.
 
 ## 7. Verificación realizada
 
-- **Tests:** `tests/test_seguimiento_mlflow.py` cubre el aplanado de métricas, la detección de folds con distintos nombres, que la media solo use validación y el registro anidado real en una base SQLite temporal. `tests/test_calidad_gx.py` comprueba que datos sintéticos válidos pasan y que las suites detectan llave duplicada, `ubigeo` sin cero inicial, `brote` inválido, fracción fuera de rango, fuga temporal, columna faltante, temperatura mínima mayor que la máxima, humedad imposible, casos negativos y coordenadas fuera de Piura. La suite completa (`python -m unittest discover -s tests`) pasa.
+- **Tests:** `tests/model/test_tracking.py` cubre el aplanado de métricas, la detección de folds con distintos nombres, que la media solo use validación y el registro anidado real en una base SQLite temporal. `tests/data/test_gx_quality.py` comprueba que datos sintéticos válidos pasan y que las suites detectan llave duplicada, `ubigeo` sin cero inicial, `brote` inválido, fracción fuera de rango, fuga temporal, columna faltante, temperatura mínima mayor que la máxima, humedad imposible, casos negativos y coordenadas fuera de Piura. La suite completa (`python -m unittest discover -s tests`) pasa.
 - **Datos reales:** las suites `silver_integrado`, `gold_h2` y `gold_h4` pasan al 100 % con los CSV actuales.
 - **Antes/después:** se ejecutaron los siete módulos con el código original y con el instrumentado, en el mismo equipo. Los siete JSON de métricas resultaron idénticos. En MLflow quedaron 25 runs para `primer_xgboost`, 43 para `ablacion_espacial`, 37 para `ablacion_clima`, 99 para `ablacion_sociodemografica`, 269 para `ablacion_fracciones`, 49 para `ablacion_poblacion_sin_seguro` y 31 para `validacion_temporal_compacta`. En todas las elecciones, la variante con mayor `validacion_media` coincidió con la que eligió el propio módulo. En `ablacion_sociodemografica` y `ablacion_fracciones`, la comparación se hizo dentro de cada familia (`fija:`/`anual:`), que es como eligen esos módulos.

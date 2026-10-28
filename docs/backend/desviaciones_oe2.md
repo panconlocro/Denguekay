@@ -5,8 +5,8 @@ Este archivo registra cada diferencia entre el documento y el código y la decis
 tomada para el refactor. **Estado: decisiones de la Fase 0 aprobadas por Rosa
 (2026-10-01); Fases 1 a 4 implementadas (refactor cerrado).**
 
-Código revisado: `src/db/modelos.py`, migraciones `0001_backend` y `0002_serving`,
-`src/serving/`, `src/api/` y los tests del backend (`test_db_backend`, `test_serving_*`,
+Código revisado: `src/denguekay/db/models.py`, migraciones `0001_backend` y `0002_serving`,
+`src/denguekay/serving/`, `apps/api/` y los tests del backend (`test_db_backend`, `test_serving_*`,
 `test_api_*`).
 
 Tipos de desviación:
@@ -61,7 +61,7 @@ Tipos de desviación:
 | Elemento | Documento | Código actual | Decisión |
 |---|---|---|---|
 | `provincia` | Tabla, PK `char(4)`, `nombre` | No existe; texto en `distrito.provincia` | **Adaptar**: se pobla con los 4 primeros dígitos del ubigeo |
-| `semana_epidemiologica` | `id_semana = anio*100+semana`, fechas, `temporada` | No existe | **Adaptar**: desde `src/utils/calendario.py`; `temporada` con la regla del modelado (`asignar_temporada`, semana 35) |
+| `semana_epidemiologica` | `id_semana = anio*100+semana`, fechas, `temporada` | No existe | **Adaptar**: desde `src/denguekay/data/calendar.py`; `temporada` con la regla del modelado (`asignar_temporada`, semana 35) |
 | `parametro_sistema` | 3 semillas | No existe; valores en `config.yaml` | **Adaptar** + `seleccion_experimental` (temporal) y `bloque` en `umbrales_aceptacion` |
 | `ejecucion` | Tabla única | `carga_datos`, `ejecucion_prediccion`, `activacion_modelo` | **Adaptar** (d); índice por expresión de la huella (PostgreSQL) |
 | `distrito` | FK provincia, `numeric(9,6)` con rango Piura, `poblacion_censo_2017`, `activo` | `provincia` texto, `lat/lon` float, `geometria`, `motivo_geometria`, `fecha_actualizacion` | **Adaptar**; se eliminan `geometria`, `motivo_geometria` y `fecha_actualizacion`. El GeoJSON de `/mapa-riesgo` usa los centroides |
@@ -122,7 +122,7 @@ Tipos de desviación:
   PostgreSQL; en SQLite se usan equivalentes (`substr`, `date(fecha_inicio, '+6 days')`) y la
   validación del ORM. Los nombres de restricciones siguen la convención `ck_<tabla>_<nombre>`.
 - **Evidencia SQL offline** (`docs/backend/evidencia/migracion_0003_oe2_postgresql.sql`, versionada;
-  se regenera con `python -m src.db.exportar_sql_migracion`): cubre `0002_serving → 0003_oe2`. No se puede generar desde `base` porque la migración
+  se regenera con `python -m denguekay.db.export_migration_sql`): cubre `0002_serving → 0003_oe2`. No se puede generar desde `base` porque la migración
   histórica `0002_serving` consulta `version_modelo` y eso no funciona en modo `--sql`; es
   previo al refactor y no se edita una migración ya aplicada.
 - **PostgreSQL 18.6 (Windows).** La verificación de la Fase 1 corrió en PostgreSQL 18.6 nativo
@@ -205,7 +205,7 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
   `denguekay_pruebas` (PostgreSQL 18.6 local). Evidencia en `evidencia/evidencia_tb1.md`.
 - **`test_seguimiento_mlflow`:** fallaba en Windows porque MLflow deja abierta su `mlflow.db`
   temporal. Se corrigió solo en el test (cierra esos motores antes de borrar la carpeta); no se
-  tocó `src/modeling`.
+  tocó `src/modeling` (hoy `src/denguekay/model`).
 - **Dependencias:** se añadió `httpx2` (TestClient de Starlette 1.x); `httpx` se conserva para el
   benchmark. Faltaban instalados `psycopg` y `coverage`, ya listados en `requirements.txt`.
 - **Documentos de fases anteriores** (`fase1_bd.md` … `fase4_calidad.md`, `fase*_verificacion*.json`)
@@ -257,7 +257,7 @@ Origen: encargo de arquitectura multi-horizonte (`research/04_horizon_architectu
 | Activación | Se mantiene el índice único parcial de una versión activa por `(tarea, horizonte)`. La activación se hace **por horizonte y en pareja**: clasificación y regresión del mismo h salen de la misma salida del modelo, así que activar una sin la otra mezclaría artefactos. `POST /admin/modelos/{version}/activar` activa también la fila hermana del mismo horizonte, en una sola transacción, y lo registra en `ejecucion.detalle`. `cumple_umbrales` se evalúa por fila, como hoy. | Extensión (uso) |
 | Artefacto | Paquete único: booster multi-salida, α de la binomial negativa por horizonte y calibradores Platt por horizonte. Se verifica con un SHA-256 al cargar. | Conforme al documento |
 | Horizonte 3 | Se retiran la respuesta `no_disponible` («sin modelo para h=3») y el 409 de las escrituras con h=3. | Retiro de una desviación |
-| Umbral de brote de semanas futuras | S4 necesita `umbral_brote_casos` de las semanas objetivo o+2, o+3 y o+4, que en producción aún no están en el panel. Se agrega una función que lo calcula con la misma regla de `src/modeling/etiqueta_brote.py`: misma semana de los 5 años previos, semana 53 sumada a la 52, media + multiplicador · DE muestral, parámetros de `parametro_sistema`. Funciona también para semanas de un año todavía ausente. La acompaña un test que exige el mismo valor que gold en todas las semanas ya observadas. La inferencia la usa para convertir la media de casos en probabilidad; no es una variable de entrada. | Conforme al documento (cálculo en memoria, sin columna nueva) |
+| Umbral de brote de semanas futuras | S4 necesita `umbral_brote_casos` de las semanas objetivo o+2, o+3 y o+4, que en producción aún no están en el panel. Se agrega una función que lo calcula con la misma regla de `src/denguekay/features/outbreak_label.py`: misma semana de los 5 años previos, semana 53 sumada a la 52, media + multiplicador · DE muestral, parámetros de `parametro_sistema`. Funciona también para semanas de un año todavía ausente. La acompaña un test que exige el mismo valor que gold en todas las semanas ya observadas. La inferencia la usa para convertir la media de casos en probabilidad; no es una variable de entrada. | Conforme al documento (cálculo en memoria, sin columna nueva) |
 | Importancia de variables (HU0008-4) | `importancia_variable` por `id_version`: SHAP medio por horizonte de la salida correspondiente. | Conforme a la extensión (d) |
 
 **Justificación.** La opción mantiene intacto el DDL del Anexo B: tablas, ENUM, CHECK e índice de versión activa. La única diferencia es de uso: varias filas comparten un artefacto y la activación se coordina por horizonte. Las alternativas (una sola fila con horizonte nulo o una tarea combinada) obligarían a cambiar `tarea_t`, el CHECK de `horizonte` y la semántica de las dos FK de `prediccion`, es decir, a corregir el documento OE2. El modelo elegido no cumple todavía los umbrales de la HU0007-4, así que se seguiría sirviendo como experimental según la decisión (a).
