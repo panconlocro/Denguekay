@@ -26,7 +26,7 @@ from denguekay.model.train import (
     SENSITIVITY_TEST_YEAR, MIN_OUTBREAK_CASES, BASE_PARAMS, counts_from_log1p,
     prepare_gold, split_calendar_year, split_season,
 )
-from denguekay.evaluation.compact_validation import TEMPORADAS, variantes_compactas
+from denguekay.evaluation.compact_validation import SEASONS, compact_variants
 from denguekay.data.validation.forecast_contract import KEY
 
 STRATEGY_HORIZONS = (2, 3, 4)
@@ -67,7 +67,7 @@ def horizon_matrix(panel: pd.DataFrame, labels: pd.DataFrame, horizon: int) -> p
 
 def model_columns(horizon: int) -> tuple[list[str], list[str]]:
     """Frozen regression and classification columns for one horizon."""
-    variants = variantes_compactas(horizon)
+    variants = compact_variants(horizon)
     return variants["base_6"], variants["base_6_poblacion_2017"]
 
 
@@ -79,7 +79,7 @@ def to_generic(data: pd.DataFrame, horizon: int) -> pd.DataFrame:
 
 def blocks() -> list[tuple[str, str, int]]:
     """Protocol blocks: seasons 2021-2024 and calendar year 2025."""
-    return [*((f"temporada_{t}", "temporada", t) for t in TEMPORADAS),
+    return [*((f"temporada_{t}", "temporada", t) for t in SEASONS),
             (f"calendario_{SENSITIVITY_TEST_YEAR}", "calendario", SENSITIVITY_TEST_YEAR)]
 
 
@@ -300,9 +300,9 @@ def decide_against_reference(evaluations: dict[str, dict[int, dict]], candidate:
     from denguekay.evaluation import protocol as pa
 
     met = {e: [evaluations[e][s]["metricas"] for s in evaluations[e]] for e in (candidate, reference)}
-    ranges = pa.umbral_empate(pa.rangos_semillas(met[candidate]), pa.rangos_semillas(met[reference]))
-    seed = pa.SEMILLAS[0]
-    diff = pa.diferencia_antelacion(evaluations[candidate][seed]["antelacion"],
+    ranges = pa.tie_threshold(pa.seed_ranges(met[candidate]), pa.seed_ranges(met[reference]))
+    seed = pa.SEEDS[0]
+    diff = pa.lead_time_difference(evaluations[candidate][seed]["antelacion"],
                                    evaluations[reference][seed]["antelacion"], "alerta_050")
     medians = {}
     for e in (candidate, reference):
@@ -316,7 +316,7 @@ def decide_against_reference(evaluations: dict[str, dict[int, dict]], candidate:
     diff.loc[contradicts_rise, "ic95_inferior"] = np.minimum(diff.loc[contradicts_rise, "ic95_inferior"], 0)
     contradicts_drop = diff.signo_mediana_antelacion >= 0
     diff.loc[contradicts_drop, "ic95_superior"] = np.maximum(diff.loc[contradicts_drop, "ic95_superior"], 0)
-    verdict = pa.decidir(pa.mediana_semillas(met[candidate]), pa.mediana_semillas(met[reference]),
+    verdict = pa.decide(pa.seed_median(met[candidate]), pa.seed_median(met[reference]),
                            ranges, diff)
     return verdict.assign(candidata=candidate, referencia=reference).merge(
         diff[["horizonte", "diferencia", "ic95_inferior", "ic95_superior", "signo_mediana_antelacion"]]

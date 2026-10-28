@@ -75,7 +75,7 @@ def frozen_prediction_digests():
 
     panel = load_integrated(SILVER_INTEGRATED)
     rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-    inputs = fh.insumos(panel, rule)
+    inputs = fh.inputs(panel, rule)
     result = {"setup": xgboost_settings()}
     for name, configuration in (("V1", cf.CONFIG_2026_V1), ("V2", cf.CONFIG_2026)):
         origins = cf.origins(panel, inputs, rule, configuration=configuration)

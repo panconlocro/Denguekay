@@ -1,23 +1,23 @@
-"""Encargo complementario: clima de gold (A3) sobre la configuración final, con regla de conteo.
+"""Complementary study: gold climate (A3) on top of the final configuration, with a count rule.
 
-Una sola comparación (la 20 del encargo de FE): F+A3 (C3 + las 2 columnas de A3)
-frente a F∩A3 (la configuración final reentrenada sin las mismas filas con nulos
-de arranque de A3). El protocolo (``protocolo_arquitectura``) no cambia; la
-regla de este módulo se preregistró antes de correr (``PREREGISTRO_COMPLEMENTO``).
+A single comparison (number 20 of the FE study): F+A3 (C3 + the 2 A3 columns)
+against F∩A3 (the final configuration retrained without the same rows with A3
+start-up nulls). The protocol (``protocolo_arquitectura``) does not change; this
+module's rule was preregistered before running (``COMPLEMENT_PREREGISTRATION``).
 """
 
 import numpy as np
 import pandas as pd
 
 from denguekay.features import variant_registry as pr
-from denguekay.evaluation.metrics import metricas_alerta
+from denguekay.evaluation.metrics import alert_metrics
 from denguekay.evaluation import protocol as pa
 
-COLUMNAS_A3 = next(list(v["columnas"]) for v in pr.VARIANTS if v["id"] == "A3")
-METRICAS_CONTEO = ("razon_mae", "razon_rmse")
-VEREDICTO_PIERDE = "pierde"
+A3_COLUMNS = next(list(v["columnas"]) for v in pr.VARIANTS if v["id"] == "A3")
+COUNT_METRICS = ("razon_mae", "razon_rmse")
+LOSING_VERDICT = "pierde"
 
-PREREGISTRO_COMPLEMENTO = {
+COMPLEMENT_PREREGISTRATION = {
     "fecha": "2026-10-27, antes de cualquier corrida del complemento (encargo de Rosa)",
     "comparacion": "20 del encargo de FE (única del complemento)",
     "referencia": "F∩A3: configuración final (CONFIGURACION_2026, C3, 9 columnas) sin las filas con nulos de "
@@ -25,7 +25,7 @@ PREREGISTRO_COMPLEMENTO = {
     "candidata": "F+A3: C3 + hum_rel_media_media5_h2 y precip_total_mm_media5_h2 (11 columnas), todo lo demás "
                  "idéntico (E3 · S4_s3 · α dentro de la muestra · hiperparámetros heredados · Platt · p ≥ 0,50)",
     "lectura": "F completa (9 columnas, todas las filas) solo como referencia de lectura",
-    "semillas": list(pa.SEMILLAS),
+    "semillas": list(pa.SEEDS),
     "umbral_empate": "por métrica, horizonte y temporada, el mayor rango entre semillas (máx − mín) de las dos "
                      "variantes; para la razón MAE y la razón RMSE, sobre la razón por semilla",
     "delta": "mediana de las 5 semillas de F+A3 menos mediana de F∩A3 (convención del protocolo)",
@@ -45,83 +45,83 @@ PREREGISTRO_COMPLEMENTO = {
 }
 
 
-def _por_semilla(evaluaciones: dict[int, dict]) -> pd.DataFrame:
-    return pd.concat([r["metricas"].assign(semilla=s) for s, r in evaluaciones.items()], ignore_index=True)
+def _by_seed(evaluations: dict[int, dict]) -> pd.DataFrame:
+    return pd.concat([r["metricas"].assign(semilla=s) for s, r in evaluations.items()], ignore_index=True)
 
 
-def tabla_conteo(evaluaciones_a: dict[int, dict], evaluaciones_b: dict[int, dict],
-                 bloques: tuple[str, ...] = pa.BLOQUES_SELECCION) -> pd.DataFrame:
-    """Delta de medianas (a − b) y umbral de empate de cada razón, por horizonte y temporada."""
-    a, b = _por_semilla(evaluaciones_a), _por_semilla(evaluaciones_b)
-    filas = []
+def count_table(evaluations_a: dict[int, dict], evaluations_b: dict[int, dict],
+                 blocks: tuple[str, ...] = pa.SELECTION_BLOCKS) -> pd.DataFrame:
+    """Median delta (a - b) and tie threshold of each ratio, per horizon and season."""
+    a, b = _by_seed(evaluations_a), _by_seed(evaluations_b)
+    rows = []
     for h in sorted(a.horizonte.unique()):
-        for bloque in bloques:
-            ga = a[a.horizonte.eq(h) & a.bloque.eq(bloque)]
-            gb = b[b.horizonte.eq(h) & b.bloque.eq(bloque)]
-            for m in METRICAS_CONTEO:
-                umbral = max(ga[m].max() - ga[m].min(), gb[m].max() - gb[m].min())
+        for block in blocks:
+            ga = a[a.horizonte.eq(h) & a.bloque.eq(block)]
+            gb = b[b.horizonte.eq(h) & b.bloque.eq(block)]
+            for m in COUNT_METRICS:
+                threshold = max(ga[m].max() - ga[m].min(), gb[m].max() - gb[m].min())
                 delta = ga[m].median() - gb[m].median()
-                filas.append({"horizonte": int(h), "bloque": bloque, "metrica": m, "mediana_candidata": ga[m].median(),
-                              "mediana_referencia": gb[m].median(), "delta": delta, "umbral": umbral,
-                              "baja": delta < -umbral, "sube": delta > umbral})
-    return pd.DataFrame(filas)
+                rows.append({"horizonte": int(h), "bloque": block, "metrica": m, "mediana_candidata": ga[m].median(),
+                              "mediana_referencia": gb[m].median(), "delta": delta, "umbral": threshold,
+                              "baja": delta < -threshold, "sube": delta > threshold})
+    return pd.DataFrame(rows)
 
 
-def condicion_conteo(tabla: pd.DataFrame, bloques: tuple[str, ...] = pa.BLOQUES_SELECCION) -> pd.DataFrame:
-    """Mejora / empeora del conteo por horizonte según la condición 1."""
-    filas = []
-    for h, g in tabla.groupby("horizonte"):
-        g = g[g.bloque.isin(bloques)].set_index(["metrica", "bloque"])
-        mejora = all(bool(g.at[(m, b), "baja"]) for m in METRICAS_CONTEO for b in bloques)
-        empeora = any(all(bool(g.at[(m, b), "sube"]) for b in bloques) for m in METRICAS_CONTEO)
-        filas.append({"horizonte": int(h), "mejora_conteo": mejora, "empeora_conteo": empeora})
-    return pd.DataFrame(filas)
+def count_condition(table: pd.DataFrame, blocks: tuple[str, ...] = pa.SELECTION_BLOCKS) -> pd.DataFrame:
+    """Count improves / worsens per horizon according to condition 1."""
+    rows = []
+    for h, g in table.groupby("horizonte"):
+        g = g[g.bloque.isin(blocks)].set_index(["metrica", "bloque"])
+        improves = all(bool(g.at[(m, b), "baja"]) for m in COUNT_METRICS for b in blocks)
+        worsens = any(all(bool(g.at[(m, b), "sube"]) for b in blocks) for m in COUNT_METRICS)
+        rows.append({"horizonte": int(h), "mejora_conteo": improves, "empeora_conteo": worsens})
+    return pd.DataFrame(rows)
 
 
-def decidir(conteo: pd.DataFrame, veredicto: pd.DataFrame) -> dict:
-    """Condición 1 (conteo), condición 2 (la alerta no pierde) y decisión."""
-    c1 = bool(conteo.mejora_conteo.any() and not conteo.empeora_conteo.any())
-    pierde = veredicto.veredicto.eq(VEREDICTO_PIERDE)
-    c2 = not bool(pierde.any())
+def decide(count: pd.DataFrame, verdict: pd.DataFrame) -> dict:
+    """Condition 1 (count), condition 2 (the alert does not lose) and decision."""
+    c1 = bool(count.mejora_conteo.any() and not count.empeora_conteo.any())
+    loses = verdict.veredicto.eq(LOSING_VERDICT)
+    c2 = not bool(loses.any())
     return {"condicion_1_conteo": c1, "condicion_2_alerta_no_pierde": c2,
-            "horizontes_mejora_conteo": conteo.loc[conteo.mejora_conteo, "horizonte"].tolist(),
-            "horizontes_empeora_conteo": conteo.loc[conteo.empeora_conteo, "horizonte"].tolist(),
-            "horizontes_pierde_alerta": veredicto.loc[pierde, "horizonte"].tolist(),
+            "horizontes_mejora_conteo": count.loc[count.mejora_conteo, "horizonte"].tolist(),
+            "horizontes_empeora_conteo": count.loc[count.empeora_conteo, "horizonte"].tolist(),
+            "horizontes_pierde_alerta": verdict.loc[loses, "horizonte"].tolist(),
             "adoptada": "F+A3" if c1 and c2 else "F"}
 
 
-def tabla_lectura(evaluaciones: dict[int, dict], nombre: str,
-                  bloques: tuple[str, ...] = (*pa.BLOQUES_SELECCION, pa.BLOQUE_CONTRASTE)) -> pd.DataFrame:
-    """Mediana y rango entre semillas de P, R, F1, AUPRC, Brier, razones y MAE/RMSE absolutos."""
-    columnas = ["precision_050", "recall_050", "f1_050", "auprc", "brier", "razon_mae", "razon_rmse", "mae", "rmse"]
-    t = _por_semilla(evaluaciones)
-    t = t[t.bloque.isin(bloques)]
-    g = t.groupby(["horizonte", "bloque"])[columnas]
-    return (g.median().join((g.max() - g.min()).add_prefix("rango_")).reset_index().assign(variante=nombre))
+def reading_table(evaluations: dict[int, dict], name: str,
+                  blocks: tuple[str, ...] = (*pa.SELECTION_BLOCKS, pa.CONTRAST_BLOCK)) -> pd.DataFrame:
+    """Median and range across seeds of P, R, F1, AUPRC, Brier, ratios and absolute MAE/RMSE."""
+    columns = ["precision_050", "recall_050", "f1_050", "auprc", "brier", "razon_mae", "razon_rmse", "mae", "rmse"]
+    t = _by_seed(evaluations)
+    t = t[t.bloque.isin(blocks)]
+    g = t.groupby(["horizonte", "bloque"])[columns]
+    return (g.median().join((g.max() - g.min()).add_prefix("rango_")).reset_index().assign(variante=name))
 
 
-def diagnostico_celda(evaluaciones: dict[int, dict], horizonte: int, bloque: str,
-                      banda: tuple[float, float] = (0.40, 0.50)) -> pd.DataFrame:
-    """¿Discriminación o calibración? Una fila por semilla para una celda (lectura, no decide).
+def cell_diagnosis(evaluations: dict[int, dict], horizon: int, block: str,
+                      band: tuple[float, float] = (0.40, 0.50)) -> pd.DataFrame:
+    """Discrimination or calibration? One row per seed for a cell (reading, it does not decide).
 
-    AUPRC (la misma con la probabilidad calibrada o sin calibrar: Platt es monótono),
-    Brier calibrado y sin calibrar, probabilidad calibrada media frente a la
-    prevalencia, P / R / F1 a 0,50 y semanas brote con probabilidad calibrada en
-    ``[banda[0], banda[1])``.
+    AUPRC (the same with the calibrated or the raw probability: Platt is monotonic),
+    calibrated and raw Brier, mean calibrated probability against prevalence,
+    P / R / F1 at 0.50 and outbreak weeks with calibrated probability in
+    ``[band[0], band[1])``.
     """
-    filas = []
-    for s, r in evaluaciones.items():
+    rows = []
+    for s, r in evaluations.items():
         g = r["datos"]
-        g = g[g.horizonte.eq(horizonte) & g.bloque.eq(bloque)]
+        g = g[g.horizonte.eq(horizon) & g.bloque.eq(block)]
         y = g.brote.to_numpy(int)
-        cal, cruda = g.probabilidad_calibrada.to_numpy(float), g.probabilidad_brote.to_numpy(float)
-        m = metricas_alerta(y, (cal >= pa.UMBRAL_ALERTA).astype(int), puntaje=cal)
-        en_banda = (cal >= banda[0]) & (cal < banda[1])
-        filas.append({"semilla": s, "semanas": len(y), "semanas_brote": int(y.sum()), "prevalencia": float(y.mean()),
-                      "probabilidad_calibrada_media": float(cal.mean()), "probabilidad_cruda_media": float(cruda.mean()),
+        cal, raw = g.probabilidad_calibrada.to_numpy(float), g.probabilidad_brote.to_numpy(float)
+        m = alert_metrics(y, (cal >= pa.ALERT_THRESHOLD).astype(int), score=cal)
+        in_band = (cal >= band[0]) & (cal < band[1])
+        rows.append({"semilla": s, "semanas": len(y), "semanas_brote": int(y.sum()), "prevalencia": float(y.mean()),
+                      "probabilidad_calibrada_media": float(cal.mean()), "probabilidad_cruda_media": float(raw.mean()),
                       "auprc": m["auprc"], "brier_calibrado": float(np.mean((cal - y) ** 2)),
-                      "brier_sin_calibrar": float(np.mean((cruda - y) ** 2)),
+                      "brier_sin_calibrar": float(np.mean((raw - y) ** 2)),
                       "precision_050": m["precision"], "recall_050": m["recall"], "f1_050": m["f1"],
-                      "brote_en_banda": int((en_banda & (y == 1)).sum()),
-                      "brote_con_alerta": int(((cal >= pa.UMBRAL_ALERTA) & (y == 1)).sum())})
-    return pd.DataFrame(filas)
+                      "brote_en_banda": int((in_band & (y == 1)).sum()),
+                      "brote_con_alerta": int(((cal >= pa.ALERT_THRESHOLD) & (y == 1)).sum())})
+    return pd.DataFrame(rows)

@@ -83,7 +83,7 @@ class TestConDatos(unittest.TestCase):
 
         cls.panel = load_integrated(SILVER_INTEGRATED)
         cls.rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        ins = fh.insumos(cls.panel, cls.rule)
+        ins = fh.inputs(cls.panel, cls.rule)
         cls.series, cls.matrices = ins["serie"], ins["matrices"]
         cls.history = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
         cls.vi = fi.OnsetFeatures(cls.panel, cls.series, cls.history, cls.rule)
@@ -123,7 +123,7 @@ class TestConDatos(unittest.TestCase):
         semanal = self.vi.weekly(pd.Timestamp("2021-08-28"))
         extra = ["vecinos_log_media_casos", "vecinos_frac_con_casos", "provincia_log_otros_casos",
                  "provincia_otros_frac_con_casos", "region_log_otros_casos", "region_otros_frac_con_casos"]
-        estado = fi.di.estado_semanal(self.panel, self.series, pd.Timestamp("2021-08-28"))
+        estado = fi.di.weekly_status(self.panel, self.series, pd.Timestamp("2021-08-28"))
         o = fi.add(self.origins, estado, extra)
         pares = {"vecinos_media_casos_knn5_h2": ("vecinos_log_media_casos", np.log1p),
                  "vecinos_frac_con_casos_knn5_h2": ("vecinos_frac_con_casos", None),

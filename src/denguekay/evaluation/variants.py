@@ -1,17 +1,18 @@
-"""Encargo de feature engineering e hiperparámetros sobre E3·S4_s2 (envoltura del flujo).
+"""Feature engineering and hyperparameter study on E3·S4_s2 (workflow wrapper).
 
-La arquitectura y el protocolo quedan fijos (``salida_probabilistica.predecir_e3``
-con ``S4_s2`` y ``protocolo_arquitectura.evaluar``). Este módulo solo orquesta:
+The architecture and the protocol stay fixed (``salida_probabilistica.predecir_e3``
+with ``S4_s2`` and ``protocolo_arquitectura.evaluar``). This module only
+orchestrates:
 
-- insumos en memoria (panel, etiquetas, serie y matrices h=2, 3, 4), igual que
-  el notebook 31;
-- evaluación de una variante (columnas e hiperparámetros) con las 5 semillas;
-- resumen de una variante: medianas, rangos, antelación y recall en brotes nuevos;
-- comprobación de la reproducción frente a ``fase5_decision``;
-- inventario de las candidatas de gold h=2 y sus antecedentes con S1.
+- inputs in memory (panel, labels, series and h=2, 3, 4 matrices), as in
+  notebook 31;
+- evaluation of a variant (columns and hyperparameters) with the 5 seeds;
+- summary of a variant: medians, ranges, lead time and recall on new outbreaks;
+- check of the reproduction against ``fase5_decision``;
+- inventory of the gold h=2 candidates and their S1 background.
 
-Las variables nuevas van en su propio módulo (fase 2b) y la búsqueda de
-hiperparámetros en ``hiperparametros.py`` (fase 3). Nada se escribe en ``data/``.
+The new variables live in their own module (phase 2b) and the hyperparameter
+search in ``hiperparametros.py`` (phase 3). Nothing is written to ``data/``.
 """
 
 import hashlib
@@ -27,75 +28,75 @@ from denguekay.model import probabilistic_output as sp
 from denguekay.features.model_input_contract import NON_PREDICTORS, predictor_families
 from denguekay.model.train import BASE_PARAMS
 
-ESTRATEGIA, FORMULACION = "E3", "S4_s2"
-NOMBRE_REFERENCIA = "referencia_B"
-BLOQUE_SELECCION_CONJUNTA = "seleccion_2022_2023"
-DECIMALES_REPRODUCCION = 3
-ABLACIONES_S1 = {"25_espacial": "ablacion_espacial", "26_clima": "ablacion_clima",
+STRATEGY, FORMULATION = "E3", "S4_s2"
+REFERENCE_NAME = "referencia_B"
+JOINT_SELECTION_BLOCK = "seleccion_2022_2023"
+REPRODUCTION_DECIMALS = 3
+S1_ABLATIONS = {"25_espacial": "ablacion_espacial", "26_clima": "ablacion_clima",
                  "27_sociodemografica": "ablacion_sociodemografica",
                  "28_fracciones": "ablacion_fracciones",
                  "29_poblacion_sin_seguro": "ablacion_poblacion_sin_seguro"}
 
 
 # ---------------------------------------------------------------------------
-# Insumos en memoria
+# Inputs in memory
 # ---------------------------------------------------------------------------
 
-def insumos(panel: pd.DataFrame, regla: dict) -> dict:
-    """Etiquetas, serie y matrices h=2, 3, 4 como en el notebook 31 (celda de fase 3)."""
+def inputs(panel: pd.DataFrame, rule: dict) -> dict:
+    """Labels, series and h=2, 3, 4 matrices as in notebook 31 (phase 3 cell)."""
     from denguekay.features.outbreak_label import SeasonalOutbreakConfig
     from denguekay.features.gold import build_labels
 
-    etiquetas = build_labels(panel, SeasonalOutbreakConfig(
-        regla["multiplicador"], regla["anios_previos"], regla["minimo_casos"]))
-    serie = panel[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"]].merge(
-        etiquetas[["ubigeo", "anio", "semana", "brote"]], on=["ubigeo", "anio", "semana"])
-    serie["semana_inicio"] = pd.to_datetime(serie.semana_inicio)
-    matrices = {h: eh.horizon_matrix(panel, etiquetas, h) for h in eh.STRATEGY_HORIZONS}
-    return {"etiquetas": etiquetas, "serie": serie, "matrices": matrices}
+    labels = build_labels(panel, SeasonalOutbreakConfig(
+        rule["multiplicador"], rule["anios_previos"], rule["minimo_casos"]))
+    series = panel[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"]].merge(
+        labels[["ubigeo", "anio", "semana", "brote"]], on=["ubigeo", "anio", "semana"])
+    series["semana_inicio"] = pd.to_datetime(series.semana_inicio)
+    matrices = {h: eh.horizon_matrix(panel, labels, h) for h in eh.STRATEGY_HORIZONS}
+    return {"etiquetas": labels, "serie": series, "matrices": matrices}
 
 
 # ---------------------------------------------------------------------------
-# Evaluación de una variante
+# Evaluation of a variant
 # ---------------------------------------------------------------------------
 
-def evaluar_variante(matrices: dict[int, pd.DataFrame], serie: pd.DataFrame, *,
-                     columnas: list[str] | None = None, origenes: pd.DataFrame | None = None,
-                     hiperparametros: dict | None = None, preparar_bloque=None,
-                     semillas: tuple[int, ...] = pa.SEMILLAS, formulacion: str = FORMULACION,
+def evaluate_variant(matrices: dict[int, pd.DataFrame], series: pd.DataFrame, *,
+                     columns: list[str] | None = None, origins: pd.DataFrame | None = None,
+                     hyperparameters: dict | None = None, prepare_block=None,
+                     seeds: tuple[int, ...] = pa.SEEDS, formulation: str = FORMULATION,
                      dispersion: str = "dentro_muestra") -> dict:
-    """Predice con E3 (por defecto S4_s2) y aplica el protocolo congelado, una vez por semilla.
+    """Predict with E3 (S4_s2 by default) and apply the frozen protocol, once per seed.
 
-    Devuelve ``{"predicciones": {semilla: df}, "evaluaciones": {semilla: dict},
-    "alfas": df}`` (α de cada bloque, horizonte y semilla).
+    Returns ``{"predicciones": {seed: df}, "evaluaciones": {seed: dict},
+    "alfas": df}`` (alpha of each block, horizon and seed).
     """
-    calibracion = sp.FORMULATIONS[formulacion]["calibracion"]
-    predicciones, evaluaciones, alfas = {}, {}, []
-    for semilla in semillas:
-        pred = sp.predict_e3(matrices, semilla, formulacion, columns=columnas,
-                              origins=origenes, hyperparameters=hiperparametros,
-                              prepare_block=preparar_bloque, dispersion=dispersion)
-        alfas.append(pred.attrs.pop("alfas", pd.DataFrame()))
-        predicciones[semilla] = pred
-        evaluaciones[semilla] = pa.evaluar(pred, serie, calibracion)
-    return {"predicciones": predicciones, "evaluaciones": evaluaciones,
-            "alfas": pd.concat(alfas, ignore_index=True)}
+    calibration = sp.FORMULATIONS[formulation]["calibracion"]
+    predictions, evaluations, alphas = {}, {}, []
+    for seed in seeds:
+        pred = sp.predict_e3(matrices, seed, formulation, columns=columns,
+                              origins=origins, hyperparameters=hyperparameters,
+                              prepare_block=prepare_block, dispersion=dispersion)
+        alphas.append(pred.attrs.pop("alfas", pd.DataFrame()))
+        predictions[seed] = pred
+        evaluations[seed] = pa.evaluate(pred, series, calibration)
+    return {"predicciones": predictions, "evaluaciones": evaluations,
+            "alfas": pd.concat(alphas, ignore_index=True)}
 
 
-def resumir_variante(evaluaciones: dict[int, dict], serie: pd.DataFrame) -> dict:
-    """Medianas y rangos de semillas, antelación y recall por tipo de semana brote."""
-    metricas = [r["metricas"] for r in evaluaciones.values()]
-    antelacion = pd.concat({s: r["antelacion_ic"].query("alerta == 'alerta_050'")
-                            for s, r in evaluaciones.items()}, names=["semilla"]).reset_index(level=0)
-    persistencia = next(iter(evaluaciones.values()))["antelacion_ic"].query("alerta == 'alerta_persistencia'")
-    recall = pd.concat({s: sp.recall_by_week_type(r["datos"], serie) for s, r in evaluaciones.items()},
+def summarize_variant(evaluations: dict[int, dict], series: pd.DataFrame) -> dict:
+    """Seed medians and ranges, lead time and recall per kind of outbreak week."""
+    metrics = [r["metricas"] for r in evaluations.values()]
+    lead_time = pd.concat({s: r["antelacion_ic"].query("alerta == 'alerta_050'")
+                            for s, r in evaluations.items()}, names=["semilla"]).reset_index(level=0)
+    persistence = next(iter(evaluations.values()))["antelacion_ic"].query("alerta == 'alerta_persistencia'")
+    recall = pd.concat({s: sp.recall_by_week_type(r["datos"], series) for s, r in evaluations.items()},
                        names=["semilla"]).reset_index(level=0)
     return {
-        "medianas": pa.mediana_semillas(metricas),
-        "rangos": pa.rangos_semillas(metricas),
-        "antelacion": (antelacion.groupby(["horizonte", "bloque"]).avisados_2_o_mas
+        "medianas": pa.seed_median(metrics),
+        "rangos": pa.seed_ranges(metrics),
+        "antelacion": (lead_time.groupby(["horizonte", "bloque"]).avisados_2_o_mas
                        .agg(mediana="median", minimo="min", maximo="max").reset_index()
-                       .merge(persistencia[["horizonte", "bloque", "episodios", "avisados_2_o_mas"]]
+                       .merge(persistence[["horizonte", "bloque", "episodios", "avisados_2_o_mas"]]
                               .rename(columns={"avisados_2_o_mas": "persistencia"}),
                               on=["horizonte", "bloque"], how="left")),
         "recall_por_tipo": (recall.groupby(["horizonte", "bloque", "tipo"])
@@ -105,175 +106,174 @@ def resumir_variante(evaluaciones: dict[int, dict], serie: pd.DataFrame) -> dict
     }
 
 
-def diferencia_antelacion_persistencia(evaluacion: dict) -> pd.DataFrame:
-    """Diferencia pareada modelo − persistencia en inicios limpios 2022–2023 (una semilla)."""
-    t = evaluacion["antelacion"]
-    return pa.diferencia_antelacion(t, t, "alerta_050", "alerta_persistencia")
+def lead_time_vs_persistence(evaluation: dict) -> pd.DataFrame:
+    """Paired model - persistence difference on clean onsets 2022-2023 (one seed)."""
+    t = evaluation["antelacion"]
+    return pa.lead_time_difference(t, t, "alerta_050", "alerta_persistencia")
 
 
 # ---------------------------------------------------------------------------
-# Reproducción frente al encargo de arquitectura
+# Reproduction against the architecture study
 # ---------------------------------------------------------------------------
 
-def comparar_reproduccion(medianas: pd.DataFrame, referencia: list[dict],
-                          decimales: int = DECIMALES_REPRODUCCION) -> pd.DataFrame:
-    """Compara, métrica por métrica, las medianas nuevas con las guardadas.
+def compare_reproduction(medians: pd.DataFrame, reference: list[dict],
+                          decimals: int = REPRODUCTION_DECIMALS) -> pd.DataFrame:
+    """Compare, metric by metric, the new medians with the saved ones.
 
-    ``referencia`` es ``fase5_decision.metricas_mediana_semillas``. Una fila por
-    (horizonte, bloque, métrica) con ambos valores, la diferencia absoluta y si
-    coinciden al redondeo de ``decimales``. Las métricas guardadas sin
-    contrapartida nueva (o al revés) también se reportan, como no coincidentes.
+    ``reference`` is ``fase5_decision.metricas_mediana_semillas``. One row per
+    (horizon, block, metric) with both values, the absolute difference and whether
+    they agree when rounded to ``decimals``. Saved metrics without a new
+    counterpart (or the other way round) are also reported, as not matching.
     """
-    guardada = pd.DataFrame(referencia).melt(["horizonte", "bloque"], var_name="metrica", value_name="guardada")
-    nueva = medianas.melt(["horizonte", "bloque"], var_name="metrica", value_name="reproducida")
-    cruce = guardada.merge(nueva, on=["horizonte", "bloque", "metrica"], how="outer")
-    g, r = cruce.guardada.astype(float), cruce.reproducida.astype(float)
-    ambos_nulos = g.isna() & r.isna()
-    cruce["diferencia_absoluta"] = (g - r).abs()
-    cruce["coincide"] = ambos_nulos | (g.round(decimales) == r.round(decimales))
-    return cruce.sort_values(["horizonte", "bloque", "metrica"]).reset_index(drop=True)
+    saved = pd.DataFrame(reference).melt(["horizonte", "bloque"], var_name="metrica", value_name="guardada")
+    new_row = medians.melt(["horizonte", "bloque"], var_name="metrica", value_name="reproducida")
+    join = saved.merge(new_row, on=["horizonte", "bloque", "metrica"], how="outer")
+    g, r = join.guardada.astype(float), join.reproducida.astype(float)
+    both_null = g.isna() & r.isna()
+    join["diferencia_absoluta"] = (g - r).abs()
+    join["coincide"] = both_null | (g.round(decimals) == r.round(decimals))
+    return join.sort_values(["horizonte", "bloque", "metrica"]).reset_index(drop=True)
 
 
 # ---------------------------------------------------------------------------
-# Inventario de candidatas de gold h=2 y antecedentes con S1
+# Inventory of gold h=2 candidates and S1 background
 # ---------------------------------------------------------------------------
 
-def inventario_candidatas(gold_h2: pd.DataFrame, matriz_h2: pd.DataFrame) -> pd.DataFrame:
-    """Familia y nulos de arranque de cada candidata predictora de gold h=2.
+def candidate_inventory(gold_h2: pd.DataFrame, matrix_h2: pd.DataFrame) -> pd.DataFrame:
+    """Family and start-up nulls of each predictor candidate of gold h=2.
 
-    ``nulos_gold`` cuenta nulos en todo gold; ``nulos_tras_arranque`` los que
-    quedan en la matriz modelable (después de las exclusiones de
-    ``preparar_gold``), y ``en_base_6`` marca las 6 de la referencia.
+    ``nulos_gold`` counts nulls in the whole gold; ``nulos_tras_arranque`` those
+    left in the modelling matrix (after the ``prepare_gold`` exclusions), and
+    ``en_base_6`` flags the 6 of the reference.
     """
-    familia = {c: f for f, cols in predictor_families(2).items() for c in cols}
-    candidatas = [c for c in gold_h2.columns if c not in NON_PREDICTORS]
-    sin_familia = [c for c in candidatas if c not in familia]
-    if sin_familia:
-        raise ValueError(f"Candidatas de gold sin familia en el contrato: {sin_familia}")
+    family = {c: f for f, cols in predictor_families(2).items() for c in cols}
+    candidates = [c for c in gold_h2.columns if c not in NON_PREDICTORS]
+    without_family = [c for c in candidates if c not in family]
+    if without_family:
+        raise ValueError(f"Candidatas de gold sin familia en el contrato: {without_family}")
     base = set(eh.model_columns(2)[0])
-    filas = []
-    for c in candidatas:
+    rows = []
+    for c in candidates:
         g = gold_h2[c]
-        primera = gold_h2.loc[g.notna(), "semana_inicio"].min()
-        filas.append({"columna": c, "familia": familia[c], "en_base_6": c in base,
+        first = gold_h2.loc[g.notna(), "semana_inicio"].min()
+        rows.append({"columna": c, "familia": family[c], "en_base_6": c in base,
                       "nulos_gold": int(g.isna().sum()), "fraccion_nulos_gold": float(g.isna().mean()),
-                      "primera_semana_con_valor": str(pd.Timestamp(primera).date()) if pd.notna(primera) else None,
-                      "nulos_tras_arranque": int(matriz_h2[c].isna().sum()) if c in matriz_h2 else None})
-    return pd.DataFrame(filas)
+                      "primera_semana_con_valor": str(pd.Timestamp(first).date()) if pd.notna(first) else None,
+                      "nulos_tras_arranque": int(matrix_h2[c].isna().sum()) if c in matrix_h2 else None})
+    return pd.DataFrame(rows)
 
 
-def _f1_validacion(variante: dict, enfoque: str) -> dict[str, float]:
-    """F1 de validación por temporada de una variante de las ablaciones 25–29."""
-    salida = {}
-    for fold in variante["folds_validacion"]:
-        bloque = fold[enfoque]
-        f1 = (bloque.get("alerta_derivada", {}) if enfoque == "regresion" else bloque.get("alerta_directa", {})).get("f1")
-        salida[fold["bloque"]] = None if f1 is None else float(f1)
-    return salida
+def _validation_f1(variant: dict, approach: str) -> dict[str, float]:
+    """Validation F1 per season of a variant of ablations 25-29."""
+    output = {}
+    for fold in variant["folds_validacion"]:
+        block = fold[approach]
+        f1 = (block.get("alerta_derivada", {}) if approach == "regresion" else block.get("alerta_directa", {})).get("f1")
+        output[fold["bloque"]] = None if f1 is None else float(f1)
+    return output
 
 
-def antecedentes_s1(metricas_ablaciones: dict[str, dict], horizonte: str = "2") -> pd.DataFrame:
-    """Resultado de cada variante en las ablaciones 25–29 (S1, protocolo propio).
+def s1_background(ablation_metrics: dict[str, dict], horizon: str = "2") -> pd.DataFrame:
+    """Result of each variant in ablations 25-29 (S1, its own protocol).
 
-    Por variante: columnas añadidas a ``base_6``, F1 medio de validación
-    (2021–2023) de la alerta derivada de la regresión y del clasificador, su
-    diferencia con ``base_6`` y si fue la elegida en validación. **Antecedente:**
-    otro protocolo (umbral elegido en validación, F1 medio, sin rangos de
-    semillas), así que no es comparable con los veredictos de este encargo.
+    Per variant: columns added to ``base_6``, mean validation F1 (2021-2023) of
+    the alert derived from the regression and of the classifier, its difference
+    with ``base_6`` and whether it was chosen in validation. **Background:** a
+    different protocol (threshold chosen in validation, mean F1, no seed ranges),
+    so it is not comparable with the verdicts of this study.
     """
-    filas = []
-    for notebook, d in metricas_ablaciones.items():
-        bloque_h = d["horizontes"][horizonte]
-        elegidas = bloque_h.get("elegidas_solo_validacion", {})
-        planas = {}
-        for k, v in elegidas.items():
+    rows = []
+    for notebook, d in ablation_metrics.items():
+        block_h = d["horizontes"][horizon]
+        chosen = block_h.get("elegidas_solo_validacion", {})
+        flat = {}
+        for k, v in chosen.items():
             if isinstance(v, dict):
-                for enfoque, var in v.items():
-                    planas.setdefault(var, []).append(f"{k}:{enfoque}")
+                for approach, var in v.items():
+                    flat.setdefault(var, []).append(f"{k}:{approach}")
             else:
-                planas.setdefault(v, []).append(k)
-        variantes = bloque_h["variantes"]
-        base_cols = set(variantes["base_6"]["columnas"])
-        media_base = {e: np.nanmean([x for x in _f1_validacion(variantes["base_6"], e).values() if x is not None])
+                flat.setdefault(v, []).append(k)
+        variants = block_h["variantes"]
+        base_cols = set(variants["base_6"]["columnas"])
+        base_mean = {e: np.nanmean([x for x in _validation_f1(variants["base_6"], e).values() if x is not None])
                       for e in ("regresion", "clasificacion")}
-        for nombre, var in variantes.items():
-            fila = {"ablacion": notebook, "variante": nombre,
+        for name, var in variants.items():
+            row = {"ablacion": notebook, "variante": name,
                     "columnas_agregadas": [c for c in var["columnas"] if c not in base_cols],
-                    "elegida_en_validacion": ", ".join(planas.get(nombre, [])) or None}
-            for enfoque, corto in (("regresion", "reg"), ("clasificacion", "cls")):
-                f1 = [x for x in _f1_validacion(var, enfoque).values() if x is not None]
+                    "elegida_en_validacion": ", ".join(flat.get(name, [])) or None}
+            for approach, short in (("regresion", "reg"), ("clasificacion", "cls")):
+                f1 = [x for x in _validation_f1(var, approach).values() if x is not None]
                 media = float(np.mean(f1)) if f1 else None
-                fila[f"f1_val_medio_{corto}"] = media
-                fila[f"delta_f1_val_{corto}_vs_base_6"] = None if media is None else media - media_base[enfoque]
-            filas.append(fila)
-    return pd.DataFrame(filas)
+                row[f"f1_val_medio_{short}"] = media
+                row[f"delta_f1_val_{short}_vs_base_6"] = None if media is None else media - base_mean[approach]
+            rows.append(row)
+    return pd.DataFrame(rows)
 
 
-def cargar_ablaciones(directorio) -> dict[str, dict]:
-    """Lee los JSON de las ablaciones 25–29 (solo lectura)."""
-    return {n: json.loads((directorio / f"{a}.json").read_text(encoding="utf-8"))
-            for n, a in ABLACIONES_S1.items()}
+def load_ablations(directory) -> dict[str, dict]:
+    """Read the JSON files of ablations 25-29 (read only)."""
+    return {n: json.loads((directory / f"{a}.json").read_text(encoding="utf-8"))
+            for n, a in S1_ABLATIONS.items()}
 
 
 # ---------------------------------------------------------------------------
-# Tiempos
+# Timing
 # ---------------------------------------------------------------------------
 
-def medir_ajuste(matrices: dict[int, pd.DataFrame], serie: pd.DataFrame, semilla: int = 17,
-                 repeticiones: int = 3, hiperparametros: dict | None = None) -> pd.DataFrame:
-    """Segundos de un ajuste completo (5 bloques × 1 semilla) y de su evaluación."""
-    filas = []
-    for i in range(repeticiones):
+def time_fit(matrices: dict[int, pd.DataFrame], series: pd.DataFrame, seed: int = 17,
+                 repetitions: int = 3, hyperparameters: dict | None = None) -> pd.DataFrame:
+    """Seconds of a complete fit (5 blocks x 1 seed) and of its evaluation."""
+    rows = []
+    for i in range(repetitions):
         t0 = time.perf_counter()
-        pred = sp.predict_e3(matrices, semilla, FORMULACION, hyperparameters=hiperparametros)
+        pred = sp.predict_e3(matrices, seed, FORMULATION, hyperparameters=hyperparameters)
         t1 = time.perf_counter()
-        pa.evaluar(pred, serie, sp.FORMULATIONS[FORMULACION]["calibracion"])
+        pa.evaluate(pred, series, sp.FORMULATIONS[FORMULATION]["calibracion"])
         t2 = time.perf_counter()
-        filas.append({"repeticion": i + 1, "segundos_ajuste_prediccion": t1 - t0,
+        rows.append({"repeticion": i + 1, "segundos_ajuste_prediccion": t1 - t0,
                       "segundos_evaluacion": t2 - t1, "segundos_total": t2 - t0})
-    return pd.DataFrame(filas)
+    return pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------
-# MLflow (forma estándar horizontes → variantes → folds)
+# MLflow (standard horizons -> variants -> folds shape)
 # ---------------------------------------------------------------------------
 
-def huella_directorio(directorio) -> str:
-    """Huella de las predicciones guardadas de una fase (todos los ``*.csv.gz``) y del protocolo."""
+def directory_fingerprint(directory) -> str:
+    """Fingerprint of the saved predictions of a phase (every ``*.csv.gz``) and of the protocol."""
     from pathlib import Path
 
-    archivos = sorted(Path(directorio).glob("*.csv.gz"))
-    if not archivos:
-        raise FileNotFoundError(f"No hay predicciones en {directorio}")
-    return huella_predicciones(pd.concat([pd.read_csv(f, dtype={"ubigeo": "string"}).assign(archivo=f.name)
-                                          for f in archivos], ignore_index=True))
+    files = sorted(Path(directory).glob("*.csv.gz"))
+    if not files:
+        raise FileNotFoundError(f"No hay predicciones en {directory}")
+    return predictions_fingerprint(pd.concat([pd.read_csv(f, dtype={"ubigeo": "string"}).assign(archivo=f.name)
+                                          for f in files], ignore_index=True))
 
 
-def huella_predicciones(predicciones: pd.DataFrame) -> str:
-    """Huella de un registro: SHA-256 de las predicciones y de la versión del protocolo.
+def predictions_fingerprint(predictions: pd.DataFrame) -> str:
+    """Fingerprint of a record: SHA-256 of the predictions and of the protocol version.
 
-    Las filas se ordenan por llave, horizonte, bloque y semilla, y las columnas
-    por nombre, así que el orden de concatenación no la cambia. La versión del
-    protocolo es el hash de ``protocolo_arquitectura.py``. No depende del resto
-    de ``src/modeling/``: volver a correr un notebook con predicciones
-    idénticas no registra otra corrida.
+    Rows are sorted by key, horizon, block and seed, and columns by name, so the
+    concatenation order does not change it. The protocol version is the hash of
+    the protocol module's source. It does not depend on the rest of the package:
+    rerunning a notebook with identical predictions does not log another run.
     """
     from pathlib import Path
 
-    claves = [c for c in ("archivo", "ubigeo", "anio", "semana", "horizonte", "bloque", "semilla") if c in predicciones]
-    canonica = predicciones.sort_values(claves).reset_index(drop=True)
-    canonica = canonica[sorted(canonica.columns)]
-    total = hashlib.sha256(canonica.to_csv(index=False, date_format="%Y-%m-%d").encode("utf-8"))
+    keys = [c for c in ("archivo", "ubigeo", "anio", "semana", "horizonte", "bloque", "semilla") if c in predictions]
+    canonical = predictions.sort_values(keys).reset_index(drop=True)
+    canonical = canonical[sorted(canonical.columns)]
+    total = hashlib.sha256(canonical.to_csv(index=False, date_format="%Y-%m-%d").encode("utf-8"))
     total.update(hashlib.sha256(Path(pa.__file__).read_bytes()).digest())
     return total.hexdigest()
 
 
-def reporte_mlflow(experimento: str, medianas: dict[str, pd.DataFrame],
-                   semillas: tuple[int, ...] = pa.SEMILLAS, hiperparametros: dict | None = None) -> dict:
-    """Reporte registrable con ``seguimiento_mlflow`` para una o varias variantes."""
-    reporte = eh.mlflow_report(experimento, medianas, semillas)
-    reporte["parametros"] = {**{k: v for k, v in BASE_PARAMS.items() if k != "random_state"},
+def mlflow_report(experiment: str, medians: dict[str, pd.DataFrame],
+                   seeds: tuple[int, ...] = pa.SEEDS, hyperparameters: dict | None = None) -> dict:
+    """Report loggable with ``tracking`` for one or several variants."""
+    report = eh.mlflow_report(experiment, medians, seeds)
+    report["parametros"] = {**{k: v for k, v in BASE_PARAMS.items() if k != "random_state"},
                              "multi_strategy": "multi_output_tree", "objective": "count:poisson",
-                             **(hiperparametros or {})}
-    reporte["estrategia"], reporte["formulacion"] = ESTRATEGIA, FORMULACION
-    return reporte
+                             **(hyperparameters or {})}
+    report["estrategia"], report["formulacion"] = STRATEGY, FORMULATION
+    return report

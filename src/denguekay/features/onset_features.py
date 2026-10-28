@@ -49,10 +49,10 @@ def previous_season(series: pd.DataFrame, history: pd.DataFrame) -> pd.DataFrame
     h = history.loc[history.anio.lt(first) & history.ubigeo.isin(set(s.ubigeo)),
                      ["ubigeo", "anio", "semana", "casos_Dengue"]]
     everything = pd.concat([h, s], ignore_index=True)
-    everything["temporada"] = di.con_temporada(everything)
+    everything["temporada"] = di.with_season(everything)
     totals = everything.groupby(["ubigeo", "temporada"]).casos_Dengue.sum()
     available = set(h.anio) | set(s.anio)
-    seasons = sorted(set(di.con_temporada(s)))
+    seasons = sorted(set(di.with_season(s)))
     rows = []
     for u in sorted(s.ubigeo.unique()):
         for t in seasons:
@@ -70,7 +70,7 @@ def weekly_table(panel: pd.DataFrame, series: pd.DataFrame, history: pd.DataFram
     The core (B2) and the climatology (B5) are fitted with weeks closed at the
     ``cutoff``; B1 and B3 do not depend on the cutoff.
     """
-    status = di.estado_semanal(panel, series, cutoff)
+    status = di.weekly_status(panel, series, cutoff)
     status = status.sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True)
     group = status.groupby("ubigeo")
     for c in B5_CLIMATE:
@@ -81,7 +81,7 @@ def weekly_table(panel: pd.DataFrame, series: pd.DataFrame, history: pd.DataFram
                                              .reset_index(level=0, drop=True))
     weeks = series[["ubigeo", "semana_inicio", "anio", "semana"]].copy()
     weeks["semana_inicio"] = pd.to_datetime(weeks.semana_inicio)
-    weeks["temporada"] = di.con_temporada(weeks)
+    weeks["temporada"] = di.with_season(weeks)
     status = status.drop(columns=[PREVIOUS_SEASON_COLUMN]).merge(
         weeks[["ubigeo", "semana_inicio", "temporada"]], on=["ubigeo", "semana_inicio"], how="left",
         validate="one_to_one")

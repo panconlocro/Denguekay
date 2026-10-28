@@ -17,7 +17,7 @@ from src.serving.almacenamiento import AlmacenamientoLocal, validar_ruta
 from src.serving.configuracion import configuracion_servicio
 from src.serving.protocolo import _comparar_metricas, metricas_de_variante
 from src.serving.riesgo import ETIQUETAS, cambio_alerta, nivel_riesgo
-from denguekay.evaluation.acceptance import evaluar_validacion_modelo
+from denguekay.evaluation.acceptance import evaluate_model_validation
 
 CORTES = {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75}
 CRITERIOS = {"bloques": ["temporada_2024"], "recall_minimo": 0.8, "precision_minima": 0.6,
@@ -48,20 +48,20 @@ class TestPoliticasServicio(unittest.TestCase):
 
     def test_metricas_reales_de_2024_no_cumplen_y_2025_no_decide(self):
         for tarea in ("clasificacion", "regresion"):
-            resultado = evaluar_validacion_modelo(tarea, self.metricas, CRITERIOS)
+            resultado = evaluate_model_validation(tarea, self.metricas, CRITERIOS)
             self.assertEqual(resultado["estado_validacion"], "experimental")
             self.assertEqual(set(resultado["bloques"]), {"temporada_2024"})
             sin_2025 = deepcopy(self.metricas)
             del sin_2025["bloques"]["calendario_2025"]
-            self.assertEqual(resultado, evaluar_validacion_modelo(tarea, sin_2025, CRITERIOS))
+            self.assertEqual(resultado, evaluate_model_validation(tarea, sin_2025, CRITERIOS))
 
     def test_aceptacion_en_bordes_con_metricas_reales_y_limites_iguales(self):
         criterios = deepcopy(CRITERIOS)
         m = self.metricas["bloques"]["temporada_2024"]["clasificacion"]["alerta_directa"]
         criterios.update(recall_minimo=m["recall"], precision_minima=m["precision"], f1_minimo=m["f1"])
-        self.assertEqual(evaluar_validacion_modelo("clasificacion", self.metricas, criterios)["estado_validacion"], "validado")
+        self.assertEqual(evaluate_model_validation("clasificacion", self.metricas, criterios)["estado_validacion"], "validado")
         criterios["recall_minimo"] += .000001
-        self.assertEqual(evaluar_validacion_modelo("clasificacion", self.metricas, criterios)["estado_validacion"], "experimental")
+        self.assertEqual(evaluate_model_validation("clasificacion", self.metricas, criterios)["estado_validacion"], "experimental")
 
     def test_metricas_ausentes_o_distintas_rechazan_protocolo(self):
         _comparar_metricas({"a": {"b": None}}, {"a": {"b": None}})

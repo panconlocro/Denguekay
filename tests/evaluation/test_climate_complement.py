@@ -22,7 +22,7 @@ def _ev(valores):
 class TestReglaConteo(unittest.TestCase):
     def _caso(self, candidata):
         ref = {(h, b): (1.0, 1.0) for h in (2, 3, 4) for b in BLOQUES}
-        return cc.condicion_conteo(cc.tabla_conteo(_ev(candidata), _ev(ref))).set_index("horizonte")
+        return cc.count_condition(cc.count_table(_ev(candidata), _ev(ref))).set_index("horizonte")
 
     def test_mejora_exige_las_dos_razones_en_las_dos_temporadas(self):
         base = {(h, b): (1.0, 1.0) for h in (2, 3, 4) for b in BLOQUES}
@@ -46,18 +46,18 @@ class TestReglaConteo(unittest.TestCase):
         conteo = pd.DataFrame({"horizonte": [2, 3, 4], "mejora_conteo": [True, False, False],
                                "empeora_conteo": [False, False, False]})
         empate = pd.DataFrame({"horizonte": [2, 3, 4], "veredicto": ["empate", "compensa (empate)", "gana"]})
-        self.assertEqual(cc.decidir(conteo, empate)["adoptada"], "F+A3")
+        self.assertEqual(cc.decide(conteo, empate)["adoptada"], "F+A3")
         pierde = empate.assign(veredicto=["empate", "pierde", "empate"])
-        d = cc.decidir(conteo, pierde)
+        d = cc.decide(conteo, pierde)
         self.assertEqual((d["adoptada"], d["horizontes_pierde_alerta"]), ("F", [3]))
-        self.assertEqual(cc.decidir(conteo.assign(empeora_conteo=[False, True, False]), empate)["adoptada"], "F")
-        self.assertEqual(cc.decidir(conteo.assign(mejora_conteo=False), empate)["adoptada"], "F")
+        self.assertEqual(cc.decide(conteo.assign(empeora_conteo=[False, True, False]), empate)["adoptada"], "F")
+        self.assertEqual(cc.decide(conteo.assign(mejora_conteo=False), empate)["adoptada"], "F")
 
     def test_diagnostico_celda(self):
         datos = pd.DataFrame({"horizonte": 4, "bloque": "temporada_2022", "brote": [1, 1, 0, 0],
                               "probabilidad_calibrada": [0.45, 0.6, 0.1, 0.55], "probabilidad_brote": [0.2, 0.3, 0.1, 0.2]})
         otra = datos.assign(bloque="temporada_2023")
-        d = cc.diagnostico_celda({17: {"datos": pd.concat([datos, otra])}}, 4, "temporada_2022").iloc[0]
+        d = cc.cell_diagnosis({17: {"datos": pd.concat([datos, otra])}}, 4, "temporada_2022").iloc[0]
         self.assertEqual((d.semanas, d.semanas_brote, d.brote_en_banda, d.brote_con_alerta), (4, 2, 1, 1))
         self.assertAlmostEqual(d.prevalencia, 0.5)
         self.assertAlmostEqual(d.probabilidad_calibrada_media, 0.425)
@@ -65,7 +65,7 @@ class TestReglaConteo(unittest.TestCase):
         self.assertAlmostEqual(d.f1_050, 0.5)
 
     def test_columnas_a3(self):
-        self.assertEqual(cc.COLUMNAS_A3, ["hum_rel_media_media5_h2", "precip_total_mm_media5_h2"])
+        self.assertEqual(cc.A3_COLUMNS, ["hum_rel_media_media5_h2", "precip_total_mm_media5_h2"])
 
 
 if __name__ == "__main__":

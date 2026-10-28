@@ -26,7 +26,7 @@ from denguekay.model import probabilistic_output as sp
 FREEZE_DATE_V1 = "2026-10-27"
 FREEZE_DATE = "2026-10-27"  # V2: date of the commit that introduces CONFIG_2026 with A3
 DEPLOYMENT_SEED = 17
-A3_COLUMNS = cc.COLUMNAS_A3
+A3_COLUMNS = cc.A3_COLUMNS
 # B3 does not depend on the cutoff (no per-block fit); this value only satisfies the signature, as in notebooks 33-34.
 B3_REFERENCE_CUTOFF = pd.Timestamp("2021-08-28")
 
@@ -41,7 +41,7 @@ CONFIG_2026_V1 = {
     "dispersion": "dentro_muestra",
     "hiperparametros": {k: v for k, v in hp.BASE.items()},
     "calibracion": "Platt cronológico (predicciones fuera de muestra de las temporadas previas cerradas)",
-    "umbral_alerta": pa.UMBRAL_ALERTA,
+    "umbral_alerta": pa.ALERT_THRESHOLD,
     "semilla_despliegue": DEPLOYMENT_SEED,
     "decisiones": {"fase2c": "C3 elegida (gana a B; C empata con C3 y tiene más columnas)",
                    "fase3": "empate: se quedan los hiperparámetros heredados",

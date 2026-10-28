@@ -7,7 +7,7 @@ import pandas as pd
 
 from serving_soporte import leer_csv
 from denguekay.model.future_rows import build_future_rows
-from denguekay.evaluation.compact_validation import variantes_compactas
+from denguekay.evaluation.compact_validation import compact_variants
 
 
 class TestFilasFuturas(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestFilasFuturas(unittest.TestCase):
         for h in (2, 4):
             with self.subTest(h=h):
                 panel = leer_csv(f"gold_temporal_h{h}_muestra.csv")
-                columnas = variantes_compactas(h)["base_6_poblacion_2017"]
+                columnas = compact_variants(h)["base_6_poblacion_2017"]
                 filas, motivos = self.construir(panel, h, cutoff_date="2025-10-25")
                 self.assertFalse(motivos)
                 objetivo = pd.Timestamp("2025-10-19") + pd.Timedelta(weeks=h)
@@ -89,7 +89,7 @@ class TestFilasFuturas(unittest.TestCase):
 
     def test_base_sin_censo_reutiliza_historia(self):
         panel = leer_csv("gold_temporal_h2_muestra.csv")
-        filas, _ = build_future_rows(panel, 2, columns=variantes_compactas(2)["base_4"])
+        filas, _ = build_future_rows(panel, 2, columns=compact_variants(2)["base_4"])
         self.assertEqual(len(filas), 3)
         self.assertNotIn("log_poblacion_censo_2017", filas)
 

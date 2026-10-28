@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from denguekay.model.train import evaluate_fold, prepare_gold, split_season, split_calendar_year
-from denguekay.evaluation.compact_validation import ejecutar_validacion_temporal_compacta, variantes_compactas
+from denguekay.evaluation.compact_validation import run_compact_validation, compact_variants
 from denguekay.config.paths import (GOLD, GOLD_MANIFEST, COMPACT_METRICS, COMPACT_PREDICTIONS,
                              SERVING_REGENERATED_PROTOCOL, SILVER_INTEGRATED)
 from denguekay.data.validation.gx_quality import read_gold
@@ -34,8 +34,8 @@ def cargar_protocolo(horizontes, variantes, *, metricas_path=COMPACT_METRICS,
         predicciones_path = SERVING_REGENERATED_PROTOCOL / "predicciones_por_bloque.csv"
         if not predicciones_path.exists() or not metricas_path.exists():
             print("Falta el CSV OOS: se ejecutará el protocolo existente en models/serving")
-            ejecutar_validacion_temporal_compacta(salida_dir=SERVING_REGENERATED_PROTOCOL,
-                metricas_path=metricas_path)
+            run_compact_validation(output_dir=SERVING_REGENERATED_PROTOCOL,
+                metrics_path=metricas_path)
     reporte = json.loads(metricas_path.read_text(encoding="utf-8"))
     pred = pd.read_csv(predicciones_path, dtype={"ubigeo": "string"},
                        parse_dates=["semana_inicio", "origen_cierre"])
@@ -53,7 +53,7 @@ def cargar_protocolo(horizontes, variantes, *, metricas_path=COMPACT_METRICS,
             raise ValueError(f"Las métricas h={h} no corresponden al gold actual")
         datos[h], _ = prepare_gold(gold, h)
         for nombre in set(variantes.values()):
-            cols = variantes_compactas(h).get(nombre)
+            cols = compact_variants(h).get(nombre)
             resultado = bloque_h["variantes"].get(nombre)
             if not resultado or cols != resultado["columnas"]:
                 raise ValueError("Las columnas del protocolo no coinciden con el contrato de variantes")

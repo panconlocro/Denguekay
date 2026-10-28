@@ -32,14 +32,14 @@ class TestObjetivo(unittest.TestCase):
 
     def test_media_de_las_seis_celdas(self):
         ev = _evaluacion()
-        valor, celdas = hp.objetivo(ev)
+        valor, celdas = hp.objective(ev)
         self.assertEqual(len(celdas), 6)
         esperado = np.mean([hp.logloss(g.brote, g.probabilidad_calibrada)
                             for _, g in ev["datos"].groupby(["horizonte", "bloque"])])
         self.assertAlmostEqual(valor, esperado)
 
     def test_celda_faltante_no_es_finita(self):
-        valor, _ = hp.objetivo(_evaluacion(((2, 3), ("temporada_2022", "temporada_2023"))))
+        valor, _ = hp.objective(_evaluacion(((2, 3), ("temporada_2022", "temporada_2023"))))
         self.assertTrue(math.isnan(valor))
 
 
@@ -48,17 +48,17 @@ class TestEspacioYEstudio(unittest.TestCase):
         import optuna
 
         optuna.logging.set_verbosity(optuna.logging.ERROR)
-        st = optuna.create_study(sampler=optuna.samplers.TPESampler(seed=hp.SEMILLA_TPE))
+        st = optuna.create_study(sampler=optuna.samplers.TPESampler(seed=hp.TPE_SEED))
         st.enqueue_trial(hp.TRIAL_0, user_attrs={"es_base": True})
-        st.optimize(lambda t: sum(float(v) for v in hp.sugerir(t).values()), n_trials=30)
+        st.optimize(lambda t: sum(float(v) for v in hp.suggest(t).values()), n_trials=30)
         self.assertEqual(st.trials[0].params, hp.TRIAL_0)
         self.assertEqual({k: v for k, v in hp.TRIAL_0.items() if k != "reg_alpha"},
                          {k: v for k, v in hp.BASE.items() if k != "reg_alpha"})
         self.assertTrue(st.trials[0].user_attrs["es_base"])
         for t in st.trials[1:]:
-            for nombre, (_, lo, hi, _) in hp.ESPACIO.items():
+            for nombre, (_, lo, hi, _) in hp.SPACE.items():
                 self.assertTrue(lo <= t.params[nombre] <= hi, nombre)
-        self.assertEqual(hp.ESPACIO["max_delta_step"][1:3], (0.3, 2.0))
+        self.assertEqual(hp.SPACE["max_delta_step"][1:3], (0.3, 2.0))
 
     def test_fallidos_quedan_registrados(self):
         import optuna
@@ -74,7 +74,7 @@ class TestEspacioYEstudio(unittest.TestCase):
         for x in (0, 1, 2):
             st.enqueue_trial({"x": x})
         st.optimize(funcion, n_trials=3, catch=(Exception,))
-        estados = hp.tabla_trials(st).estado.tolist()
+        estados = hp.trials_table(st).estado.tolist()
         self.assertEqual(estados, ["COMPLETE", "FAIL", "FAIL"])
 
 
@@ -93,26 +93,26 @@ class TestConteoDelEstudio(unittest.TestCase):
             return {"objetivo": next(valores)}
 
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, \
-                mock.patch.object(hp, "evaluar_configuracion", return_value=None), \
-                mock.patch.object(hp, "resumen_trial", side_effect=falso):
+                mock.patch.object(hp, "evaluate_configuration", return_value=None), \
+                mock.patch.object(hp, "trial_summary", side_effect=falso):
             storage = f"sqlite:///{(Path(tmp) / 'estudio.db').as_posix()}"
-            st = hp.estudio(None, None, None, None, storage, nombre="prueba", n_trials=5)
+            st = hp.study(None, None, None, None, storage, name="prueba", n_trials=5)
             hechos = [t for t in st.trials if t.state in (optuna.trial.TrialState.COMPLETE, optuna.trial.TrialState.FAIL)]
             self.assertEqual(len(st.trials), 5)
             self.assertEqual(len(hechos), 5)
             self.assertTrue(st.trials[0].user_attrs["es_base"])
             self.assertEqual(st.trials[1].state, optuna.trial.TrialState.FAIL)
-            st = hp.estudio(None, None, None, None, storage, nombre="prueba", n_trials=7)
+            st = hp.study(None, None, None, None, storage, name="prueba", n_trials=7)
             self.assertEqual(len(st.trials), 7)
-            st = hp.estudio(None, None, None, None, storage, nombre="prueba", n_trials=7)
+            st = hp.study(None, None, None, None, storage, name="prueba", n_trials=7)
             self.assertEqual(len(st.trials), 7)
 
     def test_huella_top_cambia_solo_con_la_seleccion(self):
         from types import SimpleNamespace as N
 
         a = [N(number=1, params={"x": 1.0}), N(number=2, params={"x": 2.0})]
-        self.assertEqual(hp.huella_top(a), hp.huella_top([N(number=1, params={"x": 1.0}), N(number=2, params={"x": 2.0})]))
-        self.assertNotEqual(hp.huella_top(a), hp.huella_top([a[0], N(number=3, params={"x": 3.0})]))
+        self.assertEqual(hp.top_fingerprint(a), hp.top_fingerprint([N(number=1, params={"x": 1.0}), N(number=2, params={"x": 2.0})]))
+        self.assertNotEqual(hp.top_fingerprint(a), hp.top_fingerprint([a[0], N(number=3, params={"x": 3.0})]))
 
 
 class TestAdopcion(unittest.TestCase):
@@ -123,11 +123,11 @@ class TestAdopcion(unittest.TestCase):
     def test_regla(self):
         simple = {**hp.BASE, "n_estimators": 100, "max_depth": 3}
         compleja = {**hp.BASE, "n_estimators": 800, "max_depth": 6}
-        self.assertEqual(hp.adoptar(self._v("gana", "empate", "empate"), compleja)["adoptada"], "candidata")
-        self.assertEqual(hp.adoptar(self._v(*["empate"] * 3), simple)["adoptada"], "candidata")
-        self.assertEqual(hp.adoptar(self._v(*["empate"] * 3), hp.BASE)["adoptada"], "candidata")
-        self.assertEqual(hp.adoptar(self._v(*["empate"] * 3), compleja)["adoptada"], "base")
-        self.assertEqual(hp.adoptar(self._v("gana", "pierde", "empate"), simple)["adoptada"], "base")
+        self.assertEqual(hp.adopt(self._v("gana", "empate", "empate"), compleja)["adoptada"], "candidata")
+        self.assertEqual(hp.adopt(self._v(*["empate"] * 3), simple)["adoptada"], "candidata")
+        self.assertEqual(hp.adopt(self._v(*["empate"] * 3), hp.BASE)["adoptada"], "candidata")
+        self.assertEqual(hp.adopt(self._v(*["empate"] * 3), compleja)["adoptada"], "base")
+        self.assertEqual(hp.adopt(self._v("gana", "pierde", "empate"), simple)["adoptada"], "base")
 
 
 @unittest.skipUnless(HAY_DATOS, "requiere silver integrado, historia, manifiesto y gold")
@@ -140,13 +140,13 @@ class TestConDatos(unittest.TestCase):
 
         panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        ins = fh.insumos(panel, regla)
+        ins = fh.inputs(panel, regla)
         historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
         vi = fi.OnsetFeatures(panel, ins["serie"], historia, regla)
         origenes = vi.origins(eh.origin_table(ins["matrices"][2]), ["B3"], pd.Timestamp("2021-08-28"))
         columnas = [*eh.GENERIC, *fi.COLUMNS["B3"]]
         defecto = sp.predict_e3(ins["matrices"], 17, "S4_s2", columns=columnas, origins=origenes)
-        explicita = hp.evaluar_configuracion(ins["matrices"], ins["serie"], origenes, columnas, hp.BASE)["predicciones"]
+        explicita = hp.evaluate_configuration(ins["matrices"], ins["serie"], origenes, columnas, hp.BASE)["predicciones"]
         np.testing.assert_array_equal(defecto.casos_predichos, explicita.casos_predichos)
         np.testing.assert_array_equal(defecto.probabilidad_brote, explicita.probabilidad_brote)
 

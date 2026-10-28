@@ -15,10 +15,10 @@ from xgboost import __version__ as XGBOOST_VERSION
 from src.db.modelos import ImportanciaVariable, VersionModelo
 from denguekay.model.device import xgboost_settings
 from denguekay.model.train import BASE_PARAMS, fit_models
-from denguekay.evaluation.compact_validation import variantes_compactas
+from denguekay.evaluation.compact_validation import compact_variants
 from src.serving.artefactos import serializar_booster, sha256_bytes
 from src.serving.protocolo import metricas_de_variante
-from denguekay.evaluation.acceptance import evaluar_validacion_modelo
+from denguekay.evaluation.acceptance import evaluate_model_validation
 
 PREFIJOS = {"clasificacion": "clf", "regresion": "reg"}
 
@@ -48,7 +48,7 @@ def entrenar_versiones_servicio(protocolo, horizontes, cfg, corte):
         train = fuente.loc[(fuente.semana_inicio + pd.Timedelta(days=6)).le(pd.Timestamp(corte))].copy()
         if train.empty or train.brote.nunique() != 2:
             raise ValueError("El ajuste final requiere etiquetas cerradas y ambas clases")
-        pares = {nombre: fit_models(train, variantes_compactas(h)[nombre]) for nombre in set(cfg.variantes.values())}
+        pares = {nombre: fit_models(train, compact_variants(h)[nombre]) for nombre in set(cfg.variantes.values())}
         evaluacion = protocolo.reporte
         for tarea, nombre in cfg.variantes.items():
             modelo = pares[nombre][1 if tarea == "clasificacion" else 0]
@@ -56,7 +56,7 @@ def entrenar_versiones_servicio(protocolo, horizontes, cfg, corte):
             artefacto = serializar_booster(modelo)
             datos = {
                 "tarea": tarea, "horizonte": h, "algoritmo": "xgboost",
-                "variables": variantes_compactas(h)[nombre], "hiperparametros": dict(BASE_PARAMS),
+                "variables": compact_variants(h)[nombre], "hiperparametros": dict(BASE_PARAMS),
                 "metricas": metricas,
                 "umbral_probabilidad": (metricas["bloques"]["calendario_2025"]["clasificacion"]["umbral_probabilidad"]
                                         if tarea == "clasificacion" else None),
@@ -83,7 +83,7 @@ def entrenar_versiones_servicio(protocolo, horizontes, cfg, corte):
 
 def cumple_umbrales(tarea, metricas, criterios):
     """Umbrales de parametro_sistema aplicados a las métricas guardadas del bloque decisor."""
-    return evaluar_validacion_modelo(tarea, metricas, criterios)["estado_validacion"] == "validado"
+    return evaluate_model_validation(tarea, metricas, criterios)["estado_validacion"] == "validado"
 
 
 def siguiente_codigo(sesion, tarea, horizonte):

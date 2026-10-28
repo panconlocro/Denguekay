@@ -21,20 +21,20 @@ class TestComparacion(unittest.TestCase):
 
     def test_igualdad_al_redondeo(self):
         nueva = pd.DataFrame(self.guardada).assign(f1_050=lambda t: t.f1_050 + 1e-5)
-        cruce = fh.comparar_reproduccion(nueva, self.guardada)
+        cruce = fh.compare_reproduction(nueva, self.guardada)
         self.assertTrue(cruce.coincide.all())
 
     def test_diferencia_mayor_se_reporta(self):
         nueva = pd.DataFrame(self.guardada)
         nueva.loc[0, "brier"] += 0.002
-        cruce = fh.comparar_reproduccion(nueva, self.guardada)
+        cruce = fh.compare_reproduction(nueva, self.guardada)
         fallas = cruce[~cruce.coincide]
         self.assertEqual(fallas[["bloque", "metrica"]].values.tolist(), [["temporada_2022", "brier"]])
         self.assertAlmostEqual(fallas.diferencia_absoluta.iloc[0], 0.002)
 
     def test_metrica_faltante_no_coincide(self):
         nueva = pd.DataFrame(self.guardada).drop(columns="brier")
-        cruce = fh.comparar_reproduccion(nueva, self.guardada)
+        cruce = fh.compare_reproduction(nueva, self.guardada)
         self.assertEqual(set(cruce.loc[~cruce.coincide, "metrica"]), {"brier"})
 
 
@@ -44,11 +44,11 @@ class TestHuellaPredicciones(unittest.TestCase):
                              "horizonte": [2, 2, 2], "bloque": ["temporada_2022"] * 3, "semilla": [17] * 3,
                              "casos_predichos": [1.5, 0.25, 3.0],
                              "semana_inicio": pd.to_datetime(["2022-01-02", "2022-01-02", "2022-01-09"])})
-        base = fh.huella_predicciones(pred)
-        self.assertEqual(base, fh.huella_predicciones(pred.iloc[::-1][list(reversed(pred.columns))]))
+        base = fh.predictions_fingerprint(pred)
+        self.assertEqual(base, fh.predictions_fingerprint(pred.iloc[::-1][list(reversed(pred.columns))]))
         otra = pred.copy()
         otra.loc[1, "casos_predichos"] += 1e-9
-        self.assertNotEqual(base, fh.huella_predicciones(otra))
+        self.assertNotEqual(base, fh.predictions_fingerprint(otra))
 
 
 class TestAntecedentes(unittest.TestCase):
@@ -61,7 +61,7 @@ class TestAntecedentes(unittest.TestCase):
                                   "variantes": {
                                       "base_6": {"columnas": base, "folds_validacion": [fold("t1", 0.5, 0.4), fold("t2", 0.7, 0.6)]},
                                       "mas_x": {"columnas": [*base, "x"], "folds_validacion": [fold("t1", 0.6, 0.4), fold("t2", 0.8, 0.5)]}}}}}
-        t = fh.antecedentes_s1({"nb": d}).set_index("variante")
+        t = fh.s1_background({"nb": d}).set_index("variante")
         self.assertEqual(t.at["mas_x", "columnas_agregadas"], ["x"])
         self.assertAlmostEqual(t.at["mas_x", "delta_f1_val_reg_vs_base_6"], 0.1)
         self.assertAlmostEqual(t.at["mas_x", "delta_f1_val_cls_vs_base_6"], -0.05)
@@ -77,7 +77,7 @@ class TestConDatos(unittest.TestCase):
 
         cls.panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        cls.ins = fh.insumos(cls.panel, regla)
+        cls.ins = fh.inputs(cls.panel, regla)
 
     def test_argumentos_opcionales_reproducen_la_version_por_defecto(self):
         m = self.ins["matrices"]
@@ -96,7 +96,7 @@ class TestConDatos(unittest.TestCase):
     def test_inventario_de_gold_h2(self):
         gold = pd.read_csv(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv", dtype={"ubigeo": "string"},
                            parse_dates=["semana_inicio"])
-        inv = fh.inventario_candidatas(gold, self.ins["matrices"][2])
+        inv = fh.candidate_inventory(gold, self.ins["matrices"][2])
         self.assertEqual(len(inv), 34)
         self.assertEqual(int(inv.en_base_6.sum()), 6)
         self.assertTrue(inv.columna.str.endswith(("_h2", "_2017", "_anual", "lag_2", "lag_3", "seno", "coseno")).all())

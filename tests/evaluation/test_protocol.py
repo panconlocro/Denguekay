@@ -29,7 +29,7 @@ def _bloques(semilla: int = 0) -> pd.DataFrame:
 
 class TestCalibracionSinFuga(unittest.TestCase):
     def test_2021_sin_calibrador_y_cortes_cronologicos(self):
-        datos, registro = pa.calibrar_cronologicamente(_bloques())
+        datos, registro = pa.calibrate_chronologically(_bloques())
         self.assertTrue(datos.loc[datos.bloque.eq("temporada_2021"), "probabilidad_calibrada"].isna().all())
         self.assertTrue(datos.loc[datos.bloque.ne("temporada_2021"), "probabilidad_calibrada"].notna().all())
         usados = registro.dropna(subset=["ultima_etiqueta_usada"])
@@ -37,7 +37,7 @@ class TestCalibracionSinFuga(unittest.TestCase):
 
     def test_alterar_bloque_evaluado_y_futuro_no_cambia_calibracion(self):
         base = _bloques()
-        calibrada, _ = pa.calibrar_cronologicamente(base)
+        calibrada, _ = pa.calibrate_chronologically(base)
         alterada = base.copy()
         # Se invierten etiquetas y probabilidades de 2023: no pueden afectar 2022.
         m = alterada.bloque.eq("temporada_2023")
@@ -45,7 +45,7 @@ class TestCalibracionSinFuga(unittest.TestCase):
         # Y las etiquetas de 2022 (bloque evaluado) tampoco pueden afectar su propia calibración.
         m22 = alterada.bloque.eq("temporada_2022")
         alterada.loc[m22, "brote"] = 1 - alterada.loc[m22, "brote"]
-        recalibrada, _ = pa.calibrar_cronologicamente(alterada)
+        recalibrada, _ = pa.calibrate_chronologically(alterada)
         sel = calibrada.bloque.eq("temporada_2022")
         np.testing.assert_allclose(calibrada.loc[sel, "probabilidad_calibrada"],
                                    recalibrada.loc[sel, "probabilidad_calibrada"])
@@ -56,7 +56,7 @@ class TestCalibracionSinFuga(unittest.TestCase):
         m = datos.bloque.eq("temporada_2022")
         datos.loc[m, "semana_inicio"] -= pd.Timedelta(weeks=24)
         datos.loc[m, "origen_cierre"] -= pd.Timedelta(weeks=24)
-        _, registro = pa.calibrar_cronologicamente(datos)
+        _, registro = pa.calibrate_chronologically(datos)
         fila = registro.set_index("bloque").loc["temporada_2022"]
         self.assertGreater(fila.etiquetas_no_cerradas, 0)
         self.assertLessEqual(fila.ultima_etiqueta_usada, fila.corte)
@@ -66,11 +66,11 @@ class TestCalibracionSinFuga(unittest.TestCase):
         malo = datos.copy()
         malo.loc[0, "origen_cierre"] = malo.loc[0, "semana_inicio"]
         with self.assertRaisesRegex(ValueError, "Fuga temporal"):
-            pa.validar_predicciones(malo)
+            pa.validate_predictions(malo)
         malo = datos.copy()
         malo["ubigeo"] = malo.ubigeo.astype(int)
         with self.assertRaisesRegex(ValueError, "seis dígitos"):
-            pa.validar_predicciones(malo)
+            pa.validate_predictions(malo)
 
     def test_calibradores_monotonos_en_rango(self):
         rng = np.random.default_rng(1)
@@ -78,28 +78,28 @@ class TestCalibracionSinFuga(unittest.TestCase):
         y = (rng.uniform(size=500) < p ** 2).astype(int)
         q = np.linspace(0, 1, 101)
         for metodo in ("platt", "isotonica"):
-            c = pa.ajustar_calibrador(p, y, metodo)(q)
+            c = pa.fit_calibrator(p, y, metodo)(q)
             self.assertTrue(((c >= 0) & (c <= 1)).all())
             self.assertTrue((np.diff(c) >= -1e-12).all())
 
 
 class TestReglas(unittest.TestCase):
     def test_niveles_riesgo_cerrados_a_la_izquierda(self):
-        niveles = pa.niveles_riesgo(pd.Series([0.0, 0.2499, 0.25, 0.4999, 0.5, 0.75, 1.0]))
+        niveles = pa.risk_levels(pd.Series([0.0, 0.2499, 0.25, 0.4999, 0.5, 0.75, 1.0]))
         self.assertEqual(list(niveles.astype(str)),
                          ["bajo", "bajo", "medio", "medio", "alto", "muy_alto", "muy_alto"])
 
     def test_bootstrap_y_diferencia_pareada(self):
-        medias = pa.bootstrap_estratificado(np.ones(10), np.array([0, 1] * 5), n=50)
+        medias = pa.stratified_bootstrap(np.ones(10), np.array([0, 1] * 5), n=50)
         self.assertTrue(np.allclose(medias, 1))
         tabla = pd.DataFrame({"horizonte": 2, "bloque": ["temporada_2022"] * 3 + ["temporada_2023"] * 3,
                               "ubigeo": ["200101"] * 6, "inicio": pd.date_range("2022-01-02", periods=6, freq="7D"),
                               "alerta_050": [3, 0, np.nan, 2, 2, -1]})
-        dif = pa.diferencia_antelacion(tabla, tabla, "alerta_050").iloc[0]
+        dif = pa.lead_time_difference(tabla, tabla, "alerta_050").iloc[0]
         self.assertEqual((dif.diferencia, dif.ic95_inferior, dif.ic95_superior), (0.0, 0.0, 0.0))
 
     def _metricas(self, f1_22, f1_23, brier=0.1):
-        return pd.DataFrame({"horizonte": 2, "bloque": list(pa.BLOQUES_SELECCION),
+        return pd.DataFrame({"horizonte": 2, "bloque": list(pa.SELECTION_BLOCKS),
                              "f1_050": [f1_22, f1_23], "auprc": [0.5, 0.5],
                              "brier": [brier, brier], "razon_mae": [1.0, 1.0]})
 
@@ -110,10 +110,10 @@ class TestReglas(unittest.TestCase):
 
     def test_regla_de_decision(self):
         ref = self._metricas(0.50, 0.70)
-        rangos = pd.DataFrame({"horizonte": 2, "bloque": list(pa.BLOQUES_SELECCION),
+        rangos = pd.DataFrame({"horizonte": 2, "bloque": list(pa.SELECTION_BLOCKS),
                                "f1_050": 0.02, "auprc": 0.02, "brier": 0.002, "razon_mae": 0.02})
         neutra = self._dif(-0.05, 0.05, 0.0, 0.0)
-        veredicto = lambda cand, dif=neutra: pa.decidir(cand, ref, rangos, dif).veredicto.iloc[0]
+        veredicto = lambda cand, dif=neutra: pa.decide(cand, ref, rangos, dif).veredicto.iloc[0]
         self.assertEqual(veredicto(self._metricas(0.53, 0.73)), "gana")
         self.assertEqual(veredicto(self._metricas(0.53, 0.71)), "empate")      # solo una temporada
         self.assertEqual(veredicto(self._metricas(0.47, 0.70)), "empate")       # empeora solo en 2022
@@ -133,16 +133,16 @@ class TestReglas(unittest.TestCase):
             for m in ("f1_050", "auprc", "brier", "razon_mae"):
                 a[m] = rng.uniform(0.4, 0.6, 2)
                 b[m] = a[m] + rng.choice([-0.05, -0.01, 0.0, 0.01, 0.05], 2)
-            ma = pd.DataFrame({"horizonte": 2, "bloque": list(pa.BLOQUES_SELECCION), **a})
-            mb = pd.DataFrame({"horizonte": 2, "bloque": list(pa.BLOQUES_SELECCION), **b})
-            rangos = pd.DataFrame({"horizonte": 2, "bloque": list(pa.BLOQUES_SELECCION),
+            ma = pd.DataFrame({"horizonte": 2, "bloque": list(pa.SELECTION_BLOCKS), **a})
+            mb = pd.DataFrame({"horizonte": 2, "bloque": list(pa.SELECTION_BLOCKS), **b})
+            rangos = pd.DataFrame({"horizonte": 2, "bloque": list(pa.SELECTION_BLOCKS),
                                    "f1_050": 0.02, "auprc": 0.02, "brier": 0.02, "razon_mae": 0.02})
             centro = rng.choice([-0.08, 0.0, 0.08])
             d22, d23 = centro + rng.choice([-0.03, 0.03], 2)
             ab = self._dif(centro - 0.05, centro + 0.05, d22, d23)
             ba = self._dif(-centro - 0.05, -centro + 0.05, -d22, -d23)
-            v_ab = pa.decidir(ma, mb, rangos, ab).veredicto.iloc[0]
-            v_ba = pa.decidir(mb, ma, rangos, ba).veredicto.iloc[0]
+            v_ab = pa.decide(ma, mb, rangos, ab).veredicto.iloc[0]
+            v_ba = pa.decide(mb, ma, rangos, ba).veredicto.iloc[0]
             self.assertEqual(v_ba, espejo[v_ab])
             vistos.add(v_ab)
         self.assertEqual(vistos, set(espejo))  # la prueba recorrió los cuatro veredictos
@@ -150,7 +150,7 @@ class TestReglas(unittest.TestCase):
     def test_umbral_empate_rellena_h3_con_el_mayor(self):
         r2 = pd.DataFrame({"horizonte": 2, "bloque": ["temporada_2022"], "f1_050": [0.01]})
         r4 = pd.DataFrame({"horizonte": 4, "bloque": ["temporada_2022"], "f1_050": [0.03]})
-        u = pa.umbral_empate(r2, r4).set_index("horizonte")
+        u = pa.tie_threshold(r2, r4).set_index("horizonte")
         self.assertEqual(u.loc[3, "f1_050"], 0.03)
         self.assertEqual(u.loc[2, "f1_050"], 0.01)
 

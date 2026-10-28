@@ -560,8 +560,8 @@ def recall_by_week_type(data: pd.DataFrame, series: pd.DataFrame, alert: str = "
     """
     from denguekay.evaluation import episodes as diag
 
-    eps = diag.episodios(series)
-    clean = eps[eps.semanas_previas_sin_brote >= diag.SIN_BROTE_PREVIO]
+    eps = diag.episodes(series)
+    clean = eps[eps.semanas_previas_sin_brote >= diag.NO_PREVIOUS_OUTBREAK]
     new_columns = set()
     for ep in clean.itertuples(index=False):
         for k in range(onset_weeks):

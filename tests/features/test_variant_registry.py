@@ -4,7 +4,7 @@ import unittest
 
 from denguekay.features import variant_registry as pr
 from denguekay.features.model_input_contract import predictor_families
-from denguekay.evaluation.onsets import ETIQUETAS
+from denguekay.evaluation.onsets import LABELS
 
 
 class TestPreregistro(unittest.TestCase):
@@ -27,7 +27,7 @@ class TestPreregistro(unittest.TestCase):
         for v in pr.VARIANTS:
             if v["id"] in ("B1", "B2", "B3"):
                 with self.subTest(v["id"]):
-                    self.assertTrue(set(v["columnas"]) <= set(ETIQUETAS))
+                    self.assertTrue(set(v["columnas"]) <= set(LABELS))
 
     def test_sin_columnas_repetidas_entre_variantes(self):
         todas = [c for v in pr.VARIANTS for c in v["columnas"]]

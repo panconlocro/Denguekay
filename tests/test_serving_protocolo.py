@@ -11,7 +11,7 @@ import pandas as pd
 from serving_soporte import protocolo_muestra
 from src.db.modelos import VersionModelo
 from denguekay.model.train import fit_models, counts_from_log1p, evaluate_fold
-from denguekay.evaluation.compact_validation import variantes_compactas
+from denguekay.evaluation.compact_validation import compact_variants
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.artefactos import predecir_con_version, serializar_booster, sha256_bytes
 from src.serving.protocolo import verificar_bloque
@@ -53,7 +53,7 @@ class TestContratoProtocolo(unittest.TestCase):
 
     def test_inferencia_del_json_igual_a_estimadores_originales(self):
         datos = self.protocolo.datos[2]
-        cols = variantes_compactas(2)["base_6_poblacion_2017"]
+        cols = compact_variants(2)["base_6_poblacion_2017"]
         reg, cls = fit_models(datos, cols)
         # El servicio predice en CPU; en GPU el estimador difiere en ~1 ULP de float32.
         reg.set_params(device="cpu")

@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 
 from denguekay.evaluation.metrics import (
-    alertas_desde_conteos, metricas_alerta, metricas_conteos,
-    seleccionar_umbral_f1,
+    alerts_from_counts, alert_metrics, count_metrics,
+    select_f1_threshold,
 )
 from denguekay.model.train import (
     variant_columns, predict_fold, prepare_gold, split_calendar_year,
@@ -97,19 +97,19 @@ class EntrenamientoTests(unittest.TestCase):
         real = np.array([0, 4, 0, 3])
         umbral = np.array([0, 2, 0, 5])
         pred = np.array([0, 3, 2, 6])
-        alertas = alertas_desde_conteos(pred, umbral, 2)
+        alertas = alerts_from_counts(pred, umbral, 2)
         self.assertEqual(alertas.tolist(), [False, True, True, True])
-        m = metricas_alerta(np.array([0, 1, 0, 0]), alertas,
-                           puntaje=np.array([0.1, 0.8, 0.7, 0.6]))
+        m = alert_metrics(np.array([0, 1, 0, 0]), alertas,
+                           score=np.array([0.1, 0.8, 0.7, 0.6]))
         self.assertEqual((m["vp"], m["fp"], m["fn"]), (1, 2, 0))
-        self.assertAlmostEqual(metricas_conteos(real, pred)["mae"], 1.5)
+        self.assertAlmostEqual(count_metrics(real, pred)["mae"], 1.5)
 
     def test_sin_positivos_no_inventa_auprc(self):
-        m = metricas_alerta(np.zeros(3), np.zeros(3), puntaje=np.array([0.1, 0.2, 0.3]))
+        m = alert_metrics(np.zeros(3), np.zeros(3), score=np.array([0.1, 0.2, 0.3]))
         self.assertIsNone(m["auprc"])
         self.assertIsNone(m["recall"])
         with self.assertRaisesRegex(ValueError, "No hay positivos"):
-            seleccionar_umbral_f1(np.zeros(3), np.array([0.1, 0.2, 0.3]))
+            select_f1_threshold(np.zeros(3), np.array([0.1, 0.2, 0.3]))
 
     def test_fit_smoke_ambos_modelos(self):
         datos, _ = prepare_gold(panel_sintetico(), 2)

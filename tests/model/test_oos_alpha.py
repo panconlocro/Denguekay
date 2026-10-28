@@ -92,7 +92,7 @@ class TestConDatos(unittest.TestCase):
 
         panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        cls.matrices = fh.insumos(panel, regla)["matrices"]
+        cls.matrices = fh.inputs(panel, regla)["matrices"]
 
     def test_oos_cambia_solo_la_probabilidad(self):
         dentro = sp.predict_e3(self.matrices, 17, "S4_s2")

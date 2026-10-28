@@ -19,8 +19,8 @@ from denguekay.data.seasons import assign_season
 from denguekay.features.model_input_contract import audit_handoff, predictor_families
 from denguekay.model.device import xgboost_settings
 from denguekay.evaluation.metrics import (
-    alertas_desde_conteos, metricas_alerta, metricas_conteos,
-    seleccionar_umbral_f1,
+    alerts_from_counts, alert_metrics, count_metrics,
+    select_f1_threshold,
 )
 from denguekay.model.tracking import log_or_warn
 from denguekay.config.paths import GOLD, MODELS, RESEARCH_FIRST_MODELS, SILVER_INTEGRATED
@@ -89,7 +89,7 @@ def prepare_gold(gold: pd.DataFrame, horizon: int) -> tuple[pd.DataFrame, int]:
             or not np.isin(data.brote, [0, 1]).all()
             or (data.casos_Dengue % 1 != 0).any()):
         raise ValueError("Objetivos o umbrales de gold inválidos")
-    expected = alertas_desde_conteos(
+    expected = alerts_from_counts(
         data.casos_Dengue.to_numpy(float),
         data.umbral_brote_casos.to_numpy(float), MIN_OUTBREAK_CASES,
     )
@@ -217,8 +217,8 @@ def evaluate_fold(
     persistence = predictions[f"casos_lag_{horizon}"].to_numpy(float)
     margin = forecast - np.maximum(limit, MIN_OUTBREAK_CASES)
     persistence_margin = persistence - np.maximum(limit, MIN_OUTBREAK_CASES)
-    regression_alert = alertas_desde_conteos(forecast, limit, MIN_OUTBREAK_CASES)
-    persistence_alert = alertas_desde_conteos(persistence, limit, MIN_OUTBREAK_CASES)
+    regression_alert = alerts_from_counts(forecast, limit, MIN_OUTBREAK_CASES)
+    persistence_alert = alerts_from_counts(persistence, limit, MIN_OUTBREAK_CASES)
     prob = predictions.probabilidad_brote.to_numpy(float)
     return {
         "horizonte": horizon,
@@ -232,17 +232,17 @@ def evaluate_fold(
         "n_prueba": len(predictions),
         "positivos_entrenamiento": None,
         "regresion": {
-            "conteos": metricas_conteos(cases, forecast),
-            "alerta_derivada": metricas_alerta(y, regression_alert, puntaje=margin),
+            "conteos": count_metrics(cases, forecast),
+            "alerta_derivada": alert_metrics(y, regression_alert, score=margin),
         },
         "clasificacion": {
             "umbral_probabilidad": classification_threshold,
-            "alerta_directa": metricas_alerta(y, prob >= classification_threshold, puntaje=prob),
+            "alerta_directa": alert_metrics(y, prob >= classification_threshold, score=prob),
             "brier": float(np.mean((prob - y) ** 2)),
         },
         "persistencia": {
-            "conteos": metricas_conteos(cases, persistence),
-            "alerta_derivada": metricas_alerta(y, persistence_alert, puntaje=persistence_margin),
+            "conteos": count_metrics(cases, persistence),
+            "alerta_derivada": alert_metrics(y, persistence_alert, score=persistence_margin),
         },
     }
 
@@ -326,7 +326,7 @@ def run_experiment(
             validation = pd.concat([
                 runs[f"temporada_{t}"][0] for t in VALIDATION_SEASONS
             ], ignore_index=True)
-            selection = seleccionar_umbral_f1(
+            selection = select_f1_threshold(
                 validation.brote.to_numpy(int),
                 validation.probabilidad_brote.to_numpy(float),
             )

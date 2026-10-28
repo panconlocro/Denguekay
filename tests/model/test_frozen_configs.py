@@ -93,7 +93,7 @@ class TestReproduccion(unittest.TestCase):
 
         cls.panel = load_integrated(SILVER_INTEGRATED)
         cls.rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        cls.ins = fh.insumos(cls.panel, cls.rule)
+        cls.ins = fh.inputs(cls.panel, cls.rule)
 
     def _comprobar(self, nombre, configuracion, ruta):
         from denguekay.model.device import xgboost_settings

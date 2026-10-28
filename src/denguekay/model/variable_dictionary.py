@@ -63,7 +63,7 @@ DEFINITIONS = {
         "fuente": "epidemiológica (en memoria, features_inicio)",
         "definicion": "semanas transcurridas desde la última semana con casos del distrito, hasta o",
         "ventana": "semanas ≤ o",
-        "transformacion": f"tope {di.TOPE_SEMANAS_SIN_CASO} semanas", "tipo": "entero 0–52",
+        "transformacion": f"tope {di.MAX_WEEKS_WITHOUT_CASE} semanas", "tipo": "entero 0–52",
         "nulos": "ninguno (sin caso previo = tope)",
         "por_que": "cuánto lleva el distrito sin transmisión antes de un inicio",
         "evidencia": "B3: gana a B en h2 y h3 (fase 2b); C3 elegida (fase 2c); 3.ª por SHAP",
@@ -142,7 +142,7 @@ def dictionary(columns: list[str], origins: pd.DataFrame | None = None) -> pd.Da
     gold = gold_h2_columns()
     rows = []
     for c in columns:
-        row = {"variable": c, "etiqueta": di.ETIQUETAS.get(c, DEFINITIONS[c]["definicion"]),
+        row = {"variable": c, "etiqueta": di.LABELS.get(c, DEFINITIONS[c]["definicion"]),
                 "columna_gold_h2": gold.get(c, "no está en gold (propuesta)"),
                 **DEFINITIONS[c]}
         if origins is not None:
@@ -199,15 +199,15 @@ def main() -> None:
 
     panel = load_integrated(SILVER_INTEGRATED)
     rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-    ins = fh.insumos(panel, rule)
+    ins = fh.inputs(panel, rule)
     origins = cf.origins(panel, ins, rule)
     columns = cf.CONFIG_2026["columnas"]
     table = dictionary(columns, origins)
     by_season = statistics(origins, columns)
     text = to_markdown(table, by_season, cf.CONFIG_2026)
     VARIABLE_DICTIONARY.write_bytes(text.replace("\n", "\r\n").encode("utf-8"))
-    d.guardar_seccion_metricas(FE_HYPERPARAMETERS_METRICS, "fase5_diccionario_variables",
-                               {"variables": d.a_json(table), "por_temporada": d.a_json(by_season),
+    d.save_metrics_section(FE_HYPERPARAMETERS_METRICS, "fase5_diccionario_variables",
+                               {"variables": d.to_json(table), "por_temporada": d.to_json(by_season),
                                 "insumo_inferencia": INFERENCE_INPUT})
     print(f"{VARIABLE_DICTIONARY} ({len(table)} variables)")
 
