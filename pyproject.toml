@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "denguekay"
+version = "0.1.0"
+description = "Pronóstico distrital de brotes de dengue en Piura: pipeline de datos, modelo, serving y API."
+readme = "README.md"
+requires-python = ">=3.12"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+# Single source of truth for pinned ranges: requirements.txt (also used by CI and run_setup.*).
+dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.packages.find]
+# Only the installable package; the legacy top-level `src` package keeps working from the repo root
+# until the restructure moves its modules into `denguekay`.
+where = ["src"]
+include = ["denguekay*"]
