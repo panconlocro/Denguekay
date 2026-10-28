@@ -1166,6 +1166,21 @@ completa y F∩A3 difieren muy poco: solo cambian las 65 filas.
 - En MLflow, el run del complemento (`6afc4549…`) lleva `configuracion_congelada_2026 = vigente`. El de la fase 4
   (`cda23d28…`) lleva `reemplazada`.
 
+#### Cambio de definición de la huella (reestructuración, 28/10/2026)
+
+- Las huellas `88ed2a43…` (V1, `d6bd0be`) y `c36d7a80…` (V2, `424a148`) se calculaban con el JSON de la
+  configuración más el texto de cinco módulos (`estrategias_horizonte`, `features_inicio`, `hiperparametros`,
+  `protocolo_arquitectura` y `salida_probabilistica`). La reestructuración en monorepo movió y tradujo esos
+  módulos, así que con esa definición el valor cambiaba aunque el modelo fuera el mismo.
+- Desde el commit que introduce `fingerprint()` en `denguekay.model.frozen_configs` (rama
+  `refactor/product-package`; [ADR 0001](../../../docs/decisions/0001-repo-restructure.md), decisión D1), la
+  huella es **de comportamiento**: SHA-256 del JSON de la configuración y de las predicciones de referencia en
+  orden canónico (semilla 17). Como XGBoost da bits distintos en CPU y en CUDA, hay un valor por dispositivo
+  (`REFERENCE_FINGERPRINTS`). Las dos huellas anteriores quedan como históricas en `HISTORICAL_FINGERPRINTS`.
+- La equivalencia con la configuración congelada se demuestra con predicciones **idénticas bit a bit**
+  (`tests/model/test_frozen_configs.py` y `tests/test_equivalence.py`). **El modelo no cambió.**
+- No cambian la fecha de congelamiento (27/10/2026) ni la ventana del test independiente de 2026.
+
 ### Cambios pendientes por la V2 (sin implementar)
 
 - **Gold h=2 y GX:** A3 ya existe en gold h=2 (`hum_rel_media_media5_h2`, `precip_total_mm_media5_h2`) y en sus

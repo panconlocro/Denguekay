@@ -8,11 +8,11 @@ resumido en [especificacion_oe2.md](especificacion_oe2.md). En TB1 todo es local
 ```mermaid
 flowchart LR
   fuentes[Excel MINSA, Sala Situacional, Open-Meteo, INEI] --> pipeline[Pipeline de datos y modelado<br/>bronze → silver → gold]
-  pipeline --> batch[Carga y publicación<br/>src/serving]
+  pipeline --> batch[Carga y publicación<br/>src/denguekay/serving]
   batch --> bd[(PostgreSQL local<br/>esquema OE2)]
   batch --> storage[(models/storage<br/>modelos/geodatos/reportes)]
   batch --> mlflow[(MLflow local)]
-  api[FastAPI<br/>src/api] --> bd
+  api[FastAPI<br/>apps/api] --> bd
   api --> storage
   frontend[Frontend React<br/>fuera de TB1 backend] --> api
 ```
@@ -21,13 +21,13 @@ flowchart LR
 
 | Componente | Responsabilidad |
 |---|---|
-| `src/db` | Esquema SQLAlchemy portable (PostgreSQL / SQLite), migraciones Alembic (`0003_oe2`), sesiones y UPSERT |
-| `src/serving/cargar_datos` | Ingesta validada (GX + linaje) de provincia, distrito, calendario y observaciones |
-| `src/serving/modelos`, `publicar` | Ajuste de servicio con `src/modeling/train.py`, MLflow, versiones `candidata` y booster en Storage |
-| `src/serving/almacenamiento` | Puerto `Almacenamiento` (`guardar`, `leer`, `existe`) y adaptador local; adaptador Supabase futuro |
-| `src/serving/inferencia` | Vector desde la BD (`construir_filas_futuras`), selección activa/experimental, UPSERT, alertas, OOS |
-| `src/serving/parametros` | Lectura de `parametro_sistema` (cortes, umbrales y bloque, selección experimental) |
-| `src/api` | Routers de la Tabla 2, DTO por lotes, errores uniformes, caché por revisión, OpenAPI con ejemplos reales |
+| `src/denguekay/db` | Esquema SQLAlchemy portable (PostgreSQL / SQLite), migraciones Alembic (`0003_oe2`), sesiones y UPSERT |
+| `src/denguekay/serving/load_data` | Ingesta validada (GX + linaje) de provincia, distrito, calendario y observaciones |
+| `src/denguekay/serving/models`, `publish` | Ajuste de servicio con `src/denguekay/model/train.py`, MLflow, versiones `candidata` y booster en Storage |
+| `src/denguekay/serving/storage` | Puerto `Storage` (`save`, `read`, `exists`) y adaptador local; adaptador Supabase futuro |
+| `src/denguekay/serving/inference` | Vector desde la BD (`build_future_rows`), selección activa/experimental, UPSERT, alertas, OOS |
+| `src/denguekay/serving/parametros` | Lectura de `parametro_sistema` (cortes, umbrales y bloque, selección experimental) |
+| `apps/api` | Routers de la Tabla 2, DTO por lotes, errores uniformes, caché por revisión, OpenAPI con ejemplos reales |
 
 ## Modelo de datos
 
@@ -41,7 +41,7 @@ regex, RLS y roles `rol_api` / `rol_pipeline`.
 
 ```mermaid
 sequenceDiagram
-  participant CLI as publicar
+  participant CLI as publish
   participant F as Fuentes (data/, solo lectura)
   participant M as train.py + MLflow
   participant S as Storage local

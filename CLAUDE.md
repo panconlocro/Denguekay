@@ -10,33 +10,33 @@ Datos: panel **distrito × semana epidemiológica**, 65 distritos de Piura, 2017
 bronze  -> crudo tal cual llegó de la fuente
 silver  -> limpio, un dataset por fuente
 silver/integrado -> fuentes silver unidas (meteo+socio+epi), SIN features derivadas
-gold    -> dataset con feature engineering: h2 y h4 (+ manifest_fase6.json). Lo regenera el equipo (notebook 22).
+gold    -> dataset con feature engineering: h2 y h4 (+ manifest_fase6.json). Lo regenera el equipo (notebook 10 del pipeline).
 ```
-Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `features.py`/notebook 22; Claude propone los cambios. **Dataset de trabajo para el EDA:** `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar siempre con `src.eda.carga.cargar_integrado()`).
+Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/features/gold.py` y el notebook 10 (`pipelines/notebooks/10_silver_to_gold.ipynb`); Claude propone los cambios. **Dataset de trabajo para el EDA:** `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar siempre con `denguekay.data.loading.load_integrated()`).
 
 ## Reglas duras
 1. **Estructura:** antes de crear cualquier archivo lee `docs/estructuraRepo.md` y respétalo. Si algo nuevo no cabe en esa estructura, propón el cambio a Rosa y actualiza ese documento en el mismo cambio; no inventes carpetas por tu cuenta.
-2. **Los datos son de solo lectura.** Nunca escribas, borres ni modifiques nada dentro de `data/` (ni bronze, ni silver, ni reference, ni gold). Si el análisis exige corregir datos, lo **reportas y propones** el cambio en el pipeline (notebooks 03–09 / `src/processing`); no lo haces tú.
-3. **Variables derivadas: solo en memoria.** En el EDA no se construyen features. En el modelado sí se calculan variables nuevas, pero solo en memoria, con funciones de `src/modeling/` y un test de no fuga por perturbación. Nunca se guardan en `data/`. Si una variable entra a la configuración final, se **propone** el cambio en `features.py` y el equipo regenera gold.
+2. **Los datos son de solo lectura.** Nunca escribas, borres ni modifiques nada dentro de `data/` (ni bronze, ni silver, ni reference, ni gold). Si el análisis exige corregir datos, lo **reportas y propones** el cambio en el pipeline (notebooks 03–09 de `pipelines/notebooks/` / `src/denguekay/data/processing`); no lo haces tú.
+3. **Variables derivadas: solo en memoria.** En el EDA no se construyen features. En el modelado sí se calculan variables nuevas, pero solo en memoria, con funciones de `src/denguekay/features/` y un test de no fuga por perturbación. Nunca se guardan en `data/`. Si una variable entra a la configuración final, se **propone** el cambio en `src/denguekay/features/gold.py` y el equipo regenera gold.
 4. **`ubigeo` es string de 6 dígitos** (con ceros a la izquierda) en todo el pipeline. Nunca lo castees a int.
-5. **Rutas** siempre desde `src/utils/paths.py`. Nada de rutas absolutas ni `C:\...` en código.
-6. **`src/` vs `notebooks/`:** si la lógica se reutiliza o pasa de ~10 líneas, va en `src/` con un test simple en `tests/` si tiene lógica no trivial. El notebook orquesta, muestra y comenta.
+5. **Rutas** siempre desde `src/denguekay/config/paths.py`. Nada de rutas absolutas ni `C:\...` en código.
+6. **Paquete vs notebooks:** si la lógica se reutiliza o pasa de ~10 líneas, va en `src/denguekay/<subpaquete>/` (o en `apps/api/` si es de la API) con un test simple en `tests/<subpaquete>/` si tiene lógica no trivial. El notebook orquesta, muestra y comenta.
 7. **Citas y referencias:** solo reales y verificadas. Prohibido inventar autores, títulos, cifras de la literatura o URLs. Si no puedes verificar una afirmación de dominio, márcala como *hipótesis* o pídele la fuente a Rosa.
 8. **Honestidad estadística:** no afirmes algo que no esté calculado en una celda ejecutada. Distingue observación / hipótesis / conclusión. Con pocos brotes (años 2017 y 2023 concentran la mayor parte de los casos) no generalices ni uses lenguaje causal.
 
 ## Entorno
-- Windows + PowerShell. Python del proyecto: `.venv\Scripts\python` (`.\.venv\Scripts\python -m pip install -r requirements.txt` y luego `.\.venv\Scripts\python -m pip install -e .`, que instala el paquete `denguekay` de `pyproject.toml`). Corre los módulos desde la raíz del repo: `python -m src...`.
+- Windows + PowerShell. Python del proyecto: `.venv\Scripts\python` (`.\.venv\Scripts\python -m pip install -r requirements.txt` y luego `.\.venv\Scripts\python -m pip install -e .`, que instala el paquete `denguekay` de `pyproject.toml`). Corre los módulos desde la raíz del repo: `python -m denguekay.<subpaquete>.<módulo>` (la API: `python -m apps.api...`).
 - Los archivos del repo usan **CRLF**; no cambies finales de línea de archivos existentes. Codificación UTF-8 (hay tildes y ñ).
-- Tests: `python -m unittest discover -s tests` (o `python -m unittest tests.test_<nombre>`).
-- Reestructuración en monorepo (en curso, una fase por PR): `src/denguekay/` es el paquete instalable que recibirá los módulos de `src/`. Las guardas de equivalencia (`tests/test_equivalence.py`, línea base en `tests/fixtures/equivalence/`) deben pasar al cerrar cada fase. Nunca regeneres esa línea base para que un test pase: si una guarda falla, hay un cambio de comportamiento.
-- Ejecutar un notebook de punta a punta: `python -m jupyter nbconvert --to notebook --execute --inplace notebooks/<archivo>.ipynb`.
+- Tests: `python -m unittest discover -s tests` (uno solo: `python -m unittest discover -s tests -p "test_<nombre>.py"`). Los tests replican la estructura del paquete: `tests/<subpaquete>/` y `tests/api/`.
+- Reestructuración en monorepo (ADR 0001, una fase por PR): el producto vive en el paquete instalable `src/denguekay/` (`config`, `data`, `features`, `model`, `evaluation`, `db`, `serving`, `pipelines`) y la API en `apps/api/`. `tests/test_layout.py` impide referencias al antiguo paquete `src` y que el producto importe `research/`. Las guardas de equivalencia (`tests/test_equivalence.py`, línea base en `tests/fixtures/equivalence/`) deben pasar al cerrar cada fase. Nunca regeneres esa línea base para que un test pase: si una guarda falla, hay un cambio de comportamiento.
+- Ejecutar un notebook de punta a punta: `python -m jupyter nbconvert --to notebook --execute --inplace pipelines/notebooks/<archivo>.ipynb`.
 
 ## Convenciones
 - Idioma (desde el 27/10/2026, ver `CONTRIBUTING.md`):
-  - **Código en inglés:** identificadores (snake_case), comentarios y docstrings del código nuevo. No renombres código existente solo por el idioma.
+  - **Código en inglés:** identificadores (snake_case), comentarios y docstrings. El producto ya está traducido (fase 3 de la reestructuración); por la decisión D2, los handlers de la API, sus parámetros y los esquemas Pydantic conservan sus nombres en español porque forman el contrato OpenAPI.
   - **Sin cambios hasta nuevo aviso:** el esquema de BD sigue el documento OE2 (nombres en español de `docs/backend/ddl_oe2.sql`) y las columnas de los datos conservan sus nombres actuales.
   - **Documentación en español:** `docs/`, markdown de notebooks, informes, títulos y etiquetas de gráficos (con unidades: °C, mm, casos por 100 000 hab.).
-- `notebooks/` contiene solo el pipeline (01–09 y 22, que regenera gold), numerado según el paso. La investigación (EDA, feature engineering y estudios de modelado: notebooks 10–21 y 23–35, su código, tests, informes, métricas y figuras) está congelada en `research/<estudio>/`, con un README por estudio que dice cómo reproducirlo desde su tag. No se vuelve a correr en `main`, no corre en el CI y el producto nunca la importa. Un estudio nuevo va en `research/06_<nombre>/`.
+- `pipelines/notebooks/` contiene solo el pipeline (01–09 y `10_silver_to_gold`, que regenera gold), numerado según el paso. La investigación (EDA, feature engineering y estudios de modelado: los antiguos notebooks 10–21 y 23–35, su código, tests, informes, métricas y figuras) está congelada en `research/<estudio>/`, con un README por estudio que dice cómo reproducirlo desde su tag. No se vuelve a correr en `main`, no corre en el CI y el producto nunca la importa. Un estudio nuevo va en `research/06_<nombre>/`.
 - Salidas del EDA (cerrado): figuras en `research/01_eda/docs/figuras/<fase>/`, cifras clave en `research/01_eda/docs/metricas/<fase>.json`, conclusiones en `research/01_eda/docs/hallazgos.md`.
 
 ## Control de versiones (detalle en `CONTRIBUTING.md`)
@@ -60,12 +60,12 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `features.py`/noteb
 ## Backend (refactor OE2, TB1)
 - **Fuente de verdad del esquema y la API:** `docs/backend/especificacion_oe2.md` y `docs/backend/ddl_oe2.sql` (copiados del documento OE2: sección 5, Anexo B y Tabla 2). El código se adapta al documento, no al revés. Toda diferencia se justifica en `docs/backend/desviaciones_oe2.md` y se le consulta a Rosa antes.
 - **Alcance TB1: todo local.** PostgreSQL local + SQLite para tests, uvicorn local, artefactos en `models/storage/` mediante un adaptador local. Prohibido configurar o desplegar Supabase/Render en esta etapa.
-- Stack: FastAPI + Pydantic v2, SQLAlchemy 2 + Alembic, psycopg 3. Las migraciones en `src/db/migraciones/` son la autoridad del esquema; nunca `create_all` al arrancar la API.
+- Stack: FastAPI + Pydantic v2, SQLAlchemy 2 + Alembic, psycopg 3. Las migraciones en `src/denguekay/db/migrations/` son la autoridad del esquema; nunca `create_all` al arrancar la API.
 - Comandos (PowerShell, desde la raíz):
   - `.\.venv\Scripts\python -m alembic upgrade head`
-  - `.\.venv\Scripts\python -m src.serving.cargar_datos`
-  - `.\.venv\Scripts\python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000`
-  - `.\.venv\Scripts\python -m coverage run --source=src/db,src/serving,src/api -m unittest discover -s tests` y `... -m coverage report -m`
+  - `.\.venv\Scripts\python -m denguekay.serving.load_data`
+  - `.\.venv\Scripts\python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000`
+  - `.\.venv\Scripts\python -m coverage run --source=src/denguekay/db,src/denguekay/serving,apps/api -m unittest discover -s tests` y `... -m coverage report -m`
 - Tests en BD temporal; nunca contra la BD de Rosa. Cobertura mínima 80 %.
 - Al cerrar cada fase del refactor, invoca al subagente `revisor-backend` y pega su tabla en el resumen.
 <!-- fin: backend OE2 -->

@@ -66,4 +66,4 @@ y PostgreSQL ([benchmark_postgresql.json](benchmark_postgresql.json)).
 
 ## Regenerar el contrato
 
-`.\.venv\Scripts\python -m src.api.exportar_openapi` (usa `DATABASE_URL`; exige conexión real).
+`.\.venv\Scripts\python -m apps.api.tools.export_openapi` (usa `DATABASE_URL`; exige conexión real).

@@ -14,7 +14,7 @@ Supabase ni Render en esta etapa.
 |---|---|---|
 | `provincia` | `ubigeo_provincia` char(4) | Se deriva de los 4 primeros dígitos del ubigeo. |
 | `distrito` | `ubigeo` char(6) | FK a provincia; `latitud`, `longitud` numeric(9,6) con rango de Piura; `poblacion_censo_2017`; `activo`. Ubigeo siempre string. |
-| `semana_epidemiologica` | `id_semana` integer | `id_semana = anio*100 + semana` (ej. 202501). `fecha_fin = fecha_inicio + 6`; `temporada`. Calendario MMWR de `src/utils/calendario.py` (incluye semana 53 de 2025). |
+| `semana_epidemiologica` | `id_semana` integer | `id_semana = anio*100 + semana` (ej. 202501). `fecha_fin = fecha_inicio + 6`; `temporada`. Calendario MMWR de `src/denguekay/data/calendar.py` (incluye semana 53 de 2025). |
 | `ejecucion` | `id_ejecucion` identity | Unifica cargas, inferencias, reentrenamientos y mantenimiento: `tipo` (`ingesta`, `inferencia`, `reentrenamiento`, `mantenimiento`), `estado` (`en_curso`, `exitosa`, `fallida`), `id_semana_corte`, `inicio`, `fin`, `detalle` jsonb (hashes, resultados GX, conteos, duración, versiones usadas), `mensaje_error`. |
 | `observacion_semanal` | PK compuesta `(ubigeo, id_semana)` | `casos_dengue` (NULL = sin dato, 0 = cero real), `umbral_brote_casos`, `brote`, clima semanal (`temp_media_c`, `temp_min_c`, `temp_max_c`, `precip_total_mm`, `hum_rel_media_pct`), `fuente_casos` enum, `estado_cobertura` enum, `fecha_extraccion`, `id_ejecucion` FK. CHECK de temperaturas y rangos. |
 | `version_modelo` | `id_version` identity | `codigo` único (ej. `clf-h4-v1`), `tarea` enum, `horizonte` ∈ {2,3,4}, `algoritmo`, `variables`, `hiperparametros`, `metricas` jsonb, `umbral_probabilidad`, `cumple_umbrales`, `estado` enum (`candidata`, `activa`, `archivada`, `rechazada`), `mlflow_run_id`, `ruta_artefacto`, `sha256_artefacto`, `sha256_dataset`, `fecha_registro`, `fecha_activacion`. CHECK `estado <> 'activa' OR cumple_umbrales`. Índice único parcial: una sola activa por `(tarea, horizonte)`. |
@@ -48,7 +48,7 @@ Supabase ni Render en esta etapa.
 El documento define buckets de Supabase Storage `modelos/`, `geodatos/`, `reportes/`.
 En TB1 se implementa un **adaptador de almacenamiento local** (puerto `Almacenamiento`
 con `guardar`, `leer`, `existe`) sobre `models/storage/<bucket>/` (ruta desde
-`src/utils/paths.py`, ignorada por Git). `version_modelo.ruta_artefacto` guarda la ruta
+`src/denguekay/config/paths.py`, ignorada por Git). `version_modelo.ruta_artefacto` guarda la ruta
 lógica (`modelos/clf-h4-v1.json`) y `sha256_artefacto` su hash; al cargar el booster se
 verifica el hash. El adaptador Supabase queda como trabajo de despliegue (fuera de TB1).
 

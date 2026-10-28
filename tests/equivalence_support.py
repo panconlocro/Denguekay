@@ -46,9 +46,9 @@ def subprocess_env(**extra):
 # --- frozen configurations (V1 and V2) -------------------------------------------------------
 
 def data_available():
-    from src.utils.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+    from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
-    return SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+    return SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 def prediction_digest(predictions):
@@ -67,19 +67,19 @@ def prediction_digest(predictions):
 
 def frozen_prediction_digests():
     """V1 and V2 predictions with the deployment seed, computed in memory (needs local data)."""
-    from src.eda.carga import cargar_integrado
-    from src.modeling import configuracion_final as cf
-    from src.modeling import fe_hiperparametros as fh
-    from src.modeling.dispositivo import configuracion_xgboost
-    from src.utils.paths import GOLD_MANIFEST, SILVER_INTEGRADO
+    from denguekay.data.loading import load_integrated
+    from denguekay.model import frozen_configs as cf
+    from denguekay.evaluation import variants as fh
+    from denguekay.model.device import xgboost_settings
+    from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRATED
 
-    panel = cargar_integrado(SILVER_INTEGRADO)
+    panel = load_integrated(SILVER_INTEGRATED)
     rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-    inputs = fh.insumos(panel, rule)
-    result = {"setup": configuracion_xgboost()}
-    for name, configuration in (("V1", cf.CONFIGURACION_2026_V1), ("V2", cf.CONFIGURACION_2026)):
-        origins = cf.origenes(panel, inputs, rule, configuracion=configuration)
-        predictions = cf.predecir(inputs["matrices"], origins, configuracion=configuration)
+    inputs = fh.inputs(panel, rule)
+    result = {"setup": xgboost_settings()}
+    for name, configuration in (("V1", cf.CONFIG_2026_V1), ("V2", cf.CONFIG_2026)):
+        origins = cf.origins(panel, inputs, rule, configuration=configuration)
+        predictions = cf.predict(inputs["matrices"], origins, configuration=configuration)
         result[name] = {"rows": len(predictions), "sha256": prediction_digest(predictions)}
     return result
 
@@ -99,9 +99,9 @@ def setup_key(setup):
 
 
 def cuda_available():
-    from src.modeling.dispositivo import cuda_disponible
+    from denguekay.model.device import cuda_available
 
-    return cuda_disponible()
+    return cuda_available()
 
 
 # --- API contract ----------------------------------------------------------------------------
@@ -117,14 +117,14 @@ def strip_examples(value):
 
 def openapi_contract():
     """Schema of the app built without a database, as the API serves it."""
-    from src.api.main import crear_app
-    from src.api.openapi import especificacion
+    from apps.api.main import create_app
+    from apps.api.openapi import specification
 
-    return strip_examples(especificacion(crear_app()))
+    return strip_examples(specification(create_app()))
 
 
 def committed_openapi():
-    from src.utils.paths import OPENAPI_JSON
+    from denguekay.config.paths import OPENAPI_JSON
 
     return json.loads(OPENAPI_JSON.read_text(encoding="utf-8"))
 
@@ -133,16 +133,16 @@ def committed_openapi():
 
 def offline_postgresql_sql():
     """``alembic upgrade 0002_serving:head --sql`` for PostgreSQL, without a connection."""
-    from src.db.exportar_sql_migracion import exportar
+    from denguekay.db.export_migration_sql import export
 
     with tempfile.TemporaryDirectory() as folder:
-        return exportar(Path(folder) / "offline.sql").read_text(encoding="utf-8").replace("\r\n", "\n")
+        return export(Path(folder) / "offline.sql").read_text(encoding="utf-8").replace("\r\n", "\n")
 
 
 def committed_offline_sql():
-    from src.utils.paths import MIGRACION_OE2_SQL
+    from denguekay.config.paths import OE2_MIGRATION_SQL
 
-    return MIGRACION_OE2_SQL.read_text(encoding="utf-8").replace("\r\n", "\n")
+    return OE2_MIGRATION_SQL.read_text(encoding="utf-8").replace("\r\n", "\n")
 
 
 def sqlite_schema():
@@ -150,11 +150,11 @@ def sqlite_schema():
     from sqlalchemy import text
     from sqlalchemy.engine import URL
 
-    from backend_soporte import migrar
-    from src.db.sesion import crear_motor
+    from backend_support import migrar
+    from denguekay.db.session import make_engine
 
     with tempfile.TemporaryDirectory() as folder:
-        engine = crear_motor(URL.create("sqlite", database=str(Path(folder) / "schema.db")))
+        engine = make_engine(URL.create("sqlite", database=str(Path(folder) / "schema.db")))
         try:
             migrar(engine)
             with engine.connect() as connection:
@@ -212,10 +212,10 @@ def postgresql_schema(url):
     """Catalog of the disposable PostgreSQL database migrated from base to head; leaves it at base."""
     from sqlalchemy import text
 
-    from backend_soporte import migrar
-    from src.db.sesion import crear_motor
+    from backend_support import migrar
+    from denguekay.db.session import make_engine
 
-    engine = crear_motor(url)
+    engine = make_engine(url)
     try:
         migrar(engine, "base")
         migrar(engine)
@@ -240,12 +240,12 @@ def build_smoke_database(folder):
     """SQLite migrated to head with the backend fixtures published (versions, OOS, current inference)."""
     from sqlalchemy.engine import URL
 
-    from backend_soporte import datos_muestra, motor_temporal
-    from serving_soporte import preparar_muestra
-    from src.db.sesion import transaccion
-    from src.serving.almacenamiento import AlmacenamientoLocal
-    from src.serving.cargar_datos import persistir_carga
-    from src.serving.publicar import publicar_en_bd
+    from backend_support import datos_muestra, motor_temporal
+    from serving_support import preparar_muestra
+    from denguekay.db.session import transaction
+    from denguekay.serving.storage import LocalStorage
+    from denguekay.serving.load_data import persist_load
+    from denguekay.serving.publish import publish_to_db
 
     cfg, protocol, prepared = preparar_muestra()
     data = datos_muestra(folder, cfg.seleccion_experimental)
@@ -253,10 +253,10 @@ def build_smoke_database(folder):
     storage = folder / "storage"
     engine = motor_temporal(folder)
     try:
-        with transaccion(engine) as session:
-            persistir_carga(session, data)
-        publicar_en_bd(engine, data, protocol, prepared, (2, 4), cfg, "run-equivalencia", "huella-equivalencia",
-                       AlmacenamientoLocal(storage), 0)
+        with transaction(engine) as session:
+            persist_load(session, data)
+        publish_to_db(engine, data, protocol, prepared, (2, 4), cfg, "run-equivalencia", "huella-equivalencia",
+                       LocalStorage(storage), 0)
     finally:
         engine.dispose()
     return str(URL.create("sqlite", database=str(folder / "pruebas.db"))), storage
@@ -264,10 +264,10 @@ def build_smoke_database(folder):
 
 def create_smoke_app():
     """uvicorn ``--factory`` target: the real app with the smoke database's artifact storage."""
-    from src.api.main import crear_app
-    from src.serving.almacenamiento import AlmacenamientoLocal
+    from apps.api.main import create_app
+    from denguekay.serving.storage import LocalStorage
 
-    return crear_app(almacenamiento=AlmacenamientoLocal(os.environ["DENGUEKAY_EQ_STORAGE"]))
+    return create_app(storage=LocalStorage(os.environ["DENGUEKAY_EQ_STORAGE"]))
 
 
 @contextmanager
@@ -307,10 +307,10 @@ def uvicorn_server(target, env, factory=False):
 
 
 def smoke_results():
-    """Status codes of ``prueba_humo`` against uvicorn, plus the module entry point ``src.api.main:app``."""
+    """Status codes of the smoke test (``apps.api.tools.smoke_test``) against uvicorn, plus the module entry point ``apps.api.main:app``."""
     import httpx
 
-    from src.api.prueba_humo import ejecutar
+    from apps.api.tools.smoke_test import run
 
     with tempfile.TemporaryDirectory() as name:
         folder = Path(name)
@@ -318,8 +318,8 @@ def smoke_results():
         env = subprocess_env(DATABASE_URL=url, API_KEY=SMOKE_API_KEY, DENGUEKAY_EQ_STORAGE=str(storage), **CPU_SETUP)
         with uvicorn_server("equivalence_support:create_smoke_app", env, factory=True) as base:
             with httpx.Client(base_url=base, timeout=120) as client:
-                calls = [[r["metodo"], r["ruta"], r["http"]] for r in ejecutar(client, SMOKE_API_KEY)]
-        with uvicorn_server("src.api.main:app", env) as base:
+                calls = [[r["metodo"], r["ruta"], r["http"]] for r in run(client, SMOKE_API_KEY)]
+        with uvicorn_server("apps.api.main:app", env) as base:
             entry_point = {"salud": httpx.get(base + "/api/v1/salud", timeout=30).status_code,
                            "rutas_openapi": len(httpx.get(base + "/openapi.json", timeout=30).json()["paths"])}
     return {"prueba_humo": calls, "entrada_modulo": entry_point}
@@ -338,7 +338,7 @@ def write_new(path, text):
 def record():
     """Writes the baseline once, from the code as it is before the restructure."""
     sys.path[:0] = [str(ROOT), str(TESTS)]
-    from backend_soporte import url_pg_pruebas
+    from backend_support import url_pg_pruebas
 
     predictions = {}
     setups = [CPU_SETUP] + ([CUDA_SETUP] if cuda_available() else [])

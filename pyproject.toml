@@ -15,7 +15,7 @@ dynamic = ["dependencies"]
 dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools.packages.find]
-# Only the installable package; the legacy top-level `src` package keeps working from the repo root
-# until the restructure moves its modules into `denguekay`.
+# Only the installable package. apps/ (the FastAPI application) runs from the repository root
+# on top of it and is not installed.
 where = ["src"]
 include = ["denguekay*"]

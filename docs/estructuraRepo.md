@@ -20,36 +20,41 @@ tesis-dengue-piura/
 ├── pyproject.toml             # paquete instalable denguekay (pip install -e .); dependencias = requirements.txt
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
 ├── .github/workflows/         # tests (SQLite y PostgreSQL) y cobertura en push/PR; sin despliegue
-├── environment.yml            # o requirements.txt
-├── config/
+├── requirements.txt
+├── configs/
 │   └── config.yaml
 │
-├── data/
+├── data/                      # solo lectura para el código; no se versiona salvo reference/
 │   ├── bronze/
 │   ├── silver/
-│   │   └── integrado/     # merges entre fuentes, sin features
-│   ├── gold/              # dos datasets por horizonte y manifiesto de fase 6
+│   │   └── integrado/         # merges entre fuentes, sin features
+│   ├── gold/                  # dos datasets por horizonte y manifiesto de fase 6
 │   └── reference/
 │
-├── src/
-│   ├── denguekay/             # paquete instalable; recibe los módulos de src/ durante la reestructuración
-│   ├── ingestion/
-│   ├── processing/
-│   ├── validation/
-│   ├── eda/                   # solo carga, temporal y espacial (las usa el producto; fase 3 las mueve)
-│   ├── modeling/
-│   ├── db/                    # ORM, configuración, sesiones y migraciones
+├── src/denguekay/             # paquete instalable del producto (código en inglés)
+│   ├── config/                # paths.py: todas las rutas del proyecto
+│   ├── data/                  # calendario, llaves, carga y temporadas
+│   │   ├── ingestion/         # descargas y scraping
+│   │   ├── processing/        # bronze -> silver -> integrado
+│   │   └── validation/        # comprobaciones estrictas y suites de Great Expectations
+│   ├── features/              # variables del modelo y gold
+│   ├── model/                 # entrenamiento XGBoost, dispositivo, MLflow, configuración congelada
+│   ├── evaluation/            # métricas, protocolos y estudios reutilizables
+│   ├── db/                    # ORM, configuración, sesiones y migraciones Alembic
 │   ├── serving/               # carga, inferencia real y publicación batch
-│   ├── api/                   # FastAPI, consultas, seguridad y OpenAPI
-│   ├── utils/
-│   └── update_dataset_module.py
+│   └── pipelines/             # actualización semanal selectiva del integrado
 │
-├── notebooks/                 # pipeline: 01–09 y 22 (gold)
+├── apps/api/                  # aplicación FastAPI (no se instala; corre desde la raíz)
+│   ├── routers/
+│   └── tools/                 # benchmark, export_openapi, smoke_test
+│
+├── pipelines/notebooks/       # pipeline: 01–09 (bronze/silver) y 10_silver_to_gold
 ├── research/                  # estudios congelados: 01_eda … 05_fe_hyperparameters (README por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
-├── tests/fixtures/backend/    # muestra agregada real, pequeña y versionada
-├── tests/fixtures/equivalence/ # línea base de las guardas de la reestructuración (no se regenera)
+├── tests/                     # misma estructura que el paquete: tests/<subpaquete>/ y tests/api/
+│   ├── fixtures/backend/      # muestra agregada real, pequeña y versionada
+│   └── fixtures/equivalence/  # línea base de las guardas de la reestructuración (no se regenera)
 ├── mlflow.db                  # tracking de MLflow (generado, no se versiona)
 ├── mlartifacts/               # artefactos de MLflow (generado, no se versiona)
 └── docs/
@@ -58,18 +63,25 @@ tesis-dengue-piura/
     └── backend/               # operación y evidencia del backend por fase
 ```
 
+Dependencias en un solo sentido ([ADR 0001](decisions/0001-repo-restructure.md)): `apps/` y los
+notebooks del pipeline importan `denguekay`; `research/` puede importar `denguekay`; `denguekay` no
+importa ni `apps` ni `research`. `tests/test_layout.py` lo comprueba, junto con que no queden
+referencias al antiguo paquete `src`.
+
 ---
 
-## 1. La regla de oro: `src/` vs `notebooks/`
+## 1. La regla de oro: paquete vs notebooks
 
 Antes de explicar carpeta por carpeta, esta es la decisión que más se repite y la que más dudas genera:
 
-> **Si el código lo volverías a necesitar en otro notebook, o tiene más de ~10 líneas de lógica (loops, reintentos, parsing, cálculos), va en `src/`. Si es "cargar esto, llamar esa función, mostrar el resultado", se queda en el notebook.**
+> **Si el código lo volverías a necesitar en otro notebook, o tiene más de ~10 líneas de lógica (loops, reintentos, parsing, cálculos), va en `src/denguekay/`. Si es "cargar esto, llamar esa función, mostrar el resultado", se queda en el notebook.**
 
-- `src/` = el motor. Funciones puras, reutilizables, testeables. No saben nada de Drive, de Colab, ni de en qué orden se ejecutan.
-- `notebooks/` = el tablero de control. Pocas líneas, importan funciones de `src/`, deciden el orden, muestran resultados y verificaciones puntuales (`print`, `.describe()`, gráficos exploratorios).
+- `src/denguekay/` = el motor. Funciones puras, reutilizables, testeables. No saben nada de Drive, de Colab, ni de en qué orden se ejecutan.
+- `pipelines/notebooks/` = el tablero de control. Pocas líneas, importan funciones de `denguekay`, deciden el orden, muestran resultados y verificaciones puntuales (`print`, `.describe()`, gráficos exploratorios).
 
-Nada de lógica se duplica entre los dos. Si corriges un bug, lo corriges en un solo lugar (`src/`), no en cinco notebooks distintos.
+Nada de lógica se duplica entre los dos. Si corriges un bug, lo corriges en un solo lugar (`src/denguekay/`), no en cinco notebooks distintos.
+
+Idioma: el código del paquete y de `apps/` está en inglés. Siguen en español, porque son contratos: las tablas y columnas de la BD (documento OE2), las columnas de los datos, los campos de la API y, por la decisión D2, los handlers y esquemas Pydantic de `apps/api/` (forman el contrato OpenAPI), los nombres de artefactos registrados y la ruta `models/storage/`.
 
 ---
 
@@ -103,7 +115,7 @@ silver/
 ```
 **Por fuente (raíz de `silver/`):** ya pasaron por normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Es la salida de cualquier notebook `0X_bronze_to_silver_*`. Si agregas una fuente nueva (ej. datos de un hospital, otro sensor climático), su versión limpia va acá con su propio nombre de archivo.
 
-**`silver/integrado/`:** el resultado de cualquier merge entre fuentes silver (notebooks `08_silver_merge_*` y `09_silver_merge_*`, y el actualizador `src/update_dataset_module.py`). Siguen siendo datos limpios sin features derivadas, por eso **no van en gold**. Si agregas una versión nueva (ej. extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`meteo_socio_epi_piura_2017_2026.csv`) para poder comparar versiones.
+**`silver/integrado/`:** el resultado de cualquier merge entre fuentes silver (notebooks `08_silver_merge_*` y `09_silver_merge_*`, y el actualizador `src/denguekay/pipelines/weekly_update.py`). Siguen siendo datos limpios sin features derivadas, por eso **no van en gold**. Si agregas una versión nueva (ej. extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`meteo_socio_epi_piura_2017_2026.csv`) para poder comparar versiones.
 
 ### `data/gold/` — solo el dataset con feature engineering
 ```
@@ -127,133 +139,127 @@ reference/
 
 ---
 
-## 3. `src/` — el motor del proyecto
+## 3. `src/denguekay/` — el motor del proyecto
 
-### `src/ingestion/`
-Una función (o archivo) por fuente de datos externa.
-```
-ingestion/
-├── fetch_openmeteo.py         # descarga clima de Open-Meteo
-├── fetch_distritos_gadm.py    # descarga límites distritales + centroides
-└── scrape_minsa_dengue.py     # extracción semanal de la Sala Situacional
-```
-**Va acá:** cualquier función que hable con una API, descargue un archivo, o haga scraping. Regla práctica: si la función usa `requests`, `BeautifulSoup`, o un SDK de algún servicio externo, va acá.
+Cada subpaquete tiene sus tests en `tests/<subpaquete>/`.
 
-### `src/processing/`
-Transformación y merge de datos ya descargados.
+### `config/`
 ```
-processing/
-├── agregacion_semanal.py      # diario -> semanal por distrito
-├── socio_interpolacion.py     # interpolación 2017-2025
-├── epi_sala.py                # normalización y conciliación de la Sala
-└── merge_datasets.py          # merges y relleno selectivo
+config/
+└── paths.py        # ROOT, DATA, GOLD, CONFIG (configs/config.yaml), MODELS, STORAGE...: todas las rutas
 ```
-**Va acá:** funciones de limpieza, agregación, interpolación, joins. Si el modelo nuevo necesita, por ejemplo, calcular lags (temperatura de la semana -1, -2, -3), esa función va en un archivo nuevo acá, ej. `processing/features_lag.py`.
+**Va acá:** cualquier ruta nueva. Nada de rutas absolutas en el código.
 
-### `src/validation/`
-Suites de Great Expectations y comprobaciones estrictas (`assert`/`raise`) de los datasets.
+### `data/` — calendario, carga, ingesta, procesamiento y validación
 ```
-validation/
-├── expectations_meteo.py
-├── expectations_integrado.py  # cobertura y validación del integrado + suite GX silver_integrado
-├── expectations_gold.py       # suite GX gold_h2/gold_h4 (esquema, llave, rangos, sin fuga temporal)
-├── calidad_gx.py              # contexto GX, ejecución de suites, Data Docs y CLI
-└── contrato_pronostico.py     # origen temporal y disponibilidad al pronosticar
+data/
+├── calendar.py      # mmwr_epi_week(): numeración compartida domingo-sábado
+├── keys.py          # normalización de nombres de distrito y de la Sala
+├── loading.py       # load_integrated(): lee silver/integrado, valida el panel, ubigeo como string
+├── seasons.py       # temporadas epidemiológicas del panel
+├── ingestion/
+│   ├── openmeteo.py            # clima diario de Open-Meteo por distrito
+│   ├── gadm_districts.py       # límites distritales GADM y centroides
+│   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
+│   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE
+├── processing/
+│   ├── weekly_aggregation.py   # diario -> semanal por distrito
+│   ├── socio_interpolation.py  # interpolación 2017-2025
+│   ├── epi_cases.py            # Excel epidemiológico (un caso por fila) -> silver semanal
+│   ├── epi_sala.py             # normalización y conciliación de la Sala
+│   └── merge.py                # merges meteo + socio + epi y relleno selectivo
+└── validation/
+    ├── integrated_expectations.py  # cobertura y validación del integrado + suite GX silver_integrado
+    ├── gold_expectations.py        # suite GX gold_h2/gold_h4 (esquema, llave, rangos, sin fuga temporal)
+    ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
+    └── forecast_contract.py        # origen temporal y disponibilidad al pronosticar
 ```
-Las suites se definen en código; `great_expectations/gx/` es el contexto que GX regenera (suites, resultados y Data Docs HTML) y no se versiona. Guía: `docs/modeling/mlflow_great_expectations.md`.
-**Va acá:** cualquier función `validar_*()` que revise rangos, nulos, duplicados, conteos esperados. Un archivo por dataset que valides (`expectations_socio.py`, `expectations_epi.py`, `expectations_integrado.py`).
+**Va acá:** una función que hable con una API o haga scraping (`ingestion/`); limpieza, agregación, interpolación o joins (`processing/`); cualquier comprobación de rangos, nulos, duplicados o conteos (`validation/`, un archivo por dataset: `<dataset>_expectations.py`). Las suites de GX se definen en código; `great_expectations/gx/` lo regenera GX y no se versiona. Guía: `docs/modeling/mlflow_great_expectations.md`.
 
-### `src/eda/`
-Queda solo lo que usa el producto, hasta que la fase 3 lo pase al paquete (`data.loading`,
-`data.seasons`, `features.spatial`; decisión D4 del [ADR 0001](decisions/0001-repo-restructure.md)):
-```
-eda/
-├── carga.py      # cargar_integrado(): lee silver/integrado, valida el panel, ubigeo como string
-├── temporal.py   # asignar_temporada() y líneas base ingenuas
-└── espacial.py   # distancias entre centroides y pesos espaciales
-```
-El resto del EDA (estilo, calidad, objetivo, clima, socio) y una copia de estos tres está congelado en
-`research/01_eda/code/`. **No va acá** código nuevo de análisis: un estudio nuevo va en `research/`.
+La auditoría de la corrección del calendario está en `research/02_feature_engineering/docs/correccion_calendario.md`. El resto del EDA (estilo, calidad, objetivo, clima, socio) está congelado en `research/01_eda/code/`; un análisis nuevo va en `research/`, no en el paquete.
 
-### `src/modeling/`
+### `features/` — variables del modelo
 ```
-modeling/
-├── __init__.py
-├── historia_calendario.py   # candidatos causales de historia propia y calendario (fase 2)
-├── inferencia_futura.py     # extensión en memoria del calendario, sin fuga ni escritura en data/
-├── vecinos_jerarquia.py     # contexto espacial y provincial/regional rezagado (fase 3)
-├── clima.py                 # ventanas climáticas y climatología ajustada por corte (fase 4)
-├── sociodemografia.py       # referencia 2017, demografía anual y eje urbano por fold (fase 5)
-├── etiqueta_brote.py        # regla de semana elevada con historia previa; umbral_brote_futuro para semanas fuera del panel
-├── features.py              # integración y validación de gold; persiste solo h=2/4, construye h=1..6 en memoria
-├── contrato_xgboost.py      # candidatos, exclusiones y auditoría de traspaso (fase 7)
-├── dispositivo.py           # elige GPU NVIDIA (CUDA) o CPU para XGBoost según config.yaml
-├── evaluate.py              # métricas de conteos y alertas
-├── train.py                 # cortes temporales y primer XGBoost de ambos objetivos
-├── validacion_temporal_compacta.py # calibra umbrales con temporadas previas
-├── diagnostico_arquitectura.py # diagnóstico de errores en memoria (encargo multi-horizonte, fase 1)
-├── protocolo_arquitectura.py # protocolo preregistrado: calibración cronológica, p ≥ 0,50, antelación y regla de decisión (fase 2)
-├── estrategias_horizonte.py # matrices h=1..6 en memoria, estrategias E1/E2/E3 y coherencia entre horizontes (fase 3)
-├── salida_probabilistica.py # formulaciones S1–S5 (conteo, base_margin, binomial negativa, calibración), α NB2 dentro de la muestra u OOS con respaldo y compatibilidad multi-salida
-├── cache_experimentos.py    # caché de entrenamientos del notebook 31 con huella de datos, config y código
-├── fe_hiperparametros.py    # envoltura del encargo de FE e hiperparámetros sobre E3·S4_s2: referencia B, reproducción, inventario de gold
-├── diagnostico_inicios.py   # inicios limpios, controles y perfiles previos en memoria (fase 1 del encargo de FE)
-├── preregistro_fe.py        # lista cerrada de variantes A/B y número de comparaciones (fase 1 del encargo de FE)
-├── features_inicio.py       # variables B1–B5 en memoria desde el estado de la semana de origen; B2/B5 por bloque (fase 2b)
-├── hiperparametros.py       # preregistro, espacio, objetivo, estudio TPE y regla de adopción de la fase 3 (HU0007-3)
-├── configuracion_final.py  # configuración congelada para 2026 (C3·E3·S4_s3), evaluación prospectiva y huella (fase 5)
-├── diccionario_variables.py # diccionario de las 9 variables finales generado desde el código (HU0006-3)
-├── complemento_clima.py    # regla preregistrada del complemento: clima de gold (A3) sobre la configuración final, con peso al conteo
-└── seguimiento_mlflow.py    # registra cada reporte de experimento en MLflow (runs anidados)
+features/
+├── history_calendar.py      # historia propia y calendario (fase 2 del feature engineering)
+├── neighbors.py             # contexto espacial y provincial/regional rezagado (fase 3)
+├── spatial.py               # distancias entre centroides y pesos espaciales
+├── climate.py               # ventanas climáticas y climatología ajustada por corte (fase 4)
+├── sociodemographics.py     # referencia 2017, demografía anual y eje urbano por fold (fase 5)
+├── outbreak_label.py        # regla de semana elevada con historia previa; umbral para semanas fuera del panel
+├── gold.py                  # integración y validación de gold; persiste solo h=2/4, construye h=1..6 en memoria
+├── model_input_contract.py  # candidatos, exclusiones y auditoría de traspaso (fase 7)
+├── variant_registry.py      # lista cerrada de variantes A/B del estudio de FE
+└── onset_features.py        # variables B1–B5 en memoria desde el estado de la semana de origen
 ```
-**Va acá:** el feature engineering para el modelo y todo lo relacionado con entrenamiento y evaluación que usa el producto o un estudio futuro. `features.py` integra los candidatos de fase 6; `train.py` entrena los dos primeros objetivos XGBoost, `evaluate.py` contiene métricas compartidas y `validacion_temporal_compacta.py` calibra umbrales con temporadas previas (protocolo de V0). Las ablaciones, los diagnósticos lineales y `experimentos_variables.py` están congelados en `research/02_feature_engineering/`, `research/03_first_models_and_ablations/` y `research/05_fe_hyperparameters/`. Cuando prueben un modelo nuevo, la lógica compartida (split train/test, métricas) se conserva en un solo lugar. `seguimiento_mlflow.py` registra en MLflow el reporte de cualquier experimento con la forma estándar `horizontes → variantes → folds`.
+**Va acá:** el feature engineering. Las variables nuevas se calculan en memoria con un test de no fuga; si una entra a la configuración final se propone el cambio en `gold.py` y el equipo regenera gold con el notebook 10.
 
-### `src/utils/`
-Funciones chicas que usa más de un módulo.
+### `model/` — entrenamiento
 ```
-utils/
-├── keys.py        # normalizar(), separar_camel(), normalizar_sala()
-└── calendario.py  # semana_epi_mmwr(): numeración compartida domingo-sábado
+model/
+├── train.py                 # cortes temporales y XGBoost de ambos objetivos
+├── device.py                # elige GPU NVIDIA (CUDA) o CPU para XGBoost según config.yaml
+├── tracking.py              # registra cada reporte de experimento en MLflow (runs anidados)
+├── horizon_strategies.py    # matrices h=1..6 en memoria y estrategias E1/E2/E3
+├── probabilistic_output.py  # formulaciones S1–S5 (conteo, base_margin, binomial negativa, calibración)
+├── future_rows.py           # filas futuras en memoria, sin fuga ni escritura en data/
+├── frozen_configs.py        # configuraciones congeladas V1/V2 y su fingerprint() de comportamiento (D1)
+└── variable_dictionary.py   # diccionario de las variables finales (genera docs/modeling/diccionario_variables.md)
 ```
-**Va acá:** helpers genéricos sin dueño claro — si una función la usan tanto `ingestion/` como `processing/`, vive acá para evitar que ambos la dupliquen.
 
-El calendario de agregación, validación del integrado, carga del EDA y
-preparación del entrenamiento usa `src/utils/calendario.py`. El import
-anterior desde `src/eda/calidad.py` se conserva en la copia congelada de
-`research/01_eda/code/`. La auditoría de la corrección y sus límites están en
-`research/02_feature_engineering/docs/correccion_calendario.md` y sus cifras en
-`research/02_feature_engineering/docs/metricas/correccion_calendario.json`.
+### `evaluation/` — métricas y protocolos
+```
+evaluation/
+├── metrics.py               # métricas de conteos y alertas
+├── compact_validation.py    # calibra umbrales con temporadas previas (protocolo de V0)
+├── protocol.py              # protocolo preregistrado del estudio multi-horizonte
+├── acceptance.py            # umbrales de aceptación HU0007-4 sobre métricas guardadas
+├── episodes.py              # diagnóstico de errores (estudio de arquitectura, fase 1)
+├── onsets.py                # inicios limpios, controles y perfiles previos (estudio de FE, fase 1)
+├── variants.py              # envoltura del estudio de FE e hiperparámetros sobre E3·S4_s2
+├── tuning.py                # preregistro, espacio, objetivo y estudio TPE (HU0007-3)
+├── climate_complement.py    # complemento preregistrado: clima de gold (A3) sobre la configuración final
+└── cache.py                 # caché de cálculos caros con huella de datos, config y código
+```
+**Va acá:** la lógica compartida de evaluación (split, métricas, protocolos) que usa el producto o un estudio futuro. Las ablaciones y los diagnósticos lineales están congelados en `research/`.
 
-### Backend (esquema del documento OE2)
+### `db/`, `serving/` y `pipelines/`
+```text
+src/denguekay/db/
+├── settings.py               # DATABASE_URL desde .env o entorno
+├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
+├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
+├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
+└── migrations/               # revisiones Alembic; 0003_oe2 es el esquema vigente
+src/denguekay/serving/
+├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
+├── settings.py               # horizontes, variantes y selección experimental (config.yaml)
+├── parameters.py             # lectura de parametro_sistema (autoridad de umbrales y cortes)
+├── storage.py                # puerto Storage + adaptador local models/storage/
+├── protocol.py               # importa y verifica los resultados temporales de Rosa
+├── models.py                 # ajuste final con train.py y registro de versiones
+├── artifacts.py              # booster en Storage, verificación SHA-256 e inferencia
+├── risk.py                   # nivel de riesgo y cambio de alerta
+├── inference.py              # vector desde la BD, UPSERT de predicciones, alertas, OOS
+└── publish.py                # CLI: carga, ajuste, MLflow, versiones, OOS e inferencia
+src/denguekay/pipelines/
+└── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
+```
+
+## 3b. `apps/api/` — la API
 
 ```text
-src/db/
-├── configuracion.py          # DATABASE_URL desde .env o entorno
-├── sesion.py                 # motores, claves foráneas, transacciones y UPSERT portable
-├── modelos.py                # esquema OE2 (docs/backend/ddl_oe2.sql) portable
-├── exportar_sql_migracion.py # evidencia alembic upgrade --sql sin conexión
-└── migraciones/              # revisiones Alembic; 0003_oe2 es el esquema vigente
-src/serving/
-├── cargar_datos.py           # ingesta: provincia, distrito, calendario, observaciones
-├── configuracion.py          # horizontes, variantes y selección experimental (config.yaml)
-├── parametros.py             # lectura de parametro_sistema (autoridad de umbrales y cortes)
-├── almacenamiento.py         # puerto Almacenamiento + adaptador local models/storage/
-├── protocolo.py              # importa y verifica los resultados temporales de Rosa
-├── modelos.py                # ajuste final con train.py y registro de versiones
-├── artefactos.py             # booster en Storage, verificación SHA-256 e inferencia
-├── riesgo.py                 # nivel de riesgo y cambio de alerta
-├── inferencia.py             # vector desde la BD, UPSERT de predicciones, alertas, OOS
-└── publicar.py               # CLI: carga, ajuste, MLflow, versiones, OOS e inferencia
-src/api/                      # FastAPI: rutas de la Tabla 2 del documento OE2
-├── main.py, dependencias.py, errores.py, esquemas.py, consultas.py
-├── cache.py, openapi.py, exportar_openapi.py, benchmark.py
-└── routers/                  # referencia, datos, vigilancia, modelos y admin
+apps/api/                     # FastAPI: rutas de la Tabla 2 del documento OE2
+├── main.py                   # create_app() y app (uvicorn apps.api.main:app)
+├── dependencies.py, errors.py, queries.py, cache.py, openapi.py
+├── schemas.py                # esquemas Pydantic (contrato; nombres en español, D2)
+├── routers/                  # reference, data, surveillance, models y admin
+└── tools/                    # benchmark.py, export_openapi.py, smoke_test.py
 tests/
-├── backend_soporte.py, serving_soporte.py
-├── test_db_backend.py, test_esquema_oe2.py
-├── test_serving_*.py         # carga, inferencia, publicación, políticas, protocolo
-├── test_api_backend.py, test_api_benchmark.py
-├── test_equivalence.py, equivalence_support.py  # guardas de la reestructuración
+├── backend_support.py, serving_support.py, equivalence_support.py
+├── db/, serving/, api/       # tests del backend
+├── test_equivalence.py       # guardas de equivalencia de la reestructuración
+├── test_layout.py            # sin restos del paquete src y dependencias en un solo sentido
 └── fixtures/
     ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
     └── equivalence/          # línea base: predicciones V1/V2, esquemas, prueba de humo
@@ -287,10 +293,10 @@ desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten.
 
 ---
 
-## 4. `notebooks/` — pipeline de datos, numerados en orden de ejecución
+## 4. `pipelines/notebooks/` — pipeline de datos, numerados en orden de ejecución
 
 ```
-notebooks/
+pipelines/notebooks/
 ├── 01_ingesta_distritos.ipynb
 ├── 02_ingesta_meteo.ipynb
 ├── 03_bronze_to_silver_meteo.ipynb
@@ -300,12 +306,13 @@ notebooks/
 ├── 07_bronze_to_silver_epi.ipynb
 ├── 08_silver_merge_meteo_socio.ipynb
 ├── 09_silver_merge_epi.ipynb
-└── 22_fe_integracion.ipynb      # genera y valida gold (fase 3: pipelines/notebooks/10_silver_to_gold)
+└── 10_silver_to_gold.ipynb      # genera y valida gold (antes notebooks/22_fe_integracion.ipynb, D3)
 ```
 
-Los notebooks 01–09 escriben bronze, silver y el integrado; el 22 regenera gold. Son producto y no se
-ejecutan durante la reestructuración. Los notebooks de investigación (10–21 y 23–35) están en
-`research/<estudio>/notebooks/`:
+Los notebooks 01–09 escriben bronze, silver y el integrado; el 10 regenera gold. Importan el paquete
+instalado (`pip install -e .`), así que no dependen de la carpeta desde la que se abren. Los notebooks
+de investigación (los antiguos 10–21 y 23–35) están en `research/<estudio>/notebooks/` con su
+numeración original:
 
 | Notebooks | Estudio |
 |---|---|
@@ -320,10 +327,10 @@ desde el que se reproduce. No se vuelven a correr en `main` ni en el CI.
 
 **Va acá:** un notebook nuevo del pipeline, con un número que refleje en qué paso entra (un notebook de análisis va en el estudio de `research/` al que pertenece). Si agregas un paso intermedio, usa notación tipo `04b_` en vez de renumerar todo lo que sigue.
 
-Cada notebook debería poder leerse como una bitácora corta: "cargo tal cosa → llamo tal función de `src/` → guardo el resultado → imprimo una verificación". Si un notebook empieza a crecer con lógica pesada pegada en las celdas, esa lógica probablemente debería moverse a `src/`.
+Cada notebook debería poder leerse como una bitácora corta: "cargo tal cosa → llamo tal función de `denguekay` → guardo el resultado → imprimo una verificación". Si un notebook empieza a crecer con lógica pesada pegada en las celdas, esa lógica probablemente debería moverse a `src/denguekay/`.
 
 Para actualizaciones incrementales del dataset ya consolidado, usar
-`python -m src.update_dataset_module --input ... --output ...`. El módulo
+`python -m denguekay.pipelines.weekly_update --input ... --output ...`. El módulo
 detecta componentes incompletos por `ubigeo`/año/semana y llama solo a las
 fuentes necesarias. El CSV lateral `<dataset>.coverage.csv` diferencia un
 cero epidemiológico ya verificado de un cero en una fila nueva sin cobertura.
@@ -336,7 +343,7 @@ módulo.
 
 - **`models/`**: modelos entrenados serializados; `models/experimentos/` guarda JSON de XGBoost y predicciones por fold. Los artefactos generados no se suben a Git.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
-- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m src.modeling.diccionario_variables`) y `metricas/validacion_temporal_compacta.json`, que lee serving para V0 (pasa a `models/registry/v0/` en la fase 4). Las predicciones por fila quedan en `models/experimentos/` (no versionado).
+- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) y `metricas/validacion_temporal_compacta.json`, que lee serving para V0 (pasa a `models/registry/v0/` en la fase 4). Las predicciones por fila quedan en `models/experimentos/` (no versionado).
 - **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR).
 - **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`. La skill local `.codex/skills/feature-engineering-dengue/` y `AGENTS.md` describen el flujo de Codex.
 ---
@@ -373,18 +380,22 @@ great_expectations/gx/
 
 | Es un... | Va en... |
 |---|---|
-| Script que descarga de una API/scraping | `src/ingestion/` |
-| Función que limpia, agrega o mergea datos | `src/processing/` |
-| Chequeo de calidad de datos | `src/validation/` |
-| Código de entrenamiento/evaluación de modelo | `src/modeling/` |
-| ORM, conexión o migración de la BD | `src/db/` |
-| Carga/predicción/publicación del backend | `src/serving/` |
-| Router o esquema de la API (fase 3) | `src/api/` |
+| Script que descarga de una API/scraping | `src/denguekay/data/ingestion/` |
+| Función que limpia, agrega o mergea datos | `src/denguekay/data/processing/` |
+| Chequeo de calidad de datos | `src/denguekay/data/validation/` |
+| Variable o feature engineering del modelo | `src/denguekay/features/` |
+| Código de entrenamiento de modelo | `src/denguekay/model/` |
+| Métrica o protocolo de evaluación | `src/denguekay/evaluation/` |
+| ORM, conexión o migración de la BD | `src/denguekay/db/` |
+| Carga/predicción/publicación del backend | `src/denguekay/serving/` |
+| Router o esquema de la API | `apps/api/` (herramientas de línea de comandos en `apps/api/tools/`) |
+| Paso del pipeline como módulo (no notebook) | `src/denguekay/pipelines/` |
+| Ruta nueva del proyecto | `src/denguekay/config/paths.py` |
 | Documentación y evidencia del backend | `docs/backend/` |
 | Muestra real para pruebas del backend | `tests/fixtures/backend/` |
 | Guarda de equivalencia de la reestructuración | `tests/test_equivalence.py` (línea base en `tests/fixtures/equivalence/`) |
-| Función chica usada por varios módulos | `src/utils/` |
-| Notebook que orquesta un paso del pipeline | `notebooks/`, numerado |
+| Test de un módulo del paquete | `tests/<subpaquete>/test_<módulo>.py` |
+| Notebook que orquesta un paso del pipeline | `pipelines/notebooks/`, numerado |
 | Dato tal cual vino de la fuente | `data/bronze/<fuente>/` |
 | Dato limpio de una sola fuente | `data/silver/` |
 | Merge de varias fuentes silver (sin features) | `data/silver/integrado/` |
@@ -393,8 +404,8 @@ great_expectations/gx/
 | Estudio nuevo (análisis o experimento) | `research/06_<nombre>/` con `README.md`, `notebooks/`, `code/`, `tests/` y `docs/`; importa el producto, nunca al revés |
 | EDA congelado (notebooks, código, figuras, cifras) | `research/01_eda/` |
 | Modelo entrenado | `models/` |
-| Suite de Great Expectations | `src/validation/expectations_<dataset>.py` |
-| Registro de experimentos en MLflow | `src/modeling/seguimiento_mlflow.py` (no crear otro tracker) |
+| Suite de Great Expectations | `src/denguekay/data/validation/<dataset>_expectations.py` |
+| Registro de experimentos en MLflow | `src/denguekay/model/tracking.py` (no crear otro tracker) |
 | Documento de tesis / explicación de arquitectura | `docs/` |
 | Plan y hallazgos de feature engineering (congelado) | `research/02_feature_engineering/docs/` |
 | Instrucciones de Codex y skill local | `AGENTS.md` y `.codex/skills/` |
@@ -405,6 +416,6 @@ great_expectations/gx/
 
 ## 8. Pendientes conocidos (no perder de vista)
 
-- **Variables con un solo año censal**: `socio_interpolacion.py` las excluye del dataset final; solo interpola fracciones con valores en ambos extremos, 2017 y 2025.
+- **Variables con un solo año censal**: `socio_interpolation.py` las excluye del dataset final; solo interpola fracciones con valores en ambos extremos, 2017 y 2025.
 - **Actualización 2026+**: el actualizador extrapola las fracciones desde esos extremos y acota sus valores a `[0, 1]`; extrapola población con la misma pendiente. Es un supuesto metodológico hasta contar con nuevas proyecciones.
 - **Semanas de la Sala fuera del calendario del modelo**: se conservan en `data/silver/epi_sala_semanal.csv` y se reportan, sin asignar sus casos a otra semana.

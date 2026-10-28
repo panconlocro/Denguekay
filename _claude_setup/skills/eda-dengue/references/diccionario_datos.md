@@ -1,6 +1,6 @@
 # Dataset de trabajo — hechos verificados y trampas
 
-Archivo: `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar con `src.eda.carga.cargar_integrado()`). Cifras medidas sobre el snapshot actual; si algo no coincide, **avisa a Rosa antes de seguir** (el dataset pudo cambiar).
+Archivo: `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar con `denguekay.data.loading.load_integrated()`). Cifras medidas sobre el snapshot actual; si algo no coincide, **avisa a Rosa antes de seguir** (el dataset pudo cambiar).
 
 ## Estructura
 - **30 485 filas × 35 columnas** = 65 distritos × 469 semanas (2017-01-01 a 2025-12-21). Sin nulos, sin duplicados en la llave `(ubigeo, anio, semana)`.

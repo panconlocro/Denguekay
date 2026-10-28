@@ -4,9 +4,9 @@ Proyecto de tesis para pronosticar dengue por distrito y semana epidemiológica 
 
 ## Estructura y datos
 
-- Leer `docs/estructuraRepo.md` antes de añadir rutas o módulos. La fuente integrada sin variables derivadas es `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv`; `data/gold/` se reserva para el resultado del feature engineering. Mantener la lógica reutilizable en `src/modeling/`, las comprobaciones en `src/validation/` y los notebooks como orquestación.
+- Leer `docs/estructuraRepo.md` antes de añadir rutas o módulos. La fuente integrada sin variables derivadas es `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv`; `data/gold/` se reserva para el resultado del feature engineering. Mantener la lógica reutilizable en el paquete `src/denguekay/` (variables en `features/`, entrenamiento en `model/`, evaluación en `evaluation/`), las comprobaciones en `src/denguekay/data/validation/`, la API en `apps/api/` y los notebooks del pipeline (`pipelines/notebooks/`) como orquestación.
 - La investigación (EDA, feature engineering y estudios de modelado) está congelada en `research/<estudio>/` (ver `research/README.md` y `docs/decisions/0001-repo-restructure.md`): no se vuelve a correr en `main` ni en el CI, y el producto nunca la importa. Un estudio nuevo va en `research/06_<nombre>/`.
-- Usar `src/utils/paths.py` para rutas del proyecto y conservar `ubigeo` como texto de seis dígitos. La llave del panel es `(ubigeo, anio, semana)` y la fecha semanal es `semana_inicio`.
+- Usar `src/denguekay/config/paths.py` para rutas del proyecto y conservar `ubigeo` como texto de seis dígitos. La llave del panel es `(ubigeo, anio, semana)` y la fecha semanal es `semana_inicio`.
 - Tratar `data/bronze/` y `data/silver/` como entradas. No corregir silenciosamente problemas de origen en una transformación de features. Crear una salida en `data/gold/` solo en una fase de implementación aprobada y después de validarla.
 - `CLAUDE.md` y `_claude_setup/` documentan el flujo anterior de EDA. Sus prohibiciones de hacer feature engineering y de escribir en `data/` están dirigidas a ese EDA; no sustituyen una solicitud explícita de feature engineering. Conservar sus invariantes útiles de estructura, trazabilidad, español y revisión por fase.
 
@@ -21,10 +21,10 @@ Proyecto de tesis para pronosticar dengue por distrito y semana epidemiológica 
 
 ## Seguimiento y calidad de datos
 
-- Los módulos `ejecutar_*` de `src/modeling/` validan gold (y silver cuando lo leen) con Great Expectations antes de entrenar y registran cada corrida en MLflow al terminar. Guía: `docs/modeling/mlflow_great_expectations.md`.
-- Las suites viven en `src/validation/expectations_gold.py` y `expectations_integrado.py`; `great_expectations/gx/`, `mlflow.db` y `mlartifacts/` son generados y no se versionan. Un experimento nuevo debe seguir la forma de reporte existente para registrarse sin cambios en `src/modeling/seguimiento_mlflow.py`.
+- Los módulos de entrenamiento y evaluación (`denguekay.model.train`, `denguekay.evaluation.compact_validation`) validan gold (y silver cuando lo leen) con Great Expectations antes de entrenar y registran cada corrida en MLflow al terminar. Guía: `docs/modeling/mlflow_great_expectations.md`.
+- Las suites viven en `src/denguekay/data/validation/gold_expectations.py` e `integrated_expectations.py`; `great_expectations/gx/`, `mlflow.db` y `mlartifacts/` son generados y no se versionan. Un experimento nuevo debe seguir la forma de reporte existente para registrarse sin cambios en `src/denguekay/model/tracking.py`.
 - No registrar un modelo final en el Model Registry sin aprobación de Rosa.
 
 ## Comprobación
 
-Instalar con `python -m pip install -r requirements.txt` y `python -m pip install -e .` (paquete `denguekay` de `pyproject.toml`). Usar `.venv/bin/python -m unittest discover -s tests` en macOS si existe el entorno, o el Python del proyecto. La suite incluye las guardas de equivalencia de la reestructuración (`tests/test_equivalence.py`); su línea base en `tests/fixtures/equivalence/` no se regenera. El integrado local ya fue comprobado tras ejecutar los notebooks 08 y 09; volver a validar su estado al iniciar cada fase, especialmente si se regenera. No inventar cifras ni afirmar que una validación se ejecutó cuando no fue así.
+Instalar con `python -m pip install -r requirements.txt` y `python -m pip install -e .` (paquete `denguekay` de `pyproject.toml`). Usar `.venv/bin/python -m unittest discover -s tests` en macOS si existe el entorno, o el Python del proyecto. La suite incluye las guardas de la reestructuración (`tests/test_equivalence.py` y `tests/test_layout.py`); la línea base de equivalencia en `tests/fixtures/equivalence/` no se regenera. El integrado local ya fue comprobado tras ejecutar los notebooks 08 y 09 (`pipelines/notebooks/`); volver a validar su estado al iniciar cada fase, especialmente si se regenera. No inventar cifras ni afirmar que una validación se ejecutó cuando no fue así.
