@@ -55,6 +55,7 @@ tesis-dengue-piura/
     ├── eda/
     ├── feature_engineering/   # plan, evidencia, decisiones y PDF de referencia
     ├── modeling/              # diseño y resultados del entrenamiento
+    ├── decisions/             # ADR numerados (0001: reestructuración en monorepo)
     └── backend/               # operación y evidencia del backend por fase
 ```
 
@@ -425,6 +426,7 @@ great_expectations/gx/
 | Plan y hallazgos de feature engineering | `docs/feature_engineering/` |
 | Instrucciones de Codex y skill local | `AGENTS.md` y `.codex/skills/` |
 | Convenciones de ramas, commits, PR y tags | `CONTRIBUTING.md` |
+| Decisión de arquitectura del repo (ADR) | `docs/decisions/NNNN-<tema>.md` |
 
 ---
 
