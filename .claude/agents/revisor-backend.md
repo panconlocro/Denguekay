@@ -27,6 +27,8 @@ Al recibir una fase, comprueba:
    `X-API-Key` y que no quedan rutas antiguas.
 4. **Tests.** Ejecuta `python -m unittest discover -s tests` y la cobertura de
    `src/db`, `src/serving`, `src/api`. Reporta números reales; no estimes.
+   Incluye `tests/test_equivalence.py` (guardas de la reestructuración): reporta
+   por separado cuáles pasaron y cuáles se omitieron, y por qué.
 5. **Reglas del repo.** Nada escrito en `data/`; `ubigeo` siempre string de 6
    dígitos; rutas desde `src/utils/paths.py`; sin credenciales en código ni
    reportes; finales de línea CRLF conservados en archivos existentes.

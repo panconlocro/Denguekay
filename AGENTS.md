@@ -26,4 +26,4 @@ Proyecto de tesis para pronosticar dengue por distrito y semana epidemiológica 
 
 ## Comprobación
 
-Usar `.venv/bin/python -m unittest discover -s tests` en macOS si existe el entorno, o el Python del proyecto. El integrado local ya fue comprobado tras ejecutar los notebooks 08 y 09; volver a validar su estado al iniciar cada fase, especialmente si se regenera. No inventar cifras ni afirmar que una validación se ejecutó cuando no fue así.
+Instalar con `python -m pip install -r requirements.txt` y `python -m pip install -e .` (paquete `denguekay` de `pyproject.toml`). Usar `.venv/bin/python -m unittest discover -s tests` en macOS si existe el entorno, o el Python del proyecto. La suite incluye las guardas de equivalencia de la reestructuración (`tests/test_equivalence.py`); su línea base en `tests/fixtures/equivalence/` no se regenera. El integrado local ya fue comprobado tras ejecutar los notebooks 08 y 09; volver a validar su estado al iniciar cada fase, especialmente si se regenera. No inventar cifras ni afirmar que una validación se ejecutó cuando no fue así.

@@ -34,5 +34,6 @@ fi
 
 "$venv_python" -m pip install --upgrade pip
 "$venv_python" -m pip install -r requirements.txt
+"$venv_python" -m pip install -e .
 
 echo "Done. Activate with: source .venv/bin/activate"

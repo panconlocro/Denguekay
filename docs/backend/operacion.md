@@ -20,6 +20,7 @@ Las variables del proceso tienen prioridad sobre `.env`. Ningún comando imprime
 
 ```powershell
 .\.venv\Scripts\python -m pip install -r requirements.txt
+.\.venv\Scripts\python -m pip install -e .
 .\.venv\Scripts\python -m alembic upgrade head
 .\.venv\Scripts\python -m src.serving.cargar_datos
 .\.venv\Scripts\python -m src.serving.publicar --horizontes 2 4
