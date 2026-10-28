@@ -13,7 +13,7 @@ import pandas as pd
 
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional
 from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
-from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.calendar import mmwr_epi_week
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
@@ -21,7 +21,7 @@ HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI
 def _panel_sintetico() -> tuple[pd.DataFrame, pd.DataFrame]:
     rng = np.random.default_rng(3)
     semanas = pd.date_range("2017-01-01", "2021-12-26", freq="7D")
-    cal = semana_epi_mmwr(pd.Series(semanas))
+    cal = mmwr_epi_week(pd.Series(semanas))
     panel = pd.DataFrame({"ubigeo": "200101", "anio": cal.anio_epi.to_numpy(), "semana": cal.semana_epi.to_numpy(),
                           "semana_inicio": semanas, "casos_Dengue": rng.poisson(3, len(semanas)).astype(float)})
     historia = pd.DataFrame([{"ubigeo": "200101", "anio": y, "semana": s, "casos_Dengue": float(rng.poisson(3))}
@@ -61,9 +61,9 @@ class TestUmbralSinFuga(unittest.TestCase):
 @unittest.skipUnless(HAY_DATOS, "Requiere silver integrado e historia epi locales")
 class TestUmbralSinFugaConDatos(unittest.TestCase):
     def test_panel_real(self):
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
 
-        panel = cargar_integrado(SILVER_INTEGRATED)
+        panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
         primero = int(panel.anio.min())

@@ -73,9 +73,9 @@ class TestAntecedentes(unittest.TestCase):
 class TestConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
 
-        cls.panel = cargar_integrado(SILVER_INTEGRATED)
+        cls.panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.ins = fh.insumos(cls.panel, regla)
 

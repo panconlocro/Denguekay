@@ -11,8 +11,8 @@ from denguekay.model.train import evaluar_fold, preparar_gold, separar_temporada
 from src.modeling.validacion_temporal_compacta import ejecutar_validacion_temporal_compacta, variantes_compactas
 from denguekay.config.paths import (GOLD, GOLD_MANIFEST, COMPACT_METRICS, COMPACT_PREDICTIONS,
                              SERVING_REGENERATED_PROTOCOL, SILVER_INTEGRATED)
-from denguekay.data.validation.gx_quality import leer_gold
-from denguekay.data.validation.forecast_contract import CLAVE
+from denguekay.data.validation.gx_quality import read_gold
+from denguekay.data.validation.forecast_contract import KEY
 
 
 @dataclass
@@ -39,15 +39,15 @@ def cargar_protocolo(horizontes, variantes, *, metricas_path=COMPACT_METRICS,
     reporte = json.loads(metricas_path.read_text(encoding="utf-8"))
     pred = pd.read_csv(predicciones_path, dtype={"ubigeo": "string"},
                        parse_dates=["semana_inicio", "origen_cierre"])
-    requeridas = {*CLAVE, "semana_inicio", "origen_cierre", "horizonte", "variante", "bloque",
+    requeridas = {*KEY, "semana_inicio", "origen_cierre", "horizonte", "variante", "bloque",
                   "casos_Dengue", "brote", "umbral_brote_casos", "probabilidad_brote", "casos_predichos"}
-    if not requeridas <= set(pred) or pred.duplicated([*CLAVE, "horizonte", "variante", "bloque"]).any():
+    if not requeridas <= set(pred) or pred.duplicated([*KEY, "horizonte", "variante", "bloque"]).any():
         raise ValueError("El CSV OOS tiene columnas ausentes o llaves duplicadas")
     if reporte["sha256_manifest_gold"] != hashlib.sha256(GOLD_MANIFEST.read_bytes()).hexdigest():
         raise ValueError("El protocolo temporal no corresponde al manifiesto gold actual")
     datos, particiones = {}, {}
     for h in horizontes:
-        gold, archivo = leer_gold(GOLD, h)
+        gold, archivo = read_gold(GOLD, h)
         bloque_h = reporte["horizontes"].get(str(h))
         if not bloque_h or bloque_h["sha256_gold"] != hashlib.sha256(archivo.read_bytes()).hexdigest():
             raise ValueError(f"Las métricas h={h} no corresponden al gold actual")
@@ -75,11 +75,11 @@ def cargar_protocolo(horizontes, variantes, *, metricas_path=COMPACT_METRICS,
 
 def verificar_bloque(pred, prueba, fold, horizonte, variante):
     """Comprueba cobertura, objetivos, origen y métricas sin cambiar sus valores."""
-    if len(pred) != len(prueba) or set(map(tuple, pred[CLAVE].to_numpy())) != set(map(tuple, prueba[CLAVE].to_numpy())):
+    if len(pred) != len(prueba) or set(map(tuple, pred[KEY].to_numpy())) != set(map(tuple, prueba[KEY].to_numpy())):
         raise ValueError(f"Las predicciones OOS no cubren el bloque {fold['bloque']}")
     columnas = ["semana_inicio", "origen_cierre", "casos_Dengue", "brote", "umbral_brote_casos"]
-    p = pred.sort_values(CLAVE).reset_index(drop=True).copy()
-    real = prueba.sort_values(CLAVE).reset_index(drop=True)
+    p = pred.sort_values(KEY).reset_index(drop=True).copy()
+    real = prueba.sort_values(KEY).reset_index(drop=True)
     for c in columnas[:2]:
         if not p[c].equals(real[c]):
             raise ValueError("Las fechas de las predicciones no coinciden con el corte temporal")

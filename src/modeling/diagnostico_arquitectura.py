@@ -24,10 +24,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from denguekay.data.seasons import asignar_temporada
+from denguekay.data.seasons import assign_season
 from src.modeling.evaluate import alertas_desde_conteos, metricas_alerta
 from denguekay.model.train import MINIMO_CASOS_BROTE, SEMANA_INICIO_TEMPORADA
-from denguekay.data.validation.forecast_contract import CLAVE
+from denguekay.data.validation.forecast_contract import KEY
 
 VARIANTE_REGRESION = "base_6"
 VARIANTE_CLASIFICACION = "base_6_poblacion_2017"
@@ -46,7 +46,7 @@ def predicciones_seleccionadas(predicciones: pd.DataFrame, reporte: dict) -> pd.
     Agrega el umbral de probabilidad calibrado cronológicamente de cada bloque
     (``NaN`` en 2021, que solo sirvió como calibración inicial).
     """
-    cols = CLAVE + ["semana_inicio", "horizonte", "bloque", "temporada",
+    cols = KEY + ["semana_inicio", "horizonte", "bloque", "temporada",
                     "casos_Dengue", "brote", "umbral_brote_casos"]
     reg = predicciones[predicciones.variante.eq(VARIANTE_REGRESION)]
     cls = predicciones[predicciones.variante.eq(VARIANTE_CLASIFICACION)]
@@ -111,7 +111,7 @@ def fase_curva(datos: pd.DataFrame, valle: float = 0.10, pico: float = 0.60) -> 
 
 def terciles_distrito(etiquetas: pd.DataFrame, temporada_corte: int = 2021) -> pd.Series:
     """Terciles de casos acumulados antes de la temporada de corte, por ubigeo."""
-    temporada = asignar_temporada(etiquetas.anio, etiquetas.semana, SEMANA_INICIO_TEMPORADA)
+    temporada = assign_season(etiquetas.anio, etiquetas.semana, SEMANA_INICIO_TEMPORADA)
     previos = etiquetas.loc[temporada < temporada_corte].groupby("ubigeo").casos_Dengue.sum()
     rango = previos.rank(method="first")
     return pd.qcut(rango, 3, labels=["bajo", "medio", "alto"]).rename("tercil_distrito")

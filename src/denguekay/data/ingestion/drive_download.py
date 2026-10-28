@@ -1,15 +1,15 @@
 """
-Reemplaza el montaje de Google Drive (drive.mount) que usábamos en Colab.
+Replaces the Google Drive mount (drive.mount) we used on Colab.
 
-Ahora, corriendo local en VS Code, bajamos los Excel crudos de epi y
-socio directo desde Google Drive con `gdown`, usando el ID del archivo
-(no la carpeta). Los IDs van en configs/config.yaml — no hardcodeados acá.
+Running locally, the raw epi and socio Excel files are downloaded straight
+from Google Drive with `gdown`, using the file ID (not the folder ID).
+The IDs live in configs/config.yaml, never hardcoded here.
 
-Cómo conseguir el ID: en el link de Drive
+How to get the ID: in the Drive link
   https://drive.google.com/file/d/AAAA.../view?usp=sharing
-el ID es la parte "AAAA...".
+the ID is the "AAAA..." part.
 
-Instalar: pip install gdown
+Install: pip install gdown
 """
 
 from pathlib import Path
@@ -19,28 +19,28 @@ import gdown
 from denguekay.config.paths import BRONZE_EPI, BRONZE_SOCIO
 
 
-def descargar_desde_drive(file_id: str, destino: Path, forzar: bool = False) -> Path:
+def download_from_drive(file_id: str, destination: Path, force: bool = False) -> Path:
     """
-    Descarga un archivo de Drive por su file_id hacia `destino` (bronze).
-    Si el archivo ya existe y `forzar=False`, no lo vuelve a descargar
-    (mismo criterio de "resume" que usamos para el cache de meteo).
+    Download a Drive file by its file_id into `destination` (bronze).
+    If the file already exists and `force=False`, it is not downloaded again
+    (the same "resume" rule used for the meteo cache).
     """
-    destino.parent.mkdir(parents=True, exist_ok=True)
+    destination.parent.mkdir(parents=True, exist_ok=True)
 
-    if destino.exists() and not forzar:
-        print(f"Ya existe, no se vuelve a descargar: {destino}")
-        return destino
+    if destination.exists() and not force:
+        print(f"Ya existe, no se vuelve a descargar: {destination}")
+        return destination
 
     url = f"https://drive.google.com/uc?id={file_id}"
-    gdown.download(url, str(destino), quiet=False)
-    return destino
+    gdown.download(url, str(destination), quiet=False)
+    return destination
 
 
-def descargar_epi(file_id: str, nombre_archivo: str = "PiuraDengue.xlsx", forzar: bool = False) -> Path:
-    """Descarga el Excel crudo epidemiológico a data/bronze/epi/."""
-    return descargar_desde_drive(file_id, BRONZE_EPI / nombre_archivo, forzar=forzar)
+def download_epi(file_id: str, file_name: str = "PiuraDengue.xlsx", force: bool = False) -> Path:
+    """Download the raw epidemiological Excel into data/bronze/epi/."""
+    return download_from_drive(file_id, BRONZE_EPI / file_name, force=force)
 
 
-def descargar_socio(file_id: str, nombre_archivo: str = "data_socio_2017_2025.xlsx", forzar: bool = False) -> Path:
-    """Descarga el Excel crudo sociodemográfico a data/bronze/socio/."""
-    return descargar_desde_drive(file_id, BRONZE_SOCIO / nombre_archivo, forzar=forzar)
+def download_socio(file_id: str, file_name: str = "data_socio_2017_2025.xlsx", force: bool = False) -> Path:
+    """Download the raw sociodemographic Excel into data/bronze/socio/."""
+    return download_from_drive(file_id, BRONZE_SOCIO / file_name, force=force)

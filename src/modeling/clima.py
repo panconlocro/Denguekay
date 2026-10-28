@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from denguekay.data.validation.forecast_contract import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
+from denguekay.data.validation.forecast_contract import KEY, EXPERIMENTAL_HORIZONS, audit_origin
 
 
 CLIMA_PRINCIPAL = ("hum_rel_media", "precip_total_mm")
@@ -29,8 +29,8 @@ def _validar_clima(panel: pd.DataFrame, variables: tuple[str, ...]) -> pd.DataFr
     faltan = set(variables) - set(panel)
     if faltan:
         raise ValueError(f"Faltan variables climáticas: {sorted(faltan)}")
-    audit = auditar_origen(panel, 1)
-    datos = audit.merge(panel[CLAVE + list(variables)], on=CLAVE,
+    audit = audit_origin(panel, 1)
+    datos = audit.merge(panel[KEY + list(variables)], on=KEY,
                         how="left", validate="one_to_one", sort=False)
     if len(datos) != len(panel):
         raise ValueError("El cruce climático cambió el número de filas")
@@ -87,7 +87,7 @@ def construir_clima(
     filas por distrito permanecen sin historia. No se crean salidas para la
     precipitación duplicada ``lluvia_total_mm``.
     """
-    if horizonte not in HORIZONTES_EXPERIMENTALES or ventana < 2:
+    if horizonte not in EXPERIMENTAL_HORIZONS or ventana < 2:
         raise ValueError("Use horizonte de 1 a 6 y ventana de al menos 2 semanas")
     datos = _validar_clima(panel, climatologia.variables)
     tabla = climatologia.tabla
@@ -98,7 +98,7 @@ def construir_clima(
                         suffixes=("", "_climatologia"), validate="many_to_one", sort=False)
     if len(datos) != len(panel):
         raise ValueError("La climatología cambió el número de filas")
-    salida = datos[CLAVE + ["semana_inicio"]].copy()
+    salida = datos[KEY + ["semana_inicio"]].copy()
     for variable in climatologia.variables:
         base = datos[f"{variable}_climatologia"]
         if base.isna().any() or not np.isfinite(base.to_numpy(float)).all():
@@ -123,10 +123,10 @@ def construir_clima_observado(
     anomalías siguen construyéndose con ``ajustar_climatologia`` y
     ``construir_clima`` dentro de cada corte de entrenamiento.
     """
-    if horizonte not in HORIZONTES_EXPERIMENTALES or ventana < 2 or not variables or len(set(variables)) != len(variables):
+    if horizonte not in EXPERIMENTAL_HORIZONS or ventana < 2 or not variables or len(set(variables)) != len(variables):
         raise ValueError("Use horizonte de 1 a 6, ventana >= 2 y variables distintas")
     datos = _validar_clima(panel, variables)
-    salida = datos[CLAVE + ["semana_inicio"]].copy()
+    salida = datos[KEY + ["semana_inicio"]].copy()
     for variable in variables:
         rolling = datos[variable].groupby(datos["ubigeo"], sort=False).transform(
             lambda s: s.rolling(ventana, min_periods=ventana).mean()

@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from denguekay.data.validation.forecast_contract import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
+from denguekay.data.validation.forecast_contract import KEY, EXPERIMENTAL_HORIZONS, audit_origin
 
 
 def construir_historia_calendario(
@@ -22,16 +22,16 @@ def construir_historia_calendario(
     conserva NaN en las ventanas incompletas, sin imputar ceros. El valor
     por defecto mantiene el contrato estricto del gold y del entrenamiento.
     """
-    if horizonte not in HORIZONTES_EXPERIMENTALES:
+    if horizonte not in EXPERIMENTAL_HORIZONS:
         raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     if ventana < 2:
         raise ValueError("La ventana debe cubrir al menos dos semanas")
     if "casos_Dengue" not in panel:
         raise ValueError("Falta casos_Dengue")
 
-    audit = auditar_origen(panel, horizonte)
+    audit = audit_origin(panel, horizonte)
     fuente = audit.merge(
-        panel[CLAVE + ["casos_Dengue"]], on=CLAVE, how="left",
+        panel[KEY + ["casos_Dengue"]], on=KEY, how="left",
         validate="one_to_one", sort=False,
     )
     if len(fuente) != len(panel):
@@ -45,7 +45,7 @@ def construir_historia_calendario(
     if semana.isna().any() or not semana.between(1, 53).all() or not (semana % 1 == 0).all():
         raise ValueError("semana debe ser un entero entre 1 y 53")
 
-    salida = fuente[CLAVE + ["semana_inicio", "origen_inicio", "origen_cierre"]].copy()
+    salida = fuente[KEY + ["semana_inicio", "origen_inicio", "origen_cierre"]].copy()
     grupo = casos.groupby(fuente["ubigeo"], sort=False)
     primero = grupo.shift(horizonte)
     salida[f"casos_lag_{horizonte}"] = primero

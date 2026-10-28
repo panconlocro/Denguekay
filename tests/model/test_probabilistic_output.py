@@ -52,11 +52,11 @@ class TestBinomialNegativa(unittest.TestCase):
 class TestFormulacionesConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
         from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
         from src.modeling.features import construir_etiquetas
 
-        panel = cargar_integrado(SILVER_INTEGRATED)
+        panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         etiquetas = construir_etiquetas(panel, ConfiguracionBroteEstacional(
             regla["multiplicador"], regla["anios_previos"], regla["minimo_casos"]))

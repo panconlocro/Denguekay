@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import urlopen
 
-from denguekay.data.keys import normalizar_sala
+from denguekay.data.keys import normalize_sala
 
 URL = "https://app7.dge.gob.pe/maps2/shiny_metaxenicas_web/"
 CHART = "ten-fig02b-echart"
@@ -169,14 +169,14 @@ async def scrape_sala(
                 records = []
                 found = set()
                 for province_value, province_name in client.options.get("ten-fprov-filter", []):
-                    province_key = normalizar_sala(province_name)
+                    province_key = normalize_sala(province_name)
                     if province_value == "0" or not any(key[0] == province_key for key in targets):
                         continue
                     await client.call({"ten-fprov-filter": province_value, "ten-fdist-filter": "0"})
                     districts = list(client.options.get("ten-fdist-filter", []))
                     controls.append(await client.extract(year, province_name, level="provincia"))
                     for district_value, district_name in districts:
-                        key = (province_key, normalizar_sala(district_name))
+                        key = (province_key, normalize_sala(district_name))
                         if district_value == "0" or key not in targets:
                             continue
                         await client.send("0|m|" + json.dumps({"method": "update", "data": {"ten-fdist-filter": district_value}}))

@@ -84,11 +84,11 @@ class TestEstrategiasSinFuga(unittest.TestCase):
 class TestEstrategiasConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
         from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
         from src.modeling.features import construir_etiquetas
 
-        cls.panel = cargar_integrado(SILVER_INTEGRATED)
+        cls.panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.etiquetas = construir_etiquetas(cls.panel, ConfiguracionBroteEstacional(
             regla["multiplicador"], regla["anios_previos"], regla["minimo_casos"]))

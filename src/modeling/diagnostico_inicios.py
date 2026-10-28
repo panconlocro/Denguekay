@@ -37,7 +37,7 @@ ventana:
 import numpy as np
 import pandas as pd
 
-from denguekay.data.seasons import asignar_temporada
+from denguekay.data.seasons import assign_season
 from src.modeling import diagnostico_arquitectura as diag
 from src.modeling.clima import ajustar_climatologia
 from src.modeling.protocolo_arquitectura import bootstrap_estratificado
@@ -115,7 +115,7 @@ ETIQUETAS = {
 
 def con_temporada(datos: pd.DataFrame) -> pd.Series:
     """Temporada epidemiológica (semana 35 en adelante pertenece a la siguiente)."""
-    return asignar_temporada(datos.anio, datos.semana, SEMANA_INICIO_TEMPORADA)
+    return assign_season(datos.anio, datos.semana, SEMANA_INICIO_TEMPORADA)
 
 
 def corte_diseno(serie: pd.DataFrame, temporadas: tuple[int, ...] = TEMPORADAS_DISENO) -> pd.Timestamp:

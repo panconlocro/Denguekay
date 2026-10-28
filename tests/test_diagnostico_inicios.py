@@ -66,10 +66,10 @@ class TestPerfiles(unittest.TestCase):
 class TestConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
         from src.modeling import fe_hiperparametros as fh
 
-        cls.panel = cargar_integrado(SILVER_INTEGRATED)
+        cls.panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.serie = fh.insumos(cls.panel, regla)["serie"]
         cls.corte = di.corte_diseno(cls.serie)

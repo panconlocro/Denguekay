@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from denguekay.data.loading import cargar_integrado
+from denguekay.data.loading import load_integrated
 from src.modeling.clima import construir_clima_observado
 from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional, etiquetar_brote_estacional
 from src.modeling.historia_calendario import construir_historia_calendario
@@ -25,7 +25,7 @@ from src.modeling.sociodemografia import (
 from src.modeling.vecinos_jerarquia import construir_vecinos_jerarquia
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.config.paths import GOLD, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED, UBIGEO_CATALOG
-from denguekay.data.validation.forecast_contract import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
+from denguekay.data.validation.forecast_contract import KEY, EXPERIMENTAL_HORIZONS, audit_origin
 from denguekay.data.validation.integrated_expectations import (
     coverage_path, load_case_coverage, validate_complete, validate_geography,
 )
@@ -34,12 +34,12 @@ from denguekay.data.validation.integrated_expectations import (
 # se construyen en memoria con construir_gold y nunca se escriben en data/.
 HORIZONTES = (2, 4)
 FECHA_SOCIO_2017 = "2019-01-01"  # barrera conservadora, no fecha verificada del Excel
-BASE = ["provincia", "distrito", "distrito_key", *CLAVE, "semana_inicio", "casos_Dengue"]
+BASE = ["provincia", "distrito", "distrito_key", *KEY, "semana_inicio", "casos_Dengue"]
 
 
 def columnas_gold(horizonte: int, *, con_brote: bool = False) -> list[str]:
     """Contrato de columnas candidatas y metadatos para un horizonte."""
-    if horizonte not in HORIZONTES_EXPERIMENTALES:
+    if horizonte not in EXPERIMENTAL_HORIZONS:
         raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     columnas = [
         *BASE, "origen_inicio", "origen_cierre",
@@ -66,12 +66,12 @@ def columnas_gold(horizonte: int, *, con_brote: bool = False) -> list[str]:
 
 def _anexar(base: pd.DataFrame, fragmento: pd.DataFrame) -> pd.DataFrame:
     """Cruza una familia sin cambiar grano, fecha, orden ni nombres existentes."""
-    if fragmento.duplicated(CLAVE).any() or len(fragmento) != len(base):
+    if fragmento.duplicated(KEY).any() or len(fragmento) != len(base):
         raise ValueError("Una familia tiene llaves duplicadas o perdió filas")
     fechas_origen = [c for c in ("origen_inicio", "origen_cierre") if c in base and c in fragmento]
     if fechas_origen:
-        cotejo = base[CLAVE + fechas_origen].merge(
-            fragmento[CLAVE + fechas_origen], on=CLAVE, validate="one_to_one",
+        cotejo = base[KEY + fechas_origen].merge(
+            fragmento[KEY + fechas_origen], on=KEY, validate="one_to_one",
             suffixes=("", "_familia"), sort=False)
         if len(cotejo) != len(base):
             raise ValueError("Las fechas de origen de la familia tienen llaves distintas")
@@ -79,12 +79,12 @@ def _anexar(base: pd.DataFrame, fragmento: pd.DataFrame) -> pd.DataFrame:
             if not pd.to_datetime(cotejo[columna]).equals(pd.to_datetime(cotejo[f"{columna}_familia"])):
                 raise ValueError(f"La familia tiene {columna} distinto")
         fragmento = fragmento.drop(columns=fechas_origen)
-    extras = set(fragmento) - set(CLAVE + ["semana_inicio"])
+    extras = set(fragmento) - set(KEY + ["semana_inicio"])
     if extras & set(base):
         raise ValueError(f"Columnas de features repetidas: {sorted(extras & set(base))}")
-    salida = base.merge(fragmento, on=CLAVE, how="left", validate="one_to_one", sort=False,
+    salida = base.merge(fragmento, on=KEY, how="left", validate="one_to_one", sort=False,
                         suffixes=("", "_familia"))
-    if len(salida) != len(base) or salida[CLAVE].ne(base[CLAVE]).any().any():
+    if len(salida) != len(base) or salida[KEY].ne(base[KEY]).any().any():
         raise ValueError("El cruce de features alteró filas o su orden")
     if not salida.semana_inicio.eq(salida.pop("semana_inicio_familia")).all():
         raise ValueError("La fecha de la familia difiere de la semana objetivo")
@@ -101,12 +101,12 @@ def construir_gold(
     fracciones anuales del silver son una reconstrucción retrospectiva que
     incorpora el extremo de 2025; su uso debe evaluarse por separado.
     """
-    if horizonte not in HORIZONTES_EXPERIMENTALES:
+    if horizonte not in EXPERIMENTAL_HORIZONS:
         raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     faltan = set(BASE) - set(panel)
     if faltan:
         raise ValueError(f"Faltan columnas del integrado: {sorted(faltan)}")
-    auditar_origen(panel, horizonte)
+    audit_origin(panel, horizonte)
     referencia = referencia_2017(panel)
     salida = panel[BASE].sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True).copy()
     salida["semana_inicio"] = pd.to_datetime(salida["semana_inicio"])
@@ -125,11 +125,11 @@ def construir_gold(
     salida["socio_2017_disponible_al_origen"] = salida.origen_cierre.ge(pd.Timestamp(FECHA_SOCIO_2017))
     salida["socio_fracciones_interpoladas_con_2025"] = salida.anio.between(2018, 2024)
     if etiquetas is not None:
-        if set(etiquetas) != set(CLAVE + ["umbral_brote_casos", "brote"]):
+        if set(etiquetas) != set(KEY + ["umbral_brote_casos", "brote"]):
             raise ValueError("Las etiquetas de brote tienen un esquema inesperado")
-        if etiquetas.duplicated(CLAVE).any() or len(etiquetas) != len(panel):
+        if etiquetas.duplicated(KEY).any() or len(etiquetas) != len(panel):
             raise ValueError("Las etiquetas de brote alteran el grano del panel")
-        salida = salida.merge(etiquetas, on=CLAVE, how="left", validate="one_to_one", sort=False)
+        salida = salida.merge(etiquetas, on=KEY, how="left", validate="one_to_one", sort=False)
     validar_gold(salida, panel, horizonte, con_brote=etiquetas is not None,
                  minimo_casos_brote=minimo_casos_brote)
     return salida
@@ -140,24 +140,24 @@ def validar_gold(
     con_brote: bool = False, minimo_casos_brote: int = 1,
 ) -> dict[str, int]:
     """Comprueba llaves, etiqueta, origen, nulos de arranque y finitud."""
-    if horizonte not in HORIZONTES_EXPERIMENTALES:
+    if horizonte not in EXPERIMENTAL_HORIZONS:
         raise ValueError("Horizonte inválido")
-    if len(gold) != len(silver) or gold.duplicated(CLAVE).any() or silver.duplicated(CLAVE).any():
+    if len(gold) != len(silver) or gold.duplicated(KEY).any() or silver.duplicated(KEY).any():
         raise ValueError("Gold debe conservar las llaves únicas y el número de filas de silver")
     esperadas = set(columnas_gold(horizonte, con_brote=con_brote))
     if set(gold) != esperadas:
         raise ValueError(f"Esquema gold inesperado: faltan {sorted(esperadas - set(gold))}; sobran {sorted(set(gold) - esperadas)}")
     if gold.columns.duplicated().any() or any(c.endswith(("_x", "_y", "_familia")) for c in gold):
         raise ValueError("Gold contiene columnas duplicadas o sufijos de merge")
-    base = silver[CLAVE + ["semana_inicio", "casos_Dengue"]].copy()
+    base = silver[KEY + ["semana_inicio", "casos_Dengue"]].copy()
     base["semana_inicio"] = pd.to_datetime(base.semana_inicio)
-    cruce = gold[CLAVE + ["semana_inicio", "casos_Dengue"]].merge(
-        base, on=CLAVE, validate="one_to_one", suffixes=("", "_silver"))
+    cruce = gold[KEY + ["semana_inicio", "casos_Dengue"]].merge(
+        base, on=KEY, validate="one_to_one", suffixes=("", "_silver"))
     if len(cruce) != len(silver) or not cruce.semana_inicio.eq(cruce.semana_inicio_silver).all() or not cruce.casos_Dengue.eq(cruce.casos_Dengue_silver).all():
         raise ValueError("Gold cambió las semanas objetivo o las etiquetas de silver")
-    audit = auditar_origen(gold, horizonte)
-    origen = gold[CLAVE + ["origen_inicio", "origen_cierre"]].merge(
-        audit[CLAVE + ["origen_inicio", "origen_cierre"]], on=CLAVE,
+    audit = audit_origin(gold, horizonte)
+    origen = gold[KEY + ["origen_inicio", "origen_cierre"]].merge(
+        audit[KEY + ["origen_inicio", "origen_cierre"]], on=KEY,
         suffixes=("", "_esperado"), validate="one_to_one")
     for campo in ("origen_inicio", "origen_cierre"):
         actual = pd.to_datetime(origen[campo])
@@ -189,7 +189,7 @@ def validar_gold(
     for columna, inicio in arranque.items():
         if columna not in orden or not orden[columna].isna().eq(posicion.lt(inicio)).all():
             raise ValueError(f"Nulos o cobertura temporal inesperados en {columna}")
-    siempre = [c for c in gold if c not in set(CLAVE + ["semana_inicio", "origen_inicio", "origen_cierre", *arranque])
+    siempre = [c for c in gold if c not in set(KEY + ["semana_inicio", "origen_inicio", "origen_cierre", *arranque])
               and pd.api.types.is_numeric_dtype(gold[c])]
     if gold[siempre].isna().any().any():
         raise ValueError("Hay nulos no esperados en columnas completas de gold")
@@ -228,7 +228,7 @@ def generar_gold(
 ) -> dict[int, dict[str, object]]:
     """Valida silver, genera ambos horizontes y escribe CSV/linaje reproducibles."""
     input_path, output_dir = Path(input_path), Path(output_dir)
-    panel = cargar_integrado(input_path)
+    panel = load_integrated(input_path)
     cobertura = load_case_coverage(coverage_path(input_path))
     if cobertura is None:
         raise ValueError("Falta el archivo de cobertura epidemiológica del integrado")
@@ -267,7 +267,7 @@ def generar_gold(
             "sha256_cobertura": _sha256(coverage_path(input_path)),
             "catalogo_geografico": Path(catalog_path).name,
             "sha256_catalogo_geografico": _sha256(Path(catalog_path)),
-            "grano": CLAVE,
+            "grano": KEY,
             "etiqueta": "casos_Dengue (conteo observado)" if brote is None else "brote (semana elevada; 0/1)",
             "columnas_no_predictoras": [
                 "casos_Dengue", "brote", "umbral_brote_casos", "ubigeo", "anio", "semana",

@@ -27,7 +27,7 @@ from denguekay.model.train import (
     preparar_gold, separar_anio_calendario, separar_temporada,
 )
 from src.modeling.validacion_temporal_compacta import TEMPORADAS, variantes_compactas
-from denguekay.data.validation.forecast_contract import CLAVE
+from denguekay.data.validation.forecast_contract import KEY
 
 HORIZONTES_ESTRATEGIA = (2, 3, 4)
 HORIZONTES_CURVA = (1, 2, 3, 4, 5, 6)
@@ -35,7 +35,7 @@ REZAGO_ESTACIONAL = 52
 GENERICAS = ["hist_lag_a", "hist_lag_b", "hist_media_4", "hist_semanas_pos_4",
              "semana_epi_seno", "semana_epi_coseno"]
 POBLACION = "log_poblacion_censo_2017"
-SALIDA = [*CLAVE, "semana_inicio", "origen_cierre", "horizonte", "bloque", "casos_Dengue",
+SALIDA = [*KEY, "semana_inicio", "origen_cierre", "horizonte", "bloque", "casos_Dengue",
           "brote", "umbral_brote_casos", "persistencia", "estacional"]
 MODELOS_POR_ESTRATEGIA = {"E1": 2 * len(HORIZONTES_ESTRATEGIA), "E2": 2, "E3": 2}
 
@@ -55,11 +55,11 @@ def matriz_horizonte(panel: pd.DataFrame, etiquetas: pd.DataFrame, horizonte: in
     datos, _ = preparar_gold(gold, horizonte)
     if not datos.origen_cierre.lt(datos.semana_inicio).all():
         raise ValueError(f"Fuga temporal en la matriz h={horizonte}")
-    serie = panel[CLAVE + ["semana_inicio", "casos_Dengue"]].copy()
+    serie = panel[KEY + ["semana_inicio", "casos_Dengue"]].copy()
     serie["semana_inicio"] = pd.to_datetime(serie.semana_inicio)
     serie = serie.sort_values(["ubigeo", "semana_inicio"])
     serie["estacional"] = serie.groupby("ubigeo").casos_Dengue.shift(REZAGO_ESTACIONAL)
-    datos = datos.merge(serie[CLAVE + ["estacional"]], on=CLAVE, how="left", validate="one_to_one")
+    datos = datos.merge(serie[KEY + ["estacional"]], on=KEY, how="left", validate="one_to_one")
     datos["persistencia"] = datos[f"casos_lag_{horizonte}"]
     datos["horizonte"] = horizonte
     return datos

@@ -13,13 +13,13 @@ from denguekay.model.train import (
     columnas_variantes, predecir_fold, preparar_gold, separar_anio_calendario,
     separar_temporada,
 )
-from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.calendar import mmwr_epi_week
 
 
 def panel_sintetico(horizonte: int = 2, periods: int = 20) -> pd.DataFrame:
     filas = []
     semanas = pd.date_range("2023-07-02", periods=periods, freq="W-SUN")
-    calendario = semana_epi_mmwr(pd.Series(semanas))
+    calendario = mmwr_epi_week(pd.Series(semanas))
     for ubigeo in ("200101", "200102"):
         for i, fecha in enumerate(semanas):
             casos = 2 if i in (2, 5, 9) else 0

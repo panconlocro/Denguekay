@@ -10,7 +10,7 @@ import pandas as pd
 
 from denguekay.data.ingestion.minsa_sala_scraper import observed_weekly_points
 from denguekay.data.processing.epi_sala import normalize_sala_records
-from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS, generar_socio_para_claves
+from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS, socio_for_keys
 from src.update_dataset_module import run_weather, update_dataset
 from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, coverage_path, prepare_dataset
 
@@ -215,7 +215,7 @@ class UpdateDatasetTests(unittest.TestCase):
             rows.append(row)
         pd.DataFrame(rows).to_csv(silver, index=False)
         with self.assertLogs(level="INFO") as logs:
-            result = generar_socio_para_claves({(CODE, 2026)}, silver, Path(self.temp.name) / "missing.xlsx")
+            result = socio_for_keys({(CODE, 2026)}, silver, Path(self.temp.name) / "missing.xlsx")
         self.assertEqual(result.iloc[0]["poblacion"], 1900)
         self.assertEqual(result.iloc[0]["fraccion_hogares_celular"], 1.0)
         self.assertEqual(result.iloc[0]["fraccion_sin_seguro"], 0.0)

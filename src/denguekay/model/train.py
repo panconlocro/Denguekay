@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor, __version__ as XGBOOST_VERSION
 
-from denguekay.data.seasons import asignar_temporada
+from denguekay.data.seasons import assign_season
 from src.modeling.contrato_xgboost import auditar_traspaso, familias_predictoras
 from denguekay.model.device import configuracion_xgboost
 from src.modeling.evaluate import (
@@ -24,9 +24,9 @@ from src.modeling.evaluate import (
 )
 from denguekay.model.tracking import registrar_o_avisar
 from denguekay.config.paths import GOLD, MODELS, RESEARCH_FIRST_MODELS, SILVER_INTEGRATED
-from denguekay.data.calendar import semana_epi_mmwr
-from denguekay.data.validation.forecast_contract import CLAVE
-from denguekay.data.validation.gx_quality import validar_entradas_modelado
+from denguekay.data.calendar import mmwr_epi_week
+from denguekay.data.validation.forecast_contract import KEY
+from denguekay.data.validation.gx_quality import validate_modeling_inputs
 
 TEMPORADAS_VALIDACION = (2021, 2022, 2023)
 TEMPORADA_PRUEBA_PRINCIPAL = 2024
@@ -69,12 +69,12 @@ def preparar_gold(gold: pd.DataFrame, horizonte: int) -> tuple[pd.DataFrame, int
     """
     variantes = columnas_variantes(horizonte)
     base_seis = variantes["historia_4_mas_2"]
-    requeridas = set(CLAVE + [
+    requeridas = set(KEY + [
         "semana_inicio", "origen_inicio", "origen_cierre", "casos_Dengue",
         "brote", "umbral_brote_casos", *base_seis,
     ])
     faltan = requeridas - set(gold)
-    if faltan or gold.empty or gold.duplicated(CLAVE).any() or gold[CLAVE].isna().any().any():
+    if faltan or gold.empty or gold.duplicated(KEY).any() or gold[KEY].isna().any().any():
         raise ValueError(f"Gold vacío, con llaves duplicadas/incompletas o columnas ausentes: {sorted(faltan)}")
     datos = gold.copy()
     if not datos.ubigeo.astype("string").str.fullmatch(r"\d{6}").all():
@@ -97,7 +97,7 @@ def preparar_gold(gold: pd.DataFrame, horizonte: int) -> tuple[pd.DataFrame, int
         raise ValueError("La etiqueta brote no coincide con la regla de gold")
     if (datos.semana_inicio.dt.weekday != 6).any():
         raise ValueError("semana_inicio debe ser domingo")
-    calendario = semana_epi_mmwr(datos.semana_inicio)
+    calendario = mmwr_epi_week(datos.semana_inicio)
     if (pd.to_numeric(datos.anio, errors="raise").ne(calendario.anio_epi)
             | pd.to_numeric(datos.semana, errors="raise").ne(calendario.semana_epi)).any():
         raise ValueError("anio/semana de gold no coinciden con el calendario epidemiológico MMWR")
@@ -121,7 +121,7 @@ def preparar_gold(gold: pd.DataFrame, horizonte: int) -> tuple[pd.DataFrame, int
     distancia = (completos.semana_inicio - completos.origen_inicio).dt.days
     if not distancia.eq(7 * horizonte).all() or not completos.origen_cierre.eq(completos.origen_inicio + pd.Timedelta(days=6)).all():
         raise ValueError("El origen no respeta el horizonte solicitado")
-    completos["temporada"] = asignar_temporada(
+    completos["temporada"] = assign_season(
         completos.anio, completos.semana, SEMANA_INICIO_TEMPORADA,
     )
     completos = completos.sort_values(["semana_inicio", "ubigeo"]).reset_index(drop=True)
@@ -144,7 +144,7 @@ def _separar_bloque(
         raise ValueError(f"Entrenamiento sin dos clases para {nombre}")
     if entrenamiento.semana_inicio.max() >= primera or not entrenamiento.origen_cierre.lt(entrenamiento.semana_inicio).all():
         raise ValueError("Solapamiento o fuga temporal en el corte")
-    if set(map(tuple, entrenamiento[CLAVE].to_numpy())) & set(map(tuple, prueba[CLAVE].to_numpy())):
+    if set(map(tuple, entrenamiento[KEY].to_numpy())) & set(map(tuple, prueba[KEY].to_numpy())):
         raise ValueError("El entrenamiento contiene observaciones de prueba")
     return entrenamiento, prueba, corte
 
@@ -195,7 +195,7 @@ def predecir_fold(
     probabilidades = clasificador.predict_proba(x)[:, 1]
     if not np.isfinite(conteos).all() or not np.isfinite(probabilidades).all():
         raise ValueError("El modelo produjo predicciones no finitas")
-    salida = prueba[CLAVE + [
+    salida = prueba[KEY + [
         "semana_inicio", "origen_cierre", "temporada", "casos_Dengue",
         "brote", "umbral_brote_casos",
     ]].copy()
@@ -265,7 +265,7 @@ def ejecutar_experimento(
         auditar_traspaso(gold_dir=gold_dir)
     # Calidad de datos (Great Expectations) antes de entrenar; falla si gold/silver
     # incumplen su suite. El resumen se adjunta al run de MLflow.
-    calidad = (validar_entradas_modelado(gold_dir=gold_dir, silver_path=None)
+    calidad = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None)
                if validar_datos else None)
     manifiesto = json.loads((gold_dir / "manifest_fase6.json").read_text(encoding="utf-8"))
     if manifiesto["regla_brote"]["minimo_casos"] != MINIMO_CASOS_BROTE:

@@ -191,13 +191,13 @@ def a_markdown(tabla: pd.DataFrame, por_temporada: pd.DataFrame | None, configur
 
 
 def main() -> None:
-    from denguekay.data.loading import cargar_integrado
+    from denguekay.data.loading import load_integrated
     from denguekay.model import frozen_configs as cf
     from src.modeling import diagnostico_arquitectura as d
     from src.modeling import fe_hiperparametros as fh
     from denguekay.config.paths import VARIABLE_DICTIONARY, GOLD_MANIFEST, FE_HYPERPARAMETERS_METRICS, SILVER_INTEGRATED
 
-    panel = cargar_integrado(SILVER_INTEGRATED)
+    panel = load_integrated(SILVER_INTEGRATED)
     regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
     ins = fh.insumos(panel, regla)
     origenes = cf.origenes(panel, ins, regla)

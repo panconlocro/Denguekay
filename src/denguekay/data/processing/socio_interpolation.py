@@ -1,14 +1,14 @@
 """
-Bronze (Excel sociodemográfico, 1 fila por distrito con columnas _2017/_2025)
--> Silver (socio_anual.csv: 1 fila por distrito x año, 2017-2025).
+Bronze (sociodemographic Excel, one row per district with _2017/_2025 columns)
+-> Silver (socio_anual.csv: one row per district x year, 2017-2025).
 
-Variables con dato en 2017 y 2025 se interpolan linealmente año a año.
-Variables con un solo año disponible (ej. fraccion_menores_5 solo 2017,
-fraccion_60_mas solo 2025) se descartan del dataset final: no hay forma
-de interpolarlas ni de asumir que se mantuvieron constantes 8 años, así
-que se excluyen en vez de rellenarlas con un supuesto poco confiable.
-Decisión tomada — cierra el pendiente que estaba en docs/estructuraRepo.md,
-sección 8.
+Variables with data in 2017 and 2025 are interpolated linearly year by year.
+Variables with a single available year (e.g. fraccion_menores_5 only 2017,
+fraccion_60_mas only 2025) are dropped from the final dataset: there is no way
+to interpolate them or to assume they stayed constant for 8 years, so they
+are excluded instead of filled with an unreliable assumption.
+Decision taken; it closes the item that was pending in docs/estructuraRepo.md,
+section 8.
 """
 
 import re
@@ -17,9 +17,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from denguekay.data.keys import normalizar
+from denguekay.data.keys import normalize
 
-ANIOS = list(range(2017, 2026))
+YEARS = list(range(2017, 2026))
 SOCIO_COLUMNS = [
     "poblacion", "fraccion_rural", "fraccion_mujeres", "fraccion_menores_15",
     "fraccion_sin_seguro", "fraccion_analfabeta_15_mas", "fraccion_pared_precaria",
@@ -29,106 +29,106 @@ SOCIO_COLUMNS = [
     "fraccion_hogares_lena",
 ]
 
-# Distrito con nombre repetido en el Excel original (ver limpiar_duplicados)
-FIX_DISTRITO_DUPLICADO = {52: "SALITRAL_S"}
+# District with a repeated name in the original Excel (see clean_duplicates)
+DUPLICATE_DISTRICT_FIX = {52: "SALITRAL_S"}
 
 
-def cargar_crudo(path_excel) -> pd.DataFrame:
-    return pd.read_excel(path_excel)
+def load_raw(excel_path) -> pd.DataFrame:
+    return pd.read_excel(excel_path)
 
 
-def limpiar_duplicados(df_pob: pd.DataFrame) -> pd.DataFrame:
+def clean_duplicates(df_pop: pd.DataFrame) -> pd.DataFrame:
     """
-    Quita columnas "_consulta" duplicadas y corrige el distrito que
-    aparece dos veces con el mismo nombre (mismo criterio que en meteo:
-    un sufijo _S para desambiguar).
+    Drop duplicated "_consulta" columns and fix the district that
+    appears twice with the same name (same rule as in meteo:
+    an _S suffix to disambiguate).
     """
-    df_pob = df_pob.copy()
-    # Mismo criterio que en epi_sala.py / fill_component(): ubigeo como string
-    # de 6 dígitos, nunca int, para no perder ceros a la izquierda.
-    df_pob["ubigeo"] = df_pob["ubigeo"].astype("string").str.zfill(6)
-    df_pob["distrito_key"] = df_pob["distrito"].apply(normalizar)
-    df_pob = df_pob.drop(columns=["pob_censada_2025_consulta", "fraccion_mujeres_2025_consulta"])
+    df_pop = df_pop.copy()
+    # Same rule as in epi_sala.py / fill_component(): ubigeo as a 6-digit
+    # 6-digit string, never an int, so the leading zeros are not lost.
+    df_pop["ubigeo"] = df_pop["ubigeo"].astype("string").str.zfill(6)
+    df_pop["distrito_key"] = df_pop["distrito"].apply(normalize)
+    df_pop = df_pop.drop(columns=["pob_censada_2025_consulta", "fraccion_mujeres_2025_consulta"])
 
-    for idx, nuevo_nombre in FIX_DISTRITO_DUPLICADO.items():
-        if idx in df_pob.index:
-            df_pob.loc[idx, "distrito"] = nuevo_nombre
+    for idx, new_name in DUPLICATE_DISTRICT_FIX.items():
+        if idx in df_pop.index:
+            df_pop.loc[idx, "distrito"] = new_name
 
-    df_pob["distrito_key"] = df_pob["distrito"].apply(normalizar)
+    df_pop["distrito_key"] = df_pop["distrito"].apply(normalize)
 
-    assert df_pob["distrito_key"].is_unique, "Hay distritos duplicados en el Excel"
-    assert df_pob["ubigeo"].is_unique
-    return df_pob
+    assert df_pop["distrito_key"].is_unique, "Hay distritos duplicados en el Excel"
+    assert df_pop["ubigeo"].is_unique
+    return df_pop
 
 
-def _construir_poblacion_larga(df_pob: pd.DataFrame, id_cols: list[str]) -> pd.DataFrame:
-    """Población: 2017 = censo, 2018-2025 = proyectada. Devuelve formato largo (1 fila por año)."""
-    poblacion = df_pob[id_cols].copy()
-    poblacion["pob_2017"] = df_pob["pob_censada_2017"]
+def _build_long_population(df_pop: pd.DataFrame, id_cols: list[str]) -> pd.DataFrame:
+    """Population: 2017 = census, 2018-2025 = projected. Returns long format (one row per year)."""
+    population = df_pop[id_cols].copy()
+    population["pob_2017"] = df_pop["pob_censada_2017"]
     for a in range(2018, 2026):
-        poblacion[f"pob_{a}"] = df_pob[f"pob_proyectada_{a}"]
+        population[f"pob_{a}"] = df_pop[f"pob_proyectada_{a}"]
 
-    pob_long = poblacion.melt(
-        id_vars=id_cols, value_vars=[f"pob_{a}" for a in ANIOS],
+    pop_long = population.melt(
+        id_vars=id_cols, value_vars=[f"pob_{a}" for a in YEARS],
         var_name="anio", value_name="poblacion",
     )
-    pob_long["anio"] = pob_long["anio"].str.replace("pob_", "").astype(int)
-    return pob_long
+    pop_long["anio"] = pop_long["anio"].str.replace("pob_", "").astype(int)
+    return pop_long
 
 
-def construir_socio_anual(df_pob: pd.DataFrame) -> pd.DataFrame:
+def build_annual_socio(df_pop: pd.DataFrame) -> pd.DataFrame:
     """
-    Convierte el Excel sociodemográfico (ancho, 1 fila x distrito) a formato
-    largo (1 fila x distrito x año), interpolando linealmente las variables
-    que tienen valor en 2017 y 2025.
+    Convert the sociodemographic Excel (wide, one row per district) to long
+    format (one row per district x year), interpolating linearly the variables
+    that have a value in 2017 and 2025.
     """
-    pob_cols = [c for c in df_pob.columns if c.startswith("pob_")]
+    pop_cols = [c for c in df_pop.columns if c.startswith("pob_")]
     id_cols = ["ubigeo", "departamento", "provincia", "distrito", "distrito_key"]
-    resto_cols = [c for c in df_pob.columns if c not in pob_cols + id_cols]
+    rest_cols = [c for c in df_pop.columns if c not in pop_cols + id_cols]
 
-    pob_long = _construir_poblacion_larga(df_pob, id_cols)
+    pop_long = _build_long_population(df_pop, id_cols)
 
-    # Detectar variables base y en qué años existen (columnas tipo "<base>_2017" / "<base>_2025")
-    patron = re.compile(r"^(.*)_(2017|2025)$")
-    pares: dict[str, dict[int, str]] = {}
-    for c in resto_cols:
-        m = patron.match(c)
+    # Detect base variables and the years in which they exist (columns like "<base>_2017" / "<base>_2025")
+    pattern = re.compile(r"^(.*)_(2017|2025)$")
+    pairs: dict[str, dict[int, str]] = {}
+    for c in rest_cols:
+        m = pattern.match(c)
         if not m:
             continue
-        base, anio = m.group(1), int(m.group(2))
-        pares.setdefault(base, {})[anio] = c
+        base, year = m.group(1), int(m.group(2))
+        pairs.setdefault(base, {})[year] = c
 
-    solo_un_anio = {b: list(d.keys()) for b, d in pares.items() if len(d) == 1}
-    if solo_un_anio:
+    single_year = {b: list(d.keys()) for b, d in pairs.items() if len(d) == 1}
+    if single_year:
         print("Variables con un solo año disponible (se descartan, no se interpolan):")
-        for b, anios in solo_un_anio.items():
-            print(f"  - {b} (solo {anios[0]})")
+        for b, years in single_year.items():
+            print(f"  - {b} (solo {years[0]})")
 
-    pares_interpolables = {b: d for b, d in pares.items() if len(d) == 2}
+    interpolable_pairs = {b: d for b, d in pairs.items() if len(d) == 2}
 
-    frames = [pob_long.set_index(id_cols + ["anio"])]
+    frames = [pop_long.set_index(id_cols + ["anio"])]
 
-    for base, d in pares_interpolables.items():
-        tabla = pd.DataFrame(index=df_pob.index)
-        v17 = df_pob[d[2017]].values
-        v25 = df_pob[d[2025]].values
-        for a in ANIOS:
+    for base, d in interpolable_pairs.items():
+        table = pd.DataFrame(index=df_pop.index)
+        v17 = df_pop[d[2017]].values
+        v25 = df_pop[d[2025]].values
+        for a in YEARS:
             frac = (a - 2017) / (2025 - 2017)
-            tabla[a] = v17 + (v25 - v17) * frac
+            table[a] = v17 + (v25 - v17) * frac
 
-        tabla[id_cols] = df_pob[id_cols]
-        tabla_long = tabla.melt(
-            id_vars=id_cols, value_vars=ANIOS, var_name="anio", value_name=base,
+        table[id_cols] = df_pop[id_cols]
+        table_long = table.melt(
+            id_vars=id_cols, value_vars=YEARS, var_name="anio", value_name=base,
         )
-        tabla_long["anio"] = tabla_long["anio"].astype(int)
-        frames.append(tabla_long.set_index(id_cols + ["anio"]))
+        table_long["anio"] = table_long["anio"].astype(int)
+        frames.append(table_long.set_index(id_cols + ["anio"]))
 
-    socio_anual = pd.concat(frames, axis=1).reset_index()
-    print(socio_anual.shape)  # esperado: 65 distritos x 9 años = 585 filas
-    return socio_anual
+    annual_socio = pd.concat(frames, axis=1).reset_index()
+    print(annual_socio.shape)  # expected: 65 districts x 9 years = 585 rows
+    return annual_socio
 
 
-def generar_socio_para_claves(
+def socio_for_keys(
     keys: set[tuple[str, int]], silver_path: Path, bronze_path: Path,
     *, prefer_bronze: bool = False,
 ) -> pd.DataFrame:
@@ -138,11 +138,11 @@ def generar_socio_para_claves(
     if prefer_bronze:
         if not bronze_path.exists():
             raise FileNotFoundError(f"Required raw demographic source is unavailable: {bronze_path}")
-        source = construir_socio_anual(limpiar_duplicados(cargar_crudo(bronze_path)))
+        source = build_annual_socio(clean_duplicates(load_raw(bronze_path)))
     elif silver_path.exists():
         source = pd.read_csv(silver_path, dtype={"ubigeo": "string"})
     elif bronze_path.exists():
-        source = construir_socio_anual(limpiar_duplicados(cargar_crudo(bronze_path)))
+        source = build_annual_socio(clean_duplicates(load_raw(bronze_path)))
     else:
         raise FileNotFoundError(f"Required demographic source is unavailable: {silver_path} or {bronze_path}")
     missing_columns = set(["ubigeo", "anio", *SOCIO_COLUMNS]) - set(source)

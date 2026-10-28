@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from denguekay.data.loading import cargar_integrado
-from denguekay.data.processing.weekly_aggregation import AGG_DIARIO_A_SEMANAL, agregar_a_semanal
-from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.loading import load_integrated
+from denguekay.data.processing.weekly_aggregation import DAILY_TO_WEEKLY_AGG, aggregate_to_weekly
+from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.validation.integrated_expectations import prepare_dataset
 from tests.test_update_dataset_module import model_row
 
@@ -21,25 +21,25 @@ class CalendarioTests(unittest.TestCase):
         ]), index=[8, 6, 4, 2, 9, 7, 5, 3])
         esperado = [(2025, 52), (2025, 53), (2026, 1), (2026, 2),
                     (2031, 53), (2032, 1), (2036, 53), (2037, 1)]
-        resultado = semana_epi_mmwr(fechas)
+        resultado = mmwr_epi_week(fechas)
         self.assertEqual(list(resultado.itertuples(index=False, name=None)), esperado)
         pd.testing.assert_index_equal(resultado.index, fechas.index)
 
     def test_todo_2026_tiene_numeracion_consecutiva_correcta(self):
         fechas = pd.Series(pd.date_range("2026-01-04", periods=52, freq="W-SUN"))
-        resultado = semana_epi_mmwr(fechas)
+        resultado = mmwr_epi_week(fechas)
         self.assertTrue(resultado.anio_epi.eq(2026).all())
         self.assertEqual(resultado.semana_epi.tolist(), list(range(1, 53)))
 
     def test_agregacion_climatica_conserva_semana_53_y_descarta_parcial(self):
         diario = pd.DataFrame({"time": pd.date_range("2025-12-21", periods=23),
                                "id_distrito": 1})
-        for columna in set(AGG_DIARIO_A_SEMANAL) - {"time"}:
+        for columna in set(DAILY_TO_WEEKLY_AGG) - {"time"}:
             diario[columna] = 1.0
         copia = diario.copy(deep=True)
         distritos = pd.DataFrame([{"id_distrito": 1, "provincia": "Paita",
                                    "distrito": "Amotape", "lat": -4.83, "lon": -81.0}])
-        resultado = agregar_a_semanal(diario, distritos)
+        resultado = aggregate_to_weekly(diario, distritos)
         self.assertEqual(list(resultado[["anio", "semana"]].itertuples(index=False, name=None)),
                          [(2025, 52), (2025, 53), (2026, 1)])
         self.assertEqual(resultado.semana_inicio.dt.strftime("%Y-%m-%d").tolist(),
@@ -59,7 +59,7 @@ class CalendarioTests(unittest.TestCase):
             archivo = Path(carpeta) / "integrado.csv"
             original.to_csv(archivo, index=False)
             antes = archivo.read_bytes()
-            self.assertEqual(cargar_integrado(archivo).semana.tolist(), [53, 1])
+            self.assertEqual(load_integrated(archivo).semana.tolist(), [53, 1])
             self.assertEqual(archivo.read_bytes(), antes)
 
     def test_integrado_y_carga_rechazan_convencion_antigua(self):
@@ -76,7 +76,7 @@ class CalendarioTests(unittest.TestCase):
                     archivo = Path(carpeta) / "integrado.csv"
                     incorrecto.to_csv(archivo, index=False)
                     with self.assertRaisesRegex(ValueError, "MMWR"):
-                        cargar_integrado(archivo)
+                        load_integrated(archivo)
 
 
 if __name__ == "__main__":

@@ -87,10 +87,10 @@ class TestAlfasOOS(unittest.TestCase):
 class TestConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
         from src.modeling import fe_hiperparametros as fh
 
-        panel = cargar_integrado(SILVER_INTEGRATED)
+        panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.matrices = fh.insumos(panel, regla)["matrices"]
 

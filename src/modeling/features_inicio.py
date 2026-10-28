@@ -24,7 +24,7 @@ from src.modeling import diagnostico_inicios as di
 from denguekay.model import horizon_strategies as eh
 from src.modeling import preregistro_fe as pr
 from src.modeling.etiqueta_brote import umbral_brote_futuro
-from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.calendar import mmwr_epi_week
 
 COLUMNAS = {v["id"]: list(v["columnas"]) for v in pr.VARIANTES if v["bloque"] == "B"}
 POR_BLOQUE = ("B2", "B5")
@@ -97,7 +97,7 @@ def linea_base(origenes: pd.DataFrame, panel: pd.DataFrame, historia: pd.DataFra
     salida = pd.DataFrame(index=origenes.index)
     for h in eh.HORIZONTES_ESTRATEGIA:
         destino = base + pd.Timedelta(weeks=h)
-        cal = semana_epi_mmwr(pd.Series(destino.to_numpy()))
+        cal = mmwr_epi_week(pd.Series(destino.to_numpy()))
         objetivos = pd.DataFrame({"ubigeo": origenes.ubigeo.to_numpy(), "anio": cal.anio_epi.to_numpy(),
                                   "semana": cal.semana_epi.to_numpy()}, index=origenes.index)
         umbral = umbral_brote_futuro(panel, historia, objetivos, multiplicador=regla["multiplicador"],

@@ -8,7 +8,7 @@ import pandas as pd
 
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional, umbral_brote_futuro
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
-from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.calendar import mmwr_epi_week
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
@@ -16,7 +16,7 @@ HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI
 def _sintetico():
     rng = np.random.default_rng(5)
     semanas = pd.date_range("2017-01-01", "2021-12-26", freq="7D")
-    cal = semana_epi_mmwr(pd.Series(semanas))
+    cal = mmwr_epi_week(pd.Series(semanas))
     panel = pd.concat([pd.DataFrame({"ubigeo": u, "anio": cal.anio_epi.to_numpy(), "semana": cal.semana_epi.to_numpy(),
                                      "casos_Dengue": rng.poisson(3, len(semanas)).astype(float)})
                        for u in ("200101", "200102")], ignore_index=True)
@@ -56,9 +56,9 @@ class TestSintetico(unittest.TestCase):
 class TestContraGold(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
 
-        cls.panel = cargar_integrado(SILVER_INTEGRATED)
+        cls.panel = load_integrated(SILVER_INTEGRATED)
         cls.regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
         cls.historia = historia[historia.anio.lt(int(cls.panel.anio.min()))]

@@ -7,8 +7,8 @@ import pandas as pd
 
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
-from denguekay.data.calendar import semana_epi_mmwr
-from denguekay.data.keys import normalizar_sala
+from denguekay.data.calendar import mmwr_epi_week
+from denguekay.data.keys import normalize_sala
 from denguekay.config.paths import UBIGEO_CATALOG
 
 KEY = ["ubigeo", "anio", "semana"]
@@ -57,8 +57,8 @@ def prepare_dataset(frame: pd.DataFrame) -> pd.DataFrame:
     dates = pd.to_datetime(frame["semana_inicio"], errors="raise")
     if dates.isna().any() or (dates.dt.weekday != 6).any():
         raise ValueError("semana_inicio must be a Sunday for every row")
-    calendario = semana_epi_mmwr(dates)
-    if (calendario.anio_epi.to_numpy() != frame["anio"].to_numpy()).any() or (calendario.semana_epi.to_numpy() != frame["semana"].to_numpy()).any():
+    calendar = mmwr_epi_week(dates)
+    if (calendar.anio_epi.to_numpy() != frame["anio"].to_numpy()).any() or (calendar.semana_epi.to_numpy() != frame["semana"].to_numpy()).any():
         raise ValueError("anio/semana no coinciden con el calendario epidemiológico MMWR de semana_inicio")
     if frame.duplicated(KEY).any():
         raise ValueError("Dataset contains duplicate UBIGEO-year-week rows")
@@ -87,7 +87,7 @@ def validate_geography(frame: pd.DataFrame, catalog_path: Path = UBIGEO_CATALOG)
             raise ValueError(f"UBIGEO is absent from the Piura catalogue: {code}")
         expected = catalog.loc[code]
         actual_label = (
-            normalizar_sala(row.provincia), normalizar_sala(row.distrito).removesuffix("_S"),
+            normalize_sala(row.provincia), normalize_sala(row.distrito).removesuffix("_S"),
         )
         expected_label = (expected["provincia_sala"], expected["distrito_sala"])
         if actual_label != expected_label:
@@ -174,24 +174,24 @@ def validate_complete(frame: pd.DataFrame, coverage: Coverage) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Suite declarativa de Great Expectations para el panel integrado.
-# Complementa (no reemplaza) prepare_dataset/validate_complete: deja un
-# reporte legible en los Data Docs y se adjunta a las corridas de MLflow.
-# GX se importa aquí dentro para no exigirlo al actualizador del dataset.
+# Declarative Great Expectations suite for the integrated panel.
+# It complements (does not replace) prepare_dataset/validate_complete: it leaves a
+# readable report in the Data Docs and is attached to the MLflow runs.
+# GX is imported here so the dataset updater does not require it.
 # ---------------------------------------------------------------------------
 
-# Caja geográfica aproximada del departamento de Piura (grados decimales).
+# Approximate bounding box of the Piura department (decimal degrees).
 LAT_PIURA = (-6.5, -3.5)
 LON_PIURA = (-81.5, -79.0)
 
 
-def expectativas_integrado_gx(ubigeos: list[str]) -> list:
-    """Expectativas de esquema, llave, geografía y rangos físicos del integrado."""
+def integrated_gx_expectations(ubigeos: list[str]) -> list:
+    """Schema, key, geography and physical-range expectations of the integrated dataset."""
     import great_expectations as gx
 
     E = gx.expectations
-    requeridas = CORE_COLUMNS + WEATHER_COLUMNS + SOCIO_COLUMNS + ["casos_Dengue"]
-    exp = [E.ExpectColumnToExist(column=c) for c in requeridas]
+    required = CORE_COLUMNS + WEATHER_COLUMNS + SOCIO_COLUMNS + ["casos_Dengue"]
+    exp = [E.ExpectColumnToExist(column=c) for c in required]
     exp += [
         E.ExpectTableRowCountToBeBetween(min_value=1),
         E.ExpectCompoundColumnsToBeUnique(column_list=KEY),
@@ -203,7 +203,7 @@ def expectativas_integrado_gx(ubigeos: list[str]) -> list:
         E.ExpectColumnValuesToBeBetween(column="semana", min_value=1, max_value=53),
         E.ExpectColumnValuesToBeBetween(column="lat", min_value=LAT_PIURA[0], max_value=LAT_PIURA[1]),
         E.ExpectColumnValuesToBeBetween(column="lon", min_value=LON_PIURA[0], max_value=LON_PIURA[1]),
-        # Clima semanal: rangos físicamente plausibles, no ajustados a los datos.
+        # Weekly weather: physically plausible ranges, not fitted to the data.
         *(E.ExpectColumnValuesToBeBetween(column=c, min_value=-10, max_value=45)
           for c in ("temp_media", "temp_max", "temp_min")),
         E.ExpectColumnPairValuesAToBeGreaterThanB(column_A="temp_max", column_B="temp_min", or_equal=True),
@@ -217,11 +217,11 @@ def expectativas_integrado_gx(ubigeos: list[str]) -> list:
         E.ExpectColumnValuesToBeBetween(column="viento_max", min_value=0, max_value=200),
         E.ExpectColumnValuesToBeBetween(column="radiacion_total", min_value=0, max_value=350),
         E.ExpectColumnValuesToBeBetween(column="et0_total", min_value=0, max_value=100),
-        # Sociodemografía y casos.
+        # Sociodemography and cases.
         E.ExpectColumnValuesToBeBetween(column="poblacion", min_value=1),
         E.ExpectColumnValuesToBeBetween(column="casos_Dengue", min_value=0),
     ]
     exp += [E.ExpectColumnValuesToBeBetween(column=c, min_value=0, max_value=1)
             for c in SOCIO_COLUMNS if c.startswith("fraccion_")]
-    exp += [E.ExpectColumnValuesToNotBeNull(column=c) for c in requeridas]
+    exp += [E.ExpectColumnValuesToNotBeNull(column=c) for c in required]
     return exp

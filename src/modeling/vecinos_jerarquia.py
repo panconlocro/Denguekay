@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from src.eda.espacial import distancias_km, pesos_inverso_distancia, pesos_knn
-from denguekay.data.validation.forecast_contract import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
+from denguekay.data.validation.forecast_contract import KEY, EXPERIMENTAL_HORIZONS, audit_origin
 
 
 def catalogo_geografico(panel: pd.DataFrame) -> pd.DataFrame:
@@ -83,14 +83,14 @@ def construir_vecinos_jerarquia(
     Se exige un panel completo en todas las fechas para evitar promedios
     espaciales calculados silenciosamente con distritos ausentes.
     """
-    if horizonte not in HORIZONTES_EXPERIMENTALES:
+    if horizonte not in EXPERIMENTAL_HORIZONS:
         raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     if "casos_Dengue" not in panel:
         raise ValueError("Falta casos_Dengue")
-    audit = auditar_origen(panel, horizonte)
+    audit = audit_origin(panel, horizonte)
     geo = catalogo_geografico(panel)
     pesos, _ = matriz_vecindad(geo, k=k, metodo=metodo)
-    fuente = audit.merge(panel[CLAVE + ["casos_Dengue"]], on=CLAVE,
+    fuente = audit.merge(panel[KEY + ["casos_Dengue"]], on=KEY,
                          how="left", validate="one_to_one", sort=False)
     if len(fuente) != len(panel):
         raise ValueError("El cruce con casos cambió el número de filas")

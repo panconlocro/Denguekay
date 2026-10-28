@@ -10,7 +10,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from denguekay.data.validation.forecast_contract import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
+from denguekay.data.validation.forecast_contract import KEY, EXPERIMENTAL_HORIZONS, audit_origin
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 
 
@@ -103,14 +103,14 @@ def construir_sociodemografia(
     que los orígenes de prueba sí son posteriores a la disponibilidad.
     CP1 debe provenir de un ajuste del fold de entrenamiento.
     """
-    if horizonte not in HORIZONTES_EXPERIMENTALES:
+    if horizonte not in EXPERIMENTAL_HORIZONS:
         raise ValueError("Use horizonte de 1 a 6 semanas")
     disponible = pd.Timestamp(fecha_disponible)
     if pd.isna(disponible):
         raise ValueError("fecha_disponible inválida")
     if referencia.ubigeo.duplicated().any():
         raise ValueError("UBIGEO duplicado en referencia")
-    audit = auditar_origen(panel, horizonte)
+    audit = audit_origin(panel, horizonte)
     columnas = ["ubigeo", "poblacion", *DIRECTAS]
     if not set(columnas).issubset(referencia):
         raise ValueError("Faltan columnas censales de 2017")
@@ -132,7 +132,7 @@ def construir_sociodemografia(
         if puntajes.isna().any() or not np.isfinite(puntajes.to_numpy(float)).all():
             raise ValueError("El eje urbano tiene puntajes faltantes o no finitos")
         ref["eje_urbano_2017"] = puntajes.to_numpy(float)
-    salida = audit[CLAVE + ["semana_inicio", "origen_cierre"]].merge(ref, on="ubigeo", how="left", validate="many_to_one", sort=False)
+    salida = audit[KEY + ["semana_inicio", "origen_cierre"]].merge(ref, on="ubigeo", how="left", validate="many_to_one", sort=False)
     if len(salida) != len(panel):
         raise ValueError("El cruce demográfico cambió el número de filas")
     if salida["poblacion_censo_2017"].isna().any():
@@ -146,13 +146,13 @@ def construir_sociodemografia(
 
 def construir_sociodemografia_anual_cruda(panel: pd.DataFrame) -> pd.DataFrame:
     """Valida y devuelve población y fracciones anuales sin ajustar PCA."""
-    requeridas = set(CLAVE + ["semana_inicio", *SOCIO_COLUMNS])
+    requeridas = set(KEY + ["semana_inicio", *SOCIO_COLUMNS])
     faltan = requeridas - set(panel)
     if faltan:
         raise ValueError(f"Faltan columnas demográficas anuales: {sorted(faltan)}")
-    if panel.empty or panel[CLAVE + ["semana_inicio"]].isna().any().any():
+    if panel.empty or panel[KEY + ["semana_inicio"]].isna().any().any():
         raise ValueError("El panel anual está vacío o tiene llaves faltantes")
-    if panel.duplicated(CLAVE).any():
+    if panel.duplicated(KEY).any():
         raise ValueError("Hay llaves distrito-año-semana duplicadas")
     claves = ["ubigeo", "anio"]
     datos = panel[claves + SOCIO_COLUMNS].copy()
@@ -169,7 +169,7 @@ def construir_sociodemografia_anual_cruda(panel: pd.DataFrame) -> pd.DataFrame:
     anual = datos.drop_duplicates(claves).copy()
     anual["log_poblacion_anual"] = np.log(anual.pop("poblacion"))
     anual = anual.rename(columns={c: f"{c}_anual" for c in fracciones})
-    salida = panel[CLAVE + ["semana_inicio"]].merge(anual, on=claves, how="left", validate="many_to_one", sort=False)
+    salida = panel[KEY + ["semana_inicio"]].merge(anual, on=claves, how="left", validate="many_to_one", sort=False)
     if len(salida) != len(panel) or salida["log_poblacion_anual"].isna().any():
         raise ValueError("El cruce demográfico anual perdió o duplicó filas")
     return salida

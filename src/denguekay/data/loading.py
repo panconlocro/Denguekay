@@ -1,9 +1,9 @@
 """
-Carga de solo lectura del dataset integrado (data/silver/integrado) para el EDA.
+Read-only loading of the integrated dataset (data/silver/integrado).
 
-Todo notebook de EDA debe cargar los datos con cargar_integrado() y no con
-pd.read_csv directo: así el ubigeo siempre entra como string de 6 dígitos y el
-panel distrito-semana se valida antes de analizar nada.
+Every consumer must load the data with load_integrated() rather than a direct
+pd.read_csv: that way ubigeo always comes in as a 6-digit string and the
+district-week panel is validated before anything else.
 """
 
 from pathlib import Path
@@ -11,67 +11,67 @@ from pathlib import Path
 import pandas as pd
 
 from denguekay.config.paths import SILVER_INTEGRATED
-from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.calendar import mmwr_epi_week
 
-OBJETIVO = "casos_Dengue"
-LLAVE = ["ubigeo", "anio", "semana"]
-COLUMNAS_CLIMA = [
+TARGET = "casos_Dengue"
+PANEL_KEY = ["ubigeo", "anio", "semana"]
+CLIMATE_COLUMNS = [
     "temp_media", "temp_max", "temp_min", "precip_total_mm", "lluvia_total_mm",
     "hum_rel_media", "viento_max", "radiacion_total", "et0_total",
 ]
-COLUMNAS_GEO = ["provincia", "distrito", "distrito_key", "ubigeo", "lat", "lon"]
+GEO_COLUMNS = ["provincia", "distrito", "distrito_key", "ubigeo", "lat", "lon"]
 
 
-def columnas_socio(df: pd.DataFrame) -> list[str]:
-    """Población y todas las fracciones sociodemográficas presentes en el dataset."""
+def socio_columns(df: pd.DataFrame) -> list[str]:
+    """Population and every sociodemographic fraction present in the dataset."""
     return ["poblacion"] + [c for c in df.columns if c.startswith("fraccion_")]
 
 
-def validar_panel(df: pd.DataFrame) -> list[str]:
+def validate_panel(df: pd.DataFrame) -> list[str]:
     """
-    Revisa la estructura del panel distrito x semana. Devuelve una lista de
-    problemas encontrados (vacía si el panel es consistente). No corrige nada.
+    Check the structure of the district x week panel. Returns the list of
+    problems found (empty when the panel is consistent). It fixes nothing.
     """
-    problemas = []
-    faltan = [c for c in LLAVE + ["semana_inicio", OBJETIVO] if c not in df.columns]
-    if faltan:
-        return [f"Faltan columnas obligatorias: {faltan}"]
+    problems = []
+    missing = [c for c in PANEL_KEY + ["semana_inicio", TARGET] if c not in df.columns]
+    if missing:
+        return [f"Faltan columnas obligatorias: {missing}"]
 
     if not df["ubigeo"].astype("string").str.fullmatch(r"\d{6}").all():
-        problemas.append("ubigeo no es siempre un string de 6 dígitos")
-    if df[LLAVE + ["semana_inicio", OBJETIVO]].isna().any().any():
-        problemas.append("Hay nulos en llave, semana_inicio o casos_Dengue")
-    if df.duplicated(LLAVE).any():
-        problemas.append(f"Llave {LLAVE} duplicada en {int(df.duplicated(LLAVE).sum())} filas")
+        problems.append("ubigeo no es siempre un string de 6 dígitos")
+    if df[PANEL_KEY + ["semana_inicio", TARGET]].isna().any().any():
+        problems.append("Hay nulos en llave, semana_inicio o casos_Dengue")
+    if df.duplicated(PANEL_KEY).any():
+        problems.append(f"Llave {PANEL_KEY} duplicada en {int(df.duplicated(PANEL_KEY).sum())} filas")
 
-    semanas_por_distrito = df.groupby("ubigeo").size()
-    if semanas_por_distrito.nunique() > 1:
-        problemas.append("Los distritos no tienen el mismo número de semanas (panel desbalanceado)")
+    weeks_per_district = df.groupby("ubigeo").size()
+    if weeks_per_district.nunique() > 1:
+        problems.append("Los distritos no tienen el mismo número de semanas (panel desbalanceado)")
 
-    fechas = pd.to_datetime(df["semana_inicio"])
-    if fechas.isna().any() or fechas.dt.weekday.ne(6).any():
-        problemas.append("semana_inicio debe contener domingos sin fechas faltantes")
+    dates = pd.to_datetime(df["semana_inicio"])
+    if dates.isna().any() or dates.dt.weekday.ne(6).any():
+        problems.append("semana_inicio debe contener domingos sin fechas faltantes")
     else:
-        calendario = semana_epi_mmwr(fechas)
-        if (pd.to_numeric(df.anio, errors="coerce").ne(calendario.anio_epi)
-                | pd.to_numeric(df.semana, errors="coerce").ne(calendario.semana_epi)).any():
-            problemas.append("anio/semana no coinciden con el calendario epidemiológico MMWR de semana_inicio")
-    for ubigeo, g in df.assign(_f=fechas).groupby("ubigeo"):
-        saltos = g["_f"].sort_values().diff().dropna().dt.days
-        if not (saltos == 7).all():
-            problemas.append(f"Distrito {ubigeo}: semanas no consecutivas (huecos o repetidas)")
+        calendar = mmwr_epi_week(dates)
+        if (pd.to_numeric(df.anio, errors="coerce").ne(calendar.anio_epi)
+                | pd.to_numeric(df.semana, errors="coerce").ne(calendar.semana_epi)).any():
+            problems.append("anio/semana no coinciden con el calendario epidemiológico MMWR de semana_inicio")
+    for ubigeo, g in df.assign(_f=dates).groupby("ubigeo"):
+        gaps = g["_f"].sort_values().diff().dropna().dt.days
+        if not (gaps == 7).all():
+            problems.append(f"Distrito {ubigeo}: semanas no consecutivas (huecos o repetidas)")
             break
-    return problemas
+    return problems
 
 
-def cargar_integrado(path: Path = SILVER_INTEGRATED) -> pd.DataFrame:
+def load_integrated(path: Path = SILVER_INTEGRATED) -> pd.DataFrame:
     """
-    Lee el dataset integrado (meteo + socio + epi, sin feature engineering),
-    valida el panel y lo devuelve ordenado por distrito y semana.
-    Lanza ValueError si el panel no es consistente.
+    Read the integrated dataset (meteo + socio + epi, no feature engineering),
+    validate the panel and return it sorted by district and week.
+    Raises ValueError when the panel is not consistent.
     """
     df = pd.read_csv(path, dtype={"ubigeo": "string"}, parse_dates=["semana_inicio"])
-    problemas = validar_panel(df)
-    if problemas:
-        raise ValueError("Panel inconsistente:\n- " + "\n- ".join(problemas))
+    problems = validate_panel(df)
+    if problems:
+        raise ValueError("Panel inconsistente:\n- " + "\n- ".join(problems))
     return df.sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True)

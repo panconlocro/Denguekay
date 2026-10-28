@@ -9,9 +9,9 @@ import pandas as pd
 
 from src.modeling.features import columnas_gold
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
-from denguekay.data.validation.gx_quality import ValidacionDatosError, obtener_contexto, validar_dataframe
-from denguekay.data.validation.gold_expectations import expectativas_gold
-from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, expectativas_integrado_gx
+from denguekay.data.validation.gx_quality import DataValidationError, get_context, validate_dataframe
+from denguekay.data.validation.gold_expectations import expectations_for_gold
+from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, integrated_gx_expectations
 
 UBIGEOS = ["200101", "200102"]
 
@@ -61,16 +61,16 @@ class SuitesGXTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._tmp = tempfile.TemporaryDirectory()
-        cls.contexto = obtener_contexto(Path(cls._tmp.name))
+        cls.contexto = get_context(Path(cls._tmp.name))
 
     @classmethod
     def tearDownClass(cls):
         cls._tmp.cleanup()
 
     def validar_gold(self, datos, lanzar=False):
-        return validar_dataframe(datos, nombre_suite="gold_h2_test", expectativas=expectativas_gold(2, UBIGEOS),
-                                 nombre_activo="gold_h2_test", contexto=self.contexto,
-                                 lanzar=lanzar, actualizar_docs=False)
+        return validate_dataframe(datos, suite_name="gold_h2_test", expectations=expectations_for_gold(2, UBIGEOS),
+                                 asset_name="gold_h2_test", context=self.contexto,
+                                 raise_on_failure=lanzar, update_docs=False)
 
     def fallidas(self, resumen):
         return {(f["expectativa"], f.get("column") or str(f.get("column_list") or f.get("column_A")))
@@ -100,21 +100,21 @@ class SuitesGXTests(unittest.TestCase):
 
     def test_gold_detecta_columna_faltante_y_lanza(self):
         datos = gold_sintetico().drop(columns=["brote"])
-        with self.assertRaises(ValidacionDatosError) as error:
+        with self.assertRaises(DataValidationError) as error:
             self.validar_gold(datos, lanzar=True)
-        self.assertFalse(error.exception.resumen["exito"])
+        self.assertFalse(error.exception.summary["exito"])
 
     def test_integrado_valido_y_errores_fisicos(self):
-        kwargs = dict(nombre_suite="integrado_test", expectativas=expectativas_integrado_gx(UBIGEOS),
-                      nombre_activo="integrado_test", contexto=self.contexto,
-                      lanzar=False, actualizar_docs=False)
-        self.assertTrue(validar_dataframe(integrado_sintetico(), **kwargs)["exito"])
+        kwargs = dict(suite_name="integrado_test", expectations=integrated_gx_expectations(UBIGEOS),
+                      asset_name="integrado_test", context=self.contexto,
+                      raise_on_failure=False, update_docs=False)
+        self.assertTrue(validate_dataframe(integrado_sintetico(), **kwargs)["exito"])
         datos = integrado_sintetico()
         datos.loc[0, "temp_min"] = 35.0              # mínima mayor que máxima
         datos.loc[1, "hum_rel_media"] = 120.0         # humedad imposible
         datos.loc[2, "casos_Dengue"] = -1             # casos negativos
         datos.loc[3, "lat"] = 10.0                    # fuera de Piura
-        fallidas = self.fallidas(validar_dataframe(datos, **kwargs))
+        fallidas = self.fallidas(validate_dataframe(datos, **kwargs))
         self.assertIn(("expect_column_pair_values_a_to_be_greater_than_b", "temp_max"), fallidas)
         self.assertIn(("expect_column_values_to_be_between", "hum_rel_media"), fallidas)
         self.assertIn(("expect_column_values_to_be_between", "casos_Dengue"), fallidas)

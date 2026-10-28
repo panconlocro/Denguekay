@@ -10,7 +10,7 @@ from denguekay.model import horizon_strategies as eh
 from src.modeling import features_inicio as fi
 from denguekay.model import probabilistic_output as sp
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional
-from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.calendar import mmwr_epi_week
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
@@ -33,7 +33,7 @@ def _sintetico():
     """6 distritos en 2 provincias, 2017–2019, con clima y etiquetas de la regla de gold."""
     rng = np.random.default_rng(11)
     semanas = pd.date_range("2017-01-01", "2019-12-29", freq="7D")
-    cal = semana_epi_mmwr(pd.Series(semanas))
+    cal = mmwr_epi_week(pd.Series(semanas))
     filas = []
     for i in range(6):
         u = f"2001{i:02d}"
@@ -78,10 +78,10 @@ class TestSintetico(unittest.TestCase):
 class TestConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
         from src.modeling import fe_hiperparametros as fh
 
-        cls.panel = cargar_integrado(SILVER_INTEGRATED)
+        cls.panel = load_integrated(SILVER_INTEGRATED)
         cls.regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         ins = fh.insumos(cls.panel, cls.regla)
         cls.serie, cls.matrices = ins["serie"], ins["matrices"]

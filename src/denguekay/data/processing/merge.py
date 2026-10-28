@@ -1,67 +1,67 @@
 """
-Silver por fuente -> Silver integrado: mergea meteo + socio, y luego + epi.
-El resultado todavía no tiene feature engineering, por eso vive en
-data/silver/integrado/ y no en gold.
+Silver per source -> integrated silver: merges meteo + socio, then + epi.
+The result still has no feature engineering, which is why it lives in
+data/silver/integrado/ and not in gold.
 """
 
 import pandas as pd
 
-from denguekay.data.keys import normalizar
+from denguekay.data.keys import normalize
 
 
-def diagnosticar_distritos_sin_match(meteo: pd.DataFrame, socio_anual: pd.DataFrame) -> None:
-    """Imprime qué distrito_key hay en una fuente y no en la otra (antes de mergear)."""
-    solo_meteo = set(meteo["distrito_key"]) - set(socio_anual["distrito_key"])
-    solo_socio = set(socio_anual["distrito_key"]) - set(meteo["distrito_key"])
-    print("En meteo pero no en socio:", solo_meteo)
-    print("En socio pero no en meteo:", solo_socio)
+def diagnose_unmatched_districts(meteo: pd.DataFrame, annual_socio: pd.DataFrame) -> None:
+    """Print which distrito_key values are in one source and not in the other (before merging)."""
+    meteo_only = set(meteo["distrito_key"]) - set(annual_socio["distrito_key"])
+    socio_only = set(annual_socio["distrito_key"]) - set(meteo["distrito_key"])
+    print("En meteo pero no en socio:", meteo_only)
+    print("En socio pero no en meteo:", socio_only)
 
 
-def merge_meteo_socio(meteo: pd.DataFrame, socio_anual: pd.DataFrame) -> pd.DataFrame:
-    """Cruza clima semanal + variables sociodemográficas anuales por distrito_key + año."""
+def merge_meteo_socio(meteo: pd.DataFrame, annual_socio: pd.DataFrame) -> pd.DataFrame:
+    """Join weekly weather with yearly sociodemographic variables by distrito_key + year."""
     final = meteo.merge(
-        socio_anual.drop(columns=["departamento", "provincia", "distrito"]),
+        annual_socio.drop(columns=["departamento", "provincia", "distrito"]),
         on=["distrito_key", "anio"],
         how="left",
     )
 
-    faltantes = final[final["poblacion"].isna()]
-    print(len(faltantes), "filas sin match sociodemográfico")
+    missing = final[final["poblacion"].isna()]
+    print(len(missing), "filas sin match sociodemográfico")
     return final
 
 
-def merge_con_epi(dataset_final: pd.DataFrame, df_casos: pd.DataFrame) -> pd.DataFrame:
-    """Cruza casos históricos; deja nulos los años aún no cubiertos por la fuente."""
-    dataset_final = dataset_final.copy()
-    df_casos = df_casos.copy()
+def merge_with_epi(final_dataset: pd.DataFrame, df_cases: pd.DataFrame) -> pd.DataFrame:
+    """Join historical cases; years not yet covered by the source stay null."""
+    final_dataset = final_dataset.copy()
+    df_cases = df_cases.copy()
 
-    # ubigeo es un código de 6 dígitos (con ceros a la izquierda), no una
-    # cantidad -- mismo criterio que fill_component()/epi_sala.py/expectations_integrado.py.
-    # Castear a int aquí rompía con IntCastingNaNError apenas quedaba un solo
-    # distrito sin match en el merge anterior (meteo+socio), y de paso perdía
-    # los ceros a la izquierda si algún ubigeo llegaba ya como int.
-    dataset_final["ubigeo"] = dataset_final["ubigeo"].astype("string").str.zfill(6)
-    df_casos["ubigeo"] = df_casos["ubigeo"].astype("string").str.zfill(6)
+    # ubigeo is a 6-digit code (with leading zeros), not a
+    # quantity -- same rule as fill_component()/epi_sala.py/integrated_expectations.py.
+    # Casting to int here broke with IntCastingNaNError as soon as a single
+    # district had no match in the previous merge (meteo+socio), and it also lost
+    # the leading zeros if a ubigeo already arrived as an int.
+    final_dataset["ubigeo"] = final_dataset["ubigeo"].astype("string").str.zfill(6)
+    df_cases["ubigeo"] = df_cases["ubigeo"].astype("string").str.zfill(6)
 
-    sin_ubigeo = dataset_final[dataset_final["ubigeo"].isna()]
-    if len(sin_ubigeo) > 0:
-        distritos_afectados = sorted(sin_ubigeo["distrito_key"].unique())
+    without_ubigeo = final_dataset[final_dataset["ubigeo"].isna()]
+    if len(without_ubigeo) > 0:
+        affected_districts = sorted(without_ubigeo["distrito_key"].unique())
         raise ValueError(
-            f"{len(sin_ubigeo)} filas de dataset_final no tienen ubigeo (no encontraron "
+            f"{len(without_ubigeo)} filas de dataset_final no tienen ubigeo (no encontraron "
             f"match sociodemográfico en el merge anterior). Distrito_key involucrados: "
-            f"{distritos_afectados}. Corre diagnosticar_distritos_sin_match(meteo, socio_anual) "
+            f"{affected_districts}. Corre diagnosticar_distritos_sin_match(meteo, socio_anual) "
             f"para ver a qué se debe el desfase de nombres y corrígelo antes de este merge."
         )
 
-    dataset_modelo = dataset_final.merge(df_casos, on=["ubigeo", "anio", "semana"], how="left")
-    covered_years = set(pd.to_numeric(df_casos["anio"], errors="raise").astype(int))
-    covered = dataset_modelo["anio"].isin(covered_years)
-    dataset_modelo.loc[covered, "casos_Dengue"] = dataset_modelo.loc[covered, "casos_Dengue"].fillna(0)
-    dataset_modelo["casos_Dengue"] = dataset_modelo["casos_Dengue"].astype("Int64")
+    model_dataset = final_dataset.merge(df_cases, on=["ubigeo", "anio", "semana"], how="left")
+    covered_years = set(pd.to_numeric(df_cases["anio"], errors="raise").astype(int))
+    covered = model_dataset["anio"].isin(covered_years)
+    model_dataset.loc[covered, "casos_Dengue"] = model_dataset.loc[covered, "casos_Dengue"].fillna(0)
+    model_dataset["casos_Dengue"] = model_dataset["casos_Dengue"].astype("Int64")
 
-    print(dataset_modelo.shape)
-    print(dataset_modelo["casos_Dengue"].describe())
-    return dataset_modelo
+    print(model_dataset.shape)
+    print(model_dataset["casos_Dengue"].describe())
+    return model_dataset
 
 
 def fill_component(

@@ -18,10 +18,10 @@ import pandas as pd
 
 from denguekay.data.ingestion.openmeteo import DAILY_VARS, fetch_district
 from denguekay.data.ingestion.minsa_sala_scraper import scrape_sala
-from denguekay.data.processing.weekly_aggregation import agregar_a_semanal
+from denguekay.data.processing.weekly_aggregation import aggregate_to_weekly
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog, normalize_sala_records, upsert_sala_silver
 from denguekay.data.processing.merge import fill_component
-from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS, generar_socio_para_claves
+from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS, socio_for_keys
 from denguekay.config.paths import BRONZE_SALA, BRONZE_SOCIO, REFERENCE, SILVER, SILVER_SALA, UBIGEO_CATALOG
 from denguekay.data.validation.integrated_expectations import (
     KEY, WEATHER_COLUMNS, coverage_path, detect_missing_components,
@@ -114,7 +114,7 @@ def run_weather(frame: pd.DataFrame, keys: set[DistrictWeek]) -> pd.DataFrame:
             daily["id_distrito"] = district_id
             daily_frames.append(daily)
     district_frame = pd.DataFrame(districts)
-    aggregated = agregar_a_semanal(pd.concat(daily_frames, ignore_index=True), district_frame, include_id=True)
+    aggregated = aggregate_to_weekly(pd.concat(daily_frames, ignore_index=True), district_frame, include_id=True)
     id_to_code = district_frame.set_index("id_distrito")["ubigeo"].to_dict()
     aggregated["ubigeo"] = aggregated["id_distrito"].map(id_to_code)
     aggregated = aggregated[KEY + WEATHER_COLUMNS]
@@ -127,7 +127,7 @@ def run_demographic(
     """Generate only required district-years and broadcast to requested weeks."""
     annual_keys = {(ubigeo, year) for ubigeo, year, _ in keys}
     try:
-        annual = generar_socio_para_claves(
+        annual = socio_for_keys(
             annual_keys, SILVER / "socio_anual.csv", BRONZE_SOCIO / "data_socio_2017_2025.xlsx",
             prefer_bronze=rebuild,
         )

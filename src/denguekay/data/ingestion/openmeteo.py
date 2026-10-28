@@ -1,9 +1,9 @@
 """
-Descarga clima histórico diario de Open-Meteo (archive API) por distrito.
+Download daily historical weather from Open-Meteo (archive API) per district.
 
-Antes el cache de parquets vivía en Drive (BASE/cache_meteo). Ahora vive
-local en data/bronze/meteo/cache_meteo/, así que el "resume" (no volver a
-pedir un distrito ya descargado) funciona directo contra el disco local.
+The parquet cache used to live on Drive (BASE/cache_meteo). It now lives
+locally in data/bronze/meteo/cache_meteo/, so "resume" (never requesting an
+already downloaded district again) works directly against the local disk.
 """
 
 import time
@@ -21,18 +21,18 @@ DAILY_VARS = [
     "wind_speed_10m_max", "shortwave_radiation_sum", "et0_fao_evapotranspiration",
 ]
 START, END = "2017-01-01", "2025-12-31"
-BATCH_SIZE = 20  # si te topa el límite antes de terminar el batch, bájalo a 15
+BATCH_SIZE = 20  # if the limit hits before the batch ends, lower it to 15
 
 
-class LimiteAPI(Exception):
-    """Límite horario o diario de Open-Meteo alcanzado: no tiene sentido reintentar ahora."""
+class APILimitError(Exception):
+    """Open-Meteo hourly or daily limit reached: retrying now makes no sense."""
 
 
 def fetch_district(
     lat: float, lon: float, retries: int = 4, *,
     start_date: str = START, end_date: str = END,
 ) -> pd.DataFrame:
-    """Descarga clima diario para un punto y rango inclusivo de fechas."""
+    """Download daily weather for one point and an inclusive date range."""
     params = {
         "latitude": lat, "longitude": lon,
         "start_date": start_date, "end_date": end_date,
@@ -55,53 +55,53 @@ def fetch_district(
             return pd.DataFrame(daily)
 
         if r.status_code == 429:
-            es_json = r.headers.get("content-type", "").startswith("application/json")
-            reason = r.json().get("reason", "") if es_json else r.text
+            is_json = r.headers.get("content-type", "").startswith("application/json")
+            reason = r.json().get("reason", "") if is_json else r.text
             if "Hourly" in reason or "Daily" in reason:
-                raise LimiteAPI(reason)  # límite horario o diario: no reintentar
-            time.sleep(65)  # límite por minuto: espera y reintenta
+                raise APILimitError(reason)  # hourly or daily limit: do not retry
+            time.sleep(65)  # per-minute limit: wait and retry
             continue
 
-        time.sleep(5)  # error transitorio (5xx, etc.)
+        time.sleep(5)  # transient error (5xx, etc.)
 
     raise RuntimeError(f"Falló lat={lat}, lon={lon}: {r.status_code} {r.text[:200]}")
 
 
-def _ya_descargado(id_distrito: int) -> bool:
-    return (CACHE_METEO / f"distrito_{id_distrito:03d}.parquet").exists()
+def _already_downloaded(district_id: int) -> bool:
+    return (CACHE_METEO / f"distrito_{district_id:03d}.parquet").exists()
 
 
-def descargar_batch_pendientes(distritos: pd.DataFrame, batch_size: int = BATCH_SIZE) -> int:
+def download_pending_batch(districts: pd.DataFrame, batch_size: int = BATCH_SIZE) -> int:
     """
-    Descarga hasta `batch_size` distritos pendientes y los cachea en
+    Download up to `batch_size` pending districts and cache them in
     data/bronze/meteo/cache_meteo/distrito_XXX.parquet.
 
-    Corre este notebook/función varias veces hasta que "Quedan: 0" —
-    Open-Meteo tiene límites por minuto/hora que suelen cortar el batch.
-    Devuelve cuántos distritos quedaron pendientes después de este batch.
+    Run this notebook/function several times until "Quedan: 0":
+    Open-Meteo has per-minute/per-hour limits that usually cut the batch.
+    Returns how many districts are still pending after this batch.
     """
     CACHE_METEO.mkdir(parents=True, exist_ok=True)
 
-    pendientes = distritos[~distritos["id_distrito"].apply(_ya_descargado)]
-    print(f"Descargados: {len(distritos) - len(pendientes)} | Pendientes: {len(pendientes)}")
+    pending = districts[~districts["id_distrito"].apply(_already_downloaded)]
+    print(f"Descargados: {len(districts) - len(pending)} | Pendientes: {len(pending)}")
 
-    hechos = 0
-    for _, row in pendientes.head(batch_size).iterrows():
+    done = 0
+    for _, row in pending.head(batch_size).iterrows():
         try:
             df = fetch_district(row["lat"], row["lon"])
-        except LimiteAPI as e:
+        except APILimitError as e:
             print(f"\nLímite alcanzado: {e}")
             print("Espera y vuelve a correr este bloque.")
             break
 
         df["id_distrito"] = row["id_distrito"]
         df.to_parquet(CACHE_METEO / f"distrito_{row['id_distrito']:03d}.parquet", index=False)
-        hechos += 1
+        done += 1
         print(f"OK {row['id_distrito']:>2} {row['distrito']}")
         time.sleep(3)
 
-    quedan = len(pendientes) - hechos
-    print(f"\nEn este batch: {hechos} | Quedan: {quedan}")
-    if quedan == 0:
+    remaining = len(pending) - done
+    print(f"\nEn este batch: {done} | Quedan: {remaining}")
+    if remaining == 0:
         print("Listo: ya se puede pasar al armado de la data diaria (bronze -> silver).")
-    return quedan
+    return remaining

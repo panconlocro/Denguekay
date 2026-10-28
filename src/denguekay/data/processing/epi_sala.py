@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from denguekay.data.keys import normalizar_sala
+from denguekay.data.keys import normalize_sala
 
 KEY = ["ubigeo", "anio", "semana"]
 
@@ -17,9 +17,9 @@ def load_ubigeo_catalog(path: Path) -> pd.DataFrame:
         raise ValueError(f"UBIGEO catalogue lacks columns: {sorted(required - set(catalog))}")
     catalog = catalog.copy()
     catalog["ubigeo"] = catalog["ubigeo"].str.zfill(6)
-    catalog["provincia_sala"] = catalog["provincia"].map(normalizar_sala)
+    catalog["provincia_sala"] = catalog["provincia"].map(normalize_sala)
     catalog["distrito_sala"] = catalog["distrito"].map(
-        lambda value: normalizar_sala(value).removesuffix("_S")
+        lambda value: normalize_sala(value).removesuffix("_S")
     )
     if catalog["ubigeo"].duplicated().any() or catalog[["provincia_sala", "distrito_sala"]].duplicated().any():
         raise ValueError("UBIGEO catalogue has duplicate codes or Sala district labels")
@@ -50,7 +50,7 @@ def normalize_sala_records(records: list[dict], controls: list[dict], catalog: p
     }
     expected_by_province = catalog.groupby("provincia_sala").size().to_dict()
     province_controls = {
-        normalizar_sala(item["provincia"]): _points(item)
+        normalize_sala(item["provincia"]): _points(item)
         for item in controls if item.get("nivel") == "provincia"
     }
     department_controls = [_points(item) for item in controls if item.get("nivel") == "departamento"]
@@ -61,7 +61,7 @@ def normalize_sala_records(records: list[dict], controls: list[dict], catalog: p
     for item in records:
         if int(item.get("anio", item.get("ano"))) != year:
             raise ValueError("Sala returned mixed years")
-        label = (normalizar_sala(item["provincia"]), normalizar_sala(item["distrito"]))
+        label = (normalize_sala(item["provincia"]), normalize_sala(item["distrito"]))
         if label not in lookup:
             raise ValueError(f"Sala district has no UBIGEO mapping: {label}")
         if label in parsed:

@@ -85,14 +85,14 @@ def datos_muestra(carpeta, seleccion_experimental=None):
     # Importación diferida: evita cargar GX al importar este módulo.
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
     from src.serving.cargar_datos import preparar_desde_tablas
-    from denguekay.data.validation.gx_quality import obtener_contexto, validar_dataframe
-    from denguekay.data.validation.gold_expectations import expectativas_gold
+    from denguekay.data.validation.gx_quality import get_context, validate_dataframe
+    from denguekay.data.validation.gold_expectations import expectations_for_gold
 
     muestra = leer_muestra()
-    calidad = validar_dataframe(
-        muestra["gold"], nombre_suite="backend_gold_h2", nombre_activo="backend_gold_h2",
-        expectativas=expectativas_gold(2, sorted(muestra["gold"].ubigeo.unique())),
-        contexto=obtener_contexto(carpeta / "gx"), actualizar_docs=False)
+    calidad = validate_dataframe(
+        muestra["gold"], suite_name="backend_gold_h2", asset_name="backend_gold_h2",
+        expectations=expectations_for_gold(2, sorted(muestra["gold"].ubigeo.unique())),
+        context=get_context(carpeta / "gx"), update_docs=False)
     archivos = [BACKEND_FIXTURES / n for n in ("silver_muestra.csv", "cobertura_muestra.csv", "gold_h2_muestra.csv",
                                              "gold_temporal_h2_muestra.csv", "sala_muestra.csv")]
     hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in archivos + [UBIGEO_CATALOG, DISTRICT_COORDS]}

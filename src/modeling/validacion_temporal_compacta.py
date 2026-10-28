@@ -23,8 +23,8 @@ from denguekay.model.train import (
 )
 from denguekay.model.tracking import registrar_o_avisar
 from denguekay.config.paths import DOCS, GOLD, MODELS, SILVER_INTEGRATED
-from denguekay.data.validation.forecast_contract import CLAVE
-from denguekay.data.validation.gx_quality import validar_entradas_modelado
+from denguekay.data.validation.forecast_contract import KEY
+from denguekay.data.validation.gx_quality import validate_modeling_inputs
 
 
 TEMPORADAS = (2021, 2022, 2023, 2024)
@@ -57,7 +57,7 @@ def validar_matriz(datos: pd.DataFrame, horizonte: int) -> None:
         raise ValueError("Predictores compactos incompletos o no finitos")
     if datos[POBLACION].le(0).any() or datos.groupby("ubigeo")[POBLACION].nunique().ne(1).any():
         raise ValueError("La población censal de 2017 debe ser positiva y fija por UBIGEO")
-    if datos.duplicated(CLAVE).any():
+    if datos.duplicated(KEY).any():
         raise ValueError("Distrito-semanas duplicadas")
 
 
@@ -72,7 +72,7 @@ def calibracion_disponible(
     disponibles = anteriores.loc[cierre_etiqueta.le(corte)].copy()
     if disponibles.empty or disponibles.brote.nunique() < 2:
         raise ValueError("Calibración sin dos clases disponibles al origen")
-    if disponibles.duplicated(CLAVE).any():
+    if disponibles.duplicated(KEY).any():
         raise ValueError("Observaciones duplicadas para calibrar")
     if not (disponibles.semana_inicio + pd.Timedelta(days=6)).le(corte).all():
         raise ValueError("La calibración incluye etiquetas futuras")
@@ -110,7 +110,7 @@ def ejecutar_validacion_temporal_compacta(
         auditar_traspaso(gold_dir=gold_dir)
     # Calidad de datos (Great Expectations) antes de entrenar; falla si gold/silver
     # incumplen su suite. El resumen se adjunta al run de MLflow.
-    calidad = (validar_entradas_modelado(gold_dir=gold_dir, silver_path=None)
+    calidad = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None)
                if validar_datos else None)
     manifiesto_path = gold_dir / "manifest_fase6.json"
     manifiesto = json.loads(manifiesto_path.read_text(encoding="utf-8"))

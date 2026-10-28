@@ -67,13 +67,13 @@ def prediction_digest(predictions):
 
 def frozen_prediction_digests():
     """V1 and V2 predictions with the deployment seed, computed in memory (needs local data)."""
-    from denguekay.data.loading import cargar_integrado
+    from denguekay.data.loading import load_integrated
     from denguekay.model import frozen_configs as cf
     from src.modeling import fe_hiperparametros as fh
     from denguekay.model.device import configuracion_xgboost
     from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRATED
 
-    panel = cargar_integrado(SILVER_INTEGRATED)
+    panel = load_integrated(SILVER_INTEGRATED)
     rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
     inputs = fh.insumos(panel, rule)
     result = {"setup": configuracion_xgboost()}

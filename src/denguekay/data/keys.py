@@ -1,32 +1,32 @@
 """
-Helpers chicos usados por más de un módulo (ingestion, processing).
-No tienen dueño claro por eso viven en utils/ y no en processing/.
+Small helpers used by more than one module (ingestion, processing).
+They have no clear owner, so they live here and not in processing/.
 """
 
 import re
 import unicodedata
 
 
-def normalizar(s) -> str:
+def normalize(s) -> str:
     """
-    Llave normalizada para cruzar distritos entre fuentes distintas
-    (meteo, socio, epi): sin tildes, sin espacios repetidos, en mayúsculas.
+    Normalized key to join districts across sources
+    (meteo, socio, epi): no accents, no repeated spaces, upper case.
 
-    Ej: "Santa Catalina de Mossa" -> "SANTA CATALINA DE MOSSA"
+    E.g. "Santa Catalina de Mossa" -> "SANTA CATALINA DE MOSSA"
     """
     s = unicodedata.normalize("NFKD", str(s)).encode("ascii", "ignore").decode()
     return re.sub(r"\s+", " ", s).strip().upper()
 
 
-def separar_camel(s: str) -> str:
+def split_camel(s: str) -> str:
     """
-    GADM devuelve nombres de distrito en camelCase pegado (ej. "ElTallan").
-    Esto separa "ElTallan" -> "El Tallan" insertando un espacio antes de
-    cada mayúscula que sigue a una minúscula.
+    GADM returns district names in glued camelCase (e.g. "ElTallan").
+    This splits "ElTallan" -> "El Tallan" by inserting a space before
+    every capital letter that follows a lower-case one.
     """
     return re.sub(r"(?<=[a-záéíóú])(?=[A-ZÁÉÍÓÚ])", " ", s)
 
 
-def normalizar_sala(s: str) -> str:
+def normalize_sala(s: str) -> str:
     """Normalize Sala labels, including its PARIÐAS spelling."""
-    return normalizar(str(s).replace("Ð", "Ñ"))
+    return normalize(str(s).replace("Ð", "Ñ"))

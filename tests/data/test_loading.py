@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from denguekay.data.loading import validar_panel
+from denguekay.data.loading import validate_panel
 
 
 def panel(n_semanas=4, distritos=("200101", "200102")):
@@ -19,24 +19,24 @@ def panel(n_semanas=4, distritos=("200101", "200102")):
 
 class ValidarPanelTests(unittest.TestCase):
     def test_panel_valido_no_reporta_problemas(self):
-        self.assertEqual(validar_panel(panel()), [])
+        self.assertEqual(validate_panel(panel()), [])
 
     def test_detecta_llave_duplicada(self):
         df = pd.concat([panel(), panel().head(1)], ignore_index=True)
-        self.assertTrue(any("duplicada" in p for p in validar_panel(df)))
+        self.assertTrue(any("duplicada" in p for p in validate_panel(df)))
 
     def test_detecta_ubigeo_sin_ceros(self):
         df = panel(distritos=("20101", "200102"))
-        self.assertTrue(any("6 dígitos" in p for p in validar_panel(df)))
+        self.assertTrue(any("6 dígitos" in p for p in validate_panel(df)))
 
     def test_detecta_hueco_de_semanas(self):
         df = panel().drop(index=1)
-        problemas = validar_panel(df)
+        problemas = validate_panel(df)
         self.assertTrue(any("no consecutivas" in p or "desbalanceado" in p for p in problemas))
 
     def test_detecta_columna_faltante(self):
         df = panel().drop(columns=["casos_Dengue"])
-        self.assertTrue(any("Faltan columnas" in p for p in validar_panel(df)))
+        self.assertTrue(any("Faltan columnas" in p for p in validate_panel(df)))
 
 
 if __name__ == "__main__":

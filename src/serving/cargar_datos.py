@@ -23,9 +23,9 @@ from src.db.configuracion import ConfiguracionBDInvalida
 from src.db.modelos import (Distrito, Ejecucion, ObservacionSemanal, Provincia,
                             SemanaEpidemiologica, ahora_utc)
 from src.db.sesion import crear_motor, transaccion, upsert
-from denguekay.data.processing.weekly_aggregation import limpiar_nombres_para_cruce
-from denguekay.data.calendar import semana_epi_mmwr
-from denguekay.data.keys import normalizar
+from denguekay.data.processing.weekly_aggregation import clean_names_for_join
+from denguekay.data.calendar import mmwr_epi_week
+from denguekay.data.keys import normalize
 from denguekay.config.paths import (DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL,
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
@@ -63,10 +63,10 @@ def preparar_distritos(catalogo, coordenadas, poblacion_2017):
     """Relaciona centroides con UBIGEO mediante el cruce ya usado en silver."""
     if catalogo.ubigeo.duplicated().any() or not catalogo.ubigeo.str.fullmatch(r"[0-9]{6}").all():
         raise ValueError("El catálogo debe contener UBIGEO únicos de seis dígitos")
-    cat = limpiar_nombres_para_cruce(catalogo)
-    coords = limpiar_nombres_para_cruce(coordenadas)
+    cat = clean_names_for_join(catalogo)
+    coords = clean_names_for_join(coordenadas)
     for datos in (cat, coords):
-        datos["provincia_key"] = datos.provincia.map(normalizar)
+        datos["provincia_key"] = datos.provincia.map(normalize)
         # GADM conserva nombres concatenados: se cruza sin espacios y se exige unicidad.
         datos["distrito_key"] = datos.distrito_key.str.replace(" ", "", regex=False)
     cruce = cat.merge(coords[["provincia_key", "distrito_key", "lat", "lon"]],
@@ -111,7 +111,7 @@ def preparar_semanas(desde, hasta):
     domingos = pd.Series(pd.date_range(desde, hasta, freq="7D"))
     if not domingos.dt.weekday.eq(6).all():
         raise ValueError("El calendario debe empezar en domingo")
-    cal = semana_epi_mmwr(domingos)
+    cal = mmwr_epi_week(domingos)
     return [{"id_semana": semana_id(a, s), "anio": int(a), "semana": int(s),
              "fecha_inicio": d.date(), "fecha_fin": (d + timedelta(days=6)).date(),
              "temporada": int(a) + int(s >= SEMANA_INICIO_TEMPORADA)}
@@ -130,7 +130,7 @@ def preparar_observaciones(silver, cobertura, gold, sala):
             raise ValueError(f"{nombre} debe contener semanas distritales únicas")
         if not datos.ubigeo.str.fullmatch(r"[0-9]{6}").all():
             raise ValueError(f"{nombre} debe conservar ubigeo como texto de seis dígitos")
-    calendario = semana_epi_mmwr(silver.semana_inicio)
+    calendario = mmwr_epi_week(silver.semana_inicio)
     if not (calendario.anio_epi.eq(silver.anio).all() and calendario.semana_epi.eq(silver.semana).all()):
         raise ValueError("El año/semana de silver no coincide con el calendario MMWR")
     if not silver.anio.between(2017, 2025).all():
@@ -194,12 +194,12 @@ def preparar_carga():
     from src.modeling.contrato_xgboost import auditar_traspaso
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
     from src.serving.configuracion import configuracion_servicio
-    from denguekay.data.validation.gx_quality import leer_gold, validar_entradas_modelado
+    from denguekay.data.validation.gx_quality import read_gold, validate_modeling_inputs
 
     hashes = hashes_fuentes()
     auditar_traspaso()
-    calidad = validar_entradas_modelado(gold_dir=GOLD, silver_path=SILVER_INTEGRATED)
-    gold, _ = leer_gold(GOLD, 2)
+    calidad = validate_modeling_inputs(gold_dir=GOLD, silver_path=SILVER_INTEGRATED)
+    gold, _ = read_gold(GOLD, 2)
     datos = preparar_desde_tablas(
         load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS), leer_silver(),
         pd.read_csv(SILVER_INTEGRATED.with_suffix(".coverage.csv"), dtype={"ubigeo": "string"}),

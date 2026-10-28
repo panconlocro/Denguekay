@@ -134,11 +134,11 @@ class TestAdopcion(unittest.TestCase):
 class TestConDatos(unittest.TestCase):
     def test_base_explicita_reproduce_los_parametros_por_defecto(self):
         """BASE (con max_delta_step = 0,7, reg_alpha = gamma = 0 explícitos) da lo mismo que los fijos heredados."""
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
         from src.modeling import fe_hiperparametros as fh
         from src.modeling import features_inicio as fi
 
-        panel = cargar_integrado(SILVER_INTEGRATED)
+        panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         ins = fh.insumos(panel, regla)
         historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})

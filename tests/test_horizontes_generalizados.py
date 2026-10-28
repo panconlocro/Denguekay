@@ -16,7 +16,7 @@ from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
 from src.modeling.features import HORIZONTES, construir_etiquetas, construir_gold
 from src.modeling.historia_calendario import construir_historia_calendario
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
-from denguekay.data.validation.forecast_contract import HORIZONTES_EXPERIMENTALES
+from denguekay.data.validation.forecast_contract import EXPERIMENTAL_HORIZONS
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
@@ -34,7 +34,7 @@ def _panel_sintetico(semanas: int = 20) -> pd.DataFrame:
 class TestHistoriaGeneralizada(unittest.TestCase):
     def test_causalidad_y_rezago_exacto_para_cada_h(self):
         panel = _panel_sintetico()
-        for h in HORIZONTES_EXPERIMENTALES:
+        for h in EXPERIMENTAL_HORIZONS:
             with self.subTest(h=h):
                 hist = construir_historia_calendario(panel, h)
                 con_origen = hist.dropna(subset=["origen_cierre"])
@@ -58,9 +58,9 @@ class TestHistoriaGeneralizada(unittest.TestCase):
 class TestGoldGeneralizadoConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from denguekay.data.loading import cargar_integrado
+        from denguekay.data.loading import load_integrated
 
-        cls.panel = cargar_integrado(SILVER_INTEGRATED)
+        cls.panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.config = ConfiguracionBroteEstacional(
             multiplicador=regla["multiplicador"], anios_previos=regla["anios_previos"],
@@ -88,7 +88,7 @@ class TestGoldGeneralizadoConDatos(unittest.TestCase):
         rng = np.random.default_rng(7)
         for c in columnas:
             alterado.loc[futuro, c] = alterado.loc[futuro, c] + rng.integers(1, 50, futuro.sum())
-        for h in HORIZONTES_EXPERIMENTALES:
+        for h in EXPERIMENTAL_HORIZONS:
             with self.subTest(h=h):
                 base = construir_gold(self.panel, h)
                 otro = construir_gold(alterado, h)

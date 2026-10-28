@@ -31,7 +31,7 @@ from src.modeling.evaluate import (
 )
 from denguekay.model.train import MINIMO_CASOS_BROTE
 from src.serving.riesgo import NIVELES
-from denguekay.data.validation.forecast_contract import CLAVE
+from denguekay.data.validation.forecast_contract import KEY
 
 BLOQUE_CALIBRACION_INICIAL = "temporada_2021"
 BLOQUES_SELECCION = ("temporada_2022", "temporada_2023")
@@ -45,7 +45,7 @@ ANTELACION_MINIMA = 2
 N_BOOTSTRAP = 2000
 SEMILLA_BOOTSTRAP = 20261020
 EPS = 1e-6
-COLUMNAS_PREDICCION = [*CLAVE, "semana_inicio", "origen_cierre", "horizonte", "bloque",
+COLUMNAS_PREDICCION = [*KEY, "semana_inicio", "origen_cierre", "horizonte", "bloque",
                        "casos_Dengue", "brote", "umbral_brote_casos", "persistencia"]
 # Métricas en las que mayor es mejor (+1) o peor (-1). RMSE se reporta, no decide.
 SENTIDO = {"f1_050": 1, "auprc": 1, "brier": -1, "razon_mae": -1}
@@ -68,7 +68,7 @@ def validar_predicciones(pred: pd.DataFrame) -> pd.DataFrame:
         raise ValueError("ubigeo debe ser texto de seis dígitos")
     for col in ("semana_inicio", "origen_cierre"):
         datos[col] = pd.to_datetime(datos[col])
-    if datos.duplicated(["horizonte", "bloque", *CLAVE]).any():
+    if datos.duplicated(["horizonte", "bloque", *KEY]).any():
         raise ValueError("Distrito-semanas duplicadas en un bloque")
     if not datos.origen_cierre.lt(datos.semana_inicio).all():
         raise ValueError("Fuga temporal: origen_cierre debe ser anterior a semana_inicio")
@@ -406,7 +406,7 @@ def mediana_semillas(metricas: list[pd.DataFrame]) -> pd.DataFrame:
 
 def desde_compacta(predicciones: pd.DataFrame) -> pd.DataFrame:
     """Convierte ``predicciones_por_bloque.csv`` del experimento 30 al formato estándar (E1)."""
-    comunes = [*CLAVE, "semana_inicio", "origen_cierre", "horizonte", "bloque",
+    comunes = [*KEY, "semana_inicio", "origen_cierre", "horizonte", "bloque",
                "casos_Dengue", "brote", "umbral_brote_casos"]
     reg = predicciones[predicciones.variante.eq(diag.VARIANTE_REGRESION)].copy()
     cls = predicciones[predicciones.variante.eq(diag.VARIANTE_CLASIFICACION)]

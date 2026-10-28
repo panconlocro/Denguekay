@@ -1,27 +1,27 @@
 """
-Bronze (diario, por distrito) -> Silver (semanal, todos los distritos).
+Bronze (daily, per district) -> Silver (weekly, every district).
 
-Junta los parquets de data/bronze/meteo/cache_meteo/, agrega a semana
-(domingo-sábado, calendario MMWR) y cruza con el catálogo
-de distritos para tener nombre/lat/lon en la salida.
+Gathers the parquets of data/bronze/meteo/cache_meteo/, aggregates them to
+weeks (Sunday-Saturday, MMWR calendar) and joins the district catalogue to
+have name/lat/lon in the output.
 """
 
 import pandas as pd
 
 from denguekay.config.paths import CACHE_METEO
-from denguekay.data.keys import normalizar
-from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.keys import normalize
+from denguekay.data.calendar import mmwr_epi_week
 
-# Correcciones puntuales de nombres que salen mal separados/duplicados al
-# cruzar meteo (via GADM) con los otros catálogos. Detectadas la primera vez
-# que se hizo el merge con socio.
-CORRECCIONES_NOMBRE_MERGE = {
+# One-off fixes of names that come out wrongly split/duplicated when
+# joining meteo (via GADM) with the other catalogues. Found the first time
+# the merge with socio was done.
+MERGE_NAME_CORRECTIONS = {
     "Santa Catalinade Mossa": "Santa Catalina de Mossa",
     "Bellavistadela Union": "Bellavista de la Union",
     "San Juande Bigote": "San Juan de Bigote",
 }
 
-AGG_DIARIO_A_SEMANAL = {
+DAILY_TO_WEEKLY_AGG = {
     "temperature_2m_mean": "mean",
     "temperature_2m_max": "max",
     "temperature_2m_min": "min",
@@ -31,10 +31,10 @@ AGG_DIARIO_A_SEMANAL = {
     "wind_speed_10m_max": "max",
     "shortwave_radiation_sum": "sum",
     "et0_fao_evapotranspiration": "sum",
-    "time": "count",  # días con dato en la semana
+    "time": "count",  # days with data in the week
 }
 
-RENOMBRE_SEMANAL = {
+WEEKLY_RENAME = {
     "temperature_2m_mean": "temp_media",
     "temperature_2m_max": "temp_max",
     "temperature_2m_min": "temp_min",
@@ -47,69 +47,69 @@ RENOMBRE_SEMANAL = {
     "time": "n_dias",
 }
 
-COLUMNAS_FINALES = [
+FINAL_COLUMNS = [
     "provincia", "distrito", "lat", "lon", "anio", "semana", "semana_inicio",
     "temp_media", "temp_max", "temp_min", "precip_total_mm", "lluvia_total_mm",
     "hum_rel_media", "viento_max", "radiacion_total", "et0_total",
 ]
 
 
-def cargar_diario_desde_cache(n_distritos_esperado: int) -> pd.DataFrame:
-    """Junta todos los parquets del cache local en un solo DataFrame diario."""
-    archivos = sorted(CACHE_METEO.glob("distrito_*.parquet"))
-    print(len(archivos), "archivos")
-    assert len(archivos) == n_distritos_esperado, (
+def load_daily_from_cache(expected_districts: int) -> pd.DataFrame:
+    """Gather every parquet of the local cache into a single daily DataFrame."""
+    files = sorted(CACHE_METEO.glob("distrito_*.parquet"))
+    print(len(files), "archivos")
+    assert len(files) == expected_districts, (
         "Aún faltan distritos: corre descargar_batch_pendientes() de nuevo."
     )
 
-    diario = pd.concat([pd.read_parquet(f) for f in archivos], ignore_index=True)
-    diario["time"] = pd.to_datetime(diario["time"])
-    return diario
+    daily = pd.concat([pd.read_parquet(f) for f in files], ignore_index=True)
+    daily["time"] = pd.to_datetime(daily["time"])
+    return daily
 
 
-def agregar_a_semanal(
-    diario: pd.DataFrame, distritos: pd.DataFrame, *, include_id: bool = False,
+def aggregate_to_weekly(
+    daily: pd.DataFrame, districts: pd.DataFrame, *, include_id: bool = False,
 ) -> pd.DataFrame:
-    """Agrega el clima diario a semanal y le pega nombre/lat/lon de cada distrito."""
-    diario = diario.copy()
-    diario["time"] = pd.to_datetime(diario["time"])
-    diario["semana_inicio"] = diario["time"].dt.to_period("W-SAT").dt.start_time
+    """Aggregate daily weather to weekly and attach each district's name/lat/lon."""
+    daily = daily.copy()
+    daily["time"] = pd.to_datetime(daily["time"])
+    daily["semana_inicio"] = daily["time"].dt.to_period("W-SAT").dt.start_time
 
-    semanal = (
-        diario.groupby(["id_distrito", "semana_inicio"])
-        .agg(AGG_DIARIO_A_SEMANAL)
-        .rename(columns=RENOMBRE_SEMANAL)
+    weekly = (
+        daily.groupby(["id_distrito", "semana_inicio"])
+        .agg(DAILY_TO_WEEKLY_AGG)
+        .rename(columns=WEEKLY_RENAME)
         .reset_index()
     )
 
-    # Quitar semanas parciales en los bordes (primera y última)
-    semanal = semanal[semanal["n_dias"] == 7].drop(columns="n_dias")
+    # Drop partial weeks at the edges (first and last)
+    weekly = weekly[weekly["n_dias"] == 7].drop(columns="n_dias")
 
-    # La numeración MMWR conserva 2025-S53 y comienza 2026-S01 el 4 de enero.
-    calendario = semana_epi_mmwr(semanal["semana_inicio"])
-    semanal["anio"] = calendario["anio_epi"].to_numpy()
-    semanal["semana"] = calendario["semana_epi"].to_numpy()
+    # MMWR numbering keeps 2025-S53 and starts 2026-S01 on 4 January.
+    calendar = mmwr_epi_week(weekly["semana_inicio"])
+    weekly["anio"] = calendar["anio_epi"].to_numpy()
+    weekly["semana"] = calendar["semana_epi"].to_numpy()
 
-    final = semanal.merge(distritos, on="id_distrito", how="left")
-    columns = (["id_distrito"] if include_id else []) + COLUMNAS_FINALES
+    final = weekly.merge(districts, on="id_distrito", how="left")
+    columns = (["id_distrito"] if include_id else []) + FINAL_COLUMNS
     final = final[columns].sort_values(["distrito", "semana_inicio"])
     return final
 
 
-def limpiar_nombres_para_cruce(meteo: pd.DataFrame) -> pd.DataFrame:
+def clean_names_for_join(meteo: pd.DataFrame) -> pd.DataFrame:
     """
-    Corrige nombres de distrito problemáticos (mal separados o duplicados
-    entre provincias, ej. "Salitral" existe en Sullana y en Morropón) y
-    agrega distrito_key, dejando meteo lista para cruzar con socio/epi.
+    Fix problematic district names (wrongly split or duplicated across
+    provinces, e.g. "Salitral" exists in Sullana and in Morropon) and
+    add distrito_key, leaving meteo ready to join with socio/epi.
     """
     meteo = meteo.copy()
-    meteo["distrito"] = meteo["distrito"].replace(CORRECCIONES_NOMBRE_MERGE)
+    meteo["distrito"] = meteo["distrito"].replace(MERGE_NAME_CORRECTIONS)
 
-    # "Salitral" se repite en dos provincias: desambiguar la de Sullana
+    # "Salitral" repeats in two provinces: disambiguate the one in Sullana
     meteo.loc[
         (meteo["provincia"] == "Sullana") & (meteo["distrito"] == "Salitral"),
         "distrito",
     ] = "Salitral_s"
 
-    meteo["distrito_key"] = meteo["distrito"].apply(normalizar)
+    meteo["distrito_key"] = meteo["distrito"].apply(normalize)
     return meteo

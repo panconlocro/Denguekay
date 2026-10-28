@@ -10,15 +10,15 @@ from pathlib import Path
 
 import pandas as pd
 
-from denguekay.data.loading import cargar_integrado
+from denguekay.data.loading import load_integrated
 from src.modeling.features import HORIZONTES, columnas_gold, validar_gold
-from denguekay.data.validation.forecast_contract import HORIZONTES_EXPERIMENTALES
+from denguekay.data.validation.forecast_contract import EXPERIMENTAL_HORIZONS
 from src.modeling.sociodemografia import DIRECTAS
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.config.paths import (
     GOLD, RESEARCH, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED, UBIGEO_CATALOG,
 )
-from denguekay.data.validation.forecast_contract import CLAVE
+from denguekay.data.validation.forecast_contract import KEY
 from denguekay.data.validation.integrated_expectations import (
     coverage_path, load_case_coverage, validate_complete, validate_geography,
 )
@@ -37,7 +37,7 @@ def familias_predictoras(horizonte: int) -> dict[str, list[str]]:
     Las familias opcionales se ensayan mediante ablaciones; devolverlas aquí
     no implica entrenar todas juntas ni validar su disponibilidad operativa.
     """
-    if horizonte not in HORIZONTES_EXPERIMENTALES:
+    if horizonte not in EXPERIMENTAL_HORIZONS:
         raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     h = horizonte
     return {
@@ -94,7 +94,7 @@ def auditar_traspaso(
     silver_path, gold_dir, catalog_path, historia_path = map(
         Path, (silver_path, gold_dir, catalog_path, historia_path),
     )
-    panel = cargar_integrado(silver_path)
+    panel = load_integrated(silver_path)
     cobertura_path = coverage_path(silver_path)
     cobertura = load_case_coverage(cobertura_path)
     if cobertura is None:
@@ -142,7 +142,7 @@ def auditar_traspaso(
                 str(y): int(n) for y, n in gold.groupby("anio").brote.sum().items()
             },
         }
-        etiquetas.append(gold[CLAVE + ["brote", "umbral_brote_casos"]].sort_values(CLAVE).reset_index(drop=True))
+        etiquetas.append(gold[KEY + ["brote", "umbral_brote_casos"]].sort_values(KEY).reset_index(drop=True))
     if not etiquetas[0].equals(etiquetas[1]):
         raise ValueError("Las etiquetas difieren entre horizontes")
     if resumen["horizontes"]["2"]["positivos_por_anio"] != manifiesto.get("positivos_brote_por_anio"):

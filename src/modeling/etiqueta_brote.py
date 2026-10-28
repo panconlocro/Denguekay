@@ -11,7 +11,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from denguekay.data.validation.forecast_contract import CLAVE
+from denguekay.data.validation.forecast_contract import KEY
 
 
 @dataclass(frozen=True)
@@ -24,12 +24,12 @@ class ConfiguracionBroteEstacional:
 
 
 def _validar_casos(datos: pd.DataFrame, nombre: str) -> pd.DataFrame:
-    faltan = set(CLAVE + ["casos_Dengue"]) - set(datos)
+    faltan = set(KEY + ["casos_Dengue"]) - set(datos)
     if faltan:
         raise ValueError(f"{nombre} carece de columnas: {sorted(faltan)}")
-    if datos.empty or datos[CLAVE].isna().any().any():
+    if datos.empty or datos[KEY].isna().any().any():
         raise ValueError(f"{nombre} vacío o con llaves incompletas/duplicadas")
-    limpio = datos[CLAVE + ["casos_Dengue"]].copy()
+    limpio = datos[KEY + ["casos_Dengue"]].copy()
     limpio["ubigeo"] = limpio.ubigeo.astype("string").str.zfill(6)
     if not limpio.ubigeo.str.fullmatch(r"\d{6}").all():
         raise ValueError(f"{nombre} contiene UBIGEO inválido")
@@ -39,7 +39,7 @@ def _validar_casos(datos: pd.DataFrame, nombre: str) -> pd.DataFrame:
         raise ValueError(f"{nombre} contiene años o semanas inválidos")
     limpio["anio"] = limpio.anio.astype(int)
     limpio["semana"] = limpio.semana.astype(int)
-    if limpio.duplicated(CLAVE).any():
+    if limpio.duplicated(KEY).any():
         raise ValueError(f"{nombre} contiene llaves duplicadas")
     limpio["casos_Dengue"] = pd.to_numeric(limpio.casos_Dengue, errors="raise")
     if limpio.casos_Dengue.isna().any() or not np.isfinite(limpio.casos_Dengue.to_numpy(float)).all() or (limpio.casos_Dengue < 0).any() or (limpio.casos_Dengue % 1 != 0).any():
@@ -94,13 +94,13 @@ def etiquetar_brote_estacional(
         salidas.append(umbral.rename(anio))
     tabla = pd.concat(salidas, axis=1).stack().rename("umbral_brote_casos").reset_index()
     tabla = tabla.rename(columns={"level_2": "anio"})
-    claves = actual[CLAVE].assign(semana_ref=actual.semana.clip(upper=52))
+    claves = actual[KEY].assign(semana_ref=actual.semana.clip(upper=52))
     salida = claves.merge(tabla, on=["ubigeo", "anio", "semana_ref"], how="left", validate="many_to_one", sort=False)
     if len(salida) != len(panel) or salida.umbral_brote_casos.isna().any():
         raise ValueError("No se pudo asignar umbral a todas las distrito-semanas")
     salida["brote"] = ((actual.casos_Dengue.to_numpy() > salida.umbral_brote_casos.to_numpy())
                        & (actual.casos_Dengue.to_numpy() >= minimo_casos)).astype("int8")
-    return salida[CLAVE + ["umbral_brote_casos", "brote"]]
+    return salida[KEY + ["umbral_brote_casos", "brote"]]
 
 
 def umbral_brote_futuro(
