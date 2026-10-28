@@ -76,18 +76,21 @@ BACKEND_BENCHMARK_SQLITE = BACKEND_DOCS / "benchmark_sqlite.json"
 BACKEND_BENCHMARK_POSTGRESQL = BACKEND_DOCS / "benchmark_postgresql.json"
 METRICAS_COMPACTAS = DOCS / "modeling" / "metricas" / "validacion_temporal_compacta.json"
 PREDICCIONES_COMPACTAS = MODELS / "experimentos" / "validacion_temporal_compacta" / "predicciones_por_bloque.csv"
-# Encargo de arquitectura multi-horizonte (docs/modeling/plan_arquitectura_horizontes.md)
-METRICAS_ARQUITECTURA = DOCS / "modeling" / "metricas" / "arquitectura_horizontes.json"
-FIGURAS_ARQUITECTURA = DOCS / "modeling" / "figuras" / "arquitectura_horizontes"
+# Research studies, frozen in research/<study>/ (docs/decisions/0001-repo-restructure.md).
+RESEARCH = ROOT / "research"
+RESEARCH_PRIMEROS_MODELOS = RESEARCH / "03_first_models_and_ablations"
+# Encargo de arquitectura multi-horizonte (research/04_horizon_architecture/docs/plan_arquitectura_horizontes.md)
+METRICAS_ARQUITECTURA = RESEARCH / "04_horizon_architecture" / "docs" / "metricas" / "arquitectura_horizontes.json"
+FIGURAS_ARQUITECTURA = RESEARCH / "04_horizon_architecture" / "docs" / "figuras"
 EXPERIMENTOS_ARQUITECTURA = MODELS / "experimentos" / "arquitectura_horizontes"
-# Encargo de feature engineering e hiperparámetros sobre E3·S4_s2 (docs/modeling/fe_hiperparametros.md)
-METRICAS_FE_HIPERPARAMETROS = DOCS / "modeling" / "metricas" / "fe_hiperparametros.json"
-FIGURAS_FE_HIPERPARAMETROS = DOCS / "modeling" / "figuras" / "fe_hiperparametros"
+# Encargo de feature engineering e hiperparámetros sobre E3·S4_s2 (research/05_fe_hyperparameters/docs/fe_hiperparametros.md)
+METRICAS_FE_HIPERPARAMETROS = RESEARCH / "05_fe_hyperparameters" / "docs" / "metricas" / "fe_hiperparametros.json"
+FIGURAS_FE_HIPERPARAMETROS = RESEARCH / "05_fe_hyperparameters" / "docs" / "figuras"
 EXPERIMENTOS_FE_HIPERPARAMETROS = MODELS / "experimentos" / "fe_hiperparametros"
 DICCIONARIO_VARIABLES = DOCS / "modeling" / "diccionario_variables.md"
 SERVING_EJECUCIONES =SERVING_MODELS / "ejecuciones"
 SERVING_PROTOCOLO_REGENERADO = SERVING_MODELS / "protocolo_regenerado"
-EDA_DOCS = DOCS / "eda"
+EDA_DOCS = RESEARCH / "01_eda" / "docs"
 EDA_FIGURAS = EDA_DOCS / "figuras"
 EDA_METRICAS = EDA_DOCS / "metricas"
 

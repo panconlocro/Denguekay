@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.eda.calidad import semana_epi_mmwr as calendario_eda
 from src.eda.carga import cargar_integrado
 from src.processing.agregacion_semanal import AGG_DIARIO_A_SEMANAL, agregar_a_semanal
 from src.utils.calendario import semana_epi_mmwr
@@ -25,7 +24,6 @@ class CalendarioTests(unittest.TestCase):
         resultado = semana_epi_mmwr(fechas)
         self.assertEqual(list(resultado.itertuples(index=False, name=None)), esperado)
         pd.testing.assert_index_equal(resultado.index, fechas.index)
-        self.assertIs(calendario_eda, semana_epi_mmwr)
 
     def test_todo_2026_tiene_numeracion_consecutiva_correcta(self):
         fechas = pd.Series(pd.date_range("2026-01-04", periods=52, freq="W-SUN"))

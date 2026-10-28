@@ -1,6 +1,6 @@
 # Fases del EDA — qué preguntar, qué calcular, qué decidir
 
-Cada fase = un notebook + figuras + métricas + sección en `docs/eda/hallazgos.md` + cierre con `revisor-eda` + confirmación de Rosa. Las cifras entre paréntesis son las ya medidas en `diccionario_datos.md`: úsalas como **chequeo de cordura**, no como sustituto de recalcularlas.
+Cada fase = un notebook + figuras + métricas + sección en `research/01_eda/docs/hallazgos.md` + cierre con `revisor-eda` + confirmación de Rosa. Las cifras entre paréntesis son las ya medidas en `diccionario_datos.md`: úsalas como **chequeo de cordura**, no como sustituto de recalcularlas.
 
 ## Fase 1 — Integridad y calidad (`10_eda_integridad_calidad`)
 Pregunta guía: ¿puedo confiar en estos datos para analizarlos, y dónde no?
@@ -62,4 +62,4 @@ Pregunta guía: ¿qué decidimos y qué queda pendiente para el feature engineer
 - Variables: mantener, descartar, transformar; rezagos candidatos; agregaciones sugeridas; tratamiento de 2025.
 - Riesgos: leakage, dependencia de 2 brotes, subregistro 2025, sobredispersión, desbalance.
 - Limitaciones y preguntas abiertas para el asesor y para DIRESA (p. ej. discrepancia de casos de 2025).
-- Escribe `docs/eda/informe_eda.md` (resumen ejecutivo + hallazgos por fase + decisiones + limitaciones) en español, apto para el capítulo de Data Understanding de la tesis, **sin citas inventadas**.
+- Escribe `research/01_eda/docs/informe_eda.md` (resumen ejecutivo + hallazgos por fase + decisiones + limitaciones) en español, apto para el capítulo de Data Understanding de la tesis, **sin citas inventadas**.
