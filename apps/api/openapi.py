@@ -85,7 +85,9 @@ def specification(app):
         for operation in methods.values():
             for parameter in operation.get("parameters", []):
                 if parameter["name"] in descriptions:
-                    parameter.setdefault("description", descriptions[parameter["name"]])
+                    # Assigned, not setdefault: newer FastAPI versions already copy the Field description of
+                    # the Ubigeo alias into path parameters, and the published contract keeps this text.
+                    parameter["description"] = descriptions[parameter["name"]]
     factory = app.state.session_factory
     if factory is not None:
         try:
