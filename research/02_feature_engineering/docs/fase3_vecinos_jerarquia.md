@@ -1,6 +1,6 @@
 # Fase 3 — vecinos y jerarquía
 
-**Estado:** fase 3 ejecutada; la fase 4 ya fue reanudada y documentada en [`fase4_clima.md`](fase4_clima.md). El [notebook 19](../../notebooks/19_fe_vecinos_jerarquia.ipynb) se ejecutó sobre el integrado actual. Las [métricas](metricas/fase3_vecinos_jerarquia.json) y la [figura](figuras/fase3_vecinos_jerarquia/01_asociacion_contexto.png) quedan junto a este informe. No se escribió en `data/gold/`.
+**Estado:** fase 3 ejecutada; la fase 4 ya fue reanudada y documentada en [`fase4_clima.md`](fase4_clima.md). El [notebook 19](../notebooks/19_fe_vecinos_jerarquia.ipynb) se ejecutó sobre el integrado actual. Las [métricas](metricas/fase3_vecinos_jerarquia.json) y la [figura](figuras/fase3_vecinos_jerarquia/01_asociacion_contexto.png) quedan junto a este informe. No se escribió en `data/gold/`.
 
 ## Método
 

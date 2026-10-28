@@ -1,6 +1,6 @@
 # Fase 4 — clima
 
-**Estado:** ejecutada. El [notebook 20](../../notebooks/20_fe_clima.ipynb) usa el integrado actual; las [métricas](metricas/fase4_clima.json) y la [figura](figuras/fase4_clima/01_ablacion_mae_clima.png) son reproducibles. No se escribió en `data/gold/`. La fase 5 se completó después y está documentada en [`fase5_sociodemografia.md`](fase5_sociodemografia.md).
+**Estado:** ejecutada. El [notebook 20](../notebooks/20_fe_clima.ipynb) usa el integrado actual; las [métricas](metricas/fase4_clima.json) y la [figura](figuras/fase4_clima/01_ablacion_mae_clima.png) son reproducibles. No se escribió en `data/gold/`. La fase 5 se completó después y está documentada en [`fase5_sociodemografia.md`](fase5_sociodemografia.md).
 
 ## Variables y disponibilidad
 

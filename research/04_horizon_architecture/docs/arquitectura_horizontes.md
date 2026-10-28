@@ -1,14 +1,14 @@
 # Arquitectura multi-horizonte (h=2, 3, 4)
 
-**Estado:** encargo cerrado (fases 0–5). Este documento se completa por fases; el encargo está en [`plan_arquitectura_horizontes.md`](plan_arquitectura_horizontes.md). Las cifras salen de [`metricas/arquitectura_horizontes.json`](metricas/arquitectura_horizontes.json) (una sección por fase) y del [notebook 31](../../notebooks/31_modelado_arquitectura_horizontes.ipynb). Equipo de referencia: GPU NVIDIA (`device="cuda"`), XGBoost 3.4.1.
+**Estado:** encargo cerrado (fases 0–5). Este documento se completa por fases; el encargo está en [`plan_arquitectura_horizontes.md`](plan_arquitectura_horizontes.md). Las cifras salen de [`metricas/arquitectura_horizontes.json`](metricas/arquitectura_horizontes.json) (una sección por fase) y del [notebook 31](../notebooks/31_modelado_arquitectura_horizontes.ipynb). Equipo de referencia: GPU NVIDIA (`device="cuda"`), XGBoost 3.4.1.
 
 ## Protocolo
 
-Fijado **antes** de comparar arquitecturas (fase 2). No se cambia después de ver resultados. Implementación: [`src/modeling/protocolo_arquitectura.py`](../../src/modeling/protocolo_arquitectura.py), con pruebas en `tests/test_protocolo_arquitectura.py`.
+Fijado **antes** de comparar arquitecturas (fase 2). No se cambia después de ver resultados. Implementación: [`src/modeling/protocolo_arquitectura.py`](../../../src/modeling/protocolo_arquitectura.py), con pruebas en `tests/test_protocolo_arquitectura.py`.
 
 ### 1. Bloques y papel de cada temporada
 
-Origen móvil por temporada epidemiológica (semana 35 a semana 34), igual que [`validacion_temporal_compacta.py`](../../src/modeling/validacion_temporal_compacta.py). Cada modelo se entrena desde cero solo con etiquetas cerradas antes del primer origen del bloque y queda fijo dentro del bloque.
+Origen móvil por temporada epidemiológica (semana 35 a semana 34), igual que [`validacion_temporal_compacta.py`](../../../src/modeling/validacion_temporal_compacta.py). Cada modelo se entrena desde cero solo con etiquetas cerradas antes del primer origen del bloque y queda fijo dentro del bloque.
 
 | Temporada | Papel |
 |---|---|
@@ -130,7 +130,7 @@ Rangos de empate de E1 entre semillas:
 
 ## Fase 3: estrategia multi-horizonte
 
-Matrices de h=1 a 6 construidas en memoria con `features.construir_gold`. Un test comprueba que reproduce exactamente los gold h=2/h=4 (columnas y valores), y la causalidad se verifica por perturbación del futuro para cada h. Gold persistido sigue siendo solo h=2/h=4. La E1 en memoria reproduce las predicciones del experimento 30, con diferencias de hasta 3·10⁻⁵ casos y 3·10⁻⁸ de probabilidad, atribuibles a la lectura del CSV de gold. Las métricas del protocolo coinciden con las de la fase 2. Figura: [`curva_habilidad_horizonte.png`](figuras/arquitectura_horizontes/curva_habilidad_horizonte.png).
+Matrices de h=1 a 6 construidas en memoria con `features.construir_gold`. Un test comprueba que reproduce exactamente los gold h=2/h=4 (columnas y valores), y la causalidad se verifica por perturbación del futuro para cada h. Gold persistido sigue siendo solo h=2/h=4. La E1 en memoria reproduce las predicciones del experimento 30, con diferencias de hasta 3·10⁻⁵ casos y 3·10⁻⁸ de probabilidad, atribuibles a la lectura del CSV de gold. Las métricas del protocolo coinciden con las de la fase 2. Figura: [`curva_habilidad_horizonte.png`](figuras/curva_habilidad_horizonte.png).
 
 ### 3.1 Curva de habilidad (E1, semilla 17)
 
@@ -180,7 +180,7 @@ Coherencia entre horizontes (mediana de semillas, porcentaje de semanas objetivo
 
 ## Fase 4: formulación de la salida
 
-Formulaciones definidas en [`salida_probabilistica.py`](../../src/modeling/salida_probabilistica.py):
+Formulaciones definidas en [`salida_probabilistica.py`](../../../src/modeling/salida_probabilistica.py):
 
 | Id | Media de casos | Probabilidad de brote |
 |---|---|---|

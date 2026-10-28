@@ -1,6 +1,6 @@
 # MLflow y Great Expectations en el entrenamiento
 
-**Estado al 1 de octubre de 2026.** Este documento explica cómo quedaron integrados **MLflow** (seguimiento de experimentos) y **Great Expectations** (calidad de datos) en el flujo de modelado, cómo usarlos y qué falta. Implementa la migración propuesta en el [inventario](inventario_entrenamiento_mlflow.md) **sin cambiar el protocolo estadístico**: cortes temporales, hiperparámetros, criterios de selección y métricas siguen definidos en `src/modeling/`.
+**Estado al 1 de octubre de 2026.** Este documento explica cómo quedaron integrados **MLflow** (seguimiento de experimentos) y **Great Expectations** (calidad de datos) en el flujo de modelado, cómo usarlos y qué falta. Implementa la migración propuesta en el [inventario](../../research/03_first_models_and_ablations/docs/inventario_entrenamiento_mlflow.md) **sin cambiar el protocolo estadístico**: cortes temporales, hiperparámetros, criterios de selección y métricas siguen definidos en `src/modeling/`.
 
 Todavía **no hay modelo final**. Por eso no se usa el *Model Registry* de MLflow: cada corrida queda como experimento exploratorio comparable con las demás.
 

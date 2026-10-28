@@ -56,29 +56,29 @@ cada horizonte se evaluará por separado. El dataset integrado de `data/silver/i
 features y `data/gold/` contiene la salida validada de la fase 6.
 
 Las fases 1–7 ya tienen notebooks ejecutados (`17`–`23`) e informes en
-`docs/feature_engineering/`. La [fase 4](docs/feature_engineering/fase4_clima.md)
-prueba ventanas climáticas causales. La [fase 5](docs/feature_engineering/fase5_sociodemografia.md)
-compara demografía fija y anual reconstruida. La [fase 6](docs/feature_engineering/fase6_integracion.md)
+`docs/feature_engineering/`. La [fase 4](research/02_feature_engineering/docs/fase4_clima.md)
+prueba ventanas climáticas causales. La [fase 5](research/02_feature_engineering/docs/fase5_sociodemografia.md)
+compara demografía fija y anual reconstruida. La [fase 6](research/02_feature_engineering/docs/fase6_integracion.md)
 integra candidatos para `h=2` y `h=4`, y conserva un manifiesto de linaje.
-La [fase 7](docs/feature_engineering/fase7_sintesis_traspaso.md) audita los gold,
+La [fase 7](research/02_feature_engineering/docs/fase7_sintesis_traspaso.md) audita los gold,
 enumera las variables candidatas y documenta el contrato para el primer XGBoost.
-El [primer experimento](docs/modeling/primer_xgboost.md) compara regresión de casos
+El [primer experimento](research/03_first_models_and_ablations/docs/primer_xgboost.md) compara regresión de casos
 y clasificación directa, con cortes temporales para ambos horizontes. La
-[ablación espacial](docs/modeling/ablacion_espacial.md) prueba por separado
-vecinos y jerarquía, y la [ablación climática](docs/modeling/ablacion_clima.md)
+[ablación espacial](research/03_first_models_and_ablations/docs/ablacion_espacial.md) prueba por separado
+vecinos y jerarquía, y la [ablación climática](research/03_first_models_and_ablations/docs/ablacion_clima.md)
 compara medias observadas y anomalías ajustadas por corte, conservando F1 como
-criterio provisional. La [ablación sociodemográfica](docs/modeling/ablacion_sociodemografica.md)
+criterio provisional. La [ablación sociodemográfica](research/03_first_models_and_ablations/docs/ablacion_sociodemografica.md)
 separa rasgos censales fijos de estimaciones anuales reconstruidas; el
-[cribado individual de fracciones](docs/modeling/ablacion_fracciones.md)
-compara las 15 por separado. La [comparación condicional](docs/modeling/ablacion_poblacion_sin_seguro.md)
+[cribado individual de fracciones](research/03_first_models_and_ablations/docs/ablacion_fracciones.md)
+compara las 15 por separado. La [comparación condicional](research/03_first_models_and_ablations/docs/ablacion_poblacion_sin_seguro.md)
 evalúa población censal fija y fracción sin seguro, solas y juntas. La
-[validación temporal compacta](docs/modeling/validacion_temporal_compacta.md)
+[validación temporal compacta](research/03_first_models_and_ablations/docs/validacion_temporal_compacta.md)
 compara tres matrices pequeñas con umbrales calibrados solo en temporadas anteriores.
 Ambos gold
 incluyen `brote`, definido como
 semana distrital con casos por encima de la media de esa semana en los cinco
 años previos + **1,5 DE**, con un mínimo provisional de **2 casos**;
-[la sensibilidad](docs/feature_engineering/revision_definicion_brote.md)
+[la sensibilidad](research/02_feature_engineering/docs/revision_definicion_brote.md)
 documenta el efecto de exigir 1 o 5 casos.
 
 Para regenerar los dos CSV de `data/gold/` desde el silver completo:

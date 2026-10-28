@@ -5,7 +5,7 @@ Documento que reúne lo detectado en las fases 1-6 del EDA. Cada punto conserva 
 **Actualización del 1 de octubre de 2026:** se corrigió la numeración del
 calendario en el código, sin alterar las entradas ni los resultados
 históricos. La evidencia y los límites están en
-[`correccion_calendario.md`](../feature_engineering/correccion_calendario.md).
+[`correccion_calendario.md`](../../02_feature_engineering/docs/correccion_calendario.md).
 Completar el panel con 2025-S53 sigue pendiente.
 
 Toda cifra está en `docs/eda/metricas/<fase>.json`; entre corchetes va `fase: clave`. El detalle de cada punto está en `docs/eda/hallazgos.md`.

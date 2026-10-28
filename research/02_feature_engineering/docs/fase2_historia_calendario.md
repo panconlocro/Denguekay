@@ -1,6 +1,6 @@
 # Fase 2 — historia propia y calendario
 
-**Estado:** fase 2 ejecutada; revisión de Rosa pendiente antes de fase 3. El [notebook 18](../../notebooks/18_fe_historia_calendario.ipynb) se ejecutó sobre el integrado actual. Las [métricas](metricas/fase2_historia_calendario.json) y la [figura](figuras/fase2_historia_calendario/01_reglas_por_horizonte.png) quedan junto a este informe. No se escribió en `data/gold/`.
+**Estado:** fase 2 ejecutada; revisión de Rosa pendiente antes de fase 3. El [notebook 18](../notebooks/18_fe_historia_calendario.ipynb) se ejecutó sobre el integrado actual. Las [métricas](metricas/fase2_historia_calendario.json) y la [figura](figuras/fase2_historia_calendario/01_reglas_por_horizonte.png) quedan junto a este informe. No se escribió en `data/gold/`.
 
 ## Método
 

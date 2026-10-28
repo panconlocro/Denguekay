@@ -1,6 +1,6 @@
 # Fase 1 — contrato temporal y objetivo
 
-**Estado:** análisis ejecutado; decisiones y aprobación de Rosa pendientes. El [notebook](../../notebooks/17_fe_contrato_objetivo.ipynb) se ejecutó de principio a fin sobre el integrado actual. Las cifras están en [métricas](metricas/fase1_contrato_objetivo.json) y el contraste visual en [figura](figuras/fase1_contrato_objetivo/01_positivos_por_definicion.png). Los cuatro conteos de objetivos se recalcularon con un script independiente de las funciones del notebook y coincidieron.
+**Estado:** análisis ejecutado; decisiones y aprobación de Rosa pendientes. El [notebook](../notebooks/17_fe_contrato_objetivo.ipynb) se ejecutó de principio a fin sobre el integrado actual. Las cifras están en [métricas](metricas/fase1_contrato_objetivo.json) y el contraste visual en [figura](figuras/fase1_contrato_objetivo/01_positivos_por_definicion.png). Los cuatro conteos de objetivos se recalcularon con un script independiente de las funciones del notebook y coincidieron.
 
 ## Hallazgos
 

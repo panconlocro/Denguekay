@@ -1,6 +1,6 @@
 # Inventario del entrenamiento para migrar los experimentos a MLflow
 
-> **Actualización (1 de octubre de 2026):** la migración descrita aquí ya se implementó, junto con validaciones de Great Expectations. Ver [MLflow y Great Expectations en el entrenamiento](mlflow_great_expectations.md). Este inventario se conserva como registro del estado previo.
+> **Actualización (1 de octubre de 2026):** la migración descrita aquí ya se implementó, junto con validaciones de Great Expectations. Ver [MLflow y Great Expectations en el entrenamiento](../../../docs/modeling/mlflow_great_expectations.md). Este inventario se conserva como registro del estado previo.
 
 **Estado al 30 de septiembre de 2026.** Este documento identifica los archivos que hoy preparan, ejecutan y documentan los experimentos. Es un mapa de migración; **MLflow todavía no está integrado**. La prohibición de MLflow en `CLAUDE.md` corresponde al flujo anterior de EDA; la decisión actual del equipo de migrar el entrenamiento prevalece para esta etapa.
 
@@ -21,7 +21,7 @@ silver/integrado/meteo_socio_epi_piura_2017_2025.csv
   → docs/modeling/metricas/*.json + models/experimentos/*
 ```
 
-Los **notebooks 22 y 23 son del feature engineering**, no entrenan XGBoost: el 22 genera y valida `data/gold/meteo_socio_epi_piura_2017_2025_h2_gold.csv` y `..._h4_gold.csv`; el 23 audita las variables y el traspaso. El [manifiesto de fase 6](../../data/gold/manifest_fase6.json) registra el linaje de gold. Los CSV de `data/gold/` y los modelos/predicciones de `models/experimentos/` están ignorados por Git; deben estar disponibles por separado para reproducir resultados después del push. Los JSON de métricas y los informes en `docs/modeling/` sí son texto versionable.
+Los **notebooks 22 y 23 son del feature engineering**, no entrenan XGBoost: el 22 genera y valida `data/gold/meteo_socio_epi_piura_2017_2025_h2_gold.csv` y `..._h4_gold.csv`; el 23 audita las variables y el traspaso. El [manifiesto de fase 6](../../../data/gold/manifest_fase6.json) registra el linaje de gold. Los CSV de `data/gold/` y los modelos/predicciones de `models/experimentos/` están ignorados por Git; deben estar disponibles por separado para reproducir resultados después del push. Los JSON de métricas y los informes en `docs/modeling/` sí son texto versionable.
 
 Cada fila de gold es una distrito-semana **objetivo** `(ubigeo, anio, semana)`. El origen de pronóstico es `t−h`; las variables de casos, clima y vecinos no pueden usar semanas posteriores a ese origen. `casos_Dengue` y `brote` son objetivos, no predictores. Las primeras semanas con historia incompleta permanecen en gold y se apartan de las matrices correspondientes; no se rellenan con cero.
 
@@ -31,13 +31,13 @@ Los notebooks son **orquestadores y tablas de inspección**: importan una funci�
 
 | Notebook | Módulo invocado | Qué compara |
 |---|---|---|
-| [`24_modelado_xgboost_dos_objetivos.ipynb`](../../notebooks/24_modelado_xgboost_dos_objetivos.ipynb) | [`train.py`](../../src/modeling/train.py): `ejecutar_experimento()` | Primer XGBoost: `base_4`/`base_6`, regresión, clasificación y persistencia; h=2/4. |
-| [`25_modelado_ablacion_espacial.ipynb`](../../notebooks/25_modelado_ablacion_espacial.ipynb) | [`ablacion_espacial.py`](../../src/modeling/ablacion_espacial.py): `ejecutar_ablacion_espacial()` | Base frente a vecinos, jerarquía provincia/región y combinación. |
-| [`26_modelado_ablacion_clima.ipynb`](../../notebooks/26_modelado_ablacion_clima.ipynb) | [`ablacion_clima.py`](../../src/modeling/ablacion_clima.py): `ejecutar_ablacion_clima()` | Base frente a clima observado, anomalías por fold y combinación. |
-| [`27_modelado_ablacion_sociodemografica.ipynb`](../../notebooks/27_modelado_ablacion_sociodemografica.ipynb) | [`ablacion_sociodemografica.py`](../../src/modeling/ablacion_sociodemografica.py): `ejecutar_ablacion_sociodemografica()` | Población, fracciones y eje urbano; rasgos fijos de 2017 frente a reconstrucciones anuales retrospectivas. |
-| [`28_modelado_ablacion_fracciones.ipynb`](../../notebooks/28_modelado_ablacion_fracciones.ipynb) | [`ablacion_fracciones.py`](../../src/modeling/ablacion_fracciones.py): `ejecutar_ablacion_fracciones()` | Las 15 fracciones fijas y las 15 anuales, una por vez sobre la base. |
-| [`29_modelado_ablacion_poblacion_sin_seguro.ipynb`](../../notebooks/29_modelado_ablacion_poblacion_sin_seguro.ipynb) | [`ablacion_poblacion_sin_seguro.py`](../../src/modeling/ablacion_poblacion_sin_seguro.py): `ejecutar_ablacion_poblacion_sin_seguro()` | Base, población censal, fracción sin seguro y ambas juntas. |
-| [`30_modelado_validacion_temporal_compacta.ipynb`](../../notebooks/30_modelado_validacion_temporal_compacta.ipynb) | [`validacion_temporal_compacta.py`](../../src/modeling/validacion_temporal_compacta.py): `ejecutar_validacion_temporal_compacta()` | `base_4`, `base_6` y `base_6 + población`, con calibración temporal progresiva. |
+| [`24_modelado_xgboost_dos_objetivos.ipynb`](../notebooks/24_modelado_xgboost_dos_objetivos.ipynb) | [`train.py`](../../../src/modeling/train.py): `ejecutar_experimento()` | Primer XGBoost: `base_4`/`base_6`, regresión, clasificación y persistencia; h=2/4. |
+| [`25_modelado_ablacion_espacial.ipynb`](../notebooks/25_modelado_ablacion_espacial.ipynb) | [`ablacion_espacial.py`](../code/ablacion_espacial.py): `ejecutar_ablacion_espacial()` | Base frente a vecinos, jerarquía provincia/región y combinación. |
+| [`26_modelado_ablacion_clima.ipynb`](../notebooks/26_modelado_ablacion_clima.ipynb) | [`ablacion_clima.py`](../code/ablacion_clima.py): `ejecutar_ablacion_clima()` | Base frente a clima observado, anomalías por fold y combinación. |
+| [`27_modelado_ablacion_sociodemografica.ipynb`](../notebooks/27_modelado_ablacion_sociodemografica.ipynb) | [`ablacion_sociodemografica.py`](../code/ablacion_sociodemografica.py): `ejecutar_ablacion_sociodemografica()` | Población, fracciones y eje urbano; rasgos fijos de 2017 frente a reconstrucciones anuales retrospectivas. |
+| [`28_modelado_ablacion_fracciones.ipynb`](../notebooks/28_modelado_ablacion_fracciones.ipynb) | [`ablacion_fracciones.py`](../code/ablacion_fracciones.py): `ejecutar_ablacion_fracciones()` | Las 15 fracciones fijas y las 15 anuales, una por vez sobre la base. |
+| [`29_modelado_ablacion_poblacion_sin_seguro.ipynb`](../notebooks/29_modelado_ablacion_poblacion_sin_seguro.ipynb) | [`ablacion_poblacion_sin_seguro.py`](../code/ablacion_poblacion_sin_seguro.py): `ejecutar_ablacion_poblacion_sin_seguro()` | Base, población censal, fracción sin seguro y ambas juntas. |
+| [`30_modelado_validacion_temporal_compacta.ipynb`](../notebooks/30_modelado_validacion_temporal_compacta.ipynb) | [`validacion_temporal_compacta.py`](../../../src/modeling/validacion_temporal_compacta.py): `ejecutar_validacion_temporal_compacta()` | `base_4`, `base_6` y `base_6 + población`, con calibración temporal progresiva. |
 
 ## 4. Módulos Python y responsabilidad
 
@@ -45,28 +45,28 @@ Los notebooks son **orquestadores y tablas de inspección**: importan una funci�
 
 | Archivo | Responsabilidad actual | Punto de migración |
 |---|---|---|
-| [`train.py`](../../src/modeling/train.py) | `PARAMETROS_BASE`, preparación de gold, cortes de temporada y año calendario, ajuste, predicción y primer experimento. Un modelo nuevo se entrena antes del primer origen de cada bloque y queda fijo dentro de ese bloque. | Registrar parámetros, horizonte, variante, columnas, corte, tamaño train/test, modelo por fold y predicciones. Conservar esta lógica de corte como fuente única. |
-| [`evaluate.py`](../../src/modeling/evaluate.py) | Regla de alerta para conteos; MAE/RMSE, precisión, recall, F1, AUPRC; selección del umbral F1. | Registrar métricas **por bloque y objetivo**, junto al umbral aplicado. No sustituir este cálculo por una métrica con definición distinta sin explicitarlo. |
-| [`contrato_xgboost.py`](../../src/modeling/contrato_xgboost.py) | Familias de candidatas, exclusiones y auditoría de esquema, llaves, hashes y linaje de gold. | Ejecutar la auditoría antes de abrir un run; registrar hashes y versión del manifiesto como tags o artefacto. |
-| [`validacion_temporal_compacta.py`](../../src/modeling/validacion_temporal_compacta.py) | Matrices pequeñas y calibración de umbral con predicciones previas disponibles al primer origen de cada temporada. | Mantener separado el protocolo progresivo del umbral agregado de los ensayos iniciales. Registrar la política de calibración y las temporadas usadas. |
+| [`train.py`](../../../src/modeling/train.py) | `PARAMETROS_BASE`, preparación de gold, cortes de temporada y año calendario, ajuste, predicción y primer experimento. Un modelo nuevo se entrena antes del primer origen de cada bloque y queda fijo dentro de ese bloque. | Registrar parámetros, horizonte, variante, columnas, corte, tamaño train/test, modelo por fold y predicciones. Conservar esta lógica de corte como fuente única. |
+| [`evaluate.py`](../../../src/modeling/evaluate.py) | Regla de alerta para conteos; MAE/RMSE, precisión, recall, F1, AUPRC; selección del umbral F1. | Registrar métricas **por bloque y objetivo**, junto al umbral aplicado. No sustituir este cálculo por una métrica con definición distinta sin explicitarlo. |
+| [`contrato_xgboost.py`](../../../src/modeling/contrato_xgboost.py) | Familias de candidatas, exclusiones y auditoría de esquema, llaves, hashes y linaje de gold. | Ejecutar la auditoría antes de abrir un run; registrar hashes y versión del manifiesto como tags o artefacto. |
+| [`validacion_temporal_compacta.py`](../../../src/modeling/validacion_temporal_compacta.py) | Matrices pequeñas y calibración de umbral con predicciones previas disponibles al primer origen de cada temporada. | Mantener separado el protocolo progresivo del umbral agregado de los ensayos iniciales. Registrar la política de calibración y las temporadas usadas. |
 
 ### Experimentos de variables
 
 | Archivo | Responsabilidad actual |
 |---|---|
-| [`ablacion_espacial.py`](../../src/modeling/ablacion_espacial.py) | Valida columnas espaciales, entrena variantes y elige por F1 medio de validación. |
-| [`ablacion_clima.py`](../../src/modeling/ablacion_clima.py) | Prepara filas comunes; ajusta anomalías climáticas dentro de cada fold. |
-| [`ablacion_sociodemografica.py`](../../src/modeling/ablacion_sociodemografica.py) | Compara rasgos fijos y anuales; calcula eje urbano por fold. |
-| [`ablacion_fracciones.py`](../../src/modeling/ablacion_fracciones.py) | Criba las 15 fracciones una a una, en versiones fijas y anuales. |
-| [`ablacion_poblacion_sin_seguro.py`](../../src/modeling/ablacion_poblacion_sin_seguro.py) | Comparación condicional de población y fracción sin seguro. |
+| [`ablacion_espacial.py`](../code/ablacion_espacial.py) | Valida columnas espaciales, entrena variantes y elige por F1 medio de validación. |
+| [`ablacion_clima.py`](../code/ablacion_clima.py) | Prepara filas comunes; ajusta anomalías climáticas dentro de cada fold. |
+| [`ablacion_sociodemografica.py`](../code/ablacion_sociodemografica.py) | Compara rasgos fijos y anuales; calcula eje urbano por fold. |
+| [`ablacion_fracciones.py`](../code/ablacion_fracciones.py) | Criba las 15 fracciones una a una, en versiones fijas y anuales. |
+| [`ablacion_poblacion_sin_seguro.py`](../code/ablacion_poblacion_sin_seguro.py) | Comparación condicional de población y fracción sin seguro. |
 
 ### Dependencias de preparación y validación, sin entrenamiento XGBoost
 
 | Archivo(s) | Uso en el flujo |
 |---|---|
-| [`features.py`](../../src/modeling/features.py), [`etiqueta_brote.py`](../../src/modeling/etiqueta_brote.py), [`historia_calendario.py`](../../src/modeling/historia_calendario.py), [`vecinos_jerarquia.py`](../../src/modeling/vecinos_jerarquia.py), [`clima.py`](../../src/modeling/clima.py), [`sociodemografia.py`](../../src/modeling/sociodemografia.py) | Construyen los gold y las variables que las ablaciones consumen o recalculan por fold. |
-| [`contrato_pronostico.py`](../../src/validation/contrato_pronostico.py) y [`expectations_integrado.py`](../../src/validation/expectations_integrado.py) | Reglas de llave, fechas, disponibilidad y calidad de entradas. |
-| [`temporal.py`](../../src/eda/temporal.py), [`carga.py`](../../src/eda/carga.py), [`socio_interpolacion.py`](../../src/processing/socio_interpolacion.py), [`paths.py`](../../src/utils/paths.py) | Asignación de temporadas, carga, fuente demográfica y rutas compartidas. |
+| [`features.py`](../../../src/modeling/features.py), [`etiqueta_brote.py`](../../../src/modeling/etiqueta_brote.py), [`historia_calendario.py`](../../../src/modeling/historia_calendario.py), [`vecinos_jerarquia.py`](../../../src/modeling/vecinos_jerarquia.py), [`clima.py`](../../../src/modeling/clima.py), [`sociodemografia.py`](../../../src/modeling/sociodemografia.py) | Construyen los gold y las variables que las ablaciones consumen o recalculan por fold. |
+| [`contrato_pronostico.py`](../../../src/validation/contrato_pronostico.py) y [`expectations_integrado.py`](../../../src/validation/expectations_integrado.py) | Reglas de llave, fechas, disponibilidad y calidad de entradas. |
+| [`temporal.py`](../../../src/eda/temporal.py), [`carga.py`](../../../src/eda/carga.py), [`socio_interpolacion.py`](../../../src/processing/socio_interpolacion.py), [`paths.py`](../../../src/utils/paths.py) | Asignación de temporadas, carga, fuente demográfica y rutas compartidas. |
 
 Los diagnósticos `src/modeling/diagnostico.py`, `diagnostico_clima.py` y `diagnostico_socio.py` pertenecen a las comparaciones exploratorias de **feature engineering con ridge**, anteriores a los XGBoost de los notebooks 24–30. Conviene conservar esa distinción en MLflow si se importan experimentos históricos.
 
@@ -80,7 +80,7 @@ Los diagnósticos `src/modeling/diagnostico.py`, `diagnostico_clima.py` y `diagn
 | Sociodemografía | [`ablacion_sociodemografica.json`](metricas/ablacion_sociodemografica.json) y [`ablacion_sociodemografica.md`](ablacion_sociodemografica.md) | `models/experimentos/ablacion_sociodemografica/`. |
 | Fracciones | [`ablacion_fracciones.json`](metricas/ablacion_fracciones.json) y [`ablacion_fracciones.md`](ablacion_fracciones.md) | `models/experimentos/ablacion_fracciones/`. |
 | Población y sin seguro | [`ablacion_poblacion_sin_seguro.json`](metricas/ablacion_poblacion_sin_seguro.json) y [`ablacion_poblacion_sin_seguro.md`](ablacion_poblacion_sin_seguro.md) | `models/experimentos/ablacion_poblacion_sin_seguro/`. |
-| Evaluación progresiva | [`validacion_temporal_compacta.json`](metricas/validacion_temporal_compacta.json) y [`validacion_temporal_compacta.md`](validacion_temporal_compacta.md) | `models/experimentos/validacion_temporal_compacta/predicciones_por_bloque.csv`; este módulo no guarda modelos. |
+| Evaluación progresiva | [`validacion_temporal_compacta.json`](../../../docs/modeling/metricas/validacion_temporal_compacta.json) y [`validacion_temporal_compacta.md`](validacion_temporal_compacta.md) | `models/experimentos/validacion_temporal_compacta/predicciones_por_bloque.csv`; este módulo no guarda modelos. |
 
 Los módulos de ablación guardan predicciones de validación y prueba, además de los modelos seleccionados; algunos comprimen la predicción de validación. Los JSON ya incluyen gran parte del linaje (hashes de gold, y de silver cuando aplica), cortes, variables y métricas. **No equivalen a un tracking server**: el historial actual se consulta mediante archivos y no hay un registro de runs de MLflow.
 

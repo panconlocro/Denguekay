@@ -1,10 +1,10 @@
 # Fase 7 — síntesis y traspaso al modelado
 
-**Estado:** completada como síntesis técnica. El [notebook 23](../../notebooks/23_fe_sintesis.ipynb) audita silver, los dos gold y su manifiesto, y reproduce las [métricas de esta fase](metricas/fase7_sintesis.json). Esta fase no ajustó XGBoost, no eligió el test final y no alteró las fuentes silver. El traspaso propone experimentos para la fase de modelado; requiere revisión de Rosa antes de iniciarla.
+**Estado:** completada como síntesis técnica. El [notebook 23](../notebooks/23_fe_sintesis.ipynb) audita silver, los dos gold y su manifiesto, y reproduce las [métricas de esta fase](metricas/fase7_sintesis.json). Esta fase no ajustó XGBoost, no eligió el test final y no alteró las fuentes silver. El traspaso propone experimentos para la fase de modelado; requiere revisión de Rosa antes de iniciarla.
 
 ## Archivos y contrato
 
-El origen es `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` con su cobertura lateral. Los gold son `data/gold/meteo_socio_epi_piura_2017_2025_h2_gold.csv` y `..._h4_gold.csv`, generados en fase 6. El contrato reutilizable está en [`src/modeling/contrato_xgboost.py`](../../src/modeling/contrato_xgboost.py). Se comprueban los hashes de silver, cobertura, catálogo, historia epidemiológica y ambos gold contra `manifest_fase6.json`, las llaves únicas, fechas de origen, casos, etiqueta y coincidencia de etiquetas entre horizontes. La llave es `(ubigeo, anio, semana)` con `ubigeo` como texto; `semana_inicio` es domingo y representa el objetivo `t`.
+El origen es `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` con su cobertura lateral. Los gold son `data/gold/meteo_socio_epi_piura_2017_2025_h2_gold.csv` y `..._h4_gold.csv`, generados en fase 6. El contrato reutilizable está en [`src/modeling/contrato_xgboost.py`](../../../src/modeling/contrato_xgboost.py). Se comprueban los hashes de silver, cobertura, catálogo, historia epidemiológica y ambos gold contra `manifest_fase6.json`, las llaves únicas, fechas de origen, casos, etiqueta y coincidencia de etiquetas entre horizontes. La llave es `(ubigeo, anio, semana)` con `ubigeo` como texto; `semana_inicio` es domingo y representa el objetivo `t`.
 
 | Comprobación de archivos actuales | h=2 | h=4 |
 |---|---:|---:|
@@ -27,7 +27,7 @@ Los primeros nulos vienen de la historia insuficiente de cada distrito: 390 fila
 | Referencia fija 2017: `fraccion_rural_2017`, `fraccion_menores_15_2017`, `fraccion_desague_red_2017`, `log_poblacion_censo_2017` | 4 | Repetidas por distrito. Gold las conserva para reconstrucción retrospectiva; 2019-01-01 es una barrera **supuesta**, no fecha verificada del Excel derivado. | Sensibilidad frente a la representación anual. |
 | Anuales: las 15 `fraccion_*_anual` y `log_poblacion_anual` | 16 | Repetidas por distrito y año. Las fracciones 2018–2024 usan el extremo 2025; la publicación de las proyecciones de población no está documentada. | Solo experimentos retrospectivos identificados; ensayar bloques pequeños antes de las 15 juntas. |
 
-Los sufijos `hh` de la tabla significan, por ejemplo, `_h2` o `_h4`; la [lista exacta de columnas](../../src/modeling/contrato_xgboost.py) se genera por horizonte y se verifica contra el CSV. **La base propuesta para empezar XGBoost tiene seis variables:** cuatro de historia y dos de calendario. Que las otras 28 estén en gold significa que están disponibles para ablaciones controladas, no que se recomiende incluirlas juntas.
+Los sufijos `hh` de la tabla significan, por ejemplo, `_h2` o `_h4`; la [lista exacta de columnas](../../../src/modeling/contrato_xgboost.py) se genera por horizonte y se verifica contra el CSV. **La base propuesta para empezar XGBoost tiene seis variables:** cuatro de historia y dos de calendario. Que las otras 28 estén en gold significa que están disponibles para ablaciones controladas, no que se recomiende incluirlas juntas.
 
 **Excluir de la matriz predictora:** `casos_Dengue`, `brote`, `umbral_brote_casos`, `ubigeo`, `anio`, `semana`, `provincia`, `distrito`, `distrito_key`, `semana_inicio`, `origen_inicio`, `origen_cierre`, `socio_2017_disponible_al_origen` y `socio_fracciones_interpoladas_con_2025`. `brote` es la etiqueta; `casos_Dengue` y el umbral conocen el objetivo. `ubigeo` es identificador, no magnitud continua. `anio`, `semana` y fechas son llaves/metadatos; el calendario ya tiene seno/coseno. Las dos marcas socio son señales de auditoría que podrían identificar el origen temporal de la información, por lo que quedan fuera de la primera matriz.
 
@@ -68,4 +68,4 @@ Desde la raíz, con silver y gold ya generados:
 .venv/bin/python -m unittest discover -s tests
 ```
 
-Si cambia silver o una feature, regenerar antes gold con el [notebook 22](../../notebooks/22_fe_integracion.ipynb). El notebook 23 falla cuando los hashes o el esquema no coinciden; escribe solo el JSON de métricas versionado de esta síntesis.
+Si cambia silver o una feature, regenerar antes gold con el [notebook 22](../../../notebooks/22_fe_integracion.ipynb). El notebook 23 falla cuando los hashes o el esquema no coinciden; escribe solo el JSON de métricas versionado de esta síntesis.

@@ -1,10 +1,10 @@
 # Inclusión de variables espaciales — primer bloque de ablación
 
-**Estado:** ejecutado para h=2 y h=4, con regresión de casos y clasificación directa. El módulo [`src/modeling/ablacion_espacial.py`](../../src/modeling/ablacion_espacial.py) reutiliza el entrenamiento y las métricas del [primer XGBoost](primer_xgboost.md). Las [métricas completas](metricas/ablacion_espacial.json) registran columnas, cortes, F1 por temporada, umbrales y hashes. Los modelos y las predicciones por fila están en `models/experimentos/ablacion_espacial/`, fuera de Git. Las cifras son las del JSON actual, generado con GPU (`device="cuda"`); en otro equipo pueden variar en decimales y, cuando dos variantes están muy cerca, también en la elegida (ver [reproducibilidad entre equipos](primer_xgboost.md#reproducibilidad-entre-equipos)).
+**Estado:** ejecutado para h=2 y h=4, con regresión de casos y clasificación directa. El módulo [`src/modeling/ablacion_espacial.py`](../code/ablacion_espacial.py) reutiliza el entrenamiento y las métricas del [primer XGBoost](primer_xgboost.md). Las [métricas completas](metricas/ablacion_espacial.json) registran columnas, cortes, F1 por temporada, umbrales y hashes. Los modelos y las predicciones por fila están en `models/experimentos/ablacion_espacial/`, fuera de Git. Las cifras son las del JSON actual, generado con GPU (`device="cuda"`); en otro equipo pueden variar en decimales y, cuando dos variantes están muy cerca, también en la elegida (ver [reproducibilidad entre equipos](primer_xgboost.md#reproducibilidad-entre-equipos)).
 
 ## Qué se incluyó
 
-Gold ya contenía estas seis columnas construidas y auditadas en la [fase 3](../feature_engineering/fase3_vecinos_jerarquia.md). Todas resumen **casos observados en `t−h`**, excluyen el distrito objetivo de sus agregados espaciales y se cruzan por UBIGEO, no por nombre:
+Gold ya contenía estas seis columnas construidas y auditadas en la [fase 3](../../02_feature_engineering/docs/fase3_vecinos_jerarquia.md). Todas resumen **casos observados en `t−h`**, excluyen el distrito objetivo de sus agregados espaciales y se cruzan por UBIGEO, no por nombre:
 
 | Bloque | Columnas agregadas a la base de seis |
 |---|---|
@@ -16,7 +16,7 @@ Gold ya contenía estas seis columnas construidas y auditadas en la [fase 3](../
 
 ## Qué asociación espacial encontró el EDA
 
-El [EDA espacial](../eda/hallazgos.md) motivó probar estas variables, pero describió fenómenos diferentes:
+El [EDA espacial](../../01_eda/docs/hallazgos.md) motivó probar estas variables, pero describió fenómenos diferentes:
 
 - La incidencia acumulada mostró autocorrelación espacial: **I de Moran = 0,693** con cinco vecinos; al restringir el análisis a distritos de costa fue **0,333**.
 - Entre 31 distritos activos, la mediana de correlación de Spearman entre series semanales fue **0,62**. Tras retirar la actividad regional común cayó a **0,06**. Buena parte de la coincidencia entre distritos refleja, por tanto, una señal regional compartida.

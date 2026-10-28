@@ -1,6 +1,6 @@
 # Fase 6 — integración y calidad de gold
 
-**Estado:** ejecutada. Rosa autorizó esta fase. El [notebook 22](../../notebooks/22_fe_integracion.ipynb) genera los dos CSV locales de `data/gold/`; el [manifiesto local](../../data/gold/manifest_fase6.json) registra hashes de silver, cobertura y salidas. Esos datos se ignoran en Git y se regeneran con `src/modeling/features.py`. El traspaso posterior está en [fase 7](fase7_sintesis_traspaso.md).
+**Estado:** ejecutada. Rosa autorizó esta fase. El [notebook 22](../../../notebooks/22_fe_integracion.ipynb) genera los dos CSV locales de `data/gold/`; el [manifiesto local](../../../data/gold/manifest_fase6.json) registra hashes de silver, cobertura y salidas. Esos datos se ignoran en Git y se regeneran con `src/modeling/features.py`. El traspaso posterior está en [fase 7](fase7_sintesis_traspaso.md).
 
 ## Contrato de salida
 

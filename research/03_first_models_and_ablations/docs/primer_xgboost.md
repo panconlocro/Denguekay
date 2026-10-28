@@ -1,6 +1,6 @@
 # Primer experimento XGBoost: casos y alerta semanal
 
-**Estado:** ejecutado sobre los gold validados de h=2 y h=4. La tabla completa, los cortes, los hiperparámetros y los hashes están en [`metricas/primer_xgboost.json`](metricas/primer_xgboost.json). Los modelos y predicciones por fila están en `models/experimentos/` (artefactos locales no versionados). El [notebook 24](../../notebooks/24_modelado_xgboost_dos_objetivos.ipynb) orquesta el mismo módulo reutilizable [`src/modeling/train.py`](../../src/modeling/train.py).
+**Estado:** ejecutado sobre los gold validados de h=2 y h=4. La tabla completa, los cortes, los hiperparámetros y los hashes están en [`metricas/primer_xgboost.json`](metricas/primer_xgboost.json). Los modelos y predicciones por fila están en `models/experimentos/` (artefactos locales no versionados). El [notebook 24](../notebooks/24_modelado_xgboost_dos_objetivos.ipynb) orquesta el mismo módulo reutilizable [`src/modeling/train.py`](../../../src/modeling/train.py).
 
 **Equipo de referencia de las cifras:** las métricas citadas aquí son las del JSON actual, generado con GPU NVIDIA (`device="cuda"`, `n_jobs=12`, XGBoost 3.4.1). En otro equipo, por ejemplo en CPU o en una Mac, los decimales pueden cambiar; ver [Reproducibilidad entre equipos](#reproducibilidad-entre-equipos).
 
@@ -78,7 +78,7 @@ Antes de decidir una alerta operativa, Rosa y el equipo deben acordar cuántos f
 
 En un mismo equipo, dos corridas producen métricas idénticas. Entre equipos no: `config/config.yaml` deja `device: auto`, que usa la GPU NVIDIA (CUDA) si existe y la CPU si no. En una Mac con Apple Silicon XGBoost no usa la GPU y entrena en CPU. GPU y CPU no suman en el mismo orden al construir los histogramas, de modo que los árboles pueden diferir en decimales; también se observaron diferencias entre dos CPU distintas. Esto mueve las métricas en milésimas, puede desplazar un umbral de probabilidad un paso de la rejilla (0,025) y cambiar algunos VP/FP. El número de hilos (`n_jobs`) no cambia los resultados.
 
-Por eso los informes de `docs/modeling/` citan **el JSON versionado** y no la salida de cualquier corrida. Si un compañero vuelve a ejecutar el notebook en otro equipo y obtiene cifras algo distintas, eso es esperable; la comparación debe hacerse revisando `parametros.device` en el JSON (o las etiquetas `plataforma` y `version.*` del run en MLflow). Cuando dos variantes se separan por menos que esa variación, se deben tratar como empate. El [documento de MLflow](mlflow_great_expectations.md) lista las elecciones de variante que cambiaron entre equipos.
+Por eso los informes de `docs/modeling/` citan **el JSON versionado** y no la salida de cualquier corrida. Si un compañero vuelve a ejecutar el notebook en otro equipo y obtiene cifras algo distintas, eso es esperable; la comparación debe hacerse revisando `parametros.device` en el JSON (o las etiquetas `plataforma` y `version.*` del run en MLflow). Cuando dos variantes se separan por menos que esa variación, se deben tratar como empate. El [documento de MLflow](../../../docs/modeling/mlflow_great_expectations.md) lista las elecciones de variante que cambiaron entre equipos.
 
 ## Reproducción
 

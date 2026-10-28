@@ -1,6 +1,6 @@
 # Comparación condicional: población y fracción sin seguro de 2017
 
-**Estado:** ejecutada para h=2 y h=4. El [módulo](../../src/modeling/ablacion_poblacion_sin_seguro.py), el [notebook 29](../../notebooks/29_modelado_ablacion_poblacion_sin_seguro.ipynb) y las [métricas completas](metricas/ablacion_poblacion_sin_seguro.json) documentan los cortes, umbrales, hashes, resultados por temporada y diferencias pareadas. Los modelos y predicciones por fila están en `models/experimentos/ablacion_poblacion_sin_seguro/` fuera de Git. Las cifras son las del JSON actual, generado con GPU (`device="cuda"`); las diferencias que se discuten aquí son del mismo orden que la variación entre equipos (ver [reproducibilidad entre equipos](primer_xgboost.md#reproducibilidad-entre-equipos)).
+**Estado:** ejecutada para h=2 y h=4. El [módulo](../code/ablacion_poblacion_sin_seguro.py), el [notebook 29](../notebooks/29_modelado_ablacion_poblacion_sin_seguro.ipynb) y las [métricas completas](metricas/ablacion_poblacion_sin_seguro.json) documentan los cortes, umbrales, hashes, resultados por temporada y diferencias pareadas. Los modelos y predicciones por fila están en `models/experimentos/ablacion_poblacion_sin_seguro/` fuera de Git. Las cifras son las del JSON actual, generado con GPU (`device="cuda"`); las diferencias que se discuten aquí son del mismo orden que la variación entre equipos (ver [reproducibilidad entre equipos](primer_xgboost.md#reproducibilidad-entre-equipos)).
 
 ## Por qué se hizo
 
