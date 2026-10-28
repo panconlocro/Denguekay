@@ -1,0 +1,51 @@
+{
+  "version": "v1",
+  "estado": "reemplazada",
+  "estado_detalle": "Reemplazada por la v2 (complemento de clima, comparación 20). Nunca se sirvió.",
+  "tag": "model/v1",
+  "commit": "d6bd0be",
+  "fecha_congelamiento": "2026-10-27",
+  "modelo": "C3·E3·S4_s3: un regresor XGBoost multi-salida (t+2, t+3, t+4) con count:poisson y base_margin; probabilidad binomial negativa NB2",
+  "configuracion": {
+    "modulo": "denguekay.model.frozen_configs",
+    "constante": "CONFIG_2026_V1",
+    "constante_historica": "CONFIGURACION_2026_V1"
+  },
+  "huellas": {
+    "historica": {
+      "sha256": "88ed2a43b0171a0878b99122b70109be61b27d5d4d29a2b93eae55066fd8f945",
+      "commit": "d6bd0be",
+      "definicion": "SHA-256(configuration JSON + source of eh, fi, hp, pa and sp)"
+    },
+    "comportamiento": {
+      "definicion": "SHA-256(SHA-256(configuration JSON) + ':' + predictions_digest(reference predictions))",
+      "semilla": 17,
+      "por_entorno": {
+        "device=cpu,n_jobs=2": "be86664973cf5e7ac3af4a29ae0f8887a5191ed1007a0c097aacba3c7190bff5",
+        "device=cuda": "1534b535bd19d6945c852c10f64294c1d2b16cd9e4359d074fcac11a9ed3806e"
+      }
+    }
+  },
+  "gold": {
+    "uso": "matrices en memoria desde gold h=2 (base_6) + B3 desde silver epidemiológico histórico",
+    "2": {"archivo": "meteo_socio_epi_piura_2017_2025_h2_gold.csv", "sha256": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3"}
+  },
+  "estudio": {
+    "carpeta": "research/05_fe_hyperparameters",
+    "informe": "research/05_fe_hyperparameters/docs/fe_hiperparametros.md",
+    "seccion": "Fase 5 · Síntesis del encargo",
+    "tag": "study/fe-hyperparameters",
+    "commit_tag": "e4bc7b7"
+  },
+  "metricas_seleccion": {
+    "archivo": "research/05_fe_hyperparameters/docs/metricas/fe_hiperparametros.json",
+    "criterio": "19 comparaciones preregistradas con regla simétrica sobre 2022 y 2023 (5 semillas); 2024 solo contraste"
+  },
+  "hu0007_4": {
+    "cumple": false,
+    "clasificacion": "4 de 9 celdas (2023 h2 y 2024 h2/h3/h4)",
+    "regresion": "0 de 9 celdas (2023 h4 en frontera: razón MAE 0,764, razón RMSE 0,852)"
+  },
+  "reemplaza_a": null,
+  "reemplazada_por": "v2"
+}

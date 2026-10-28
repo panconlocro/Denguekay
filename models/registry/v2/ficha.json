@@ -1,0 +1,53 @@
+{
+  "version": "v2",
+  "estado": "vigente",
+  "estado_detalle": "Configuración congelada vigente para la evaluación prospectiva de 2026. Todavía no se sirve: integrarla en serving es un encargo aparte.",
+  "tag": "model/v2",
+  "commit": "424a148",
+  "fecha_congelamiento": "2026-10-27",
+  "modelo": "C3+A3·E3·S4_s3: la V1 con clima de gold (humedad y precipitación, media de 5 semanas hasta el origen)",
+  "configuracion": {
+    "modulo": "denguekay.model.frozen_configs",
+    "constante": "CONFIG_2026",
+    "constante_historica": "CONFIGURACION_2026"
+  },
+  "huellas": {
+    "historica": {
+      "sha256": "c36d7a80d1896a203874bf271bd78f1078850e1faa381e2b17e9ba04b07d5569",
+      "commit": "424a148",
+      "definicion": "SHA-256(configuration JSON + source of eh, fi, hp, pa and sp)"
+    },
+    "comportamiento": {
+      "definicion": "SHA-256(SHA-256(configuration JSON) + ':' + predictions_digest(reference predictions))",
+      "semilla": 17,
+      "por_entorno": {
+        "device=cpu,n_jobs=2": "0fe5d10712d4127e9e2728d7de230b8db6bfbae364b018f2b449ccd10818e2b3",
+        "device=cuda": "b302d838aa402017dbcf70320cd8c061ef854e0eda50460b801d557cd709a936"
+      }
+    }
+  },
+  "gold": {
+    "uso": "matrices en memoria desde gold h=2 (base_6 y las columnas A3) + B3 desde silver epidemiológico histórico; se excluyen 65 orígenes con nulos de arranque de A3",
+    "2": {"archivo": "meteo_socio_epi_piura_2017_2025_h2_gold.csv", "sha256": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3"}
+  },
+  "estudio": {
+    "carpeta": "research/05_fe_hyperparameters",
+    "informe": "research/05_fe_hyperparameters/docs/fe_hiperparametros.md",
+    "seccion": "Encargo complementario · clima para el conteo",
+    "tag": "study/fe-hyperparameters",
+    "commit_tag": "e4bc7b7",
+    "mlflow": "fe_hiperparametros_complemento_clima (6afc4549fd214a1497636319b3e6844c)"
+  },
+  "metricas_seleccion": {
+    "archivo": "research/05_fe_hyperparameters/docs/metricas/fe_hiperparametros.json",
+    "clave": "complemento_clima",
+    "criterio": "comparación 20 preregistrada: el conteo mejora en algún horizonte sin empeorar en ninguno (2022 y 2023) y la alerta no pierde"
+  },
+  "hu0007_4": {
+    "cumple": false,
+    "clasificacion": "4 de 9 celdas (2023 h2 y 2024 h2/h3/h4), igual que la V1",
+    "regresion": "2 de 9 celdas (2023 h3 y 2023 h4)"
+  },
+  "reemplaza_a": "v1",
+  "reemplazada_por": null
+}

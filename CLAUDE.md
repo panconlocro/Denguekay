@@ -54,6 +54,7 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/feat
 - Skill `eda-dengue` y subagente `revisor-eda`: método del EDA y auditor que recalcula cada cifra citada. Están versionados en `_claude_setup/` (no instalados en `.claude/`; se instalan con `instalar_claude_setup.ps1`) y apuntan al EDA congelado en `research/01_eda/`. Úsalos para cualquier análisis exploratorio nuevo.
 - Subagentes versionados en `.claude/agents/`: `revisor-backend` y `revisor-modelado`.
 - Decisiones de arquitectura del repo: `docs/decisions/` (ADR 0001: reestructuración en monorepo, con las decisiones D1–D6).
+- Registro de modelos: `models/registry/` (ficha de v0, v1 y v2 y `CHANGELOG.md`). La v2 es la configuración vigente y la v0 la que se sirve; las configuraciones se cargan desde el paquete con `denguekay.model.registry`. Una versión nueva lleva su ficha y su entrada en el CHANGELOG.
 
 
 <!-- inicio: backend OE2 -->

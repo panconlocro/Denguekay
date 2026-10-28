@@ -52,6 +52,7 @@ tesis-dengue-piura/
 ├── research/                  # estudios congelados: 01_eda … 05_fe_hyperparameters (README por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
+│   └── registry/              # fichas de v0, v1 y v2 y CHANGELOG.md (versionado; los artefactos no)
 ├── tests/                     # misma estructura que el paquete: tests/<subpaquete>/ y tests/api/
 │   ├── fixtures/backend/      # muestra agregada real, pequeña y versionada
 │   └── fixtures/equivalence/  # línea base de las guardas de la reestructuración (no se regenera)
@@ -341,9 +342,10 @@ módulo.
 
 ## 5. `models/` y `docs/`
 
+- **`models/registry/`**: registro de modelos versionado en git: una ficha por versión (`v0/`, `v1/`, `v2/`, con `ficha.md` y `ficha.json`) y `CHANGELOG.md`. Las configuraciones congeladas se cargan desde el paquete con `denguekay.model.registry`.
 - **`models/`**: modelos entrenados serializados; `models/experimentos/` guarda JSON de XGBoost y predicciones por fold. Los artefactos generados no se suben a Git.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
-- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) y `metricas/validacion_temporal_compacta.json`, que lee serving para V0 (pasa a `models/registry/v0/` en la fase 4). Las predicciones por fila quedan en `models/experimentos/` (no versionado).
+- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
 - **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR).
 - **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`. La skill local `.codex/skills/feature-engineering-dengue/` y `AGENTS.md` describen el flujo de Codex.
 ---

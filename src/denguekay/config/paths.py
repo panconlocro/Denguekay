@@ -49,6 +49,8 @@ MODELS = ROOT / "models"
 SERVING_MODELS = MODELS / "serving"
 # Local artifact storage (modelos/geodatos/reportes buckets of the OE2 document); not versioned.
 STORAGE = MODELS / "storage"
+# Model registry: one card per version (v0, v1, v2) and CHANGELOG.md; versioned in git, artifacts are not.
+MODEL_REGISTRY = MODELS / "registry"
 ENV_FILE = ROOT / ".env"
 ALEMBIC_CONFIG = ROOT / "alembic.ini"
 DB_MIGRATIONS = ROOT / "src" / "denguekay" / "db" / "migrations"
@@ -74,7 +76,8 @@ API_BENCHMARK_DB = SERVING_MODELS / "fase4.sqlite"
 BACKEND_PHASE4_VERIFICATION = BACKEND_DOCS / "fase4_verificacion.json"
 BACKEND_BENCHMARK_SQLITE = BACKEND_DOCS / "benchmark_sqlite.json"
 BACKEND_BENCHMARK_POSTGRESQL = BACKEND_DOCS / "benchmark_postgresql.json"
-COMPACT_METRICS = DOCS / "modeling" / "metricas" / "validacion_temporal_compacta.json"
+# Selection metrics of V0, read by serving (decision D5 of docs/decisions/0001-repo-restructure.md).
+COMPACT_METRICS = MODEL_REGISTRY / "v0" / "validacion_temporal_compacta.json"
 COMPACT_PREDICTIONS = MODELS / "experimentos" / "validacion_temporal_compacta" / "predicciones_por_bloque.csv"
 # Research studies, frozen in research/<study>/ (docs/decisions/0001-repo-restructure.md).
 RESEARCH = ROOT / "research"
