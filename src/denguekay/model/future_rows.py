@@ -3,9 +3,9 @@
 import numpy as np
 import pandas as pd
 
-from denguekay.features.gold import FECHA_SOCIO_2017, HORIZONTES
-from denguekay.features.history_calendar import construir_historia_calendario
-from denguekay.features.sociodemographics import referencia_2017, construir_sociodemografia
+from denguekay.features.gold import SOCIO_2017_DATE, HORIZONS
+from denguekay.features.history_calendar import build_history_calendar
+from denguekay.features.sociodemographics import reference_2017, build_sociodemography
 from src.modeling.validacion_temporal_compacta import variantes_compactas
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.validation.forecast_contract import KEY, audit_origin, available_observations
@@ -22,7 +22,7 @@ def build_future_rows(panel, horizon, *, columns=None, cutoff_date=None, referen
     """
     # Operations only serve the horizons with persisted gold (h=2 and h=4);
     # the others exist only in memory for experiments.
-    if horizon not in HORIZONTES:
+    if horizon not in HORIZONS:
         raise ValueError("La inferencia futura solo admite los horizontes con gold persistido")
     variants = variantes_compactas(horizon)
     columns = columns or variants["base_6_poblacion_2017"]
@@ -45,7 +45,7 @@ def build_future_rows(panel, horizon, *, columns=None, cutoff_date=None, referen
     calendar = mmwr_epi_week(data.semana_inicio)
     if not (calendar.anio_epi.eq(data.anio).all() and calendar.semana_epi.eq(data.semana).all()):
         raise ValueError("El panel no coincide con el calendario MMWR")
-    ref = (reference if reference is not None else referencia_2017(data)) if "log_poblacion_censo_2017" in columns else None
+    ref = (reference if reference is not None else reference_2017(data)) if "log_poblacion_censo_2017" in columns else None
     rows, unavailable = [], []
     target = origin + pd.Timedelta(weeks=horizon)
     target_cal = mmwr_epi_week(pd.Series([target])).iloc[0]
@@ -67,10 +67,10 @@ def build_future_rows(panel, horizon, *, columns=None, cutoff_date=None, referen
             except ValueError:
                 reason = "Historia semanal incompleta o fechas repetidas en el distrito"
             if reason is None:
-                history = construir_historia_calendario(extended, horizon, permitir_faltantes=True)
+                history = build_history_calendar(extended, horizon, allow_missing=True)
                 if ref is not None:
-                    socio = construir_sociodemografia(extended, horizon,
-                        ref.loc[ref.ubigeo.eq(ubigeo)], FECHA_SOCIO_2017)
+                    socio = build_sociodemography(extended, horizon,
+                        ref.loc[ref.ubigeo.eq(ubigeo)], SOCIO_2017_DATE)
                     history = history.merge(socio[KEY + ["log_poblacion_censo_2017"]],
                                                on=KEY, validate="one_to_one")
                 row = history.loc[history.semana_inicio.eq(target)].copy()

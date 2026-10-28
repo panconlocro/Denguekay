@@ -16,7 +16,7 @@ import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor, __version__ as XGBOOST_VERSION
 
 from denguekay.data.seasons import assign_season
-from denguekay.features.model_input_contract import auditar_traspaso, familias_predictoras
+from denguekay.features.model_input_contract import audit_handoff, predictor_families
 from denguekay.model.device import xgboost_settings
 from src.modeling.evaluate import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos,
@@ -53,7 +53,7 @@ BASE_PARAMS = {
 
 def variant_columns(horizon: int) -> dict[str, list[str]]:
     """Return the predefined bases of four and six available variables."""
-    families = familias_predictoras(horizon)
+    families = predictor_families(horizon)
     history = families["historia"]
     return {
         "historia_4": [history[0], history[2], *families["calendario"]],
@@ -262,7 +262,7 @@ def run_experiment(
     """
     gold_dir, output_dir, metrics_path = map(Path, (gold_dir, output_dir, metrics_path))
     if audit:
-        auditar_traspaso(gold_dir=gold_dir)
+        audit_handoff(gold_dir=gold_dir)
     # Data quality (Great Expectations) before training; it fails if gold/silver
     # breaks its suite. The summary is attached to the MLflow run.
     quality = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None)

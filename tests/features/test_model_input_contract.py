@@ -8,44 +8,44 @@ from pathlib import Path
 import pandas as pd
 
 from denguekay.features.model_input_contract import (
-    NO_PREDICTORAS, familias_predictoras, resumir_ablaciones,
-    validar_columnas_modelo,
+    NON_PREDICTORS, predictor_families, summarize_ablations,
+    validate_model_columns,
 )
-from denguekay.features.gold import columnas_gold
+from denguekay.features.gold import gold_columns
 
 
 class ContratoXGBoostTests(unittest.TestCase):
     def test_familias_particionan_gold_sin_fuga_para_ambos_horizontes(self):
         for h in (2, 4):
             with self.subTest(horizonte=h):
-                gold = pd.DataFrame(columns=columnas_gold(h, con_brote=True))
-                familias = validar_columnas_modelo(
-                    gold, {"columnas_no_predictoras": list(NO_PREDICTORAS)}, h,
+                gold = pd.DataFrame(columns=gold_columns(h, with_outbreak=True))
+                familias = validate_model_columns(
+                    gold, {"columnas_no_predictoras": list(NON_PREDICTORS)}, h,
                 )
                 predictoras = [c for cols in familias.values() for c in cols]
                 self.assertEqual(len(predictoras), 34)
-                self.assertTrue(set(predictoras).isdisjoint(NO_PREDICTORAS))
-                self.assertEqual(set(gold), set(predictoras) | set(NO_PREDICTORAS))
+                self.assertTrue(set(predictoras).isdisjoint(NON_PREDICTORS))
+                self.assertEqual(set(gold), set(predictoras) | set(NON_PREDICTORS))
                 self.assertIn(f"casos_lag_{h}", predictoras)
                 self.assertNotIn(f"casos_lag_{6 - h}", predictoras)
 
     def test_manifest_debe_excluir_anio_y_semana(self):
-        gold = pd.DataFrame(columns=columnas_gold(4, con_brote=True))
-        declaradas = [c for c in NO_PREDICTORAS if c not in ("anio", "semana")]
+        gold = pd.DataFrame(columns=gold_columns(4, with_outbreak=True))
+        declaradas = [c for c in NON_PREDICTORS if c not in ("anio", "semana")]
         with self.assertRaisesRegex(ValueError, "exclusiones"):
-            validar_columnas_modelo(gold, {"columnas_no_predictoras": declaradas}, 4)
+            validate_model_columns(gold, {"columnas_no_predictoras": declaradas}, 4)
 
     def test_rechaza_columna_inesperada_o_etiqueta_ausente(self):
-        gold = pd.DataFrame(columns=columnas_gold(2, con_brote=True))
+        gold = pd.DataFrame(columns=gold_columns(2, with_outbreak=True))
         for columnas in (gold.drop(columns="brote"), gold.assign(casos_lag_1=[])):
             with self.assertRaisesRegex(ValueError, "esquema gold"):
-                validar_columnas_modelo(
-                    columnas, {"columnas_no_predictoras": list(NO_PREDICTORAS)}, 2,
+                validate_model_columns(
+                    columnas, {"columnas_no_predictoras": list(NON_PREDICTORS)}, 2,
                 )
 
     def test_horizonte_invalido(self):
         with self.assertRaisesRegex(ValueError, "horizonte"):
-            familias_predictoras(7)
+            predictor_families(7)
 
     def test_ablacion_compara_mismo_corte_y_referencia(self):
         base = {"horizonte": 4, "temporada": 2024, "modelo": "historia_calendario",
@@ -60,7 +60,7 @@ class ContratoXGBoostTests(unittest.TestCase):
             (ruta / "fase4_clima.json").write_text(json.dumps({"resultados": [base, clima]}))
             social = ruta / "fase5_sociodemografia.json"
             social.write_text(json.dumps({"resultados": [base, socio_clima, socio_completo]}))
-            resumen = resumir_ablaciones(ruta)
+            resumen = summarize_ablations(ruta)
             self.assertEqual(resumen["clima"]["4"]["historia_calendario_clima"]
                              ["delta_mae_casos_por_temporada"]["2024"], -0.5)
             self.assertEqual(resumen["sociodemografia"]["4"]
@@ -72,7 +72,7 @@ class ContratoXGBoostTests(unittest.TestCase):
                 base, socio_clima, {**socio_completo, "n_prueba": 19},
             ]}))
             with self.assertRaisesRegex(ValueError, "cortes/filas distintos"):
-                resumir_ablaciones(ruta)
+                summarize_ablations(ruta)
 
 
 if __name__ == "__main__":

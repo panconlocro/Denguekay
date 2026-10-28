@@ -1,20 +1,20 @@
-"""Variables nuevas del bloque B (fase 2b del encargo de FE sobre E3·S4_s2), en memoria.
+"""New block B variables (phase 2b of the FE study on E3·S4_s2), in memory.
 
-Cada variable de un origen ``o`` se toma del estado del distrito en la semana
-de origen (la que cierra en ``origen_cierre``), calculado con semanas ≤ ``o``
-(``diagnostico_inicios.estado_semanal``). Nada se escribe en ``data/``.
+Each variable of an origin ``o`` is taken from the district's status in the
+origin week (the one that closes at ``origen_cierre``), computed with weeks <=
+``o`` (``diagnostico_inicios.estado_semanal``). Nothing is written to ``data/``.
 
-- **B1** dinámica espacial y **B3** historia propia ampliada: no dependen de
-  ningún ajuste; se calculan una vez.
-- **B2** distritos núcleo y **B5** anomalías climáticas: el ranking del
-  núcleo y la climatología se ajustan con las semanas cerradas al ``corte`` de
-  cada bloque (``preparar_bloque``).
-- **B3**, casos de la temporada anterior: para la temporada 2017 se usa la
-  temporada 2016 de la historia de la regla de brote (sin registro = cero);
-  si un año necesario falta en la historia, queda nulo.
-- **B4** línea base estacional: ``log(1 + umbral)`` de cada semana objetivo
-  t+2, t+3 y t+4 con ``etiqueta_brote.umbral_brote_futuro`` (solo años
-  previos; funciona también fuera del panel).
+- **B1** spatial dynamics and **B3** extended own history: they depend on no
+  fit; they are computed once.
+- **B2** core districts and **B5** climate anomalies: the core ranking and the
+  climatology are fitted with the weeks closed at each block's ``cutoff``
+  (``prepare_block``).
+- **B3**, cases of the previous season: for season 2017 the 2016 season of the
+  outbreak-rule history is used (no record = zero); if a needed year is missing
+  from the history, it stays null.
+- **B4** seasonal baseline: ``log(1 + threshold)`` of each target week t+2, t+3
+  and t+4 with ``outbreak_label.future_outbreak_threshold`` (previous years only;
+  it also works outside the panel).
 """
 
 import numpy as np
@@ -23,135 +23,135 @@ import pandas as pd
 from src.modeling import diagnostico_inicios as di
 from denguekay.model import horizon_strategies as eh
 from denguekay.features import variant_registry as pr
-from denguekay.features.outbreak_label import umbral_brote_futuro
+from denguekay.features.outbreak_label import future_outbreak_threshold
 from denguekay.data.calendar import mmwr_epi_week
 
-COLUMNAS = {v["id"]: list(v["columnas"]) for v in pr.VARIANTES if v["bloque"] == "B"}
-POR_BLOQUE = ("B2", "B5")
-VENTANAS_B5 = {"o4_o": (0, 4), "o9_o5": (5, 9)}  # semanas antes de o, ambos extremos incluidos
-CLIMA_B5 = ("temp_media", "temp_min", "hum_rel_media", "precip_total_mm")
-COL_TEMPORADA_ANTERIOR = "propia_log_casos_temporada_anterior"
+COLUMNS = {v["id"]: list(v["columnas"]) for v in pr.VARIANTS if v["bloque"] == "B"}
+PER_BLOCK = ("B2", "B5")
+B5_WINDOWS = {"o4_o": (0, 4), "o9_o5": (5, 9)}  # weeks before o, both ends included
+B5_CLIMATE = ("temp_media", "temp_min", "hum_rel_media", "precip_total_mm")
+PREVIOUS_SEASON_COLUMN = "propia_log_casos_temporada_anterior"
 
 
-def semana_origen(origenes: pd.DataFrame) -> pd.Series:
-    """Inicio (domingo) de la semana que cierra en ``origen_cierre``."""
-    return pd.to_datetime(origenes.origen_cierre) - pd.Timedelta(days=6)
+def origin_week(origins: pd.DataFrame) -> pd.Series:
+    """Start (Sunday) of the week that closes at ``origen_cierre``."""
+    return pd.to_datetime(origins.origen_cierre) - pd.Timedelta(days=6)
 
 
-def temporada_anterior(serie: pd.DataFrame, historia: pd.DataFrame) -> pd.DataFrame:
-    """``log(1 + casos)`` de la temporada anterior completa, por distrito y temporada.
+def previous_season(series: pd.DataFrame, history: pd.DataFrame) -> pd.DataFrame:
+    """``log(1 + cases)`` of the whole previous season, per district and season.
 
-    Usa la historia previa al panel (ausencias como cero) solo si los años
-    que cubren esa temporada están en la historia; si no, nulo.
+    It uses the history before the panel (absences as zero) only if the years
+    that cover that season are in the history; otherwise null.
     """
-    s = serie[["ubigeo", "anio", "semana", "casos_Dengue"]].copy()
-    primero = int(s.anio.min())
-    h = historia.loc[historia.anio.lt(primero) & historia.ubigeo.isin(set(s.ubigeo)),
+    s = series[["ubigeo", "anio", "semana", "casos_Dengue"]].copy()
+    first = int(s.anio.min())
+    h = history.loc[history.anio.lt(first) & history.ubigeo.isin(set(s.ubigeo)),
                      ["ubigeo", "anio", "semana", "casos_Dengue"]]
-    todo = pd.concat([h, s], ignore_index=True)
-    todo["temporada"] = di.con_temporada(todo)
-    totales = todo.groupby(["ubigeo", "temporada"]).casos_Dengue.sum()
-    disponibles = set(h.anio) | set(s.anio)
-    temporadas = sorted(set(di.con_temporada(s)))
-    filas = []
+    everything = pd.concat([h, s], ignore_index=True)
+    everything["temporada"] = di.con_temporada(everything)
+    totals = everything.groupby(["ubigeo", "temporada"]).casos_Dengue.sum()
+    available = set(h.anio) | set(s.anio)
+    seasons = sorted(set(di.con_temporada(s)))
+    rows = []
     for u in sorted(s.ubigeo.unique()):
-        for t in temporadas:
-            previa = t - 1
-            # La temporada previa abarca las semanas ≥ 35 de previa−1 y las < 35 de previa.
-            valor = np.log1p(totales.get((u, previa), 0.0)) if {previa - 1, previa} <= disponibles else np.nan
-            filas.append({"ubigeo": u, "temporada": t, COL_TEMPORADA_ANTERIOR: valor})
-    return pd.DataFrame(filas)
+        for t in seasons:
+            previous = t - 1
+            # The previous season covers weeks >= 35 of previous-1 and weeks < 35 of previous.
+            value = np.log1p(totals.get((u, previous), 0.0)) if {previous - 1, previous} <= available else np.nan
+            rows.append({"ubigeo": u, "temporada": t, PREVIOUS_SEASON_COLUMN: value})
+    return pd.DataFrame(rows)
 
 
-def tabla_semanal(panel: pd.DataFrame, serie: pd.DataFrame, historia: pd.DataFrame,
-                  corte: pd.Timestamp) -> pd.DataFrame:
-    """B1, B2, B3 y B5 por distrito y semana ``w``, con datos de semanas ≤ ``w``.
+def weekly_table(panel: pd.DataFrame, series: pd.DataFrame, history: pd.DataFrame,
+                  cutoff: pd.Timestamp) -> pd.DataFrame:
+    """B1, B2, B3 and B5 per district and week ``w``, with data of weeks <= ``w``.
 
-    El núcleo (B2) y la climatología (B5) se ajustan con semanas cerradas al
-    ``corte``; B1 y B3 no dependen del corte.
+    The core (B2) and the climatology (B5) are fitted with weeks closed at the
+    ``cutoff``; B1 and B3 do not depend on the cutoff.
     """
-    estado = di.estado_semanal(panel, serie, corte)
-    estado = estado.sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True)
-    grupo = estado.groupby("ubigeo")
-    for c in CLIMA_B5:
-        anomalia = f"{c}_anomalia"
-        for nombre, (k0, k1) in VENTANAS_B5.items():
-            estado[f"{anomalia}_{nombre}"] = (grupo[anomalia].shift(k0)
-                                             .groupby(estado.ubigeo).rolling(k1 - k0 + 1).mean()
+    status = di.estado_semanal(panel, series, cutoff)
+    status = status.sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True)
+    group = status.groupby("ubigeo")
+    for c in B5_CLIMATE:
+        anomaly = f"{c}_anomalia"
+        for name, (k0, k1) in B5_WINDOWS.items():
+            status[f"{anomaly}_{name}"] = (group[anomaly].shift(k0)
+                                             .groupby(status.ubigeo).rolling(k1 - k0 + 1).mean()
                                              .reset_index(level=0, drop=True))
-    semanas = serie[["ubigeo", "semana_inicio", "anio", "semana"]].copy()
-    semanas["semana_inicio"] = pd.to_datetime(semanas.semana_inicio)
-    semanas["temporada"] = di.con_temporada(semanas)
-    estado = estado.drop(columns=[COL_TEMPORADA_ANTERIOR]).merge(
-        semanas[["ubigeo", "semana_inicio", "temporada"]], on=["ubigeo", "semana_inicio"], how="left",
+    weeks = series[["ubigeo", "semana_inicio", "anio", "semana"]].copy()
+    weeks["semana_inicio"] = pd.to_datetime(weeks.semana_inicio)
+    weeks["temporada"] = di.con_temporada(weeks)
+    status = status.drop(columns=[PREVIOUS_SEASON_COLUMN]).merge(
+        weeks[["ubigeo", "semana_inicio", "temporada"]], on=["ubigeo", "semana_inicio"], how="left",
         validate="one_to_one")
-    estado = estado.merge(temporada_anterior(serie, historia), on=["ubigeo", "temporada"], how="left",
+    status = status.merge(previous_season(series, history), on=["ubigeo", "temporada"], how="left",
                           validate="many_to_one")
-    columnas = [c for f in ("B1", "B2", "B3", "B5") for c in COLUMNAS[f]]
-    return estado[["ubigeo", "semana_inicio", *columnas]]
+    columns = [c for f in ("B1", "B2", "B3", "B5") for c in COLUMNS[f]]
+    return status[["ubigeo", "semana_inicio", *columns]]
 
 
-def linea_base(origenes: pd.DataFrame, panel: pd.DataFrame, historia: pd.DataFrame, regla: dict) -> pd.DataFrame:
-    """B4: ``log(1 + umbral)`` de las semanas objetivo o+h para h=2, 3 y 4 (una columna por h)."""
-    base = semana_origen(origenes)
-    salida = pd.DataFrame(index=origenes.index)
+def baseline(origins: pd.DataFrame, panel: pd.DataFrame, history: pd.DataFrame, rule: dict) -> pd.DataFrame:
+    """B4: ``log(1 + threshold)`` of the target weeks o+h for h=2, 3 and 4 (one column per h)."""
+    base = origin_week(origins)
+    output = pd.DataFrame(index=origins.index)
     for h in eh.STRATEGY_HORIZONS:
-        destino = base + pd.Timedelta(weeks=h)
-        cal = mmwr_epi_week(pd.Series(destino.to_numpy()))
-        objetivos = pd.DataFrame({"ubigeo": origenes.ubigeo.to_numpy(), "anio": cal.anio_epi.to_numpy(),
-                                  "semana": cal.semana_epi.to_numpy()}, index=origenes.index)
-        umbral = umbral_brote_futuro(panel, historia, objetivos, multiplicador=regla["multiplicador"],
-                                     anios_previos=regla["anios_previos"])
-        salida[f"linea_base_log_umbral_h{h}"] = np.log1p(umbral.to_numpy())
-    return salida
+        destination = base + pd.Timedelta(weeks=h)
+        cal = mmwr_epi_week(pd.Series(destination.to_numpy()))
+        targets = pd.DataFrame({"ubigeo": origins.ubigeo.to_numpy(), "anio": cal.anio_epi.to_numpy(),
+                                  "semana": cal.semana_epi.to_numpy()}, index=origins.index)
+        threshold = future_outbreak_threshold(panel, history, targets, multiplicador=rule["multiplicador"],
+                                     anios_previos=rule["anios_previos"])
+        output[f"linea_base_log_umbral_h{h}"] = np.log1p(threshold.to_numpy())
+    return output
 
 
-def agregar(origenes: pd.DataFrame, semanal: pd.DataFrame, columnas: list[str]) -> pd.DataFrame:
-    """Une columnas de la tabla semanal a los orígenes por distrito y semana de origen (mismo índice)."""
-    clave = pd.DataFrame({"ubigeo": origenes.ubigeo.astype("string").to_numpy(),
-                          "semana_inicio": semana_origen(origenes).to_numpy()}, index=origenes.index)
-    unido = clave.merge(semanal[["ubigeo", "semana_inicio", *columnas]], on=["ubigeo", "semana_inicio"],
+def add(origins: pd.DataFrame, weekly: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    """Join columns of the weekly table to the origins by district and origin week (same index)."""
+    key = pd.DataFrame({"ubigeo": origins.ubigeo.astype("string").to_numpy(),
+                          "semana_inicio": origin_week(origins).to_numpy()}, index=origins.index)
+    joined = key.merge(weekly[["ubigeo", "semana_inicio", *columns]], on=["ubigeo", "semana_inicio"],
                         how="left", validate="many_to_one")
-    unido.index = origenes.index
-    return origenes.drop(columns=[c for c in columnas if c in origenes]).join(unido[columnas])
+    joined.index = origins.index
+    return origins.drop(columns=[c for c in columns if c in origins]).join(joined[columns])
 
 
-class VariablesInicio:
-    """Calcula y guarda en memoria las tablas semanales por corte."""
+class OnsetFeatures:
+    """Compute and keep in memory the weekly tables per cutoff."""
 
-    def __init__(self, panel: pd.DataFrame, serie: pd.DataFrame, historia: pd.DataFrame, regla: dict):
-        # Igual que construir_etiquetas: la historia solo aporta años anteriores al panel.
-        historia = historia.loc[historia.anio.lt(int(panel.anio.min()))]
-        self.panel, self.serie, self.historia, self.regla = panel, serie, historia, regla
-        self._por_corte: dict[pd.Timestamp, pd.DataFrame] = {}
+    def __init__(self, panel: pd.DataFrame, series: pd.DataFrame, history: pd.DataFrame, rule: dict):
+        # Same as build_labels: the history only contributes years before the panel.
+        history = history.loc[history.anio.lt(int(panel.anio.min()))]
+        self.panel, self.series, self.history, self.rule = panel, series, history, rule
+        self._by_cutoff: dict[pd.Timestamp, pd.DataFrame] = {}
 
-    def semanal(self, corte: pd.Timestamp) -> pd.DataFrame:
-        corte = pd.Timestamp(corte)
-        if corte not in self._por_corte:
-            self._por_corte[corte] = tabla_semanal(self.panel, self.serie, self.historia, corte)
-        return self._por_corte[corte]
+    def weekly(self, cutoff: pd.Timestamp) -> pd.DataFrame:
+        cutoff = pd.Timestamp(cutoff)
+        if cutoff not in self._by_cutoff:
+            self._by_cutoff[cutoff] = weekly_table(self.panel, self.series, self.history, cutoff)
+        return self._by_cutoff[cutoff]
 
-    def origenes(self, base: pd.DataFrame, familias: list[str], corte_referencia: pd.Timestamp) -> pd.DataFrame:
-        """Orígenes con las columnas de las familias pedidas.
+    def origins(self, base: pd.DataFrame, families: list[str], reference_cutoff: pd.Timestamp) -> pd.DataFrame:
+        """Origins with the columns of the requested families.
 
-        B2 y B5 se calculan aquí con ``corte_referencia`` solo para ubicar los
-        nulos de arranque; en el experimento, ``preparar_bloque`` los reemplaza
-        por los del corte de cada bloque.
+        B2 and B5 are computed here with ``reference_cutoff`` only to locate the
+        start-up nulls; in the experiment, ``prepare_block`` replaces them with
+        those of each block's cutoff.
         """
-        salida = base
-        semanal = [c for f in familias if f != "B4" for c in COLUMNAS[f]]
-        if semanal:
-            salida = agregar(salida, self.semanal(corte_referencia), semanal)
-        if "B4" in familias:
-            salida = salida.join(linea_base(salida, self.panel, self.historia, self.regla))
-        return salida
+        output = base
+        weekly = [c for f in families if f != "B4" for c in COLUMNS[f]]
+        if weekly:
+            output = add(output, self.weekly(reference_cutoff), weekly)
+        if "B4" in families:
+            output = output.join(baseline(output, self.panel, self.history, self.rule))
+        return output
 
-    def preparar_bloque(self, familias: list[str]):
-        """``preparar_bloque`` para ``predecir_e3``: recalcula B2/B5 con el corte del bloque."""
-        columnas = [c for f in familias if f in POR_BLOQUE for c in COLUMNAS[f]]
-        if not columnas:
+    def prepare_block(self, families: list[str]):
+        """``prepare_block`` for ``predict_e3``: recompute B2/B5 with the block's cutoff."""
+        columns = [c for f in families if f in PER_BLOCK for c in COLUMNS[f]]
+        if not columns:
             return None
 
-        def preparar(origenes: pd.DataFrame, corte: pd.Timestamp) -> pd.DataFrame:
-            return agregar(origenes, self.semanal(corte), columnas)
-        return preparar
+        def prepare(origins: pd.DataFrame, cutoff: pd.Timestamp) -> pd.DataFrame:
+            return add(origins, self.weekly(cutoff), columns)
+        return prepare

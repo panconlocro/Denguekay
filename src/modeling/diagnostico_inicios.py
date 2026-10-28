@@ -39,10 +39,10 @@ import pandas as pd
 
 from denguekay.data.seasons import assign_season
 from src.modeling import diagnostico_arquitectura as diag
-from denguekay.features.climate import ajustar_climatologia
+from denguekay.features.climate import fit_climatology
 from src.modeling.protocolo_arquitectura import bootstrap_estratificado
 from denguekay.model.train import SEASON_START_WEEK
-from denguekay.features.neighbors import catalogo_geografico, matriz_vecindad
+from denguekay.features.neighbors import geographic_catalog, neighborhood_matrix
 
 TEMPORADAS_DISENO = (2017, 2018, 2019, 2020, 2021)
 PERIODOS = {"2017": (2017,), "2018_2021": (2018, 2019, 2020, 2021)}
@@ -199,8 +199,8 @@ def estado_semanal(panel: pd.DataFrame, serie: pd.DataFrame, corte: pd.Timestamp
     excluido el propio) y la climatología de las anomalías se ajustan solo con
     semanas cerradas al ``corte``.
     """
-    geo = catalogo_geografico(panel)
-    pesos, _ = matriz_vecindad(geo, k=K_VECINOS)
+    geo = geographic_catalog(panel)
+    pesos, _ = neighborhood_matrix(geo, k=K_VECINOS)
     ids = pesos.index
     s = serie.copy()
     s["semana_inicio"] = pd.to_datetime(s.semana_inicio)
@@ -269,7 +269,7 @@ def estado_semanal(panel: pd.DataFrame, serie: pd.DataFrame, corte: pd.Timestamp
     clima = panel[["ubigeo", "semana_inicio", "anio", "semana", *CLIMA]].copy()
     clima["semana_inicio"] = pd.to_datetime(clima.semana_inicio)
     clima["semana_clima"] = clima.semana.clip(upper=52).astype(int)
-    climatologia = ajustar_climatologia(panel, corte, CLIMA).tabla
+    climatologia = fit_climatology(panel, corte, CLIMA).table
     clima = clima.merge(climatologia, on=["ubigeo", "semana_clima"], how="left", suffixes=("", "_clim"),
                         validate="many_to_one")
     for c in CLIMA:

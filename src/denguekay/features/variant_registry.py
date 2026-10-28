@@ -1,32 +1,31 @@
-"""Preregistro de las variantes de variables (fase 1 del encargo de FE sobre E3·S4_s2).
+"""Preregistration of the variable variants (phase 1 of the FE study on E3·S4_s2).
 
-Lista cerrada de variantes que la fase 2 compara contra la referencia B con la
-regla simétrica del protocolo. **No se amplía después de ver resultados sin la
-aprobación de Rosa.** Las ventanas son a priori; el diagnóstico de inicios
-(``diagnostico_inicios``, temporadas 2017–2021) solo aporta la evidencia que
-se cita en ``evidencia_fase1``.
+Closed list of variants that phase 2 compares with reference B using the
+protocol's symmetric rule. **It is not extended after seeing results without
+Rosa's approval.** The windows are set a priori; the onset diagnosis
+(``diagnostico_inicios``, seasons 2017-2021) only provides the evidence cited
+in ``evidencia_fase1``.
 
-Convenciones:
+Conventions:
 
-- ``o`` es el origen (``origen_cierre`` de la fila h=2 de ``tabla_origenes``);
-  toda variable usa solo semanas ≤ ``o``. ``k`` = semanas antes del objetivo
+- ``o`` is the origin (``origen_cierre`` of the h=2 row of ``origin_table``);
+  every variable uses only weeks <= ``o``. ``k`` = weeks before the target
   ``t = o + h``.
-- En la fase 2, toda transformación aprendida (climatología y anomalías,
-  ranking de distritos núcleo, CP1 socio) se **recalcula con el entrenamiento
-  de cada bloque**; lo ajustado con 2017–2021 en la fase 1 era solo para el
-  diagnóstico.
-- Si una variante tiene nulos de arranque distintos de ``base_6``, ambas se
-  evalúan sobre la intersección de filas y se reporta.
+- In phase 2, every learned transformation (climatology and anomalies, core
+  district ranking, socio PC1) is **recomputed with each block's training
+  data**; what phase 1 fitted with 2017-2021 was only for the diagnosis.
+- If a variant has start-up nulls different from ``base_6``, both are evaluated
+  on the intersection of rows and it is reported.
 """
 
-ADVERTENCIA_RECONSTRUIDA = (
+RECONSTRUCTED_WARNING = (
     "Las fracciones 2018–2024 son reconstrucción retrospectiva con 2025 y la fecha de publicación de la "
     "población anual no está verificada: el resultado no puede presentarse como un pronóstico que se habría "
     "podido emitir en esos años.")
 
-VARIANTES = [
+VARIANTS = [
     # ------------------------------------------------------------------
-    # Bloque A: familias de gold h=2, re-ensayadas tal cual sobre E3·S4_s2
+    # Block A: gold h=2 families, re-tried as they are on E3·S4_s2
     # ------------------------------------------------------------------
     {"id": "A1", "bloque": "A", "fuente": "epidemiologica", "familia": "vecinos",
      "columnas": ["vecinos_media_casos_knn5_h2", "vecinos_frac_con_casos_knn5_h2"],
@@ -55,7 +54,7 @@ VARIANTES = [
     {"id": "A5", "bloque": "A", "fuente": "sociodemografica", "familia": "poblacion_anual",
      "columnas": ["log_poblacion_anual"], "regla": "gold (población anual interpolada)", "ventana": "año de t",
      "por_que": "re-ensayo de la ablación 27 sobre S4", "evidencia_fase1": "no evaluada",
-     "advertencia": ADVERTENCIA_RECONSTRUIDA, "comparar_contra": ["referencia_B"]},
+     "advertencia": RECONSTRUCTED_WARNING, "comparar_contra": ["referencia_B"]},
     {"id": "A6", "bloque": "A", "fuente": "sociodemografica", "familia": "fracciones_2017",
      "columnas": ["fraccion_rural_2017", "fraccion_menores_15_2017", "fraccion_desague_red_2017"],
      "regla": "gold (censo 2017, fijas)", "ventana": "fija", "por_que": "re-ensayo de la ablación 27 (fija_tres)",
@@ -65,10 +64,10 @@ VARIANTES = [
      "regla": "CP1 de las 15 fraccion_*_anual estandarizadas, ajustado con el entrenamiento de cada bloque "
               "(como el eje del notebook 21); una sola variante resumida, no una por fracción",
      "ventana": "año de t", "por_que": "resumen de la familia anual sin multiplicar comparaciones",
-     "evidencia_fase1": "no evaluada", "advertencia": ADVERTENCIA_RECONSTRUIDA,
+     "evidencia_fase1": "no evaluada", "advertencia": RECONSTRUCTED_WARNING,
      "comparar_contra": ["referencia_B"]},
     # ------------------------------------------------------------------
-    # Bloque B: variables nuevas, calculadas en memoria
+    # Block B: new variables, computed in memory
     # ------------------------------------------------------------------
     {"id": "B1", "bloque": "B", "fuente": "epidemiologica", "familia": "dinamica_espacial",
      "columnas": ["vecinos_frac_en_brote", "vecinos_n_casos_nuevos",
@@ -133,18 +132,18 @@ VARIANTES = [
      "comparar_contra": ["referencia_B", "base_6+A3"]},
 ]
 
-B6_CONDICIONAL = {
+B6_CONDITIONAL = {
     "id": "B6", "bloque": "B", "fuente": "sociodemografica", "familia": "variantes_socio_nuevas",
     "estado": "no preregistrada: solo si alguna de A4–A7 gana; en ese caso se propone a Rosa antes de correrla",
     "por_que": "la fase 1 no analizó lo socio (fijo por distrito, no describe la dinámica previa al inicio)",
 }
 
-ACLARACION_EXTENSION = (
+EXTENSION_NOTE = (
     "2026-10-27, antes de cualquier resultado de la fase 2b (aprobada por Rosa): en las comparaciones de "
     "extensión el candidato es base_6 + familia A + familia B y la referencia base_6 + familia A (B1: "
     "base_6+A1+A2+B1 frente a base_6+A1+A2; B5: base_6+A3+B5 frente a base_6+A3), para medir qué agrega lo nuevo.")
 
-COMBINADA = {
+COMBINED = {
     "id": "C", "fecha": "2026-10-27, antes de cualquier corrida de la fase 2c (aprobado por Rosa)",
     "regla_de_entrada": "familias de A y B que ganan (o empatan con mejor antelación o recall en brotes nuevos) "
                         "frente a su referencia; sin búsqueda hacia adelante",
@@ -170,7 +169,7 @@ COMBINADA = {
 }
 
 
-FASE4 = {
+PHASE4 = {
     "fecha": "2026-10-27, antes de cualquier corrida de la fase 4 (aprobado por Rosa)",
     "configuracion_de_partida": "C3·S4_s2 (base_6 + B3), hiperparámetros heredados (la fase 3 dejó la base), "
                                 "α dentro de la muestra",
@@ -210,25 +209,25 @@ FASE4 = {
 }
 
 
-def comparaciones() -> dict:
-    """Número de comparaciones preregistradas (cada una se evalúa en h=2, 3 y 4)."""
-    por_variante = sum(len(v["comparar_contra"]) for v in VARIANTES)
-    return {"bloque_A": sum(len(v["comparar_contra"]) for v in VARIANTES if v["bloque"] == "A"),
-            "bloque_B": sum(len(v["comparar_contra"]) for v in VARIANTES if v["bloque"] == "B"),
-            "combinada": 2, "total": por_variante + 2, "condicional_B6": 1,
+def comparisons() -> dict:
+    """Number of preregistered comparisons (each one is evaluated at h=2, 3 and 4)."""
+    by_variant = sum(len(v["comparar_contra"]) for v in VARIANTS)
+    return {"bloque_A": sum(len(v["comparar_contra"]) for v in VARIANTS if v["bloque"] == "A"),
+            "bloque_B": sum(len(v["comparar_contra"]) for v in VARIANTS if v["bloque"] == "B"),
+            "combinada": 2, "total": by_variant + 2, "condicional_B6": 1,
             "fase3_hiperparametros": 1, "fase4": 2, "complemento_clima": 1,
-            "total_encargo": por_variante + 2 + 1 + 2 + 1,
+            "total_encargo": by_variant + 2 + 1 + 2 + 1,
             "nota_encargo": "total (fases 2a–2c) + 1 de la fase 3 + 2 de la fase 4 (4.2 y 4.3; la 4.1 no se corre) "
                             "+ 1 del complemento de clima (F+A3 frente a F∩A3)",
             "nota_combinada": "C frente a B y C frente a C3; C3 frente a B reutiliza B3 frente a B (2b)",
             "nota": "cada comparación se evalúa por horizonte (h=2, 3, 4); 2024 no decide"}
 
 
-def como_dict() -> dict:
-    """Preregistro completo, listo para guardar en el JSON de métricas."""
-    return {"variantes": VARIANTES, "b6": B6_CONDICIONAL, "combinada": COMBINADA, "fase4": FASE4,
-            "aclaracion_extension": ACLARACION_EXTENSION,
-            "comparaciones": comparaciones(),
+def as_dict() -> dict:
+    """Complete preregistration, ready to save in the metrics JSON."""
+    return {"variantes": VARIANTS, "b6": B6_CONDITIONAL, "combinada": COMBINED, "fase4": PHASE4,
+            "aclaracion_extension": EXTENSION_NOTE,
+            "comparaciones": comparisons(),
             "reglas": ["ventanas a priori, sin elegir el rezago que más resaltó",
                        "transformaciones aprendidas ajustadas con el entrenamiento de cada bloque",
                        "nulos de arranque distintos: evaluar sobre la intersección y reportar",

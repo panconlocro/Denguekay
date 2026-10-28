@@ -142,9 +142,9 @@ class TestConDatos(unittest.TestCase):
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         ins = fh.insumos(panel, regla)
         historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
-        vi = fi.VariablesInicio(panel, ins["serie"], historia, regla)
-        origenes = vi.origenes(eh.origin_table(ins["matrices"][2]), ["B3"], pd.Timestamp("2021-08-28"))
-        columnas = [*eh.GENERIC, *fi.COLUMNAS["B3"]]
+        vi = fi.OnsetFeatures(panel, ins["serie"], historia, regla)
+        origenes = vi.origins(eh.origin_table(ins["matrices"][2]), ["B3"], pd.Timestamp("2021-08-28"))
+        columnas = [*eh.GENERIC, *fi.COLUMNS["B3"]]
         defecto = sp.predict_e3(ins["matrices"], 17, "S4_s2", columns=columnas, origins=origenes)
         explicita = hp.evaluar_configuracion(ins["matrices"], ins["serie"], origenes, columnas, hp.BASE)["predicciones"]
         np.testing.assert_array_equal(defecto.casos_predichos, explicita.casos_predichos)

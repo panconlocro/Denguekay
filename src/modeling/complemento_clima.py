@@ -13,7 +13,7 @@ from denguekay.features import variant_registry as pr
 from src.modeling.evaluate import metricas_alerta
 from src.modeling import protocolo_arquitectura as pa
 
-COLUMNAS_A3 = next(list(v["columnas"]) for v in pr.VARIANTES if v["id"] == "A3")
+COLUMNAS_A3 = next(list(v["columnas"]) for v in pr.VARIANTS if v["id"] == "A3")
 METRICAS_CONTEO = ("razon_mae", "razon_rmse")
 VEREDICTO_PIERDE = "pierde"
 

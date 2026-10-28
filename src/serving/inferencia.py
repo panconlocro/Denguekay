@@ -15,7 +15,7 @@ from src.db.modelos import (Alerta, Distrito, Ejecucion, ObservacionSemanal, Pre
                             SemanaEpidemiologica, VersionModelo, ahora_utc)
 from src.db.sesion import upsert
 from denguekay.model.future_rows import build_future_rows
-from denguekay.features.sociodemographics import DIRECTAS
+from denguekay.features.sociodemographics import DIRECT
 from src.serving import parametros
 from src.serving.artefactos import predecir_con_version
 from src.serving.riesgo import NIVELES_ALERTA, cambio_alerta, nivel_riesgo
@@ -78,7 +78,7 @@ def referencia_desde_bd(sesion):
         Distrito.poblacion_censo_2017.is_not(None))).all()
     referencia = pd.DataFrame(filas, columns=["ubigeo", "poblacion"])
     referencia["ubigeo"] = referencia.ubigeo.astype("string")
-    for columna in DIRECTAS:
+    for columna in DIRECT:
         referencia[columna] = 0.0
     return referencia
 

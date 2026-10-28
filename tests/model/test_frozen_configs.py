@@ -92,13 +92,13 @@ class TestReproduccion(unittest.TestCase):
         from src.modeling import fe_hiperparametros as fh
 
         cls.panel = load_integrated(SILVER_INTEGRATED)
-        cls.regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        cls.ins = fh.insumos(cls.panel, cls.regla)
+        cls.rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
+        cls.ins = fh.insumos(cls.panel, cls.rule)
 
     def _comprobar(self, nombre, configuracion, ruta):
         from denguekay.model.device import xgboost_settings
 
-        o = cf.origins(self.panel, self.ins, self.regla, configuration=configuracion)
+        o = cf.origins(self.panel, self.ins, self.rule, configuration=configuracion)
         pred = cf.predict(self.ins["matrices"], o, configuration=configuracion)
         guardadas = pd.read_csv(ruta, dtype={"ubigeo": "string"})
         r = cf.matches_saved(pred, guardadas[guardadas.semilla.eq(cf.DEPLOYMENT_SEED)])

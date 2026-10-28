@@ -71,13 +71,13 @@ class TestConDatos(unittest.TestCase):
 
         cls.panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        cls.serie = fh.insumos(cls.panel, regla)["serie"]
-        cls.corte = di.corte_diseno(cls.serie)
-        cls.estado = di.estado_semanal(cls.panel, cls.serie, cls.corte)
-        cls.inicios = di.inicios_limpios(cls.serie)
+        cls.series = fh.insumos(cls.panel, regla)["serie"]
+        cls.corte = di.corte_diseno(cls.series)
+        cls.estado = di.estado_semanal(cls.panel, cls.series, cls.corte)
+        cls.inicios = di.inicios_limpios(cls.series)
 
     def _alterar(self, desde: pd.Timestamp):
-        panel, serie = self.panel.copy(), self.serie.copy()
+        panel, serie = self.panel.copy(), self.series.copy()
         fp = pd.to_datetime(panel.semana_inicio) >= desde
         fs = serie.semana_inicio >= desde
         panel.loc[fp, "casos_Dengue"] = panel.loc[fp, "casos_Dengue"] * 3 + 7
@@ -116,14 +116,14 @@ class TestConDatos(unittest.TestCase):
                                       otro.loc[sel, columnas].reset_index(drop=True))
 
     def test_controles(self):
-        elegibles = di.semanas_elegibles(self.serie)
+        elegibles = di.semanas_elegibles(self.series)
         self.assertTrue(elegibles.temporada.isin(di.TEMPORADAS_DISENO).all())
-        s = self.serie.sort_values(["ubigeo", "semana_inicio"])
+        s = self.series.sort_values(["ubigeo", "semana_inicio"])
         previo = s.groupby("ubigeo").brote.transform(lambda x: x.rolling(9, min_periods=1).max())
         claves = set(zip(s.ubigeo[previo.eq(0)], s.semana_inicio[previo.eq(0)]))
         self.assertTrue(all((u, w) in claves for u, w in zip(elegibles.ubigeo, elegibles.semana_inicio)))
         diseno = self.inicios[self.inicios.verificable & self.inicios.temporada.isin(di.TEMPORADAS_DISENO)]
-        tercil = di.terciles(self.serie, self.corte)
+        tercil = di.terciles(self.series, self.corte)
         pares = di.controles(diseno, elegibles, tercil)
         info = pares.merge(diseno[["id_inicio", "ubigeo", "temporada", "semana_clima"]], on="id_inicio").merge(
             elegibles.rename(columns={"ubigeo": "ubigeo_control", "semana_inicio": "semana_control",
@@ -139,7 +139,7 @@ class TestConDatos(unittest.TestCase):
 
     def test_controles_con_respaldo_por_tercil(self):
         diseno = self.inicios[self.inicios.verificable & self.inicios.temporada.isin(di.TEMPORADAS_DISENO)]
-        pares = di.controles(diseno, di.semanas_elegibles(self.serie), di.terciles(self.serie, self.corte),
+        pares = di.controles(diseno, di.semanas_elegibles(self.series), di.terciles(self.series, self.corte),
                              minimo_distrito=99)
         dist = pares[pares.tipo.eq("distrito")]
         self.assertTrue(dist.tipo_efectivo.eq("tercil").all())

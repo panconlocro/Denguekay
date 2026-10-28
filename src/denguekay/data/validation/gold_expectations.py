@@ -9,7 +9,7 @@ starts after the origin close). The strict structural start-up checks stay in
 
 import great_expectations as gx
 
-from denguekay.features.gold import columnas_gold
+from denguekay.features.gold import gold_columns
 from denguekay.data.validation.forecast_contract import KEY
 
 # Minimum share of rows with populated predictors. The only nulls allowed
@@ -21,7 +21,7 @@ def expectations_for_gold(horizon: int, ubigeos: list[str]) -> list:
     """Return the list of expectations of ``gold_h{horizon}``."""
     E = gx.expectations
     h = horizon
-    columns = columnas_gold(h, con_brote=True)
+    columns = gold_columns(h, with_outbreak=True)
     exp = [
         E.ExpectTableColumnsToMatchSet(column_set=columns, exact_match=True),
         E.ExpectTableRowCountToBeBetween(min_value=1),

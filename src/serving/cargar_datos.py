@@ -191,13 +191,13 @@ def leer_silver(ruta=SILVER_INTEGRATED):
 
 def preparar_carga():
     """Valida archivos originales antes de preparar cualquier escritura."""
-    from denguekay.features.model_input_contract import auditar_traspaso
+    from denguekay.features.model_input_contract import audit_handoff
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
     from src.serving.configuracion import configuracion_servicio
     from denguekay.data.validation.gx_quality import read_gold, validate_modeling_inputs
 
     hashes = hashes_fuentes()
-    auditar_traspaso()
+    audit_handoff()
     calidad = validate_modeling_inputs(gold_dir=GOLD, silver_path=SILVER_INTEGRATED)
     gold, _ = read_gold(GOLD, 2)
     datos = preparar_desde_tablas(

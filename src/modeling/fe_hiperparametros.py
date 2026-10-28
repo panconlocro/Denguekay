@@ -24,7 +24,7 @@ import pandas as pd
 from denguekay.model import horizon_strategies as eh
 from src.modeling import protocolo_arquitectura as pa
 from denguekay.model import probabilistic_output as sp
-from denguekay.features.model_input_contract import NO_PREDICTORAS, familias_predictoras
+from denguekay.features.model_input_contract import NON_PREDICTORS, predictor_families
 from denguekay.model.train import BASE_PARAMS
 
 ESTRATEGIA, FORMULACION = "E3", "S4_s2"
@@ -43,10 +43,10 @@ ABLACIONES_S1 = {"25_espacial": "ablacion_espacial", "26_clima": "ablacion_clima
 
 def insumos(panel: pd.DataFrame, regla: dict) -> dict:
     """Etiquetas, serie y matrices h=2, 3, 4 como en el notebook 31 (celda de fase 3)."""
-    from denguekay.features.outbreak_label import ConfiguracionBroteEstacional
-    from denguekay.features.gold import construir_etiquetas
+    from denguekay.features.outbreak_label import SeasonalOutbreakConfig
+    from denguekay.features.gold import build_labels
 
-    etiquetas = construir_etiquetas(panel, ConfiguracionBroteEstacional(
+    etiquetas = build_labels(panel, SeasonalOutbreakConfig(
         regla["multiplicador"], regla["anios_previos"], regla["minimo_casos"]))
     serie = panel[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"]].merge(
         etiquetas[["ubigeo", "anio", "semana", "brote"]], on=["ubigeo", "anio", "semana"])
@@ -145,8 +145,8 @@ def inventario_candidatas(gold_h2: pd.DataFrame, matriz_h2: pd.DataFrame) -> pd.
     quedan en la matriz modelable (después de las exclusiones de
     ``preparar_gold``), y ``en_base_6`` marca las 6 de la referencia.
     """
-    familia = {c: f for f, cols in familias_predictoras(2).items() for c in cols}
-    candidatas = [c for c in gold_h2.columns if c not in NO_PREDICTORAS]
+    familia = {c: f for f, cols in predictor_families(2).items() for c in cols}
+    candidatas = [c for c in gold_h2.columns if c not in NON_PREDICTORS]
     sin_familia = [c for c in candidatas if c not in familia]
     if sin_familia:
         raise ValueError(f"Candidatas de gold sin familia en el contrato: {sin_familia}")

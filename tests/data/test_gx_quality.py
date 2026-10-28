@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from denguekay.features.gold import columnas_gold
+from denguekay.features.gold import gold_columns
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.data.validation.gx_quality import DataValidationError, get_context, validate_dataframe
 from denguekay.data.validation.gold_expectations import expectations_for_gold
@@ -22,7 +22,7 @@ def gold_sintetico(h: int = 2, semanas: int = 60) -> pd.DataFrame:
     for ubigeo in UBIGEOS:
         for i, fecha in enumerate(fechas):
             con_origen = i >= h
-            fila = {c: 0.3 for c in columnas_gold(h, con_brote=True)}
+            fila = {c: 0.3 for c in gold_columns(h, with_outbreak=True)}
             fila.update({
                 "provincia": "Piura", "distrito": "Piura", "distrito_key": "PIURA", "ubigeo": ubigeo,
                 "anio": int(fecha.year), "semana": int(fecha.isocalendar().week), "semana_inicio": fecha,
@@ -36,7 +36,7 @@ def gold_sintetico(h: int = 2, semanas: int = 60) -> pd.DataFrame:
                 "socio_fracciones_interpoladas_con_2025": True,
             })
             filas.append(fila)
-    return pd.DataFrame(filas)[columnas_gold(h, con_brote=True)]
+    return pd.DataFrame(filas)[gold_columns(h, with_outbreak=True)]
 
 
 def integrado_sintetico() -> pd.DataFrame:

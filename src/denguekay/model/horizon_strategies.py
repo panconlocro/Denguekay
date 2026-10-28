@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor
 
-from denguekay.features.gold import construir_gold
+from denguekay.features.gold import build_gold
 from denguekay.model.train import (
     SENSITIVITY_TEST_YEAR, MIN_OUTBREAK_CASES, BASE_PARAMS, counts_from_log1p,
     prepare_gold, split_calendar_year, split_season,
@@ -51,7 +51,7 @@ def horizon_matrix(panel: pd.DataFrame, labels: pd.DataFrame, horizon: int) -> p
     (same start-up exclusions and origin validation). It adds the seasonal naive
     value: the cases of week ``t - 52``, known at the origin.
     """
-    gold = construir_gold(panel, horizon, labels, minimo_casos_brote=MIN_OUTBREAK_CASES)
+    gold = build_gold(panel, horizon, labels, min_outbreak_cases=MIN_OUTBREAK_CASES)
     data, _ = prepare_gold(gold, horizon)
     if not data.origen_cierre.lt(data.semana_inicio).all():
         raise ValueError(f"Fuga temporal en la matriz h={horizon}")

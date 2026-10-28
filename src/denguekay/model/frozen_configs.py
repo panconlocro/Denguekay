@@ -33,7 +33,7 @@ B3_REFERENCE_CUTOFF = pd.Timestamp("2021-08-28")
 CONFIG_2026_V1 = {
     "fecha_congelamiento": FREEZE_DATE_V1,
     "matriz": "C3 = base_6 + B3",
-    "columnas": [*eh.GENERIC, *fi.COLUMNAS["B3"]],
+    "columnas": [*eh.GENERIC, *fi.COLUMNS["B3"]],
     "estrategia": "E3 (un regresor multi-salida, multi_output_tree, t+2/t+3/t+4 desde el origen o = t − 2)",
     "formulacion": "S4_s3",
     "conteo": "count:poisson con base_margin = log(casos del origen + 0,5) en las tres salidas",
@@ -107,8 +107,8 @@ def origins(panel: pd.DataFrame, inputs: dict, rule: dict, history: pd.DataFrame
     configuration = CONFIG_2026 if configuration is None else configuration
     if history is None:
         history = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
-    vi = fi.VariablesInicio(panel, inputs["serie"], history, rule)
-    output = vi.origenes(eh.origin_table(inputs["matrices"][2]), ["B3"], B3_REFERENCE_CUTOFF)
+    vi = fi.OnsetFeatures(panel, inputs["serie"], history, rule)
+    output = vi.origins(eh.origin_table(inputs["matrices"][2]), ["B3"], B3_REFERENCE_CUTOFF)
     climate = [c for c in A3_COLUMNS if c in configuration["columnas"]]
     if climate:
         output = output.loc[output[climate].notna().all(axis=1)].reset_index(drop=True)

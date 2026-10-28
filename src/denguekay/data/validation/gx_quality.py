@@ -27,7 +27,7 @@ from pathlib import Path
 import great_expectations as gx
 import pandas as pd
 
-from denguekay.features.gold import HORIZONTES
+from denguekay.features.gold import HORIZONS
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.config.paths import GOLD, GX_DIR, SILVER_INTEGRATED, UBIGEO_CATALOG
 from denguekay.data.validation.gold_expectations import expectations_for_gold
@@ -167,7 +167,7 @@ def read_gold(gold_dir: Path, horizon: int, stem: str = SILVER_INTEGRATED.stem) 
 
 
 def validate_gold_gx(
-    gold_dir: Path = GOLD, *, horizons=HORIZONTES, context=None,
+    gold_dir: Path = GOLD, *, horizons=HORIZONS, context=None,
     catalog_path: Path = UBIGEO_CATALOG, raise_on_failure: bool = True,
 ) -> dict[str, dict]:
     """Validate each gold per horizon with its ``gold_h{h}`` suite."""

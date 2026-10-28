@@ -1,19 +1,19 @@
-"""Contexto espacial y jerárquico disponible al origen del pronóstico."""
+"""Spatial and hierarchical context available at the forecast origin."""
 
 import numpy as np
 import pandas as pd
 
-from denguekay.features.spatial import distancias_km, pesos_inverso_distancia, pesos_knn
+from denguekay.features.spatial import distances_km, inverse_distance_weights, knn_weights
 from denguekay.data.validation.forecast_contract import KEY, EXPERIMENTAL_HORIZONS, audit_origin
 
 
-def catalogo_geografico(panel: pd.DataFrame) -> pd.DataFrame:
-    """Extrae una geografía única y estable por UBIGEO del panel integrado."""
-    requeridas = {"ubigeo", "provincia", "lat", "lon"}
-    faltan = requeridas - set(panel)
-    if faltan:
-        raise ValueError(f"Faltan columnas geográficas: {sorted(faltan)}")
-    geo = panel[list(requeridas)].copy()
+def geographic_catalog(panel: pd.DataFrame) -> pd.DataFrame:
+    """Extract a single, stable geography per UBIGEO from the integrated panel."""
+    required = {"ubigeo", "provincia", "lat", "lon"}
+    missing = required - set(panel)
+    if missing:
+        raise ValueError(f"Faltan columnas geográficas: {sorted(missing)}")
+    geo = panel[list(required)].copy()
     if geo.isna().any().any():
         raise ValueError("Hay identificadores, provincias o coordenadas faltantes")
     geo["ubigeo"] = geo["ubigeo"].astype("string")
@@ -35,102 +35,102 @@ def catalogo_geografico(panel: pd.DataFrame) -> pd.DataFrame:
     return geo[["ubigeo", "provincia", "lat", "lon"]]
 
 
-def matriz_vecindad(
-    catalogo: pd.DataFrame, k: int = 5, metodo: str = "knn",
+def neighborhood_matrix(
+    catalog: pd.DataFrame, k: int = 5, method: str = "knn",
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Devuelve pesos sin diagonal y distancias, ambos indexados por UBIGEO.
+    """Return weights without diagonal and distances, both indexed by UBIGEO.
 
-    ``knn`` reutiliza los k vecinos uniformes del EDA. ``knn_inversa`` usa
-    esos mismos k vecinos con peso inverso a la distancia. ``inversa`` usa
-    todos los demás distritos con peso inverso; en ese caso ``k`` se ignora.
+    ``knn`` reuses the EDA's uniform k neighbours. ``knn_inversa`` uses those
+    same k neighbours with inverse-distance weights. ``inversa`` uses every
+    other district with inverse weights; then ``k`` is ignored.
     """
-    geo = catalogo.sort_values("ubigeo").reset_index(drop=True)
+    geo = catalog.sort_values("ubigeo").reset_index(drop=True)
     if geo.empty or geo.ubigeo.duplicated().any():
         raise ValueError("El catálogo está vacío o duplica UBIGEO")
-    if metodo not in ("knn", "knn_inversa", "inversa"):
+    if method not in ("knn", "knn_inversa", "inversa"):
         raise ValueError("Método de vecindad desconocido")
-    if metodo in ("knn", "knn_inversa") and (not isinstance(k, int) or not 1 <= k < len(geo)):
+    if method in ("knn", "knn_inversa") and (not isinstance(k, int) or not 1 <= k < len(geo)):
         raise ValueError("k debe estar entre 1 y el número de distritos menos 1")
-    dist = distancias_km(geo.lat.to_numpy(), geo.lon.to_numpy())
+    dist = distances_km(geo.lat.to_numpy(), geo.lon.to_numpy())
     if (dist[np.triu_indices(len(geo), 1)] <= 0).any():
         raise ValueError("Hay centroides coincidentes")
-    if metodo == "knn":
-        pesos = pesos_knn(dist, k)
-    elif metodo == "knn_inversa":
-        mascara = pesos_knn(dist, k) > 0
-        pesos = pesos_inverso_distancia(dist) * mascara
-        pesos = pesos / pesos.sum(axis=1, keepdims=True)
+    if method == "knn":
+        weights = knn_weights(dist, k)
+    elif method == "knn_inversa":
+        mask = knn_weights(dist, k) > 0
+        weights = inverse_distance_weights(dist) * mask
+        weights = weights / weights.sum(axis=1, keepdims=True)
     else:
-        pesos = pesos_inverso_distancia(dist)
-    if not np.isfinite(pesos).all() or not np.allclose(pesos.sum(axis=1), 1):
+        weights = inverse_distance_weights(dist)
+    if not np.isfinite(weights).all() or not np.allclose(weights.sum(axis=1), 1):
         raise ValueError("Pesos espaciales no finitos o sin normalizar")
-    if not np.allclose(np.diag(pesos), 0):
+    if not np.allclose(np.diag(weights), 0):
         raise ValueError("La matriz espacial incluye al distrito objetivo")
     ids = pd.Index(geo.ubigeo, name="ubigeo")
-    return (pd.DataFrame(pesos, index=ids, columns=ids),
+    return (pd.DataFrame(weights, index=ids, columns=ids),
             pd.DataFrame(dist, index=ids, columns=ids))
 
 
-def construir_vecinos_jerarquia(
-    panel: pd.DataFrame, horizonte: int, k: int = 5, metodo: str = "knn",
+def build_neighbors_hierarchy(
+    panel: pd.DataFrame, horizon: int, k: int = 5, method: str = "knn",
 ) -> pd.DataFrame:
-    """Calcula vecinos, provincia y región usando solo casos de ``t-h``.
+    """Compute neighbours, province and region using only the cases of ``t-h``.
 
-    Cada salida mantiene una fila por distrito y semana objetivo; sus fechas
-    de origen permiten auditar la disponibilidad. Los agregados provincial y
-    regional excluyen al propio distrito. ``frac_con_casos`` significa casos
-    estrictamente positivos, sin adoptar la definición de brote D1 del EDA.
-    Se exige un panel completo en todas las fechas para evitar promedios
-    espaciales calculados silenciosamente con distritos ausentes.
+    Each output keeps one row per district and target week; its origin dates
+    allow auditing availability. The provincial and regional aggregates exclude
+    the district itself. ``frac_con_casos`` means strictly positive cases,
+    without adopting the EDA's D1 outbreak definition. A complete panel is
+    required on every date to avoid spatial averages silently computed with
+    missing districts.
     """
-    if horizonte not in EXPERIMENTAL_HORIZONS:
+    if horizon not in EXPERIMENTAL_HORIZONS:
         raise ValueError("El horizonte debe estar entre 1 y 6 semanas")
     if "casos_Dengue" not in panel:
         raise ValueError("Falta casos_Dengue")
-    audit = audit_origin(panel, horizonte)
-    geo = catalogo_geografico(panel)
-    pesos, _ = matriz_vecindad(geo, k=k, metodo=metodo)
-    fuente = audit.merge(panel[KEY + ["casos_Dengue"]], on=KEY,
+    audit = audit_origin(panel, horizon)
+    geo = geographic_catalog(panel)
+    weights, _ = neighborhood_matrix(geo, k=k, method=method)
+    source = audit.merge(panel[KEY + ["casos_Dengue"]], on=KEY,
                          how="left", validate="one_to_one", sort=False)
-    if len(fuente) != len(panel):
+    if len(source) != len(panel):
         raise ValueError("El cruce con casos cambió el número de filas")
-    casos = pd.to_numeric(fuente.casos_Dengue, errors="raise")
-    if casos.isna().any() or not np.isfinite(casos.to_numpy(dtype=float)).all() or (casos < 0).any():
+    cases = pd.to_numeric(source.casos_Dengue, errors="raise")
+    if cases.isna().any() or not np.isfinite(cases.to_numpy(dtype=float)).all() or (cases < 0).any():
         raise ValueError("casos_Dengue debe ser numérico, finito y no negativo")
 
-    ids = pesos.index
-    ancho = fuente.assign(casos_Dengue=casos).pivot(
+    ids = weights.index
+    width = source.assign(casos_Dengue=cases).pivot(
         index="semana_inicio", columns="ubigeo", values="casos_Dengue"
     ).reindex(columns=ids)
-    if ancho.isna().any().any() or len(ancho) * len(ids) != len(panel):
+    if width.isna().any().any() or len(width) * len(ids) != len(panel):
         raise ValueError("Faltan distrito-semanas para construir el contexto espacial")
-    y = ancho.to_numpy(dtype=float)
-    activos = (y > 0).astype(float)
-    provincias = geo.set_index("ubigeo").loc[ids, "provincia"].to_numpy()
-    misma_provincia = (provincias[:, None] == provincias[None, :]).astype(float)
-    np.fill_diagonal(misma_provincia, 0)
-    otros_region = np.ones_like(misma_provincia) - np.eye(len(ids))
-    conteo_provincia = misma_provincia.sum(axis=1)
+    y = width.to_numpy(dtype=float)
+    active = (y > 0).astype(float)
+    provinces = geo.set_index("ubigeo").loc[ids, "provincia"].to_numpy()
+    same_province = (provinces[:, None] == provinces[None, :]).astype(float)
+    np.fill_diagonal(same_province, 0)
+    rest_of_region = np.ones_like(same_province) - np.eye(len(ids))
+    province_count = same_province.sum(axis=1)
 
-    etiqueta = (f"knn{k}" if metodo == "knn" else
-                f"knn{k}_inversa" if metodo == "knn_inversa" else "inversa")
-    valores = {
-        f"vecinos_media_casos_{etiqueta}_h{horizonte}": y @ pesos.to_numpy().T,
-        f"vecinos_frac_con_casos_{etiqueta}_h{horizonte}": activos @ pesos.to_numpy().T,
-        f"provincia_otros_casos_h{horizonte}": y @ misma_provincia.T,
-        f"provincia_otros_frac_con_casos_h{horizonte}":
-            (activos @ misma_provincia.T) / conteo_provincia[None, :],
-        f"region_otros_casos_h{horizonte}": y @ otros_region.T,
-        f"region_otros_frac_con_casos_h{horizonte}":
-            (activos @ otros_region.T) / (len(ids) - 1),
+    label = (f"knn{k}" if method == "knn" else
+                f"knn{k}_inversa" if method == "knn_inversa" else "inversa")
+    values = {
+        f"vecinos_media_casos_{label}_h{horizon}": y @ weights.to_numpy().T,
+        f"vecinos_frac_con_casos_{label}_h{horizon}": active @ weights.to_numpy().T,
+        f"provincia_otros_casos_h{horizon}": y @ same_province.T,
+        f"provincia_otros_frac_con_casos_h{horizon}":
+            (active @ same_province.T) / province_count[None, :],
+        f"region_otros_casos_h{horizon}": y @ rest_of_region.T,
+        f"region_otros_frac_con_casos_h{horizon}":
+            (active @ rest_of_region.T) / (len(ids) - 1),
     }
-    salida = audit.copy()
-    filas = ancho.index.get_indexer(audit.semana_inicio)
-    columnas = ids.get_indexer(audit.ubigeo.astype("string"))
-    if (filas < 0).any() or (columnas < 0).any():
+    output = audit.copy()
+    rows = width.index.get_indexer(audit.semana_inicio)
+    columns = ids.get_indexer(audit.ubigeo.astype("string"))
+    if (rows < 0).any() or (columns < 0).any():
         raise ValueError("Un distrito o una semana no se pudo alinear")
-    for nombre, matriz in valores.items():
-        # La fila objetivo t toma el agregado que existía en t-h.
-        rezagado = pd.DataFrame(matriz, index=ancho.index, columns=ids).shift(horizonte).to_numpy()
-        salida[nombre] = rezagado[filas, columnas]
-    return salida
+    for name, matrix in values.items():
+        # Target row t takes the aggregate that existed at t-h.
+        lagged = pd.DataFrame(matrix, index=width.index, columns=ids).shift(horizon).to_numpy()
+        output[name] = lagged[rows, columns]
+    return output

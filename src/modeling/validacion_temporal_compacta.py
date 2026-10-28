@@ -13,9 +13,9 @@ import numpy as np
 import pandas as pd
 from xgboost import __version__ as XGBOOST_VERSION
 
-from denguekay.features.model_input_contract import auditar_traspaso
+from denguekay.features.model_input_contract import audit_handoff
 from src.modeling.evaluate import seleccionar_umbral_f1
-from denguekay.features.gold import FECHA_SOCIO_2017
+from denguekay.features.gold import SOCIO_2017_DATE
 from denguekay.model.train import (
     SENSITIVITY_TEST_YEAR, MIN_OUTBREAK_CASES, BASE_PARAMS,
     SEASON_START_WEEK, variant_columns, evaluate_fold, predict_fold,
@@ -107,7 +107,7 @@ def ejecutar_validacion_temporal_compacta(
     """Entrena matrices predefinidas con calibración cronológica por temporada."""
     gold_dir, salida_dir, metricas_path = map(Path, (gold_dir, salida_dir, metricas_path))
     if auditar:
-        auditar_traspaso(gold_dir=gold_dir)
+        audit_handoff(gold_dir=gold_dir)
     # Calidad de datos (Great Expectations) antes de entrenar; falla si gold/silver
     # incumplen su suite. El resumen se adjunta al run de MLflow.
     calidad = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None)
@@ -152,7 +152,7 @@ def ejecutar_validacion_temporal_compacta(
             resultado = {"columnas": columnas, "calibracion_inicial": None, "folds": [], "sensibilidad_2025": None}
             for temporada in TEMPORADAS:
                 train, test, corte = split_season(datos, temporada)
-                if nombre.endswith("poblacion_2017") and test.origen_cierre.lt(pd.Timestamp(FECHA_SOCIO_2017)).any():
+                if nombre.endswith("poblacion_2017") and test.origen_cierre.lt(pd.Timestamp(SOCIO_2017_DATE)).any():
                     raise ValueError("Referencia censal no disponible en el bloque")
                 pred, _, _ = predict_fold(train, test, columnas)
                 pred[f"casos_lag_{h}"] = test[f"casos_lag_{h}"].to_numpy(float)

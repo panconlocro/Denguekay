@@ -11,7 +11,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from denguekay.features.outbreak_label import etiquetar_brote_estacional
+from denguekay.features.outbreak_label import label_seasonal_outbreak
 from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from denguekay.data.calendar import mmwr_epi_week
 
@@ -37,8 +37,8 @@ def _perturbar_despues(panel: pd.DataFrame, corte: pd.Timestamp) -> pd.DataFrame
 
 
 def _comprobar(caso: unittest.TestCase, panel, historia, corte, h, **regla):
-    base = etiquetar_brote_estacional(panel, historia, **regla)
-    otro = etiquetar_brote_estacional(_perturbar_despues(panel, corte), historia, **regla)
+    base = label_seasonal_outbreak(panel, historia, **regla)
+    otro = label_seasonal_outbreak(_perturbar_despues(panel, corte), historia, **regla)
     fechas = pd.to_datetime(panel.semana_inicio).to_numpy()
     # Filas cuyo origen t−h cierra en o antes del corte: el umbral no puede cambiar.
     conocidas = fechas - np.timedelta64(7 * h, "D") <= np.datetime64(corte)

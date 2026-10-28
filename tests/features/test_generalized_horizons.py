@@ -10,11 +10,11 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from denguekay.features.climate import CLIMA_PRINCIPAL
-from denguekay.features.model_input_contract import familias_predictoras
-from denguekay.features.outbreak_label import ConfiguracionBroteEstacional
-from denguekay.features.gold import HORIZONTES, construir_etiquetas, construir_gold
-from denguekay.features.history_calendar import construir_historia_calendario
+from denguekay.features.climate import MAIN_CLIMATE
+from denguekay.features.model_input_contract import predictor_families
+from denguekay.features.outbreak_label import SeasonalOutbreakConfig
+from denguekay.features.gold import HORIZONS, build_labels, build_gold
+from denguekay.features.history_calendar import build_history_calendar
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from denguekay.data.validation.forecast_contract import EXPERIMENTAL_HORIZONS
 
@@ -36,7 +36,7 @@ class TestHistoriaGeneralizada(unittest.TestCase):
         panel = _panel_sintetico()
         for h in EXPERIMENTAL_HORIZONS:
             with self.subTest(h=h):
-                hist = construir_historia_calendario(panel, h)
+                hist = build_history_calendar(panel, h)
                 con_origen = hist.dropna(subset=["origen_cierre"])
                 self.assertTrue((con_origen.semana_inicio > con_origen.origen_cierre).all())
                 self.assertTrue(((con_origen.semana_inicio - con_origen.origen_inicio).dt.days == 7 * h).all())
@@ -46,12 +46,12 @@ class TestHistoriaGeneralizada(unittest.TestCase):
     def test_rechaza_horizontes_fuera_de_rango(self):
         for h in (0, 7):
             with self.assertRaisesRegex(ValueError, "entre 1 y 6"):
-                construir_historia_calendario(_panel_sintetico(), h)
+                build_history_calendar(_panel_sintetico(), h)
             with self.assertRaisesRegex(ValueError, "entre 1 y 6"):
-                familias_predictoras(h)
+                predictor_families(h)
 
     def test_gold_persistido_sigue_solo_en_2_y_4(self):
-        self.assertEqual(HORIZONTES, (2, 4))
+        self.assertEqual(HORIZONS, (2, 4))
 
 
 @unittest.skipUnless(HAY_DATOS, "Requiere silver integrado, historia epi y gold locales")
@@ -62,20 +62,20 @@ class TestGoldGeneralizadoConDatos(unittest.TestCase):
 
         cls.panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        cls.config = ConfiguracionBroteEstacional(
+        cls.config = SeasonalOutbreakConfig(
             multiplicador=regla["multiplicador"], anios_previos=regla["anios_previos"],
             minimo_casos=regla["minimo_casos"])
-        cls.etiquetas = construir_etiquetas(cls.panel, cls.config)
+        cls.etiquetas = build_labels(cls.panel, cls.config)
 
     def test_regresion_reproduce_gold_actual_h2_h4(self):
-        for h in HORIZONTES:
+        for h in HORIZONS:
             with self.subTest(h=h):
                 archivo = GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv"
                 disco = pd.read_csv(archivo, dtype={"ubigeo": "string"},
                                     parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"],
                                     float_precision="round_trip")
-                memoria = construir_gold(self.panel, h, self.etiquetas,
-                                         minimo_casos_brote=self.config.minimo_casos)
+                memoria = build_gold(self.panel, h, self.etiquetas,
+                                         min_outbreak_cases=self.config.minimo_casos)
                 self.assertEqual(list(memoria.columns), list(disco.columns))
                 pd.testing.assert_frame_equal(memoria.reset_index(drop=True), disco.reset_index(drop=True),
                                               check_dtype=False, check_exact=True)
@@ -84,14 +84,14 @@ class TestGoldGeneralizadoConDatos(unittest.TestCase):
         corte = pd.Timestamp("2022-06-05")
         alterado = self.panel.copy()
         futuro = pd.to_datetime(alterado.semana_inicio) >= corte
-        columnas = ["casos_Dengue", *[c for c in CLIMA_PRINCIPAL if c in alterado]]
+        columnas = ["casos_Dengue", *[c for c in MAIN_CLIMATE if c in alterado]]
         rng = np.random.default_rng(7)
         for c in columnas:
             alterado.loc[futuro, c] = alterado.loc[futuro, c] + rng.integers(1, 50, futuro.sum())
         for h in EXPERIMENTAL_HORIZONS:
             with self.subTest(h=h):
-                base = construir_gold(self.panel, h)
-                otro = construir_gold(alterado, h)
+                base = build_gold(self.panel, h)
+                otro = build_gold(alterado, h)
                 con_origen = base.dropna(subset=["origen_cierre"])
                 self.assertTrue((con_origen.semana_inicio > con_origen.origen_cierre).all())
                 # Filas cuyo origen cerró antes del corte: sus predictores no pueden cambiar.

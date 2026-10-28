@@ -53,12 +53,12 @@ class TestFormulacionesConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from denguekay.data.loading import load_integrated
-        from denguekay.features.outbreak_label import ConfiguracionBroteEstacional
-        from denguekay.features.gold import construir_etiquetas
+        from denguekay.features.outbreak_label import SeasonalOutbreakConfig
+        from denguekay.features.gold import build_labels
 
         panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        etiquetas = construir_etiquetas(panel, ConfiguracionBroteEstacional(
+        etiquetas = build_labels(panel, SeasonalOutbreakConfig(
             regla["multiplicador"], regla["anios_previos"], regla["minimo_casos"]))
         cls.matrices = {h: eh.horizon_matrix(panel, etiquetas, h) for h in eh.STRATEGY_HORIZONS}
 
