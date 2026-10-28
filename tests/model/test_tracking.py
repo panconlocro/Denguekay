@@ -96,7 +96,7 @@ class AplanadoTests(unittest.TestCase):
 def cerrar_motores_mlflow(carpeta):
     """En Windows, MLflow deja abierta su mlflow.db y el directorio temporal no se puede borrar.
 
-    Se cierran solo los motores SQLAlchemy de la carpeta de la prueba; no cambia src/modeling.
+    Se cierran solo los motores SQLAlchemy de la carpeta de la prueba; no cambia src/denguekay/model.
     """
     import gc
     from sqlalchemy.engine import Engine
