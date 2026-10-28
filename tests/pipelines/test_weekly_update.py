@@ -11,7 +11,7 @@ import pandas as pd
 from denguekay.data.ingestion.minsa_sala_scraper import observed_weekly_points
 from denguekay.data.processing.epi_sala import normalize_sala_records
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS, socio_for_keys
-from src.update_dataset_module import run_weather, update_dataset
+from denguekay.pipelines.weekly_update import run_weather, update_dataset
 from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, coverage_path, prepare_dataset
 
 
@@ -198,7 +198,7 @@ class UpdateDatasetTests(unittest.TestCase):
             "wind_speed_10m_max", "shortwave_radiation_sum", "et0_fao_evapotranspiration",
         ):
             daily[column] = 1.0
-        with patch("src.update_dataset_module.fetch_district", return_value=daily) as fetch:
+        with patch("denguekay.pipelines.weekly_update.fetch_district", return_value=daily) as fetch:
             result = run_weather(frame, {(CODE, 2025, 1)})
         self.assertEqual(fetch.call_args.kwargs["start_date"], "2024-12-29")
         self.assertEqual(fetch.call_args.kwargs["end_date"], "2025-01-04")

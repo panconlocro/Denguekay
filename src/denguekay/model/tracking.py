@@ -62,7 +62,7 @@ def set_experiment(name: str, tracking_uri: str | None = None) -> str:
     """Set the tracking URI and return the experiment id (it is created if missing).
 
     With the local store, artifacts go to ``mlartifacts/<experiment>`` with an
-    absolute path, so a notebook (cwd ``notebooks/``) and the CLI (cwd at the
+    absolute path, so a notebook (cwd ``pipelines/notebooks/``) and the CLI (cwd at the
     root) write to the same place.
     """
     import mlflow

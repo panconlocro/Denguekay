@@ -10,7 +10,7 @@ from denguekay.data.loading import load_integrated
 from denguekay.data.processing.weekly_aggregation import DAILY_TO_WEEKLY_AGG, aggregate_to_weekly
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.validation.integrated_expectations import prepare_dataset
-from tests.test_update_dataset_module import model_row
+from tests.pipelines.test_weekly_update import model_row
 
 
 class CalendarioTests(unittest.TestCase):

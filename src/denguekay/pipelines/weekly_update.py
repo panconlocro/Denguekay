@@ -1,6 +1,6 @@
 """Selectively update the Piura district-week dengue model dataset.
 
-Run ``python -m src.update_dataset_module --input INPUT.csv --output OUTPUT.csv``.
+Run ``python -m denguekay.pipelines.weekly_update --input INPUT.csv --output OUTPUT.csv``.
 """
 
 import argparse
