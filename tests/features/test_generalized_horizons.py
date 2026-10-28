@@ -10,11 +10,11 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling.clima import CLIMA_PRINCIPAL
-from src.modeling.contrato_xgboost import familias_predictoras
-from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
-from src.modeling.features import HORIZONTES, construir_etiquetas, construir_gold
-from src.modeling.historia_calendario import construir_historia_calendario
+from denguekay.features.climate import CLIMA_PRINCIPAL
+from denguekay.features.model_input_contract import familias_predictoras
+from denguekay.features.outbreak_label import ConfiguracionBroteEstacional
+from denguekay.features.gold import HORIZONTES, construir_etiquetas, construir_gold
+from denguekay.features.history_calendar import construir_historia_calendario
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from denguekay.data.validation.forecast_contract import EXPERIMENTAL_HORIZONS
 

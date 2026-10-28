@@ -8,8 +8,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from src.modeling.features import construir_gold, generar_gold, validar_gold
-from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
+from denguekay.features.gold import construir_gold, generar_gold, validar_gold
+from denguekay.features.outbreak_label import ConfiguracionBroteEstacional
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, coverage_path
 

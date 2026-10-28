@@ -11,7 +11,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling.etiqueta_brote import etiquetar_brote_estacional
+from denguekay.features.outbreak_label import etiquetar_brote_estacional
 from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from denguekay.data.calendar import mmwr_epi_week
 

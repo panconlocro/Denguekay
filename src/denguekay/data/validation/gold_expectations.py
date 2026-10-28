@@ -9,7 +9,7 @@ starts after the origin close). The strict structural start-up checks stay in
 
 import great_expectations as gx
 
-from src.modeling.features import columnas_gold
+from denguekay.features.gold import columnas_gold
 from denguekay.data.validation.forecast_contract import KEY
 
 # Minimum share of rows with populated predictors. The only nulls allowed

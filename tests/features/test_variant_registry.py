@@ -2,8 +2,8 @@
 
 import unittest
 
-from src.modeling import preregistro_fe as pr
-from src.modeling.contrato_xgboost import familias_predictoras
+from denguekay.features import variant_registry as pr
+from denguekay.features.model_input_contract import familias_predictoras
 from src.modeling.diagnostico_inicios import ETIQUETAS
 
 

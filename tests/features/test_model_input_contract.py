@@ -7,11 +7,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.modeling.contrato_xgboost import (
+from denguekay.features.model_input_contract import (
     NO_PREDICTORAS, familias_predictoras, resumir_ablaciones,
     validar_columnas_modelo,
 )
-from src.modeling.features import columnas_gold
+from denguekay.features.gold import columnas_gold
 
 
 class ContratoXGBoostTests(unittest.TestCase):

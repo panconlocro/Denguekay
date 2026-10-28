@@ -27,7 +27,7 @@ from pathlib import Path
 import great_expectations as gx
 import pandas as pd
 
-from src.modeling.features import HORIZONTES
+from denguekay.features.gold import HORIZONTES
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.config.paths import GOLD, GX_DIR, SILVER_INTEGRATED, UBIGEO_CATALOG
 from denguekay.data.validation.gold_expectations import expectations_for_gold

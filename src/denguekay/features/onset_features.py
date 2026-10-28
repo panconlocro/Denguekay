@@ -22,8 +22,8 @@ import pandas as pd
 
 from src.modeling import diagnostico_inicios as di
 from denguekay.model import horizon_strategies as eh
-from src.modeling import preregistro_fe as pr
-from src.modeling.etiqueta_brote import umbral_brote_futuro
+from denguekay.features import variant_registry as pr
+from denguekay.features.outbreak_label import umbral_brote_futuro
 from denguekay.data.calendar import mmwr_epi_week
 
 COLUMNAS = {v["id"]: list(v["columnas"]) for v in pr.VARIANTES if v["bloque"] == "B"}

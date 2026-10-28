@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling.sociodemografia import (
+from denguekay.features.sociodemographics import (
     ajustar_eje_urbano, construir_sociodemografia,
     construir_sociodemografia_anual, referencia_2017,
 )

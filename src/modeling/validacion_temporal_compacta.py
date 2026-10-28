@@ -13,9 +13,9 @@ import numpy as np
 import pandas as pd
 from xgboost import __version__ as XGBOOST_VERSION
 
-from src.modeling.contrato_xgboost import auditar_traspaso
+from denguekay.features.model_input_contract import auditar_traspaso
 from src.modeling.evaluate import seleccionar_umbral_f1
-from src.modeling.features import FECHA_SOCIO_2017
+from denguekay.features.gold import FECHA_SOCIO_2017
 from denguekay.model.train import (
     SENSITIVITY_TEST_YEAR, MIN_OUTBREAK_CASES, BASE_PARAMS,
     SEASON_START_WEEK, variant_columns, evaluate_fold, predict_fold,

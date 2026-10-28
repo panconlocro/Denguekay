@@ -136,7 +136,7 @@ class TestConDatos(unittest.TestCase):
         """BASE (con max_delta_step = 0,7, reg_alpha = gamma = 0 explícitos) da lo mismo que los fijos heredados."""
         from denguekay.data.loading import load_integrated
         from src.modeling import fe_hiperparametros as fh
-        from src.modeling import features_inicio as fi
+        from denguekay.features import onset_features as fi
 
         panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]

@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling.etiqueta_brote import etiquetar_brote_estacional, umbral_brote_futuro
+from denguekay.features.outbreak_label import etiquetar_brote_estacional, umbral_brote_futuro
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from denguekay.data.calendar import mmwr_epi_week
 
@@ -69,8 +69,8 @@ class TestContraGold(unittest.TestCase):
 
     def test_exactamente_igual_a_la_regla_de_gold(self):
         """Igualdad bit a bit con ``construir_etiquetas``, el código que genera la columna de gold."""
-        from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
-        from src.modeling.features import construir_etiquetas
+        from denguekay.features.outbreak_label import ConfiguracionBroteEstacional
+        from denguekay.features.gold import construir_etiquetas
 
         etiquetas = construir_etiquetas(self.panel, ConfiguracionBroteEstacional(
             self.regla["multiplicador"], self.regla["anios_previos"], self.regla["minimo_casos"]))

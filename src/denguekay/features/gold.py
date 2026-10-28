@@ -15,14 +15,14 @@ import numpy as np
 import pandas as pd
 
 from denguekay.data.loading import load_integrated
-from src.modeling.clima import construir_clima_observado
-from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional, etiquetar_brote_estacional
-from src.modeling.historia_calendario import construir_historia_calendario
-from src.modeling.sociodemografia import (
+from denguekay.features.climate import construir_clima_observado
+from denguekay.features.outbreak_label import ConfiguracionBroteEstacional, etiquetar_brote_estacional
+from denguekay.features.history_calendar import construir_historia_calendario
+from denguekay.features.sociodemographics import (
     DIRECTAS, construir_sociodemografia, construir_sociodemografia_anual_cruda,
     referencia_2017,
 )
-from src.modeling.vecinos_jerarquia import construir_vecinos_jerarquia
+from denguekay.features.neighbors import construir_vecinos_jerarquia
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.config.paths import GOLD, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED, UBIGEO_CATALOG
 from denguekay.data.validation.forecast_contract import KEY, EXPERIMENTAL_HORIZONS, audit_origin

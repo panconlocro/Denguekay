@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling.clima import ajustar_climatologia, construir_clima
+from denguekay.features.climate import ajustar_climatologia, construir_clima
 
 
 def panel_ejemplo() -> pd.DataFrame:

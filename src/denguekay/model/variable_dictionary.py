@@ -26,39 +26,39 @@ DEFINITIONS = {
         "nulos": "en gold, las 2 primeras semanas de cada distrito; esas filas no entran a la tabla de orígenes",
         "por_que": "persistencia: el mejor predictor simple del encargo de arquitectura (base_6)",
         "evidencia": "base_6, referencia B (fase 0)",
-        "test_no_fuga": "tests/test_historia_calendario.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte"},
+        "test_no_fuga": "tests/features/test_history_calendar.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte"},
     "hist_lag_b": {
         "fuente": "epidemiológica", "definicion": "casos de dengue de la semana o − 1",
         "ventana": "semana o − 1", "transformacion": "ninguna (conteo)", "tipo": "entero ≥ 0",
         "nulos": "en gold, las 3 primeras semanas de cada distrito; no entran a la tabla de orígenes", "por_que": "tendencia inmediata junto con hist_lag_a",
         "evidencia": "base_6, referencia B (fase 0)",
-        "test_no_fuga": "tests/test_historia_calendario.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte"},
+        "test_no_fuga": "tests/features/test_history_calendar.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte"},
     "hist_media_4": {
         "fuente": "epidemiológica", "definicion": "media de casos de las semanas o − 3 a o",
         "ventana": "semanas o − 3..o", "transformacion": "media móvil de 4 semanas", "tipo": "real ≥ 0",
         "nulos": "en gold, las 5 primeras semanas de cada distrito; no entran a la tabla de orígenes",
         "por_que": "nivel reciente menos ruidoso que un rezago",
         "evidencia": "base_6, referencia B (fase 0)",
-        "test_no_fuga": "tests/test_historia_calendario.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen"},
+        "test_no_fuga": "tests/features/test_history_calendar.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen"},
     "hist_semanas_pos_4": {
         "fuente": "epidemiológica", "definicion": "número de semanas con al menos 1 caso entre o − 3 y o",
         "ventana": "semanas o − 3..o", "transformacion": "conteo de semanas positivas (0–4)", "tipo": "entero 0–4",
         "nulos": "en gold, las 5 primeras semanas de cada distrito; no entran a la tabla de orígenes",
         "por_que": "persistencia de la transmisión",
         "evidencia": "base_6, referencia B (fase 0)",
-        "test_no_fuga": "tests/test_historia_calendario.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen"},
+        "test_no_fuga": "tests/features/test_history_calendar.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen"},
     "semana_epi_seno": {
         "fuente": "calendario", "definicion": "sen(2π · ((semana epi de t) − 1) mód 52 / 52)",
         "ventana": "semana objetivo t (conocida de antemano)", "transformacion": "codificación cíclica",
         "tipo": "real −1..1", "nulos": "ninguno", "por_que": "estacionalidad sin inventar un corte de temporada",
         "evidencia": "base_6, referencia B (fase 0)",
-        "test_no_fuga": "tests/test_historia_calendario.py · test_calendario_conocido_y_semana_53"},
+        "test_no_fuga": "tests/features/test_history_calendar.py · test_calendario_conocido_y_semana_53"},
     "semana_epi_coseno": {
         "fuente": "calendario", "definicion": "cos(2π · ((semana epi de t) − 1) mód 52 / 52)",
         "ventana": "semana objetivo t (conocida de antemano)", "transformacion": "codificación cíclica",
         "tipo": "real −1..1", "nulos": "ninguno", "por_que": "pareja del seno: ubica la semana en el círculo",
         "evidencia": "base_6, referencia B (fase 0)",
-        "test_no_fuga": "tests/test_historia_calendario.py · test_calendario_conocido_y_semana_53"},
+        "test_no_fuga": "tests/features/test_history_calendar.py · test_calendario_conocido_y_semana_53"},
     "propia_semanas_desde_ultimo_caso": {
         "fuente": "epidemiológica (en memoria, features_inicio)",
         "definicion": "semanas transcurridas desde la última semana con casos del distrito, hasta o",
@@ -67,7 +67,7 @@ DEFINITIONS = {
         "nulos": "ninguno (sin caso previo = tope)",
         "por_que": "cuánto lleva el distrito sin transmisión antes de un inicio",
         "evidencia": "B3: gana a B en h2 y h3 (fase 2b); C3 elegida (fase 2c); 3.ª por SHAP",
-        "test_no_fuga": "tests/test_features_inicio.py · test_no_fuga_por_perturbacion y "
+        "test_no_fuga": "tests/features/test_onset_features.py · test_no_fuga_por_perturbacion y "
                         "test_no_fuga_por_perturbacion_en_origenes"},
     "propia_pendiente_4": {
         "fuente": "epidemiológica (en memoria, features_inicio)",
@@ -76,7 +76,7 @@ DEFINITIONS = {
         "nulos": "nulo si faltan semanas de historia; ver el conteo de nulos en la tabla de orígenes",
         "por_que": "dirección del cambio reciente (a priori; no observada en la fase 1)",
         "evidencia": "B3 (fase 2b), C3 (fase 2c)",
-        "test_no_fuga": "tests/test_features_inicio.py · test_no_fuga_por_perturbacion"},
+        "test_no_fuga": "tests/features/test_onset_features.py · test_no_fuga_por_perturbacion"},
     "propia_log_casos_temporada_anterior": {
         "fuente": "epidemiológica (en memoria; para 2017, histórico epi previo al panel)",
         "definicion": "log(1 + casos de la temporada anterior completa del distrito)",
@@ -85,7 +85,7 @@ DEFINITIONS = {
         "nulos": "nulo solo si falta en la historia un año necesario; la fila no se excluye",
         "por_que": "nivel previo del distrito (memoria de una temporada)",
         "evidencia": "B3 (fase 2b), C3 (fase 2c)",
-        "test_no_fuga": "tests/test_features_inicio.py · test_temporada_2017_usa_la_historia y "
+        "test_no_fuga": "tests/features/test_onset_features.py · test_temporada_2017_usa_la_historia y "
                         "test_no_fuga_por_perturbacion"},
     "hum_rel_media_media5_h2": {
         "fuente": "meteorológica (Open-Meteo, archive API; diario agregado a semana MMWR; silver integrado)",
@@ -96,7 +96,7 @@ DEFINITIONS = {
                  "2017 (65 filas), que la configuración excluye",
         "por_que": "clima reciente; bajó las razones MAE y RMSE del conteo",
         "evidencia": "A3 (fase 2a, lectura de conteo); complemento de clima: F+A3 mejora el conteo en h2, h3 y h4",
-        "test_no_fuga": "tests/test_clima_features.py · test_ventana_h4_y_h2_acaba_en_origen y "
+        "test_no_fuga": "tests/features/test_climate.py · test_ventana_h4_y_h2_acaba_en_origen y "
                         "test_cambio_posterior_al_origen_no_altera_feature"},
     "precip_total_mm_media5_h2": {
         "fuente": "meteorológica (Open-Meteo, archive API; diario agregado a semana MMWR; silver integrado)",
@@ -107,7 +107,7 @@ DEFINITIONS = {
                  "2017 (65 filas), que la configuración excluye",
         "por_que": "clima reciente; bajó las razones MAE y RMSE del conteo",
         "evidencia": "A3 (fase 2a, lectura de conteo); complemento de clima: F+A3 mejora el conteo en h2, h3 y h4",
-        "test_no_fuga": "tests/test_clima_features.py · test_ventana_h4_y_h2_acaba_en_origen y "
+        "test_no_fuga": "tests/features/test_climate.py · test_ventana_h4_y_h2_acaba_en_origen y "
                         "test_cambio_posterior_al_origen_no_altera_feature"},
 }
 

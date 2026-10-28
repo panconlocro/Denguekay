@@ -3,9 +3,9 @@
 import numpy as np
 import pandas as pd
 
-from src.modeling.features import FECHA_SOCIO_2017, HORIZONTES
-from src.modeling.historia_calendario import construir_historia_calendario
-from src.modeling.sociodemografia import referencia_2017, construir_sociodemografia
+from denguekay.features.gold import FECHA_SOCIO_2017, HORIZONTES
+from denguekay.features.history_calendar import construir_historia_calendario
+from denguekay.features.sociodemographics import referencia_2017, construir_sociodemografia
 from src.modeling.validacion_temporal_compacta import variantes_compactas
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.validation.forecast_contract import KEY, audit_origin, available_observations

@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from src.modeling.features import columnas_gold
+from denguekay.features.gold import columnas_gold
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.data.validation.gx_quality import DataValidationError, get_context, validate_dataframe
 from denguekay.data.validation.gold_expectations import expectations_for_gold

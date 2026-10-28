@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from src.eda.espacial import distancias_km, pesos_inverso_distancia, pesos_knn
+from denguekay.features.spatial import distancias_km, pesos_inverso_distancia, pesos_knn
 from denguekay.data.validation.forecast_contract import KEY, EXPERIMENTAL_HORIZONS, audit_origin
 
 

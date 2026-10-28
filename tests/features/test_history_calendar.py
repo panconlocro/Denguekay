@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling.historia_calendario import construir_historia_calendario
+from denguekay.features.history_calendar import construir_historia_calendario
 
 
 class HistoriaCalendarioTests(unittest.TestCase):

@@ -24,7 +24,7 @@ import pandas as pd
 from denguekay.model import horizon_strategies as eh
 from src.modeling import protocolo_arquitectura as pa
 from denguekay.model import probabilistic_output as sp
-from src.modeling.contrato_xgboost import NO_PREDICTORAS, familias_predictoras
+from denguekay.features.model_input_contract import NO_PREDICTORAS, familias_predictoras
 from denguekay.model.train import BASE_PARAMS
 
 ESTRATEGIA, FORMULACION = "E3", "S4_s2"
@@ -43,8 +43,8 @@ ABLACIONES_S1 = {"25_espacial": "ablacion_espacial", "26_clima": "ablacion_clima
 
 def insumos(panel: pd.DataFrame, regla: dict) -> dict:
     """Etiquetas, serie y matrices h=2, 3, 4 como en el notebook 31 (celda de fase 3)."""
-    from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
-    from src.modeling.features import construir_etiquetas
+    from denguekay.features.outbreak_label import ConfiguracionBroteEstacional
+    from denguekay.features.gold import construir_etiquetas
 
     etiquetas = construir_etiquetas(panel, ConfiguracionBroteEstacional(
         regla["multiplicador"], regla["anios_previos"], regla["minimo_casos"]))

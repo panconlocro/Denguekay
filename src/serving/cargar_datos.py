@@ -191,7 +191,7 @@ def leer_silver(ruta=SILVER_INTEGRATED):
 
 def preparar_carga():
     """Valida archivos originales antes de preparar cualquier escritura."""
-    from src.modeling.contrato_xgboost import auditar_traspaso
+    from denguekay.features.model_input_contract import auditar_traspaso
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
     from src.serving.configuracion import configuracion_servicio
     from denguekay.data.validation.gx_quality import read_gold, validate_modeling_inputs

@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from src.modeling.etiqueta_brote import etiquetar_brote_estacional
+from denguekay.features.outbreak_label import etiquetar_brote_estacional
 
 
 class EtiquetaBroteTests(unittest.TestCase):

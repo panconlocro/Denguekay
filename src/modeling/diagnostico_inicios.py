@@ -39,10 +39,10 @@ import pandas as pd
 
 from denguekay.data.seasons import assign_season
 from src.modeling import diagnostico_arquitectura as diag
-from src.modeling.clima import ajustar_climatologia
+from denguekay.features.climate import ajustar_climatologia
 from src.modeling.protocolo_arquitectura import bootstrap_estratificado
 from denguekay.model.train import SEASON_START_WEEK
-from src.modeling.vecinos_jerarquia import catalogo_geografico, matriz_vecindad
+from denguekay.features.neighbors import catalogo_geografico, matriz_vecindad
 
 TEMPORADAS_DISENO = (2017, 2018, 2019, 2020, 2021)
 PERIODOS = {"2017": (2017,), "2018_2021": (2018, 2019, 2020, 2021)}

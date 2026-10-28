@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 
 from denguekay.model import horizon_strategies as eh
-from src.modeling import features_inicio as fi
+from denguekay.features import onset_features as fi
 from denguekay.model import probabilistic_output as sp
-from src.modeling.etiqueta_brote import etiquetar_brote_estacional
+from denguekay.features.outbreak_label import etiquetar_brote_estacional
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 

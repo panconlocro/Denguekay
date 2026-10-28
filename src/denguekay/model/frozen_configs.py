@@ -18,7 +18,7 @@ import pandas as pd
 
 from src.modeling import complemento_clima as cc
 from denguekay.model import horizon_strategies as eh
-from src.modeling import features_inicio as fi
+from denguekay.features import onset_features as fi
 from src.modeling import hiperparametros as hp
 from src.modeling import protocolo_arquitectura as pa
 from denguekay.model import probabilistic_output as sp

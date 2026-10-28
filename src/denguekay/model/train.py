@@ -16,7 +16,7 @@ import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor, __version__ as XGBOOST_VERSION
 
 from denguekay.data.seasons import assign_season
-from src.modeling.contrato_xgboost import auditar_traspaso, familias_predictoras
+from denguekay.features.model_input_contract import auditar_traspaso, familias_predictoras
 from denguekay.model.device import xgboost_settings
 from src.modeling.evaluate import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos,

@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling.vecinos_jerarquia import (
+from denguekay.features.neighbors import (
     catalogo_geografico, construir_vecinos_jerarquia, matriz_vecindad,
 )
 

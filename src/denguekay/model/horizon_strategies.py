@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor
 
-from src.modeling.features import construir_gold
+from denguekay.features.gold import construir_gold
 from denguekay.model.train import (
     SENSITIVITY_TEST_YEAR, MIN_OUTBREAK_CASES, BASE_PARAMS, counts_from_log1p,
     prepare_gold, split_calendar_year, split_season,

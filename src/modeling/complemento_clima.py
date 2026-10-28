@@ -9,7 +9,7 @@ regla de este módulo se preregistró antes de correr (``PREREGISTRO_COMPLEMENTO
 import numpy as np
 import pandas as pd
 
-from src.modeling import preregistro_fe as pr
+from denguekay.features import variant_registry as pr
 from src.modeling.evaluate import metricas_alerta
 from src.modeling import protocolo_arquitectura as pa
 

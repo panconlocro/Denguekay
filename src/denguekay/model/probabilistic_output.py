@@ -21,7 +21,7 @@ S5_spw    ``log1p`` (as S1)                            classifier with ``scale_p
 
 In S4, ``k = max(floor(umbral_brote_casos) + 1, 2)`` reproduces the gold rule
 (cases > threshold and >= 2). The threshold of the target week only uses the
-same week of previous years; ``tests/test_umbral_brote_sin_fuga.py`` checks that
+same week of previous years; ``tests/features/test_outbreak_threshold_no_leak.py`` checks that
 it does not depend on cases after ``t-h``. It is only used to turn the predicted
 distribution into a probability, never as an input variable. The negative
 binomial dispersion is estimated by maximum likelihood on the in-sample

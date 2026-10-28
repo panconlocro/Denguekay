@@ -53,8 +53,8 @@ class TestFormulacionesConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from denguekay.data.loading import load_integrated
-        from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
-        from src.modeling.features import construir_etiquetas
+        from denguekay.features.outbreak_label import ConfiguracionBroteEstacional
+        from denguekay.features.gold import construir_etiquetas
 
         panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]

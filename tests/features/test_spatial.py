@@ -1,11 +1,11 @@
-"""Tests de src/eda/espacial.py con datos sintéticos (no dependen de data/)."""
+"""Tests de src/denguekay/features/spatial.py con datos sintéticos (no dependen de data/)."""
 
 import unittest
 
 import numpy as np
 import pandas as pd
 
-from src.eda.espacial import (
+from denguekay.features.spatial import (
     distancias_km, estado_vecinos_rezagado, mantel, moran_i, pesos_inverso_distancia, pesos_knn, rr_mantel_haenszel,
 )
 
