@@ -1,0 +1,22 @@
+{
+  "device=cpu,n_jobs=2": {
+    "V1": {
+      "rows": 50895,
+      "sha256": "5c6cbbe8dac7b879bf9b881d470507da892d3ea86fa85acc9abdd77eac52a000"
+    },
+    "V2": {
+      "rows": 50895,
+      "sha256": "8555b52ef45ed34c234096eb4593b0c2cead21d4bbf7045eb77e5d721946b06a"
+    }
+  },
+  "device=cuda": {
+    "V1": {
+      "rows": 50895,
+      "sha256": "2cf0de5f6583f3433e7de0c9cfc5dc56760277ffce8b8bfb314fbe760ca53d80"
+    },
+    "V2": {
+      "rows": 50895,
+      "sha256": "8d9e29c7ac75a9d946bd35fc9e92a3694345ebf9c3f74164525ed718f739d3de"
+    }
+  }
+}

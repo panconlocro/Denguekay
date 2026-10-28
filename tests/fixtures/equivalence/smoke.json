@@ -1,0 +1,73 @@
+{
+  "prueba_humo": [
+    [
+      "GET",
+      "/salud",
+      200
+    ],
+    [
+      "GET",
+      "/distritos",
+      200
+    ],
+    [
+      "GET",
+      "/predicciones?horizonte=4",
+      200
+    ],
+    [
+      "GET",
+      "/predicciones?horizonte=2",
+      200
+    ],
+    [
+      "GET",
+      "/series/200101?horizonte=4",
+      200
+    ],
+    [
+      "GET",
+      "/tablero/resumen?horizonte=4",
+      200
+    ],
+    [
+      "GET",
+      "/mapa-riesgo?horizonte=4",
+      200
+    ],
+    [
+      "GET",
+      "/alertas?horizonte=4",
+      200
+    ],
+    [
+      "GET",
+      "/modelos/activo",
+      200
+    ],
+    [
+      "POST",
+      "/admin/inferencias",
+      200
+    ],
+    [
+      "POST",
+      "/admin/inferencias",
+      409
+    ],
+    [
+      "POST",
+      "/admin/modelos/1/activar",
+      409
+    ],
+    [
+      "POST",
+      "/admin/inferencias (sin X-API-Key)",
+      401
+    ]
+  ],
+  "entrada_modulo": {
+    "salud": 200,
+    "rutas_openapi": 15
+  }
+}
