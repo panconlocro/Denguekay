@@ -1,0 +1,362 @@
+{
+  "postgresql": {
+    "version_servidor": [
+      17,
+      5
+    ],
+    "base": "denguekay_fase3_pruebas",
+    "medio": "TestClient + PostgreSQL real",
+    "llamadas": [
+      {
+        "metodo": "GET",
+        "ruta": "/salud",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/distritos",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/distritos/200101",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/distritos/geojson",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/observaciones?tamano_pagina=1",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/predicciones?horizonte=2",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/mapa?horizonte=4",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/series/200101?horizonte=2&desde=2025-12-21&hasta=2026-01-18",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/tablero?horizonte=2",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/alertas?tamano_pagina=1",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/alertas/1",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/modelos",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/modelos/1",
+        "http": 200
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/modelos/1/variables",
+        "http": 200
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/predicciones/recalcular?horizonte=2",
+        "http": 200,
+        "respuesta": {
+          "ejecucion_id": 2,
+          "operacion": "reevaluacion_api",
+          "horizonte": 2,
+          "fecha_corte_datos": "2025-12-27",
+          "fecha_actualizacion": "2026-10-02T01:58:18.106276Z",
+          "filas_generadas": 65,
+          "versiones_usadas": [
+            1,
+            2,
+            3
+          ],
+          "alertas": {
+            "retiradas_anteriores": 0,
+            "activas_nuevas": 0,
+            "historicas_nuevas": 0
+          },
+          "duracion_segundos": 0.04319095799291972,
+          "estado_validacion": "experimental"
+        }
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/modelos/1/activar",
+        "http": 200,
+        "respuesta": {
+          "ejecucion_id": 3,
+          "operacion": "activacion_api",
+          "horizonte": 2,
+          "fecha_corte_datos": "2025-12-27",
+          "fecha_actualizacion": "2026-10-02T01:58:18.140639Z",
+          "filas_generadas": 65,
+          "versiones_usadas": [
+            1,
+            2,
+            3
+          ],
+          "alertas": {
+            "retiradas_anteriores": 0,
+            "activas_nuevas": 0,
+            "historicas_nuevas": 0
+          },
+          "duracion_segundos": 0.025475417001871392,
+          "estado_validacion": "experimental"
+        }
+      }
+    ],
+    "conteos_finales": {
+      "distrito": 65,
+      "observacion_semanal": 30485,
+      "version_modelo": 30,
+      "prediccion": 27300,
+      "ejecucion_prediccion": 3,
+      "activacion_modelo": 6,
+      "alerta": 4002
+    },
+    "fecha_corte_datos": "2025-12-27"
+  },
+  "sqlite": {
+    "base": "models/serving/fase3.sqlite",
+    "medio": "Uvicorn + HTTP real en localhost",
+    "llamadas": [
+      {
+        "metodo": "GET",
+        "ruta": "/salud",
+        "http": 200,
+        "tiempo_respuesta_ms": 7.783
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/distritos",
+        "http": 200,
+        "tiempo_respuesta_ms": 2.087
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/distritos/200101",
+        "http": 200,
+        "tiempo_respuesta_ms": 1.22
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/distritos/geojson",
+        "http": 200,
+        "tiempo_respuesta_ms": 1.756
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/observaciones?tamano_pagina=1",
+        "http": 200,
+        "tiempo_respuesta_ms": 17.242
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/predicciones?horizonte=2",
+        "http": 200,
+        "tiempo_respuesta_ms": 393.74
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/mapa?horizonte=4",
+        "http": 200,
+        "tiempo_respuesta_ms": 355.548
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/series/200101?horizonte=2&desde=2025-12-21&hasta=2026-01-18",
+        "http": 200,
+        "tiempo_respuesta_ms": 18.062
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/tablero?horizonte=2",
+        "http": 200,
+        "tiempo_respuesta_ms": 352.328
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/alertas?tamano_pagina=1",
+        "http": 200,
+        "tiempo_respuesta_ms": 0.804
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/alertas/343",
+        "http": 200,
+        "tiempo_respuesta_ms": 3.277
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/modelos",
+        "http": 200,
+        "tiempo_respuesta_ms": 16.178
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/modelos/1",
+        "http": 200,
+        "tiempo_respuesta_ms": 5.822
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/modelos/1/variables",
+        "http": 200,
+        "tiempo_respuesta_ms": 3.239
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/predicciones/recalcular?horizonte=2",
+        "http": 200,
+        "respuesta": {
+          "ejecucion_id": 2,
+          "operacion": "reevaluacion_api",
+          "horizonte": 2,
+          "fecha_corte_datos": "2025-12-27",
+          "fecha_actualizacion": "2026-10-02T02:04:07.333063Z",
+          "filas_generadas": 65,
+          "versiones_usadas": [
+            1,
+            2,
+            3
+          ],
+          "alertas": {
+            "retiradas_anteriores": 0,
+            "activas_nuevas": 0,
+            "historicas_nuevas": 0
+          },
+          "duracion_segundos": 0.03562354200403206,
+          "estado_validacion": "experimental"
+        }
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/modelos/1/activar",
+        "http": 200,
+        "respuesta": {
+          "ejecucion_id": 3,
+          "operacion": "activacion_api",
+          "horizonte": 2,
+          "fecha_corte_datos": "2025-12-27",
+          "fecha_actualizacion": "2026-10-02T02:04:07.360564Z",
+          "filas_generadas": 65,
+          "versiones_usadas": [
+            1,
+            2,
+            3
+          ],
+          "alertas": {
+            "retiradas_anteriores": 0,
+            "activas_nuevas": 0,
+            "historicas_nuevas": 0
+          },
+          "duracion_segundos": 0.02017741599411238,
+          "estado_validacion": "experimental"
+        }
+      }
+    ],
+    "conteos_finales": {
+      "distrito": 65,
+      "observacion_semanal": 30485,
+      "version_modelo": 30,
+      "prediccion": 27300,
+      "ejecucion_prediccion": 3,
+      "activacion_modelo": 6,
+      "alerta": 4002
+    },
+    "fecha_corte_datos": "2025-12-27",
+    "objetivos": {
+      "2": "2026-01-04",
+      "4": "2026-01-18"
+    },
+    "riesgo_vigente": {
+      "2": [
+        "Bajo"
+      ],
+      "4": [
+        "Bajo"
+      ]
+    },
+    "cache": [
+      "MISS",
+      "HIT"
+    ],
+    "errores": {
+      "/distritos/999999": 404,
+      "/predicciones?horizonte=1": 422
+    },
+    "sin_clave_http": 401,
+    "h4_fecha_conservada": true
+  },
+  "entradas_protegidas": {
+    "archivos_comprobados": 503,
+    "modificados": 0,
+    "alcance": "data/, métricas documentadas y artefactos originales de experimentos"
+  },
+  "tests": {
+    "comando": ".venv/bin/python -m coverage run --source=src/api,src/serving,src/db -m unittest discover -s tests",
+    "ejecutados": 241,
+    "resultado": "OK",
+    "duracion_segundos": 41.657,
+    "nuevos_fase3": 23
+  },
+  "cobertura": {
+    "api_serving_db": {
+      "lineas_ejecutables": 1759,
+      "lineas_cubiertas": 1582,
+      "porcentaje": 89.93746446844798
+    },
+    "api": {
+      "lineas_ejecutables": 707,
+      "lineas_cubiertas": 699,
+      "porcentaje": 98.86845827439886
+    },
+    "alcance": "suite completa + exportación real de OpenAPI con coverage --append; sin contar scripts manuales de verificación HTTP"
+  },
+  "openapi": {
+    "rutas": 16,
+    "operaciones": 16,
+    "operaciones_con_ejemplos_reales": 16
+  },
+  "gx": {
+    "silver_integrado": {
+      "filas": 30485,
+      "expectativas_cumplidas": 107,
+      "expectativas_totales": 107
+    },
+    "gold_h2": {
+      "filas": 30485,
+      "expectativas_cumplidas": 92,
+      "expectativas_totales": 92
+    },
+    "gold_h4": {
+      "filas": 30485,
+      "expectativas_cumplidas": 92,
+      "expectativas_totales": 92
+    }
+  },
+  "servidores_locales_detenidos": true
+}

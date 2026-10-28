@@ -1,0 +1,14 @@
+[run]
+source =
+    src/api
+    src/serving
+    src/db
+relative_files = True
+
+[report]
+fail_under = 80
+precision = 2
+show_missing = True
+
+[xml]
+output = coverage.xml

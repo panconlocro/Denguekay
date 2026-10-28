@@ -1,0 +1,2455 @@
+{
+  "experimento": "ablacion_espacial_xgboost",
+  "validacion": [
+    2021,
+    2022,
+    2023
+  ],
+  "prueba_principal": "temporada_2024",
+  "prueba_sensibilidad": "calendario_2025",
+  "semana_inicio_temporada": 35,
+  "criterio": "F1 medio de validación por temporada; empate: menos columnas",
+  "umbral_clasificacion": "máximo F1 agregado en validación; empate: umbral mayor",
+  "parametros": {
+    "n_estimators": 160,
+    "max_depth": 3,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.9,
+    "min_child_weight": 5,
+    "reg_lambda": 5.0,
+    "tree_method": "hist",
+    "random_state": 17,
+    "device": "cuda",
+    "n_jobs": 12
+  },
+  "version_xgboost": "3.4.1",
+  "sha256_manifest_gold": "33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57",
+  "nota_pruebas": "2024/2025 ya se inspeccionaron en el experimento base; no se usaron para elegir variables nuevas",
+  "horizontes": {
+    "2": {
+      "archivo_gold": "meteo_socio_epi_piura_2017_2025_h2_gold.csv",
+      "sha256_gold": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3",
+      "filas_gold": 30485,
+      "filas_excluidas_arranque": 325,
+      "filas_comparadas": 30160,
+      "ubigeos_sin_casos_registrados_2017_2024": [
+        "200204",
+        "200205",
+        "200209"
+      ],
+      "variantes": {
+        "base_6": {
+          "columnas": [
+            "casos_lag_2",
+            "casos_lag_3",
+            "casos_media_4_h2",
+            "casos_semanas_positivas_4_h2",
+            "semana_epi_seno",
+            "semana_epi_coseno"
+          ],
+          "seleccion_umbral": {
+            "umbral": 0.17500000000000004,
+            "f1_validacion_agregado": 0.7052217855137564
+          },
+          "folds_validacion": [
+            {
+              "horizonte": 2,
+              "variante": "base_6",
+              "bloque": "temporada_2021",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2020-08-23",
+              "ultima_semana_objetivo": "2021-08-22",
+              "corte_ajuste": "2020-08-15",
+              "n_entrenamiento": 11960,
+              "n_prueba": 3445,
+              "positivos_entrenamiento": 502,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.5153254886728229,
+                  "rmse": 3.2432799872711273,
+                  "mae_log1p": 0.11319627303430642,
+                  "sesgo_medio": -0.29931048668761495
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 35,
+                  "fp": 10,
+                  "fn": 55,
+                  "vn": 3345,
+                  "precision": 0.7777777777777778,
+                  "recall": 0.3888888888888889,
+                  "f1": 0.5185185185185185,
+                  "auprc": 0.5544371762057058
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 58,
+                  "fp": 133,
+                  "fn": 32,
+                  "vn": 3222,
+                  "precision": 0.3036649214659686,
+                  "recall": 0.6444444444444445,
+                  "f1": 0.4128113879003559,
+                  "auprc": 0.44318870665631405
+                },
+                "brier": 0.01910552990505466
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.5071117561683599,
+                  "rmse": 3.142895783224286,
+                  "mae_log1p": 0.10093152389197703,
+                  "sesgo_medio": -0.049637155297532654
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 54,
+                  "fp": 33,
+                  "fn": 36,
+                  "vn": 3322,
+                  "precision": 0.6206896551724138,
+                  "recall": 0.6,
+                  "f1": 0.6101694915254238,
+                  "auprc": 0.623271200675642
+                }
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "base_6",
+              "bloque": "temporada_2022",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2021-08-29",
+              "ultima_semana_objetivo": "2022-08-21",
+              "corte_ajuste": "2021-08-21",
+              "n_entrenamiento": 15405,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 586,
+              "regresion": {
+                "conteos": {
+                  "mae": 1.943852751448023,
+                  "rmse": 8.037229636337917,
+                  "mae_log1p": 0.23204403351273487,
+                  "sesgo_medio": 0.0911373324289962
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 253,
+                  "fp": 61,
+                  "fn": 178,
+                  "vn": 2888,
+                  "precision": 0.8057324840764332,
+                  "recall": 0.5870069605568445,
+                  "f1": 0.6791946308724832,
+                  "auprc": 0.7598730447193782
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 295,
+                  "fp": 380,
+                  "fn": 136,
+                  "vn": 2569,
+                  "precision": 0.43703703703703706,
+                  "recall": 0.6844547563805105,
+                  "f1": 0.5334538878842676,
+                  "auprc": 0.47077200807390684
+                },
+                "brier": 0.0872571246010857
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 1.959171597633136,
+                  "rmse": 6.035839705189789,
+                  "mae_log1p": 0.2428241736262264,
+                  "sesgo_medio": 0.0242603550295858
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 296,
+                  "fp": 136,
+                  "fn": 135,
+                  "vn": 2813,
+                  "precision": 0.6851851851851852,
+                  "recall": 0.6867749419953596,
+                  "f1": 0.6859791425260718,
+                  "auprc": 0.675569200357224
+                }
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "base_6",
+              "bloque": "temporada_2023",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2022-08-28",
+              "ultima_semana_objetivo": "2023-08-20",
+              "corte_ajuste": "2022-08-20",
+              "n_entrenamiento": 18785,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1021,
+              "regresion": {
+                "conteos": {
+                  "mae": 10.687179137076136,
+                  "rmse": 56.377026492741074,
+                  "mae_log1p": 0.31987868974239986,
+                  "sesgo_medio": -8.282201709153307
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 768,
+                  "fp": 35,
+                  "fn": 271,
+                  "vn": 2306,
+                  "precision": 0.9564134495641345,
+                  "recall": 0.739172281039461,
+                  "f1": 0.8338762214983714,
+                  "auprc": 0.9297640175892289
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 903,
+                  "fp": 233,
+                  "fn": 136,
+                  "vn": 2108,
+                  "precision": 0.7948943661971831,
+                  "recall": 0.8691049085659288,
+                  "f1": 0.8303448275862069,
+                  "auprc": 0.880201436735215
+                },
+                "brier": 0.12276168539080695
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 10.83698224852071,
+                  "rmse": 49.47404136747643,
+                  "mae_log1p": 0.31026741157813303,
+                  "sesgo_medio": -0.45532544378698225
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 860,
+                  "fp": 98,
+                  "fn": 179,
+                  "vn": 2243,
+                  "precision": 0.8977035490605428,
+                  "recall": 0.8277189605389798,
+                  "f1": 0.8612919379068603,
+                  "auprc": 0.8986837757283004
+                }
+              }
+            }
+          ],
+          "folds_prueba": [
+            {
+              "horizonte": 2,
+              "variante": "base_6",
+              "bloque": "temporada_2024",
+              "tipo": "prueba_principal",
+              "primera_semana_objetivo": "2023-08-27",
+              "ultima_semana_objetivo": "2024-08-18",
+              "corte_ajuste": "2023-08-19",
+              "n_entrenamiento": 22165,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 2026,
+              "regresion": {
+                "conteos": {
+                  "mae": 5.638669748981511,
+                  "rmse": 23.8484685810631,
+                  "mae_log1p": 0.3539529851621418,
+                  "sesgo_medio": 2.152440499501942
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 656,
+                  "fp": 123,
+                  "fn": 201,
+                  "vn": 2400,
+                  "precision": 0.8421052631578947,
+                  "recall": 0.7654609101516919,
+                  "f1": 0.8019559902200489,
+                  "auprc": 0.8712777678820012
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 789,
+                  "fp": 823,
+                  "fn": 68,
+                  "vn": 1700,
+                  "precision": 0.48945409429280395,
+                  "recall": 0.9206534422403734,
+                  "f1": 0.6391251518833536,
+                  "auprc": 0.6683404560103133
+                },
+                "brier": 0.12540941226983385
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 4.956213017751479,
+                  "rmse": 15.756824387956458,
+                  "mae_log1p": 0.3710432639408368,
+                  "sesgo_medio": 0.4502958579881657
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 690,
+                  "fp": 183,
+                  "fn": 167,
+                  "vn": 2340,
+                  "precision": 0.7903780068728522,
+                  "recall": 0.8051341890315052,
+                  "f1": 0.7976878612716763,
+                  "auprc": 0.8428309515149168
+                }
+              },
+              "distritos_sin_registros_2017_2024": {
+                "filas": 156,
+                "positivos_observados": 0,
+                "alertas_regresion": 0,
+                "alertas_clasificacion": 0
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "base_6",
+              "bloque": "calendario_2025",
+              "tipo": "prueba_sensibilidad",
+              "primera_semana_objetivo": "2024-12-29",
+              "ultima_semana_objetivo": "2025-12-21",
+              "corte_ajuste": "2024-12-21",
+              "n_entrenamiento": 26715,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 2970,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.3006293311343148,
+                  "rmse": 1.022490891127606,
+                  "mae_log1p": 0.13272942962957157,
+                  "sesgo_medio": 0.0864601319655776
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 3,
+                  "fn": 3,
+                  "vn": 3374,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.06096897787665308
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 2,
+                  "fp": 282,
+                  "fn": 1,
+                  "vn": 3095,
+                  "precision": 0.007042253521126761,
+                  "recall": 0.6666666666666666,
+                  "f1": 0.013937282229965157,
+                  "auprc": 0.009448632925961304
+                },
+                "brier": 0.016357354307211348
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.2849112426035503,
+                  "rmse": 0.9813346786286979,
+                  "mae_log1p": 0.11527739968966129,
+                  "sesgo_medio": 0.026331360946745562
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 8,
+                  "fn": 3,
+                  "vn": 3369,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.01022333809219055
+                }
+              },
+              "distritos_sin_registros_2017_2024": {
+                "filas": 156,
+                "positivos_observados": 0,
+                "alertas_regresion": 0,
+                "alertas_clasificacion": 0
+              }
+            }
+          ]
+        },
+        "mas_vecinos": {
+          "columnas": [
+            "casos_lag_2",
+            "casos_lag_3",
+            "casos_media_4_h2",
+            "casos_semanas_positivas_4_h2",
+            "semana_epi_seno",
+            "semana_epi_coseno",
+            "vecinos_media_casos_knn5_h2",
+            "vecinos_frac_con_casos_knn5_h2"
+          ],
+          "seleccion_umbral": {
+            "umbral": 0.15000000000000002,
+            "f1_validacion_agregado": 0.7026012335746848
+          },
+          "folds_validacion": [
+            {
+              "horizonte": 2,
+              "variante": "mas_vecinos",
+              "bloque": "temporada_2021",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2020-08-23",
+              "ultima_semana_objetivo": "2021-08-22",
+              "corte_ajuste": "2020-08-15",
+              "n_entrenamiento": 11960,
+              "n_prueba": 3445,
+              "positivos_entrenamiento": 502,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.5163547000193534,
+                  "rmse": 3.3139371277153034,
+                  "mae_log1p": 0.11135162798129994,
+                  "sesgo_medio": -0.31677581654220865
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 33,
+                  "fp": 8,
+                  "fn": 57,
+                  "vn": 3347,
+                  "precision": 0.8048780487804879,
+                  "recall": 0.36666666666666664,
+                  "f1": 0.5038167938931297,
+                  "auprc": 0.5754505556161942
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.15000000000000002,
+                "alerta_directa": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 56,
+                  "fp": 127,
+                  "fn": 34,
+                  "vn": 3228,
+                  "precision": 0.30601092896174864,
+                  "recall": 0.6222222222222222,
+                  "f1": 0.41025641025641024,
+                  "auprc": 0.508923727209221
+                },
+                "brier": 0.018142327336296737
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.5071117561683599,
+                  "rmse": 3.142895783224286,
+                  "mae_log1p": 0.10093152389197703,
+                  "sesgo_medio": -0.049637155297532654
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 54,
+                  "fp": 33,
+                  "fn": 36,
+                  "vn": 3322,
+                  "precision": 0.6206896551724138,
+                  "recall": 0.6,
+                  "f1": 0.6101694915254238,
+                  "auprc": 0.623271200675642
+                }
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "mas_vecinos",
+              "bloque": "temporada_2022",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2021-08-29",
+              "ultima_semana_objetivo": "2022-08-21",
+              "corte_ajuste": "2021-08-21",
+              "n_entrenamiento": 15405,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 586,
+              "regresion": {
+                "conteos": {
+                  "mae": 1.9415927653661076,
+                  "rmse": 7.502533285192371,
+                  "mae_log1p": 0.2458052824525748,
+                  "sesgo_medio": 0.12124206976904452
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 267,
+                  "fp": 66,
+                  "fn": 164,
+                  "vn": 2883,
+                  "precision": 0.8018018018018018,
+                  "recall": 0.6194895591647331,
+                  "f1": 0.6989528795811518,
+                  "auprc": 0.7614854331573733
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.15000000000000002,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 330,
+                  "fp": 459,
+                  "fn": 101,
+                  "vn": 2490,
+                  "precision": 0.41825095057034223,
+                  "recall": 0.765661252900232,
+                  "f1": 0.5409836065573771,
+                  "auprc": 0.48891753194200716
+                },
+                "brier": 0.08640252556904778
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 1.959171597633136,
+                  "rmse": 6.035839705189789,
+                  "mae_log1p": 0.2428241736262264,
+                  "sesgo_medio": 0.0242603550295858
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 296,
+                  "fp": 136,
+                  "fn": 135,
+                  "vn": 2813,
+                  "precision": 0.6851851851851852,
+                  "recall": 0.6867749419953596,
+                  "f1": 0.6859791425260718,
+                  "auprc": 0.675569200357224
+                }
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "mas_vecinos",
+              "bloque": "temporada_2023",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2022-08-28",
+              "ultima_semana_objetivo": "2023-08-20",
+              "corte_ajuste": "2022-08-20",
+              "n_entrenamiento": 18785,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1021,
+              "regresion": {
+                "conteos": {
+                  "mae": 10.637368542400669,
+                  "rmse": 56.16366402340829,
+                  "mae_log1p": 0.3205074330855668,
+                  "sesgo_medio": -7.975577911290136
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 776,
+                  "fp": 36,
+                  "fn": 263,
+                  "vn": 2305,
+                  "precision": 0.9556650246305419,
+                  "recall": 0.7468719923002888,
+                  "f1": 0.8384656942193409,
+                  "auprc": 0.9327266516371495
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.15000000000000002,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 924,
+                  "fp": 273,
+                  "fn": 115,
+                  "vn": 2068,
+                  "precision": 0.7719298245614035,
+                  "recall": 0.8893166506256015,
+                  "f1": 0.8264758497316637,
+                  "auprc": 0.8542047755422584
+                },
+                "brier": 0.13035130983915602
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 10.83698224852071,
+                  "rmse": 49.47404136747643,
+                  "mae_log1p": 0.31026741157813303,
+                  "sesgo_medio": -0.45532544378698225
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 860,
+                  "fp": 98,
+                  "fn": 179,
+                  "vn": 2243,
+                  "precision": 0.8977035490605428,
+                  "recall": 0.8277189605389798,
+                  "f1": 0.8612919379068603,
+                  "auprc": 0.8986837757283004
+                }
+              }
+            }
+          ],
+          "folds_prueba": []
+        },
+        "mas_jerarquia": {
+          "columnas": [
+            "casos_lag_2",
+            "casos_lag_3",
+            "casos_media_4_h2",
+            "casos_semanas_positivas_4_h2",
+            "semana_epi_seno",
+            "semana_epi_coseno",
+            "provincia_otros_casos_h2",
+            "provincia_otros_frac_con_casos_h2",
+            "region_otros_casos_h2",
+            "region_otros_frac_con_casos_h2"
+          ],
+          "seleccion_umbral": {
+            "umbral": 0.22500000000000003,
+            "f1_validacion_agregado": 0.7289398280802293
+          },
+          "folds_validacion": [
+            {
+              "horizonte": 2,
+              "variante": "mas_jerarquia",
+              "bloque": "temporada_2021",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2020-08-23",
+              "ultima_semana_objetivo": "2021-08-22",
+              "corte_ajuste": "2020-08-15",
+              "n_entrenamiento": 11960,
+              "n_prueba": 3445,
+              "positivos_entrenamiento": 502,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.5191912389645578,
+                  "rmse": 3.2053038906588167,
+                  "mae_log1p": 0.11823140708821202,
+                  "sesgo_medio": -0.33557888292971083
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 35,
+                  "fp": 8,
+                  "fn": 55,
+                  "vn": 3347,
+                  "precision": 0.813953488372093,
+                  "recall": 0.3888888888888889,
+                  "f1": 0.5263157894736842,
+                  "auprc": 0.5824446405890883
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.22500000000000003,
+                "alerta_directa": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 35,
+                  "fp": 46,
+                  "fn": 55,
+                  "vn": 3309,
+                  "precision": 0.43209876543209874,
+                  "recall": 0.3888888888888889,
+                  "f1": 0.4093567251461988,
+                  "auprc": 0.3403119939339681
+                },
+                "brier": 0.02088358043803208
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.5071117561683599,
+                  "rmse": 3.142895783224286,
+                  "mae_log1p": 0.10093152389197703,
+                  "sesgo_medio": -0.049637155297532654
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 54,
+                  "fp": 33,
+                  "fn": 36,
+                  "vn": 3322,
+                  "precision": 0.6206896551724138,
+                  "recall": 0.6,
+                  "f1": 0.6101694915254238,
+                  "auprc": 0.623271200675642
+                }
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "mas_jerarquia",
+              "bloque": "temporada_2022",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2021-08-29",
+              "ultima_semana_objetivo": "2022-08-21",
+              "corte_ajuste": "2021-08-21",
+              "n_entrenamiento": 15405,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 586,
+              "regresion": {
+                "conteos": {
+                  "mae": 1.9835140505097475,
+                  "rmse": 8.029737396090155,
+                  "mae_log1p": 0.25691125192437597,
+                  "sesgo_medio": 0.2984994847432176
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 269,
+                  "fp": 69,
+                  "fn": 162,
+                  "vn": 2880,
+                  "precision": 0.7958579881656804,
+                  "recall": 0.6241299303944315,
+                  "f1": 0.6996098829648895,
+                  "auprc": 0.7761189881202863
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.22500000000000003,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 320,
+                  "fp": 392,
+                  "fn": 111,
+                  "vn": 2557,
+                  "precision": 0.449438202247191,
+                  "recall": 0.7424593967517401,
+                  "f1": 0.5599300087489064,
+                  "auprc": 0.4958815961544078
+                },
+                "brier": 0.08349590020746642
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 1.959171597633136,
+                  "rmse": 6.035839705189789,
+                  "mae_log1p": 0.2428241736262264,
+                  "sesgo_medio": 0.0242603550295858
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 296,
+                  "fp": 136,
+                  "fn": 135,
+                  "vn": 2813,
+                  "precision": 0.6851851851851852,
+                  "recall": 0.6867749419953596,
+                  "f1": 0.6859791425260718,
+                  "auprc": 0.675569200357224
+                }
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "mas_jerarquia",
+              "bloque": "temporada_2023",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2022-08-28",
+              "ultima_semana_objetivo": "2023-08-20",
+              "corte_ajuste": "2022-08-20",
+              "n_entrenamiento": 18785,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1021,
+              "regresion": {
+                "conteos": {
+                  "mae": 10.670702010104499,
+                  "rmse": 56.95235129400008,
+                  "mae_log1p": 0.33319890396026347,
+                  "sesgo_medio": -8.097991176055915
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 779,
+                  "fp": 44,
+                  "fn": 260,
+                  "vn": 2297,
+                  "precision": 0.9465370595382746,
+                  "recall": 0.7497593840230992,
+                  "f1": 0.8367346938775511,
+                  "auprc": 0.9301309241385394
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.22500000000000003,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 917,
+                  "fp": 220,
+                  "fn": 122,
+                  "vn": 2121,
+                  "precision": 0.8065083553210203,
+                  "recall": 0.8825794032723773,
+                  "f1": 0.8428308823529411,
+                  "auprc": 0.8866203676588298
+                },
+                "brier": 0.09913686825207135
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 10.83698224852071,
+                  "rmse": 49.47404136747643,
+                  "mae_log1p": 0.31026741157813303,
+                  "sesgo_medio": -0.45532544378698225
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 860,
+                  "fp": 98,
+                  "fn": 179,
+                  "vn": 2243,
+                  "precision": 0.8977035490605428,
+                  "recall": 0.8277189605389798,
+                  "f1": 0.8612919379068603,
+                  "auprc": 0.8986837757283004
+                }
+              }
+            }
+          ],
+          "folds_prueba": [
+            {
+              "horizonte": 2,
+              "variante": "mas_jerarquia",
+              "bloque": "temporada_2024",
+              "tipo": "prueba_principal",
+              "primera_semana_objetivo": "2023-08-27",
+              "ultima_semana_objetivo": "2024-08-18",
+              "corte_ajuste": "2023-08-19",
+              "n_entrenamiento": 22165,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 2026,
+              "regresion": {
+                "conteos": {
+                  "mae": 5.793384890338425,
+                  "rmse": 24.14593678566107,
+                  "mae_log1p": 0.3782575791060135,
+                  "sesgo_medio": 2.508741998321104
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 676,
+                  "fp": 154,
+                  "fn": 181,
+                  "vn": 2369,
+                  "precision": 0.8144578313253013,
+                  "recall": 0.7887981330221704,
+                  "f1": 0.8014226437462952,
+                  "auprc": 0.8649687635349755
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.22500000000000003,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 815,
+                  "fp": 843,
+                  "fn": 42,
+                  "vn": 1680,
+                  "precision": 0.49155609167671893,
+                  "recall": 0.9509918319719953,
+                  "f1": 0.6481113320079522,
+                  "auprc": 0.6359890643565492
+                },
+                "brier": 0.12710625019029265
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 4.956213017751479,
+                  "rmse": 15.756824387956458,
+                  "mae_log1p": 0.3710432639408368,
+                  "sesgo_medio": 0.4502958579881657
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 690,
+                  "fp": 183,
+                  "fn": 167,
+                  "vn": 2340,
+                  "precision": 0.7903780068728522,
+                  "recall": 0.8051341890315052,
+                  "f1": 0.7976878612716763,
+                  "auprc": 0.8428309515149168
+                }
+              },
+              "distritos_sin_registros_2017_2024": {
+                "filas": 156,
+                "positivos_observados": 0,
+                "alertas_regresion": 0,
+                "alertas_clasificacion": 0
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "mas_jerarquia",
+              "bloque": "calendario_2025",
+              "tipo": "prueba_sensibilidad",
+              "primera_semana_objetivo": "2024-12-29",
+              "ultima_semana_objetivo": "2025-12-21",
+              "corte_ajuste": "2024-12-21",
+              "n_entrenamiento": 26715,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 2970,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.27927877099101517,
+                  "rmse": 0.956014832546476,
+                  "mae_log1p": 0.12327393181925653,
+                  "sesgo_medio": 0.04065734217243549
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 3,
+                  "fn": 3,
+                  "vn": 3374,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.03681973265198441
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.22500000000000003,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 139,
+                  "fn": 3,
+                  "vn": 3238,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.006513223589532732
+                },
+                "brier": 0.01020069916136901
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.2849112426035503,
+                  "rmse": 0.9813346786286979,
+                  "mae_log1p": 0.11527739968966129,
+                  "sesgo_medio": 0.026331360946745562
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 8,
+                  "fn": 3,
+                  "vn": 3369,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.01022333809219055
+                }
+              },
+              "distritos_sin_registros_2017_2024": {
+                "filas": 156,
+                "positivos_observados": 0,
+                "alertas_regresion": 0,
+                "alertas_clasificacion": 0
+              }
+            }
+          ]
+        },
+        "mas_ambos": {
+          "columnas": [
+            "casos_lag_2",
+            "casos_lag_3",
+            "casos_media_4_h2",
+            "casos_semanas_positivas_4_h2",
+            "semana_epi_seno",
+            "semana_epi_coseno",
+            "vecinos_media_casos_knn5_h2",
+            "vecinos_frac_con_casos_knn5_h2",
+            "provincia_otros_casos_h2",
+            "provincia_otros_frac_con_casos_h2",
+            "region_otros_casos_h2",
+            "region_otros_frac_con_casos_h2"
+          ],
+          "seleccion_umbral": {
+            "umbral": 0.22500000000000003,
+            "f1_validacion_agregado": 0.7277970011534025
+          },
+          "folds_validacion": [
+            {
+              "horizonte": 2,
+              "variante": "mas_ambos",
+              "bloque": "temporada_2021",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2020-08-23",
+              "ultima_semana_objetivo": "2021-08-22",
+              "corte_ajuste": "2020-08-15",
+              "n_entrenamiento": 11960,
+              "n_prueba": 3445,
+              "positivos_entrenamiento": 502,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.5303965910075635,
+                  "rmse": 3.411886441678783,
+                  "mae_log1p": 0.11506709638564541,
+                  "sesgo_medio": -0.3538856017497924
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 30,
+                  "fp": 8,
+                  "fn": 60,
+                  "vn": 3347,
+                  "precision": 0.7894736842105263,
+                  "recall": 0.3333333333333333,
+                  "f1": 0.46875,
+                  "auprc": 0.5515815066652576
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.22500000000000003,
+                "alerta_directa": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 32,
+                  "fp": 46,
+                  "fn": 58,
+                  "vn": 3309,
+                  "precision": 0.41025641025641024,
+                  "recall": 0.35555555555555557,
+                  "f1": 0.38095238095238093,
+                  "auprc": 0.35653599483925
+                },
+                "brier": 0.020655174269503578
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.5071117561683599,
+                  "rmse": 3.142895783224286,
+                  "mae_log1p": 0.10093152389197703,
+                  "sesgo_medio": -0.049637155297532654
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 54,
+                  "fp": 33,
+                  "fn": 36,
+                  "vn": 3322,
+                  "precision": 0.6206896551724138,
+                  "recall": 0.6,
+                  "f1": 0.6101694915254238,
+                  "auprc": 0.623271200675642
+                }
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "mas_ambos",
+              "bloque": "temporada_2022",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2021-08-29",
+              "ultima_semana_objetivo": "2022-08-21",
+              "corte_ajuste": "2021-08-21",
+              "n_entrenamiento": 15405,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 586,
+              "regresion": {
+                "conteos": {
+                  "mae": 1.9802369741522832,
+                  "rmse": 7.882521212413143,
+                  "mae_log1p": 0.25841851455338427,
+                  "sesgo_medio": 0.2644523594151981
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 268,
+                  "fp": 70,
+                  "fn": 163,
+                  "vn": 2879,
+                  "precision": 0.7928994082840237,
+                  "recall": 0.6218097447795824,
+                  "f1": 0.6970091027308193,
+                  "auprc": 0.7692147136251936
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.22500000000000003,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 318,
+                  "fp": 387,
+                  "fn": 113,
+                  "vn": 2562,
+                  "precision": 0.451063829787234,
+                  "recall": 0.7378190255220418,
+                  "f1": 0.5598591549295775,
+                  "auprc": 0.501774762422374
+                },
+                "brier": 0.08360158329873338
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 1.959171597633136,
+                  "rmse": 6.035839705189789,
+                  "mae_log1p": 0.2428241736262264,
+                  "sesgo_medio": 0.0242603550295858
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 296,
+                  "fp": 136,
+                  "fn": 135,
+                  "vn": 2813,
+                  "precision": 0.6851851851851852,
+                  "recall": 0.6867749419953596,
+                  "f1": 0.6859791425260718,
+                  "auprc": 0.675569200357224
+                }
+              }
+            },
+            {
+              "horizonte": 2,
+              "variante": "mas_ambos",
+              "bloque": "temporada_2023",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2022-08-28",
+              "ultima_semana_objetivo": "2023-08-20",
+              "corte_ajuste": "2022-08-20",
+              "n_entrenamiento": 18785,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1021,
+              "regresion": {
+                "conteos": {
+                  "mae": 10.799624694893605,
+                  "rmse": 57.54432573647224,
+                  "mae_log1p": 0.3324127103765415,
+                  "sesgo_medio": -8.424913379880076
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 773,
+                  "fp": 40,
+                  "fn": 266,
+                  "vn": 2301,
+                  "precision": 0.95079950799508,
+                  "recall": 0.7439846005774784,
+                  "f1": 0.8347732181425486,
+                  "auprc": 0.9317523565510927
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.22500000000000003,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 912,
+                  "fp": 213,
+                  "fn": 127,
+                  "vn": 2128,
+                  "precision": 0.8106666666666666,
+                  "recall": 0.87776708373436,
+                  "f1": 0.8428835489833642,
+                  "auprc": 0.8832426792504791
+                },
+                "brier": 0.10151411838570519
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 10.83698224852071,
+                  "rmse": 49.47404136747643,
+                  "mae_log1p": 0.31026741157813303,
+                  "sesgo_medio": -0.45532544378698225
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 860,
+                  "fp": 98,
+                  "fn": 179,
+                  "vn": 2243,
+                  "precision": 0.8977035490605428,
+                  "recall": 0.8277189605389798,
+                  "f1": 0.8612919379068603,
+                  "auprc": 0.8986837757283004
+                }
+              }
+            }
+          ],
+          "folds_prueba": []
+        }
+      },
+      "elegidas_solo_validacion": {
+        "regresion": "mas_jerarquia",
+        "clasificacion": "mas_jerarquia"
+      }
+    },
+    "4": {
+      "archivo_gold": "meteo_socio_epi_piura_2017_2025_h4_gold.csv",
+      "sha256_gold": "f9fbed66572e8641eee82ce1a148562f5121cf8dbd111498f73a8aa78f5f19c6",
+      "filas_gold": 30485,
+      "filas_excluidas_arranque": 455,
+      "filas_comparadas": 30030,
+      "ubigeos_sin_casos_registrados_2017_2024": [
+        "200204",
+        "200205",
+        "200209"
+      ],
+      "variantes": {
+        "base_6": {
+          "columnas": [
+            "casos_lag_4",
+            "casos_lag_5",
+            "casos_media_4_h4",
+            "casos_semanas_positivas_4_h4",
+            "semana_epi_seno",
+            "semana_epi_coseno"
+          ],
+          "seleccion_umbral": {
+            "umbral": 0.17500000000000004,
+            "f1_validacion_agregado": 0.6798964624676446
+          },
+          "folds_validacion": [
+            {
+              "horizonte": 4,
+              "variante": "base_6",
+              "bloque": "temporada_2021",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2020-08-23",
+              "ultima_semana_objetivo": "2021-08-22",
+              "corte_ajuste": "2020-08-01",
+              "n_entrenamiento": 11700,
+              "n_prueba": 3445,
+              "positivos_entrenamiento": 491,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.6788635812409854,
+                  "rmse": 4.728235331518496,
+                  "mae_log1p": 0.13205745196087013,
+                  "sesgo_medio": -0.4147632414502793
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 19,
+                  "fp": 11,
+                  "fn": 71,
+                  "vn": 3344,
+                  "precision": 0.6333333333333333,
+                  "recall": 0.2111111111111111,
+                  "f1": 0.31666666666666665,
+                  "auprc": 0.34444594219599106
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 41,
+                  "fp": 120,
+                  "fn": 49,
+                  "vn": 3235,
+                  "precision": 0.2546583850931677,
+                  "recall": 0.45555555555555555,
+                  "f1": 0.32669322709163345,
+                  "auprc": 0.3400878713643162
+                },
+                "brier": 0.02127995886448283
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.6743105950653121,
+                  "rmse": 4.611684535236545,
+                  "mae_log1p": 0.11833649640793158,
+                  "sesgo_medio": -0.10072568940493469
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 39,
+                  "fp": 34,
+                  "fn": 51,
+                  "vn": 3321,
+                  "precision": 0.5342465753424658,
+                  "recall": 0.43333333333333335,
+                  "f1": 0.4785276073619632,
+                  "auprc": 0.4316676956455773
+                }
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "base_6",
+              "bloque": "temporada_2022",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2021-08-29",
+              "ultima_semana_objetivo": "2022-08-21",
+              "corte_ajuste": "2021-08-07",
+              "n_entrenamiento": 15145,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 562,
+              "regresion": {
+                "conteos": {
+                  "mae": 3.0742074881200874,
+                  "rmse": 16.46271700427626,
+                  "mae_log1p": 0.28127150893054936,
+                  "sesgo_medio": 0.7342462575658274
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 218,
+                  "fp": 62,
+                  "fn": 213,
+                  "vn": 2887,
+                  "precision": 0.7785714285714286,
+                  "recall": 0.505800464037123,
+                  "f1": 0.6132208157524613,
+                  "auprc": 0.6945849150562141
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 308,
+                  "fp": 399,
+                  "fn": 123,
+                  "vn": 2550,
+                  "precision": 0.43564356435643564,
+                  "recall": 0.7146171693735499,
+                  "f1": 0.5413005272407733,
+                  "auprc": 0.4547840710909267
+                },
+                "brier": 0.08819487341221216
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 2.8458579881656805,
+                  "rmse": 8.53570641620649,
+                  "mae_log1p": 0.31450962850828745,
+                  "sesgo_medio": 0.052366863905325446
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 286,
+                  "fp": 180,
+                  "fn": 145,
+                  "vn": 2769,
+                  "precision": 0.6137339055793991,
+                  "recall": 0.6635730858468677,
+                  "f1": 0.6376811594202898,
+                  "auprc": 0.5755697015332537
+                }
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "base_6",
+              "bloque": "temporada_2023",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2022-08-28",
+              "ultima_semana_objetivo": "2023-08-20",
+              "corte_ajuste": "2022-08-06",
+              "n_entrenamiento": 18525,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1006,
+              "regresion": {
+                "conteos": {
+                  "mae": 14.248519176823644,
+                  "rmse": 69.3834972488319,
+                  "mae_log1p": 0.42177464801871123,
+                  "sesgo_medio": -12.103637280241593
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 672,
+                  "fp": 29,
+                  "fn": 367,
+                  "vn": 2312,
+                  "precision": 0.9586305278174037,
+                  "recall": 0.6467757459095284,
+                  "f1": 0.7724137931034483,
+                  "auprc": 0.8875625505957304
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 833,
+                  "fp": 216,
+                  "fn": 206,
+                  "vn": 2125,
+                  "precision": 0.7940896091515729,
+                  "recall": 0.8017324350336862,
+                  "f1": 0.7978927203065134,
+                  "auprc": 0.8575959526089534
+                },
+                "brier": 0.13895309864327474
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 17.680473372781066,
+                  "rmse": 80.18466113700802,
+                  "mae_log1p": 0.438527550002433,
+                  "sesgo_medio": -1.0526627218934912
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 787,
+                  "fp": 110,
+                  "fn": 252,
+                  "vn": 2231,
+                  "precision": 0.8773690078037905,
+                  "recall": 0.7574590952839269,
+                  "f1": 0.8130165289256198,
+                  "auprc": 0.8440405632142527
+                }
+              }
+            }
+          ],
+          "folds_prueba": [
+            {
+              "horizonte": 4,
+              "variante": "base_6",
+              "bloque": "temporada_2024",
+              "tipo": "prueba_principal",
+              "primera_semana_objetivo": "2023-08-27",
+              "ultima_semana_objetivo": "2024-08-18",
+              "corte_ajuste": "2023-08-05",
+              "n_entrenamiento": 21905,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1945,
+              "regresion": {
+                "conteos": {
+                  "mae": 9.40084576610925,
+                  "rmse": 40.443304087977175,
+                  "mae_log1p": 0.44087847625004906,
+                  "sesgo_medio": 4.1279576338545185
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 623,
+                  "fp": 164,
+                  "fn": 234,
+                  "vn": 2359,
+                  "precision": 0.7916137229987293,
+                  "recall": 0.7269544924154026,
+                  "f1": 0.7579075425790754,
+                  "auprc": 0.7700550290957383
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 762,
+                  "fp": 873,
+                  "fn": 95,
+                  "vn": 1650,
+                  "precision": 0.46605504587155966,
+                  "recall": 0.8891481913652275,
+                  "f1": 0.6115569823434992,
+                  "auprc": 0.6089137309373207
+                },
+                "brier": 0.1368420604725858
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 7.847633136094674,
+                  "rmse": 25.454954993631606,
+                  "mae_log1p": 0.4823831708320173,
+                  "sesgo_medio": 1.0464497041420118
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 634,
+                  "fp": 240,
+                  "fn": 223,
+                  "vn": 2283,
+                  "precision": 0.7254004576659039,
+                  "recall": 0.7397899649941657,
+                  "f1": 0.7325245522819179,
+                  "auprc": 0.7458445658290153
+                }
+              },
+              "distritos_sin_registros_2017_2024": {
+                "filas": 156,
+                "positivos_observados": 0,
+                "alertas_regresion": 0,
+                "alertas_clasificacion": 0
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "base_6",
+              "bloque": "calendario_2025",
+              "tipo": "prueba_sensibilidad",
+              "primera_semana_objetivo": "2024-12-29",
+              "ultima_semana_objetivo": "2025-12-21",
+              "corte_ajuste": "2024-12-07",
+              "n_entrenamiento": 26455,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 2950,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.4326506978578689,
+                  "rmse": 1.6612550594203563,
+                  "mae_log1p": 0.1636208278084938,
+                  "sesgo_medio": 0.24856769856583524
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 5,
+                  "fn": 3,
+                  "vn": 3372,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.03396213179258579
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 1,
+                  "fp": 349,
+                  "fn": 2,
+                  "vn": 3028,
+                  "precision": 0.002857142857142857,
+                  "recall": 0.3333333333333333,
+                  "f1": 0.0056657223796034,
+                  "auprc": 0.005373655604508129
+                },
+                "brier": 0.020157198768092754
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.3242603550295858,
+                  "rmse": 1.1681168783217364,
+                  "mae_log1p": 0.12179192701335183,
+                  "sesgo_medio": 0.07692307692307693
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 10,
+                  "fn": 3,
+                  "vn": 3367,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.0013357875788193663
+                }
+              },
+              "distritos_sin_registros_2017_2024": {
+                "filas": 156,
+                "positivos_observados": 0,
+                "alertas_regresion": 0,
+                "alertas_clasificacion": 0
+              }
+            }
+          ]
+        },
+        "mas_vecinos": {
+          "columnas": [
+            "casos_lag_4",
+            "casos_lag_5",
+            "casos_media_4_h4",
+            "casos_semanas_positivas_4_h4",
+            "semana_epi_seno",
+            "semana_epi_coseno",
+            "vecinos_media_casos_knn5_h4",
+            "vecinos_frac_con_casos_knn5_h4"
+          ],
+          "seleccion_umbral": {
+            "umbral": 0.17500000000000004,
+            "f1_validacion_agregado": 0.6713247624371157
+          },
+          "folds_validacion": [
+            {
+              "horizonte": 4,
+              "variante": "mas_vecinos",
+              "bloque": "temporada_2021",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2020-08-23",
+              "ultima_semana_objetivo": "2021-08-22",
+              "corte_ajuste": "2020-08-01",
+              "n_entrenamiento": 11700,
+              "n_prueba": 3445,
+              "positivos_entrenamiento": 491,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.6664022227622168,
+                  "rmse": 4.650720064639877,
+                  "mae_log1p": 0.13017194137565638,
+                  "sesgo_medio": -0.4524080725350243
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 19,
+                  "fp": 8,
+                  "fn": 71,
+                  "vn": 3347,
+                  "precision": 0.7037037037037037,
+                  "recall": 0.2111111111111111,
+                  "f1": 0.3247863247863248,
+                  "auprc": 0.3666554409380779
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 44,
+                  "fp": 115,
+                  "fn": 46,
+                  "vn": 3240,
+                  "precision": 0.27672955974842767,
+                  "recall": 0.4888888888888889,
+                  "f1": 0.3534136546184739,
+                  "auprc": 0.40030684046537174
+                },
+                "brier": 0.020478841830715525
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.6743105950653121,
+                  "rmse": 4.611684535236545,
+                  "mae_log1p": 0.11833649640793158,
+                  "sesgo_medio": -0.10072568940493469
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 39,
+                  "fp": 34,
+                  "fn": 51,
+                  "vn": 3321,
+                  "precision": 0.5342465753424658,
+                  "recall": 0.43333333333333335,
+                  "f1": 0.4785276073619632,
+                  "auprc": 0.4316676956455773
+                }
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "mas_vecinos",
+              "bloque": "temporada_2022",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2021-08-29",
+              "ultima_semana_objetivo": "2022-08-21",
+              "corte_ajuste": "2021-08-07",
+              "n_entrenamiento": 15145,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 562,
+              "regresion": {
+                "conteos": {
+                  "mae": 2.9790659107418027,
+                  "rmse": 13.21126744602753,
+                  "mae_log1p": 0.3040899301359486,
+                  "sesgo_medio": 0.7445464245349543
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 234,
+                  "fp": 79,
+                  "fn": 197,
+                  "vn": 2870,
+                  "precision": 0.7476038338658147,
+                  "recall": 0.54292343387471,
+                  "f1": 0.6290322580645161,
+                  "auprc": 0.6911222675733
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 305,
+                  "fp": 458,
+                  "fn": 126,
+                  "vn": 2491,
+                  "precision": 0.399737876802097,
+                  "recall": 0.7076566125290024,
+                  "f1": 0.5108877721943048,
+                  "auprc": 0.45022716424340076
+                },
+                "brier": 0.0905285609768133
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 2.8458579881656805,
+                  "rmse": 8.53570641620649,
+                  "mae_log1p": 0.31450962850828745,
+                  "sesgo_medio": 0.052366863905325446
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 286,
+                  "fp": 180,
+                  "fn": 145,
+                  "vn": 2769,
+                  "precision": 0.6137339055793991,
+                  "recall": 0.6635730858468677,
+                  "f1": 0.6376811594202898,
+                  "auprc": 0.5755697015332537
+                }
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "mas_vecinos",
+              "bloque": "temporada_2023",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2022-08-28",
+              "ultima_semana_objetivo": "2023-08-20",
+              "corte_ajuste": "2022-08-06",
+              "n_entrenamiento": 18525,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1006,
+              "regresion": {
+                "conteos": {
+                  "mae": 13.96816358574509,
+                  "rmse": 68.24488444044954,
+                  "mae_log1p": 0.41708877262007277,
+                  "sesgo_medio": -11.687778806934249
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 681,
+                  "fp": 40,
+                  "fn": 358,
+                  "vn": 2301,
+                  "precision": 0.9445214979195562,
+                  "recall": 0.6554379210779596,
+                  "f1": 0.7738636363636363,
+                  "auprc": 0.8912588314765513
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 852,
+                  "fp": 244,
+                  "fn": 187,
+                  "vn": 2097,
+                  "precision": 0.7773722627737226,
+                  "recall": 0.8200192492781521,
+                  "f1": 0.7981264637002342,
+                  "auprc": 0.8256396481099562
+                },
+                "brier": 0.14458447723290754
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 17.680473372781066,
+                  "rmse": 80.18466113700802,
+                  "mae_log1p": 0.438527550002433,
+                  "sesgo_medio": -1.0526627218934912
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 787,
+                  "fp": 110,
+                  "fn": 252,
+                  "vn": 2231,
+                  "precision": 0.8773690078037905,
+                  "recall": 0.7574590952839269,
+                  "f1": 0.8130165289256198,
+                  "auprc": 0.8440405632142527
+                }
+              }
+            }
+          ],
+          "folds_prueba": []
+        },
+        "mas_jerarquia": {
+          "columnas": [
+            "casos_lag_4",
+            "casos_lag_5",
+            "casos_media_4_h4",
+            "casos_semanas_positivas_4_h4",
+            "semana_epi_seno",
+            "semana_epi_coseno",
+            "provincia_otros_casos_h4",
+            "provincia_otros_frac_con_casos_h4",
+            "region_otros_casos_h4",
+            "region_otros_frac_con_casos_h4"
+          ],
+          "seleccion_umbral": {
+            "umbral": 0.17500000000000004,
+            "f1_validacion_agregado": 0.6903695408734603
+          },
+          "folds_validacion": [
+            {
+              "horizonte": 4,
+              "variante": "mas_jerarquia",
+              "bloque": "temporada_2021",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2020-08-23",
+              "ultima_semana_objetivo": "2021-08-22",
+              "corte_ajuste": "2020-08-01",
+              "n_entrenamiento": 11700,
+              "n_prueba": 3445,
+              "positivos_entrenamiento": 491,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.6569614932735073,
+                  "rmse": 4.698356418036402,
+                  "mae_log1p": 0.1358023082776424,
+                  "sesgo_medio": -0.5143943347018337
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 20,
+                  "fp": 8,
+                  "fn": 70,
+                  "vn": 3347,
+                  "precision": 0.7142857142857143,
+                  "recall": 0.2222222222222222,
+                  "f1": 0.3389830508474576,
+                  "auprc": 0.37390289540966803
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 23,
+                  "fp": 64,
+                  "fn": 67,
+                  "vn": 3291,
+                  "precision": 0.26436781609195403,
+                  "recall": 0.25555555555555554,
+                  "f1": 0.2598870056497175,
+                  "auprc": 0.2949527846547222
+                },
+                "brier": 0.022470314244690832
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.6743105950653121,
+                  "rmse": 4.611684535236545,
+                  "mae_log1p": 0.11833649640793158,
+                  "sesgo_medio": -0.10072568940493469
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 39,
+                  "fp": 34,
+                  "fn": 51,
+                  "vn": 3321,
+                  "precision": 0.5342465753424658,
+                  "recall": 0.43333333333333335,
+                  "f1": 0.4785276073619632,
+                  "auprc": 0.4316676956455773
+                }
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "mas_jerarquia",
+              "bloque": "temporada_2022",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2021-08-29",
+              "ultima_semana_objetivo": "2022-08-21",
+              "corte_ajuste": "2021-08-07",
+              "n_entrenamiento": 15145,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 562,
+              "regresion": {
+                "conteos": {
+                  "mae": 3.292479473284133,
+                  "rmse": 16.300458542849867,
+                  "mae_log1p": 0.32150451153935644,
+                  "sesgo_medio": 1.2858664028800835
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 245,
+                  "fp": 80,
+                  "fn": 186,
+                  "vn": 2869,
+                  "precision": 0.7538461538461538,
+                  "recall": 0.568445475638051,
+                  "f1": 0.6481481481481481,
+                  "auprc": 0.7125524081281619
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 331,
+                  "fp": 469,
+                  "fn": 100,
+                  "vn": 2480,
+                  "precision": 0.41375,
+                  "recall": 0.7679814385150812,
+                  "f1": 0.537774167343623,
+                  "auprc": 0.5118919130376739
+                },
+                "brier": 0.08248781799965284
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 2.8458579881656805,
+                  "rmse": 8.53570641620649,
+                  "mae_log1p": 0.31450962850828745,
+                  "sesgo_medio": 0.052366863905325446
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 286,
+                  "fp": 180,
+                  "fn": 145,
+                  "vn": 2769,
+                  "precision": 0.6137339055793991,
+                  "recall": 0.6635730858468677,
+                  "f1": 0.6376811594202898,
+                  "auprc": 0.5755697015332537
+                }
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "mas_jerarquia",
+              "bloque": "temporada_2023",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2022-08-28",
+              "ultima_semana_objetivo": "2023-08-20",
+              "corte_ajuste": "2022-08-06",
+              "n_entrenamiento": 18525,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1006,
+              "regresion": {
+                "conteos": {
+                  "mae": 14.107602782625245,
+                  "rmse": 68.54861438599171,
+                  "mae_log1p": 0.43600653379891724,
+                  "sesgo_medio": -11.970399898076748
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 675,
+                  "fp": 36,
+                  "fn": 364,
+                  "vn": 2305,
+                  "precision": 0.9493670886075949,
+                  "recall": 0.6496631376323387,
+                  "f1": 0.7714285714285715,
+                  "auprc": 0.8859747960348221
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 879,
+                  "fp": 246,
+                  "fn": 160,
+                  "vn": 2095,
+                  "precision": 0.7813333333333333,
+                  "recall": 0.8460057747834456,
+                  "f1": 0.8123844731977818,
+                  "auprc": 0.8501954605164883
+                },
+                "brier": 0.12143558223612244
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 17.680473372781066,
+                  "rmse": 80.18466113700802,
+                  "mae_log1p": 0.438527550002433,
+                  "sesgo_medio": -1.0526627218934912
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 787,
+                  "fp": 110,
+                  "fn": 252,
+                  "vn": 2231,
+                  "precision": 0.8773690078037905,
+                  "recall": 0.7574590952839269,
+                  "f1": 0.8130165289256198,
+                  "auprc": 0.8440405632142527
+                }
+              }
+            }
+          ],
+          "folds_prueba": [
+            {
+              "horizonte": 4,
+              "variante": "mas_jerarquia",
+              "bloque": "temporada_2024",
+              "tipo": "prueba_principal",
+              "primera_semana_objetivo": "2023-08-27",
+              "ultima_semana_objetivo": "2024-08-18",
+              "corte_ajuste": "2023-08-05",
+              "n_entrenamiento": 21905,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1945,
+              "regresion": {
+                "conteos": {
+                  "mae": 11.276261100473631,
+                  "rmse": 47.908029696728946,
+                  "mae_log1p": 0.5008150847434534,
+                  "sesgo_medio": 6.4270512048990165
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 643,
+                  "fp": 213,
+                  "fn": 214,
+                  "vn": 2310,
+                  "precision": 0.7511682242990654,
+                  "recall": 0.750291715285881,
+                  "f1": 0.7507297139521307,
+                  "auprc": 0.7421207831432515
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 823,
+                  "fp": 974,
+                  "fn": 34,
+                  "vn": 1549,
+                  "precision": 0.45798553144129106,
+                  "recall": 0.9603267211201867,
+                  "f1": 0.6201959306706858,
+                  "auprc": 0.5370373859847355
+                },
+                "brier": 0.1487761238477111
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 7.847633136094674,
+                  "rmse": 25.454954993631606,
+                  "mae_log1p": 0.4823831708320173,
+                  "sesgo_medio": 1.0464497041420118
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 857,
+                  "vp": 634,
+                  "fp": 240,
+                  "fn": 223,
+                  "vn": 2283,
+                  "precision": 0.7254004576659039,
+                  "recall": 0.7397899649941657,
+                  "f1": 0.7325245522819179,
+                  "auprc": 0.7458445658290153
+                }
+              },
+              "distritos_sin_registros_2017_2024": {
+                "filas": 156,
+                "positivos_observados": 0,
+                "alertas_regresion": 0,
+                "alertas_clasificacion": 0
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "mas_jerarquia",
+              "bloque": "calendario_2025",
+              "tipo": "prueba_sensibilidad",
+              "primera_semana_objetivo": "2024-12-29",
+              "ultima_semana_objetivo": "2025-12-21",
+              "corte_ajuste": "2024-12-07",
+              "n_entrenamiento": 26455,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 2950,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.4058874439369417,
+                  "rmse": 1.5211693122404761,
+                  "mae_log1p": 0.15683886639015707,
+                  "sesgo_medio": 0.2013951818316661
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 5,
+                  "fn": 3,
+                  "vn": 3372,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.03121918031588595
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 228,
+                  "fn": 3,
+                  "vn": 3149,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.0049453949783163295
+                },
+                "brier": 0.015292541757685333
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.3242603550295858,
+                  "rmse": 1.1681168783217364,
+                  "mae_log1p": 0.12179192701335183,
+                  "sesgo_medio": 0.07692307692307693
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 3,
+                  "vp": 0,
+                  "fp": 10,
+                  "fn": 3,
+                  "vn": 3367,
+                  "precision": 0.0,
+                  "recall": 0.0,
+                  "f1": 0.0,
+                  "auprc": 0.0013357875788193663
+                }
+              },
+              "distritos_sin_registros_2017_2024": {
+                "filas": 156,
+                "positivos_observados": 0,
+                "alertas_regresion": 0,
+                "alertas_clasificacion": 0
+              }
+            }
+          ]
+        },
+        "mas_ambos": {
+          "columnas": [
+            "casos_lag_4",
+            "casos_lag_5",
+            "casos_media_4_h4",
+            "casos_semanas_positivas_4_h4",
+            "semana_epi_seno",
+            "semana_epi_coseno",
+            "vecinos_media_casos_knn5_h4",
+            "vecinos_frac_con_casos_knn5_h4",
+            "provincia_otros_casos_h4",
+            "provincia_otros_frac_con_casos_h4",
+            "region_otros_casos_h4",
+            "region_otros_frac_con_casos_h4"
+          ],
+          "seleccion_umbral": {
+            "umbral": 0.17500000000000004,
+            "f1_validacion_agregado": 0.6836283185840708
+          },
+          "folds_validacion": [
+            {
+              "horizonte": 4,
+              "variante": "mas_ambos",
+              "bloque": "temporada_2021",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2020-08-23",
+              "ultima_semana_objetivo": "2021-08-22",
+              "corte_ajuste": "2020-08-01",
+              "n_entrenamiento": 11700,
+              "n_prueba": 3445,
+              "positivos_entrenamiento": 491,
+              "regresion": {
+                "conteos": {
+                  "mae": 0.6523515800662955,
+                  "rmse": 4.677130554463292,
+                  "mae_log1p": 0.13520933057729484,
+                  "sesgo_medio": -0.5026147312081874
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 20,
+                  "fp": 9,
+                  "fn": 70,
+                  "vn": 3346,
+                  "precision": 0.6896551724137931,
+                  "recall": 0.2222222222222222,
+                  "f1": 0.33613445378151263,
+                  "auprc": 0.37643174854152234
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 27,
+                  "fp": 64,
+                  "fn": 63,
+                  "vn": 3291,
+                  "precision": 0.2967032967032967,
+                  "recall": 0.3,
+                  "f1": 0.2983425414364641,
+                  "auprc": 0.3230591779680235
+                },
+                "brier": 0.02196467088975916
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 0.6743105950653121,
+                  "rmse": 4.611684535236545,
+                  "mae_log1p": 0.11833649640793158,
+                  "sesgo_medio": -0.10072568940493469
+                },
+                "alerta_derivada": {
+                  "n": 3445,
+                  "positivos": 90,
+                  "vp": 39,
+                  "fp": 34,
+                  "fn": 51,
+                  "vn": 3321,
+                  "precision": 0.5342465753424658,
+                  "recall": 0.43333333333333335,
+                  "f1": 0.4785276073619632,
+                  "auprc": 0.4316676956455773
+                }
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "mas_ambos",
+              "bloque": "temporada_2022",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2021-08-29",
+              "ultima_semana_objetivo": "2022-08-21",
+              "corte_ajuste": "2021-08-07",
+              "n_entrenamiento": 15145,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 562,
+              "regresion": {
+                "conteos": {
+                  "mae": 3.1921745791045546,
+                  "rmse": 14.82585430389499,
+                  "mae_log1p": 0.3277736062036128,
+                  "sesgo_medio": 1.175722263254757
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 244,
+                  "fp": 88,
+                  "fn": 187,
+                  "vn": 2861,
+                  "precision": 0.7349397590361446,
+                  "recall": 0.5661252900232019,
+                  "f1": 0.6395806028833552,
+                  "auprc": 0.7024114632460675
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 327,
+                  "fp": 501,
+                  "fn": 104,
+                  "vn": 2448,
+                  "precision": 0.39492753623188404,
+                  "recall": 0.7587006960556845,
+                  "f1": 0.5194598888006354,
+                  "auprc": 0.4768705583014873
+                },
+                "brier": 0.08675913242770471
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 2.8458579881656805,
+                  "rmse": 8.53570641620649,
+                  "mae_log1p": 0.31450962850828745,
+                  "sesgo_medio": 0.052366863905325446
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 431,
+                  "vp": 286,
+                  "fp": 180,
+                  "fn": 145,
+                  "vn": 2769,
+                  "precision": 0.6137339055793991,
+                  "recall": 0.6635730858468677,
+                  "f1": 0.6376811594202898,
+                  "auprc": 0.5755697015332537
+                }
+              }
+            },
+            {
+              "horizonte": 4,
+              "variante": "mas_ambos",
+              "bloque": "temporada_2023",
+              "tipo": "validacion",
+              "primera_semana_objetivo": "2022-08-28",
+              "ultima_semana_objetivo": "2023-08-20",
+              "corte_ajuste": "2022-08-06",
+              "n_entrenamiento": 18525,
+              "n_prueba": 3380,
+              "positivos_entrenamiento": 1006,
+              "regresion": {
+                "conteos": {
+                  "mae": 13.961945196692009,
+                  "rmse": 67.96601115196098,
+                  "mae_log1p": 0.4322139259015438,
+                  "sesgo_medio": -11.778315073776403
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 675,
+                  "fp": 35,
+                  "fn": 364,
+                  "vn": 2306,
+                  "precision": 0.9507042253521126,
+                  "recall": 0.6496631376323387,
+                  "f1": 0.7718696397941681,
+                  "auprc": 0.8882159292550906
+                }
+              },
+              "clasificacion": {
+                "umbral_probabilidad": 0.17500000000000004,
+                "alerta_directa": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 882,
+                  "fp": 255,
+                  "fn": 157,
+                  "vn": 2086,
+                  "precision": 0.7757255936675461,
+                  "recall": 0.848893166506256,
+                  "f1": 0.8106617647058824,
+                  "auprc": 0.8477396964937585
+                },
+                "brier": 0.1259268111017982
+              },
+              "persistencia": {
+                "conteos": {
+                  "mae": 17.680473372781066,
+                  "rmse": 80.18466113700802,
+                  "mae_log1p": 0.438527550002433,
+                  "sesgo_medio": -1.0526627218934912
+                },
+                "alerta_derivada": {
+                  "n": 3380,
+                  "positivos": 1039,
+                  "vp": 787,
+                  "fp": 110,
+                  "fn": 252,
+                  "vn": 2231,
+                  "precision": 0.8773690078037905,
+                  "recall": 0.7574590952839269,
+                  "f1": 0.8130165289256198,
+                  "auprc": 0.8440405632142527
+                }
+              }
+            }
+          ],
+          "folds_prueba": []
+        }
+      },
+      "elegidas_solo_validacion": {
+        "regresion": "mas_jerarquia",
+        "clasificacion": "base_6"
+      }
+    }
+  }
+}

@@ -1,0 +1,525 @@
+{
+  "pct_ceros": 77.93,
+  "pct_ceros_sin_2025": 76.76,
+  "media": 5.7,
+  "mediana": 0.0,
+  "maximo": 2084,
+  "varianza_sobre_media": 360.1,
+  "varianza_sobre_media_sin_2025": 361.7,
+  "p90_p99_casos_positivos": [
+    50.0,
+    387.0
+  ],
+  "mediana_casos_positivos": 4.0,
+  "por_anio": {
+    "2017": {
+      "pct_ceros": 64.5,
+      "casos": 44275.0,
+      "maximo": 2084.0,
+      "var_sobre_media": 598.8,
+      "pct_casos_del_total": 25.5
+    },
+    "2018": {
+      "pct_ceros": 93.3,
+      "casos": 525.0,
+      "maximo": 26.0,
+      "var_sobre_media": 5.8,
+      "pct_casos_del_total": 0.3
+    },
+    "2019": {
+      "pct_ceros": 98.4,
+      "casos": 70.0,
+      "maximo": 4.0,
+      "var_sobre_media": 1.7,
+      "pct_casos_del_total": 0.0
+    },
+    "2020": {
+      "pct_ceros": 97.5,
+      "casos": 125.0,
+      "maximo": 6.0,
+      "var_sobre_media": 2.1,
+      "pct_casos_del_total": 0.1
+    },
+    "2021": {
+      "pct_ceros": 83.0,
+      "casos": 4072.0,
+      "maximo": 154.0,
+      "var_sobre_media": 39.5,
+      "pct_casos_del_total": 2.3
+    },
+    "2022": {
+      "pct_ceros": 70.9,
+      "casos": 12151.0,
+      "maximo": 161.0,
+      "var_sobre_media": 39.6,
+      "pct_casos_del_total": 7.0
+    },
+    "2023": {
+      "pct_ceros": 46.2,
+      "casos": 79304.0,
+      "maximo": 1527.0,
+      "var_sobre_media": 369.3,
+      "pct_casos_del_total": 45.6
+    },
+    "2024": {
+      "pct_ceros": 59.7,
+      "casos": 32246.0,
+      "maximo": 482.0,
+      "var_sobre_media": 135.5,
+      "pct_casos_del_total": 18.5
+    },
+    "2025": {
+      "pct_ceros": 87.3,
+      "casos": 1114.0,
+      "maximo": 22.0,
+      "var_sobre_media": 5.6,
+      "pct_casos_del_total": 0.6
+    }
+  },
+  "distrito_anios_con_casos": 359,
+  "vm_mediana_distrito_anio": 2.16,
+  "pct_distrito_anios_sobredispersos": 74.7,
+  "pct_distrito_anios_vm_mayor_10": 26.5,
+  "spearman_casos_vs_incidencia_distritos": 0.831,
+  "top10_coinciden_casos_y_tasa": 3,
+  "top10_por_tasa": {
+    "San Juan de Bigote": [
+      19110.0,
+      21
+    ],
+    "La Huaca": [
+      17020.0,
+      15
+    ],
+    "Salitral (Morropón)": [
+      16820.0,
+      18
+    ],
+    "Piura": [
+      16323.0,
+      1
+    ],
+    "Tamarindo": [
+      13740.0,
+      30
+    ],
+    "Bellavista de la Union": [
+      13561.0,
+      31
+    ],
+    "Castilla": [
+      12581.0,
+      2
+    ],
+    "Salitral (Sullana)": [
+      12458.0,
+      26
+    ],
+    "Ignacio Escudero": [
+      12373.0,
+      14
+    ],
+    "Chulucanas": [
+      11792.0,
+      6
+    ]
+  },
+  "top10_por_casos": {
+    "Piura": [
+      29862,
+      4
+    ],
+    "Castilla": [
+      24034,
+      7
+    ],
+    "Sullana": [
+      15508,
+      21
+    ],
+    "Veintiséis de Octubre": [
+      13089,
+      27
+    ],
+    "Pariñas": [
+      11174,
+      14
+    ],
+    "Chulucanas": [
+      10657,
+      10
+    ],
+    "Paita": [
+      9124,
+      19
+    ],
+    "Catacaos": [
+      8427,
+      17
+    ],
+    "Tambo Grande": [
+      7391,
+      36
+    ],
+    "Bellavista": [
+      4135,
+      12
+    ]
+  },
+  "incidencia_regional_anual": {
+    "2017": 2384.5,
+    "2018": 26.1,
+    "2019": 3.4,
+    "2020": 6.0,
+    "2021": 193.6,
+    "2022": 571.2,
+    "2023": 3688.6,
+    "2024": 1484.1,
+    "2025": 50.7
+  },
+  "incidencia_2017_con_pob_2018": 2198.9,
+  "razon_2023_sobre_2017_pob_propia": 1.55,
+  "razon_2023_sobre_2017_pob_2018": 1.68,
+  "distritos_para_50pct_casos": 5,
+  "distritos_para_80pct_casos": 12,
+  "distritos_siempre_cero": [
+    "Lagunas",
+    "Montero",
+    "Sicchez"
+  ],
+  "distritos_menos_5pct_semanas_con_casos": 15,
+  "distritos_mas_50pct_semanas_con_casos": [
+    "Castilla",
+    "Catacaos",
+    "Chulucanas",
+    "Piura",
+    "Sullana",
+    "Tambo Grande",
+    "Veintiséis de Octubre"
+  ],
+  "pct_casos_provincia": {
+    "Piura": 52.4,
+    "Sullana": 17.1,
+    "Morropón": 9.7,
+    "Talara": 8.4,
+    "Paita": 8.0,
+    "Sechura": 3.7,
+    "Ayabaca": 0.5,
+    "Huancabamba": 0.2
+  },
+  "pct_casos_sierra_ayabaca_huancabamba": 0.7,
+  "incidencia_acumulada_max_ayabaca_huancabamba": {
+    "Suyo": 4995.0,
+    "Paimas": 2177.0,
+    "San Miguel de el Faique": 2153.0
+  },
+  "mediana_incidencia_acumulada_resto_provincias": 7365.0,
+  "temporadas": {
+    "2017": {
+      "semana_pico": 18,
+      "casos_pico": 5645,
+      "semana_inicio_10pct": 10,
+      "semana_fin_10pct": 26,
+      "casos_anio": 44275
+    },
+    "2018": {
+      "semana_pico": 15,
+      "casos_pico": 56,
+      "semana_inicio_10pct": 1,
+      "semana_fin_10pct": 42,
+      "casos_anio": 525
+    },
+    "2019": {
+      "semana_pico": 22,
+      "casos_pico": 8,
+      "semana_inicio_10pct": 5,
+      "semana_fin_10pct": 52,
+      "casos_anio": 70
+    },
+    "2020": {
+      "semana_pico": 10,
+      "casos_pico": 14,
+      "semana_inicio_10pct": 2,
+      "semana_fin_10pct": 51,
+      "casos_anio": 125
+    },
+    "2021": {
+      "semana_pico": 20,
+      "casos_pico": 243,
+      "semana_inicio_10pct": 11,
+      "semana_fin_10pct": 52,
+      "casos_anio": 4072
+    },
+    "2022": {
+      "semana_pico": 16,
+      "casos_pico": 830,
+      "semana_inicio_10pct": 1,
+      "semana_fin_10pct": 27,
+      "casos_anio": 12151
+    },
+    "2023": {
+      "semana_pico": 20,
+      "casos_pico": 8151,
+      "semana_inicio_10pct": 12,
+      "semana_fin_10pct": 33,
+      "casos_anio": 79304
+    },
+    "2024": {
+      "semana_pico": 14,
+      "casos_pico": 2555,
+      "semana_inicio_10pct": 1,
+      "semana_fin_10pct": 25,
+      "casos_anio": 32246
+    },
+    "2025": {
+      "semana_pico": 4,
+      "casos_pico": 58,
+      "semana_inicio_10pct": 1,
+      "semana_fin_10pct": 47,
+      "casos_anio": 1114
+    }
+  },
+  "anios_con_10pct_o_mas_de_los_casos": [
+    2017,
+    2023,
+    2024
+  ],
+  "pct_casos_2017_2023_2024": 89.6,
+  "pct_casos_2017_2023": 71.1,
+  "semana_pico_rango_anios_grandes": [
+    14,
+    20
+  ],
+  "excel_historia_anios": [
+    2000,
+    2016
+  ],
+  "excel_historia_casos_por_anio": {
+    "2000": 2620,
+    "2001": 11713,
+    "2002": 101,
+    "2003": 1726,
+    "2004": 37,
+    "2005": 51,
+    "2006": 865,
+    "2007": 282,
+    "2008": 1702,
+    "2009": 4033,
+    "2010": 8393,
+    "2011": 183,
+    "2012": 1181,
+    "2013": 1979,
+    "2014": 2675,
+    "2015": 20042,
+    "2016": 7610
+  },
+  "excel_historia_distritos_distintos": 54,
+  "excel_historia_distritos_ausentes": [
+    "Amotape",
+    "Chalaco",
+    "El Carmen de la Frontera",
+    "Lagunas",
+    "Lalaquiz",
+    "Montero",
+    "Pacaipampa",
+    "Sapillica",
+    "Sicchez",
+    "Sondor",
+    "Sondorillo"
+  ],
+  "excel_historia_anios_mas_de_5000_casos": [
+    2001,
+    2010,
+    2015,
+    2016
+  ],
+  "definiciones": {
+    "D1 tasa ≥ 10/100k": {
+      "filas_positivas": 4076,
+      "pct_filas_positivas": 13.37,
+      "razon_negativos_por_positivo": 6.5,
+      "episodios": 805,
+      "duracion_mediana_semanas": 1.0,
+      "distritos_con_algun_positivo": 59,
+      "positivos_por_anio": {
+        "2017": 762,
+        "2018": 18,
+        "2019": 0,
+        "2020": 14,
+        "2021": 226,
+        "2022": 581,
+        "2023": 1492,
+        "2024": 939,
+        "2025": 44
+      },
+      "pct_positivos_en_2017_2023": 55.3,
+      "pct_casos_cubiertos": 95.6,
+      "pct_episodios_de_1_semana": 55.8
+    },
+    "D2 > p90 del distrito": {
+      "filas_positivas": 2122,
+      "pct_filas_positivas": 6.96,
+      "razon_negativos_por_positivo": 13.4,
+      "episodios": 516,
+      "duracion_mediana_semanas": 1.0,
+      "distritos_con_algun_positivo": 62,
+      "positivos_por_anio": {
+        "2017": 409,
+        "2018": 2,
+        "2019": 1,
+        "2020": 1,
+        "2021": 71,
+        "2022": 210,
+        "2023": 920,
+        "2024": 504,
+        "2025": 4
+      },
+      "pct_positivos_en_2017_2023": 62.6,
+      "pct_casos_cubiertos": 82.0,
+      "pct_episodios_de_1_semana": 54.1
+    },
+    "D3 canal endémico": {
+      "filas_positivas": 5218,
+      "pct_filas_positivas": 17.12,
+      "razon_negativos_por_positivo": 4.8,
+      "episodios": 1176,
+      "duracion_mediana_semanas": 1.0,
+      "distritos_con_algun_positivo": 62,
+      "positivos_por_anio": {
+        "2017": 1021,
+        "2018": 39,
+        "2019": 5,
+        "2020": 10,
+        "2021": 378,
+        "2022": 862,
+        "2023": 1791,
+        "2024": 1058,
+        "2025": 54
+      },
+      "pct_positivos_en_2017_2023": 53.9,
+      "pct_casos_cubiertos": 96.9,
+      "pct_episodios_de_1_semana": 58.6
+    },
+    "D4 aumento sostenido": {
+      "filas_positivas": 755,
+      "pct_filas_positivas": 2.48,
+      "razon_negativos_por_positivo": 39.4,
+      "episodios": 153,
+      "duracion_mediana_semanas": 4.0,
+      "distritos_con_algun_positivo": 45,
+      "positivos_por_anio": {
+        "2017": 140,
+        "2018": 7,
+        "2019": 0,
+        "2020": 0,
+        "2021": 43,
+        "2022": 120,
+        "2023": 299,
+        "2024": 146,
+        "2025": 0
+      },
+      "pct_positivos_en_2017_2023": 58.1,
+      "pct_casos_cubiertos": 39.2,
+      "pct_episodios_de_1_semana": 0.0
+    },
+    "Referencia: ≥ 1 caso": {
+      "filas_positivas": 6729,
+      "pct_filas_positivas": 22.07,
+      "razon_negativos_por_positivo": 3.5,
+      "episodios": 1424,
+      "duracion_mediana_semanas": 1.0,
+      "distritos_con_algun_positivo": 62,
+      "positivos_por_anio": {
+        "2017": 1199,
+        "2018": 226,
+        "2019": 53,
+        "2020": 85,
+        "2021": 574,
+        "2022": 984,
+        "2023": 1818,
+        "2024": 1361,
+        "2025": 429
+      },
+      "pct_positivos_en_2017_2023": 44.8,
+      "pct_casos_cubiertos": 100.0,
+      "pct_episodios_de_1_semana": 58.9
+    }
+  },
+  "definiciones_pct_positivos_sin_2025": {
+    "D1 tasa ≥ 10/100k": 14.88,
+    "D2 > p90 del distrito": 7.81,
+    "D3 canal endémico": 19.05,
+    "D4 aumento sostenido": 2.79,
+    "Referencia: ≥ 1 caso": 23.24
+  },
+  "D3_pct_positivos_con_canal_en_cero": 65.2,
+  "D3_pct_distrito_semanas_con_canal_en_cero": 73.9,
+  "D3_pct_canal_en_cero_por_anio": {
+    "2017": 79.6,
+    "2018": 70.6,
+    "2019": 70.3,
+    "2020": 71.1,
+    "2021": 78.1,
+    "2022": 84.1,
+    "2023": 84.9,
+    "2024": 68.7,
+    "2025": 57.8
+  },
+  "D4_semanas_inicio_a_pico_mediana": 7.0,
+  "D4_semanas_inicio_a_pico_p25_p75": [
+    3.0,
+    10.0
+  ],
+  "D4_pct_episodios_pico_despues_del_episodio": 51.6,
+  "D1_barrido_umbral": {
+    "1": {
+      "pct_filas_positivas": 20.78,
+      "episodios": 1377,
+      "distritos_con_algun_positivo": 62,
+      "pct_positivos_en_2017_2023": 47.2,
+      "pct_casos_cubiertos": 99.8
+    },
+    "5": {
+      "pct_filas_positivas": 16.51,
+      "episodios": 1059,
+      "distritos_con_algun_positivo": 61,
+      "pct_positivos_en_2017_2023": 52.9,
+      "pct_casos_cubiertos": 97.9
+    },
+    "10": {
+      "pct_filas_positivas": 13.37,
+      "episodios": 805,
+      "distritos_con_algun_positivo": 59,
+      "pct_positivos_en_2017_2023": 55.3,
+      "pct_casos_cubiertos": 95.6
+    },
+    "20": {
+      "pct_filas_positivas": 9.68,
+      "episodios": 553,
+      "distritos_con_algun_positivo": 53,
+      "pct_positivos_en_2017_2023": 58.6,
+      "pct_casos_cubiertos": 91.2
+    },
+    "50": {
+      "pct_filas_positivas": 5.89,
+      "episodios": 336,
+      "distritos_con_algun_positivo": 47,
+      "pct_positivos_en_2017_2023": 62.3,
+      "pct_casos_cubiertos": 81.7
+    },
+    "100": {
+      "pct_filas_positivas": 3.51,
+      "episodios": 220,
+      "distritos_con_algun_positivo": 47,
+      "pct_positivos_en_2017_2023": 67.0,
+      "pct_casos_cubiertos": 68.3
+    }
+  },
+  "pct_positivos_en_2017_2022_2023_2024": {
+    "D1 tasa ≥ 10/100k": 92.6,
+    "D2 > p90 del distrito": 96.3,
+    "D3 canal endémico": 90.7,
+    "D4 aumento sostenido": 93.4,
+    "Referencia: ≥ 1 caso": 79.7
+  }
+}

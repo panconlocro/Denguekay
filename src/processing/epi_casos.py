@@ -13,7 +13,9 @@ def cargar_crudo(path_excel) -> pd.DataFrame:
 def construir_casos_semanales(df_epi_raw: pd.DataFrame) -> pd.DataFrame:
     """Formatea llaves y cuenta cuántos casos hay por distrito/año/semana."""
     df_epi_raw = df_epi_raw.copy()
-    df_epi_raw["ubigeo"] = df_epi_raw["ubigeo"].astype(int)
+    # Mismo criterio que en epi_sala.py / fill_component(): ubigeo como string
+    # de 6 dígitos, nunca int.
+    df_epi_raw["ubigeo"] = df_epi_raw["ubigeo"].astype("string").str.zfill(6)
     df_epi_raw["ano"] = pd.to_numeric(df_epi_raw["ano"], errors="coerce")
 
     df_casos = (

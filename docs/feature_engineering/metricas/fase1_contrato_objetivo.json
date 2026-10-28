@@ -1,0 +1,198 @@
+{
+  "integridad": {
+    "filas": 30485,
+    "columnas": 35,
+    "distritos": 65,
+    "semanas_por_distrito": 469,
+    "inicio": "2017-01-01",
+    "fin": "2025-12-21",
+    "nulos": 0,
+    "llaves_duplicadas": 0,
+    "cobertura_verificada": 30485,
+    "horizontes": {
+      "2": {
+        "objetivos_con_origen": 30355,
+        "objetivos_sin_historia": 130,
+        "observaciones_t_menos_1_admisibles": 0
+      },
+      "4": {
+        "objetivos_con_origen": 30225,
+        "objetivos_sin_historia": 260,
+        "observaciones_t_menos_1_admisibles": 0
+      }
+    }
+  },
+  "procedencia": {
+    "casos_panel_2025": 1114,
+    "casos_sala_2025_total": 1117,
+    "casos_sala_semana_53": 3,
+    "filas_sala_semana_53": 65,
+    "ceros_panel": 23756,
+    "filas_excel_con_cero": 0,
+    "ubigeos_sin_registro_excel_2017_2024": [
+      "200204",
+      "200205",
+      "200209"
+    ]
+  },
+  "calendario": {
+    "semanas_actuales_distintas_mmwr": 0,
+    "filas_semana_53_de_2020": 65,
+    "frontera_2025_2026": [
+      {
+        "domingo": "2025-12-28",
+        "mmwr": "2025-S53",
+        "regla_pipeline": "2026-S01"
+      },
+      {
+        "domingo": "2026-01-04",
+        "mmwr": "2026-S01",
+        "regla_pipeline": "2026-S02"
+      }
+    ]
+  },
+  "objetivos": {
+    "D1 tasa ≥ 10/100k": {
+      "filas_positivas": 4076,
+      "pct_filas_positivas": 13.37,
+      "razon_negativos_por_positivo": 6.5,
+      "episodios": 805,
+      "duracion_mediana_semanas": 1.0,
+      "distritos_con_algun_positivo": 59,
+      "positivos_por_anio": {
+        "2017": 762,
+        "2018": 18,
+        "2019": 0,
+        "2020": 14,
+        "2021": 226,
+        "2022": 581,
+        "2023": 1492,
+        "2024": 939,
+        "2025": 44
+      },
+      "pct_positivos_en_2017_2023": 55.3,
+      "pct_casos_cubiertos": 95.6
+    },
+    "D2 > p90 del distrito": {
+      "filas_positivas": 2122,
+      "pct_filas_positivas": 6.96,
+      "razon_negativos_por_positivo": 13.4,
+      "episodios": 516,
+      "duracion_mediana_semanas": 1.0,
+      "distritos_con_algun_positivo": 62,
+      "positivos_por_anio": {
+        "2017": 409,
+        "2018": 2,
+        "2019": 1,
+        "2020": 1,
+        "2021": 71,
+        "2022": 210,
+        "2023": 920,
+        "2024": 504,
+        "2025": 4
+      },
+      "pct_positivos_en_2017_2023": 62.6,
+      "pct_casos_cubiertos": 82.0
+    },
+    "D3 canal endémico": {
+      "filas_positivas": 5218,
+      "pct_filas_positivas": 17.12,
+      "razon_negativos_por_positivo": 4.8,
+      "episodios": 1176,
+      "duracion_mediana_semanas": 1.0,
+      "distritos_con_algun_positivo": 62,
+      "positivos_por_anio": {
+        "2017": 1021,
+        "2018": 39,
+        "2019": 5,
+        "2020": 10,
+        "2021": 378,
+        "2022": 862,
+        "2023": 1791,
+        "2024": 1058,
+        "2025": 54
+      },
+      "pct_positivos_en_2017_2023": 53.9,
+      "pct_casos_cubiertos": 96.9
+    },
+    "D4 aumento sostenido": {
+      "filas_positivas": 755,
+      "pct_filas_positivas": 2.48,
+      "razon_negativos_por_positivo": 39.4,
+      "episodios": 153,
+      "duracion_mediana_semanas": 4.0,
+      "distritos_con_algun_positivo": 45,
+      "positivos_por_anio": {
+        "2017": 140,
+        "2018": 7,
+        "2019": 0,
+        "2020": 0,
+        "2021": 43,
+        "2022": 120,
+        "2023": 299,
+        "2024": 146,
+        "2025": 0
+      },
+      "pct_positivos_en_2017_2023": 58.1,
+      "pct_casos_cubiertos": 39.2
+    }
+  },
+  "d3_pct_canal_en_cero": 73.9,
+  "folds_propuestos": [
+    {
+      "temporada_prueba": 2022,
+      "inicio_prueba": "2021-08-29",
+      "fin_prueba": "2022-08-21",
+      "ultimo_objetivo_train_h2_sin_demora": "2021-08-15",
+      "ultimo_objetivo_train_h4_sin_demora": "2021-08-01",
+      "semanas_prueba": 52,
+      "positivos_D1": 628,
+      "positivos_D4": 123
+    },
+    {
+      "temporada_prueba": 2023,
+      "inicio_prueba": "2022-08-28",
+      "fin_prueba": "2023-08-20",
+      "ultimo_objetivo_train_h2_sin_demora": "2022-08-14",
+      "ultimo_objetivo_train_h4_sin_demora": "2022-07-31",
+      "semanas_prueba": 52,
+      "positivos_D1": 1148,
+      "positivos_D4": 300
+    },
+    {
+      "temporada_prueba": 2024,
+      "inicio_prueba": "2023-08-27",
+      "fin_prueba": "2024-08-18",
+      "ultimo_objetivo_train_h2_sin_demora": "2023-08-13",
+      "ultimo_objetivo_train_h4_sin_demora": "2023-07-30",
+      "semanas_prueba": 52,
+      "positivos_D1": 1269,
+      "positivos_D4": 149
+    },
+    {
+      "temporada_prueba": 2025,
+      "inicio_prueba": "2024-08-25",
+      "fin_prueba": "2025-08-17",
+      "ultimo_objetivo_train_h2_sin_demora": "2024-08-11",
+      "ultimo_objetivo_train_h4_sin_demora": "2024-07-28",
+      "semanas_prueba": 52,
+      "positivos_D1": 98,
+      "positivos_D4": 3
+    }
+  ],
+  "parametros_ilustrativos": {
+    "horizontes_semanas": [
+      2,
+      4
+    ],
+    "horizonte_principal": 4,
+    "semana_inicio_temporada": 35,
+    "D1_umbral_tasa_100k": 10,
+    "D2_percentil": 0.9,
+    "D3_anios_previos": 5,
+    "D4_factor": 2,
+    "D4_ventana": 8,
+    "D4_k": 3,
+    "D4_minimo": 5
+  }
+}

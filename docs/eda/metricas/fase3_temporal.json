@@ -1,0 +1,385 @@
+{
+  "horizonte_semanas": 4,
+  "mediana_casos_regionales_sem35_52_por_anio": {
+    "2017": 28.0,
+    "2018": 1.0,
+    "2019": 0.5,
+    "2020": 0.5,
+    "2021": 62.5,
+    "2022": 31.5,
+    "2023": 249.0,
+    "2024": 67.0,
+    "2025": 5.5
+  },
+  "spearman_entre_provincias_min_mediana_max": [
+    0.51,
+    0.65,
+    0.86
+  ],
+  "adf_pvalor_log_regional": 0.088,
+  "kpss_pvalor_log_regional": 0.01,
+  "semana_valle": 35,
+  "semana_mediana_perfil_maximo": 20,
+  "semana_pico_por_anio": {
+    "2017": 18,
+    "2018": 15,
+    "2019": 22,
+    "2020": 10,
+    "2021": 20,
+    "2022": 16,
+    "2023": 20,
+    "2024": 14,
+    "2025": 4
+  },
+  "semana_pico_anios_grandes": {
+    "2017": 18,
+    "2023": 20,
+    "2024": 14
+  },
+  "pct_semanas_27_52_bajo_10pct_del_maximo_mediana": 92.3,
+  "temporadas_casos": {
+    "2017": 43674,
+    "2018": 1094,
+    "2019": 89,
+    "2020": 121,
+    "2021": 2964,
+    "2022": 12712,
+    "2023": 74770,
+    "2024": 36160,
+    "2025": 2190,
+    "2026": 108
+  },
+  "temporadas_incompletas": [
+    2017,
+    2026
+  ],
+  "casos_2024_calendario_vs_temporada": [
+    32246,
+    36160
+  ],
+  "casos_semanas_1_a_valle_2024": 31062,
+  "casos_semanas_valle_a_52_2023": 5098,
+  "sensibilidad_corte_semanas_30_40": {
+    "30": {
+      "mediana_perfil": 0.039,
+      "casos_regionales_2023": 1367.0,
+      "max_casos_regionales_otros_anios": 190.0,
+      "D1_positivos_2023_en_la_semana": 40.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 65.0
+    },
+    "31": {
+      "mediana_perfil": 0.046,
+      "casos_regionales_2023": 1160.0,
+      "max_casos_regionales_otros_anios": 169.0,
+      "D1_positivos_2023_en_la_semana": 41.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 74.0
+    },
+    "32": {
+      "mediana_perfil": 0.055,
+      "casos_regionales_2023": 943.0,
+      "max_casos_regionales_otros_anios": 117.0,
+      "D1_positivos_2023_en_la_semana": 39.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 62.0
+    },
+    "33": {
+      "mediana_perfil": 0.108,
+      "casos_regionales_2023": 881.0,
+      "max_casos_regionales_otros_anios": 111.0,
+      "D1_positivos_2023_en_la_semana": 35.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 55.0
+    },
+    "34": {
+      "mediana_perfil": 0.042,
+      "casos_regionales_2023": 751.0,
+      "max_casos_regionales_otros_anios": 75.0,
+      "D1_positivos_2023_en_la_semana": 37.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 51.0
+    },
+    "35": {
+      "mediana_perfil": 0.018,
+      "casos_regionales_2023": 595.0,
+      "max_casos_regionales_otros_anios": 57.0,
+      "D1_positivos_2023_en_la_semana": 34.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 49.0
+    },
+    "36": {
+      "mediana_perfil": 0.027,
+      "casos_regionales_2023": 532.0,
+      "max_casos_regionales_otros_anios": 70.0,
+      "D1_positivos_2023_en_la_semana": 29.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 40.0
+    },
+    "37": {
+      "mediana_perfil": 0.036,
+      "casos_regionales_2023": 421.0,
+      "max_casos_regionales_otros_anios": 56.0,
+      "D1_positivos_2023_en_la_semana": 31.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 45.0
+    },
+    "38": {
+      "mediana_perfil": 0.034,
+      "casos_regionales_2023": 309.0,
+      "max_casos_regionales_otros_anios": 62.0,
+      "D1_positivos_2023_en_la_semana": 27.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 39.0
+    },
+    "39": {
+      "mediana_perfil": 0.033,
+      "casos_regionales_2023": 271.0,
+      "max_casos_regionales_otros_anios": 61.0,
+      "D1_positivos_2023_en_la_semana": 25.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 35.0
+    },
+    "40": {
+      "mediana_perfil": 0.027,
+      "casos_regionales_2023": 270.0,
+      "max_casos_regionales_otros_anios": 75.0,
+      "D1_positivos_2023_en_la_semana": 20.0,
+      "D1_positivos_todos_los_anios_en_la_semana": 34.0
+    }
+  },
+  "casos_regionales_2023_en_corte_min_max_sem30_40": [
+    270,
+    1367
+  ],
+  "min_casos_regionales_semanales_entre_picos_2023_2024": 141,
+  "n_distritos_activos": 31,
+  "acf_regional_rezagos_1_4_8_13_26": {
+    "1": 0.974,
+    "4": 0.936,
+    "8": 0.862,
+    "13": 0.739,
+    "26": 0.51
+  },
+  "acf_regional_desest_rezagos_1_4_8": {
+    "1": 0.974,
+    "4": 0.95,
+    "8": 0.915
+  },
+  "acf_distrital_mediana_rezagos_1_4_8": {
+    "1": 0.926,
+    "4": 0.827,
+    "8": 0.648
+  },
+  "acf_distrital_desest_mediana_rezagos_1_4_8": {
+    "1": 0.92,
+    "4": 0.84,
+    "8": 0.687
+  },
+  "acf_distrital_rezago4_p25_p75": [
+    0.761,
+    0.874
+  ],
+  "acf_distrital_sin_nivel_temporada_mediana_rezagos_1_4_8": {
+    "1": 0.846,
+    "4": 0.643,
+    "8": 0.29
+  },
+  "acf_regional_sin_nivel_temporada_rezagos_1_4_8": {
+    "1": 0.889,
+    "4": 0.691,
+    "8": 0.401
+  },
+  "acf_regional_rezago4_dentro_de_cada_temporada": {
+    "2018": 0.563,
+    "2019": -0.082,
+    "2020": 0.267,
+    "2021": 0.794,
+    "2022": 0.713,
+    "2023": 0.859,
+    "2024": 0.658,
+    "2025": 0.703
+  },
+  "pacf_regional_rezagos_1_a_4": {
+    "1": 0.976,
+    "2": 0.396,
+    "3": -0.004,
+    "4": -0.142
+  },
+  "mae_log1p_mismas_filas": {
+    "persistencia": 0.208,
+    "estacional": 0.525,
+    "cero": 0.403
+  },
+  "mae_log1p_por_anio": {
+    "persistencia": {
+      "2018": 0.079,
+      "2019": 0.022,
+      "2020": 0.034,
+      "2021": 0.179,
+      "2022": 0.307,
+      "2023": 0.528,
+      "2024": 0.4,
+      "2025": 0.122
+    },
+    "estacional": {
+      "2018": 0.65,
+      "2019": 0.072,
+      "2020": 0.03,
+      "2021": 0.259,
+      "2022": 0.498,
+      "2023": 0.965,
+      "2024": 1.011,
+      "2025": 0.729
+    },
+    "cero": {
+      "2018": 0.069,
+      "2019": 0.013,
+      "2020": 0.021,
+      "2021": 0.258,
+      "2022": 0.547,
+      "2023": 1.343,
+      "2024": 0.845,
+      "2025": 0.139
+    }
+  },
+  "binaria_D1": {
+    "persistencia": {
+      "n": 27105,
+      "positivos": 3314,
+      "precision": 0.735,
+      "recall": 0.736,
+      "f1": 0.735
+    },
+    "estacional": {
+      "n": 27105,
+      "positivos": 3314,
+      "precision": 0.307,
+      "recall": 0.373,
+      "f1": 0.337
+    }
+  },
+  "f1_D1_por_anio": {
+    "persistencia": {
+      "2018": 0.0,
+      "2019": null,
+      "2020": 0.143,
+      "2021": 0.6,
+      "2022": 0.684,
+      "2023": 0.808,
+      "2024": 0.741,
+      "2025": 0.175
+    },
+    "estacional": {
+      "2018": 0.028,
+      "2019": null,
+      "2020": 0.0,
+      "2021": 0.0,
+      "2022": 0.24,
+      "2023": 0.461,
+      "2024": 0.509,
+      "2025": 0.065
+    }
+  },
+  "arranques_n": 249,
+  "arranques_pct_de_positivos": 6.1,
+  "arranques_por_anio": {
+    "2017": 48,
+    "2018": 9,
+    "2019": 0,
+    "2020": 4,
+    "2021": 33,
+    "2022": 42,
+    "2023": 58,
+    "2024": 36,
+    "2025": 19
+  },
+  "umbral_positivos_fold_util": 50,
+  "folds": {
+    "2017": {
+      "semanas": 34,
+      "D1_pos_prueba": 714,
+      "D4_pos_prueba": 140,
+      "D1_pos_entrenamiento_A": 0,
+      "D4_pos_entrenamiento_A": 0,
+      "D1_episodios_prueba": 144
+    },
+    "2018": {
+      "semanas": 52,
+      "D1_pos_prueba": 65,
+      "D4_pos_prueba": 7,
+      "D1_pos_entrenamiento_A": 714,
+      "D4_pos_entrenamiento_A": 140,
+      "D1_episodios_prueba": 44
+    },
+    "2019": {
+      "semanas": 52,
+      "D1_pos_prueba": 1,
+      "D4_pos_prueba": 0,
+      "D1_pos_entrenamiento_A": 779,
+      "D4_pos_entrenamiento_A": 147,
+      "D1_episodios_prueba": 1
+    },
+    "2020": {
+      "semanas": 52,
+      "D1_pos_prueba": 14,
+      "D4_pos_prueba": 0,
+      "D1_pos_entrenamiento_A": 780,
+      "D4_pos_entrenamiento_A": 147,
+      "D1_episodios_prueba": 12
+    },
+    "2021": {
+      "semanas": 53,
+      "D1_pos_prueba": 134,
+      "D4_pos_prueba": 33,
+      "D1_pos_entrenamiento_A": 794,
+      "D4_pos_entrenamiento_A": 147,
+      "D1_episodios_prueba": 48
+    },
+    "2022": {
+      "semanas": 52,
+      "D1_pos_prueba": 628,
+      "D4_pos_prueba": 123,
+      "D1_pos_entrenamiento_A": 928,
+      "D4_pos_entrenamiento_A": 180,
+      "D1_episodios_prueba": 116
+    },
+    "2023": {
+      "semanas": 52,
+      "D1_pos_prueba": 1148,
+      "D4_pos_prueba": 300,
+      "D1_pos_entrenamiento_A": 1556,
+      "D4_pos_entrenamiento_A": 303,
+      "D1_episodios_prueba": 166
+    },
+    "2024": {
+      "semanas": 52,
+      "D1_pos_prueba": 1269,
+      "D4_pos_prueba": 149,
+      "D1_pos_entrenamiento_A": 2704,
+      "D4_pos_entrenamiento_A": 603,
+      "D1_episodios_prueba": 238
+    },
+    "2025": {
+      "semanas": 52,
+      "D1_pos_prueba": 98,
+      "D4_pos_prueba": 3,
+      "D1_pos_entrenamiento_A": 3973,
+      "D4_pos_entrenamiento_A": 752,
+      "D1_episodios_prueba": 67
+    },
+    "2026": {
+      "semanas": 18,
+      "D1_pos_prueba": 5,
+      "D4_pos_prueba": 0,
+      "D1_pos_entrenamiento_A": 4071,
+      "D4_pos_entrenamiento_A": 755,
+      "D1_episodios_prueba": 5
+    }
+  },
+  "temporadas_con_menos_de_umbral_D1": [
+    2019,
+    2020,
+    2026
+  ],
+  "temporadas_con_menos_de_umbral_D4": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2025,
+    2026
+  ],
+  "pct_positivos_entrenamiento_fold_2021_de_temporada_2017": 89.9,
+  "pct_D1_positivos_en_3_temporadas_mayores": 76.8
+}

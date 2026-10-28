@@ -1,0 +1,307 @@
+"""Experimentos de variables sobre E3·S4_s2 (fase 2 del encargo de FE).
+
+Cada variante preregistrada (``preregistro_fe``) se suma a ``base_6`` y se
+compara contra su referencia con la regla simétrica del protocolo
+(``estrategias_horizonte.decidir_frente_a_referencia``, la misma del
+notebook 31). Además se reporta una lectura que **no decide**:
+
+- ``mejora_antelacion``: la de la regla (IC95 > 0, ambas temporadas y la
+  mediana entre semillas en el mismo sentido);
+- ``mejora_recall_nuevos``: la mediana del recall en las 2 primeras semanas de
+  brotes nuevos sube, en 2022 y en 2023, más que el mayor rango entre
+  semillas de las dos variantes;
+- ``posible_senal_de_temporada``: la regla marca mejora de F1 a 0,50 y no se
+  mueve ninguna de las dos anteriores.
+"""
+
+import numpy as np
+import pandas as pd
+
+from src.modeling import diagnostico_arquitectura as diag
+from src.modeling import estrategias_horizonte as eh
+from src.modeling import fe_hiperparametros as fh
+from src.modeling import protocolo_arquitectura as pa
+
+H_ULTIMO = eh.HORIZONTES_ESTRATEGIA[-1]
+
+
+# ---------------------------------------------------------------------------
+# Orígenes de una variante
+# ---------------------------------------------------------------------------
+
+def origenes_con(matrices: dict[int, pd.DataFrame], columnas_extra: list[str],
+                 origenes: pd.DataFrame | None = None) -> tuple[pd.DataFrame, dict]:
+    """Tabla de orígenes con las columnas extra; quita filas con nulos de arranque.
+
+    Devuelve ``(origenes, excluidas)``. La referencia de una variante con
+    exclusiones se reentrena con estos mismos orígenes (intersección de filas).
+    ``origenes`` permite pasar una tabla ya ampliada (p. ej. con variables B).
+    """
+    origenes = eh.tabla_origenes(matrices[2]) if origenes is None else origenes
+    faltan = [c for c in columnas_extra if c not in origenes]
+    if faltan:
+        raise ValueError(f"Columnas ausentes en la tabla de orígenes: {faltan}")
+    nulas = origenes[columnas_extra].isna().any(axis=1)
+    excluidas = {"filas": int(nulas.sum()),
+                 "primera": str(origenes.loc[nulas, "semana_inicio"].min().date()) if nulas.any() else None,
+                 "ultima": str(origenes.loc[nulas, "semana_inicio"].max().date()) if nulas.any() else None}
+    return origenes.loc[~nulas].reset_index(drop=True), excluidas
+
+
+def filas_entrenamiento(origenes: pd.DataFrame, corte: pd.Timestamp) -> pd.Series:
+    """Orígenes cuyo último objetivo (t+4) cerró al corte: el mismo criterio de ``predecir_e3``."""
+    ultima = origenes[f"semana_inicio_h{H_ULTIMO}"]
+    return ultima.notna() & (ultima + pd.Timedelta(days=6)).le(corte)
+
+
+class Cp1PorBloque:
+    """CP1 de varias columnas, con estandarización y PCA ajustadas por bloque.
+
+    Media, DE y el primer componente se estiman solo con los orígenes de
+    entrenamiento del bloque y se aplican igual a todos los orígenes. El
+    signo se fija para que la carga de la primera columna (orden alfabético)
+    sea positiva. ``ajustes`` guarda, por corte, la varianza explicada.
+    """
+
+    def __init__(self, columnas: list[str], nombre: str):
+        self.columnas, self.nombre, self.ajustes = sorted(columnas), nombre, []
+
+    def ajustar(self, origenes: pd.DataFrame, corte: pd.Timestamp) -> dict:
+        train = origenes.loc[filas_entrenamiento(origenes, corte), self.columnas].to_numpy(float)
+        if len(train) < 2 or np.isnan(train).any():
+            raise ValueError("Entrenamiento insuficiente o con nulos para el CP1")
+        media, de = train.mean(axis=0), train.std(axis=0)
+        de = np.where(de > 0, de, 1.0)
+        z = (train - media) / de
+        _, s, vt = np.linalg.svd(z - z.mean(axis=0), full_matrices=False)
+        carga = vt[0] * (1 if vt[0][0] >= 0 else -1)
+        return {"corte": str(pd.Timestamp(corte).date()), "media": media, "de": de, "carga": carga,
+                "varianza_explicada": float(s[0] ** 2 / (s ** 2).sum()), "filas_ajuste": len(train)}
+
+    def __call__(self, origenes: pd.DataFrame, corte: pd.Timestamp) -> pd.DataFrame:
+        ajuste = self.ajustar(origenes, corte)
+        self.ajustes.append({k: (v.tolist() if isinstance(v, np.ndarray) else v) for k, v in ajuste.items()})
+        z = (origenes[self.columnas].to_numpy(float) - ajuste["media"]) / ajuste["de"]
+        return origenes.assign(**{self.nombre: z @ ajuste["carga"]})
+
+
+# ---------------------------------------------------------------------------
+# Lectura adicional y veredicto
+# ---------------------------------------------------------------------------
+
+def recall_por_fase(evaluaciones: dict[int, dict]) -> pd.DataFrame:
+    """Recall a 0,50 calibrada por fase de la curva regional, mediana de semillas."""
+    partes = []
+    for semilla, r in evaluaciones.items():
+        datos = r["datos"]
+        datos = datos.assign(fase=diag.fase_curva(datos))
+        pos = datos[datos.brote.eq(1) & datos.probabilidad_calibrada.notna()]
+        partes.append(pos.groupby(["horizonte", "bloque", "fase"], observed=True).alerta_050
+                      .agg(semanas="size", recall="mean").reset_index().assign(semilla=semilla))
+    todas = pd.concat(partes, ignore_index=True).astype({"fase": str})
+    return (todas.groupby(["horizonte", "bloque", "fase"])
+            .agg(semanas=("semanas", "first"), recall=("recall", "median")).reset_index())
+
+
+def mejora_recall_nuevos(resumen_a: dict, resumen_b: dict,
+                         bloques: tuple[str, ...] = pa.BLOQUES_SELECCION) -> pd.DataFrame:
+    """Delta de la mediana del recall en brotes nuevos (A − B) frente al mayor rango de semillas."""
+    def nuevos(r):
+        t = r["recall_por_tipo"]
+        t = t[t.tipo.eq("brote_nuevo") & t.bloque.isin(bloques)].set_index(["horizonte", "bloque"])
+        return t.assign(rango=t.recall_maximo - t.recall_minimo)
+    a, b = nuevos(resumen_a), nuevos(resumen_b)
+    t = pd.DataFrame({"recall_nuevos_a": a.recall_mediana, "recall_nuevos_b": b.recall_mediana,
+                      "umbral": np.maximum(a.rango, b.rango)})
+    t["delta"] = t.recall_nuevos_a - t.recall_nuevos_b
+    t["supera"] = t.delta > t.umbral
+    filas = []
+    for h, g in t.reset_index().groupby("horizonte"):
+        fila = {"horizonte": h, "mejora_recall_nuevos": bool(g.supera.all() and len(g) == len(bloques))}
+        for _, r in g.iterrows():
+            sufijo = r.bloque.replace("temporada_", "")
+            fila |= {f"recall_nuevos_delta_{sufijo}": r.delta, f"recall_nuevos_umbral_{sufijo}": r.umbral}
+        filas.append(fila)
+    return pd.DataFrame(filas)
+
+
+def comparar_familia(nombre: str, evaluaciones_a: dict[int, dict], resumen_a: dict,
+                     referencia: str, evaluaciones_b: dict[int, dict], resumen_b: dict) -> pd.DataFrame:
+    """Veredicto de la regla simétrica más la lectura de antelación, recall en nuevos y temporada."""
+    veredicto = eh.decidir_frente_a_referencia({nombre: evaluaciones_a, referencia: evaluaciones_b},
+                                               nombre, referencia)
+    return marcar_senal_temporada(veredicto.merge(mejora_recall_nuevos(resumen_a, resumen_b), on="horizonte"))
+
+
+def marcar_senal_temporada(tabla: pd.DataFrame) -> pd.DataFrame:
+    """Sube F1 (según la regla) sin mejorar la antelación ni el recall en brotes nuevos."""
+    return tabla.assign(posible_senal_de_temporada=(tabla.mejora_f1_050.fillna(False).astype(bool)
+                                                    & ~tabla.mejora_antelacion.fillna(False).astype(bool)
+                                                    & ~tabla.mejora_recall_nuevos.fillna(False).astype(bool)))
+
+
+def tabla_metricas(resumen: dict, nombre: str) -> pd.DataFrame:
+    """Medianas de semillas por horizonte y temporada con las columnas del reporte."""
+    columnas = ["horizonte", "bloque", "precision_050", "recall_050", "f1_050", "auprc", "brier",
+                "razon_mae", "razon_rmse"]
+    return resumen["medianas"][columnas].assign(variante=nombre)
+
+
+def figura_deltas(metricas: pd.DataFrame, referencias: dict[str, str], metrica: str = "f1_050",
+                  bloques: tuple[str, ...] = pa.BLOQUES_SELECCION):
+    """Delta de una métrica (variante − su referencia) por horizonte y temporada de selección."""
+    import matplotlib.pyplot as plt
+
+    variantes = list(referencias)
+    fig, ejes = plt.subplots(1, len(bloques), figsize=(6.5 * len(bloques), 4), squeeze=False, sharey=True)
+    for ax, bloque in zip(ejes.ravel(), bloques):
+        x = np.arange(len(variantes))
+        for i, h in enumerate(eh.HORIZONTES_ESTRATEGIA):
+            deltas = []
+            for v in variantes:
+                a = metricas.query("variante == @v and horizonte == @h and bloque == @bloque")[metrica]
+                b = metricas.query("variante == @referencias[@v] and horizonte == @h and bloque == @bloque")[metrica]
+                deltas.append(float(a.iloc[0] - b.iloc[0]))
+            ax.bar(x + (i - 1) * 0.27, deltas, 0.27, label=f"h={h}")
+        ax.axhline(0, color="grey", linewidth=0.8)
+        ax.set_xticks(x, variantes)
+        ax.set_title(bloque.replace("temporada_", "Temporada "))
+        ax.set_ylabel(f"Δ {metrica} (variante − referencia)")
+        ax.legend(fontsize=8)
+    fig.suptitle("Bloque A sobre E3·S4_s2: diferencia frente a la referencia (mediana de 5 semillas)")
+    fig.tight_layout()
+    return fig
+
+
+def evaluar_y_resumir(matrices, serie, *, columnas, origenes, preparar_bloque=None, hiperparametros=None,
+                      formulacion=fh.FORMULACION, dispersion="dentro_muestra") -> dict:
+    """``fe_hiperparametros.evaluar_variante`` + ``resumir_variante`` en un paso."""
+    r = fh.evaluar_variante(matrices, serie, columnas=columnas, origenes=origenes, preparar_bloque=preparar_bloque,
+                            hiperparametros=hiperparametros, formulacion=formulacion, dispersion=dispersion)
+    return {**r, "resumen": fh.resumir_variante(r["evaluaciones"], serie)}
+
+
+# ---------------------------------------------------------------------------
+# Combinada (fase 2c) y robustez
+# ---------------------------------------------------------------------------
+
+def gana_a(veredictos: pd.DataFrame) -> bool:
+    """Adoptable frente a la referencia: gana en algún horizonte y no pierde en ninguno."""
+    return bool(eh.adopcion(veredictos).resultado.eq("adoptable").all())
+
+
+def decidir_combinada(c_frente_b: pd.DataFrame, c3_frente_b: pd.DataFrame, c_frente_c3: pd.DataFrame,
+                      columnas: dict[str, int]) -> dict:
+    """Regla preregistrada de la 2c (``preregistro_fe.COMBINADA``)."""
+    ganan = [n for n, v in (("C", c_frente_b), ("C3", c3_frente_b)) if gana_a(v)]
+    if not ganan:
+        return {"elegida": "base_6", "criterio": "ni C ni C3 ganan a la referencia B"}
+    if len(ganan) == 1:
+        return {"elegida": ganan[0], "criterio": f"solo {ganan[0]} gana a la referencia B"}
+    if gana_a(c_frente_c3):
+        return {"elegida": "C", "criterio": "ambas ganan a B y C gana a C3"}
+    menos = min(("C", "C3"), key=lambda n: columnas[n])
+    resultado = eh.adopcion(c_frente_c3).resultado.iloc[0]
+    return {"elegida": "C3", "criterio": f"ambas ganan a B; C frente a C3: {resultado}; se elige C3 "
+                                         f"(menos columnas: {menos})"}
+
+
+def recorte_robustez(origenes: pd.DataFrame, nombre: str) -> pd.Series:
+    """Filas de entrenamiento que se quitan en la lectura de robustez de la 2c.
+
+    ``primeras_8_semanas_2017``: los 8 primeros orígenes de 2017 de la tabla
+    (por semana objetivo de h=2). ``temporada_2018``: orígenes cuya semana
+    objetivo de h=2 cae en la temporada 2018. Ninguna es fila de prueba.
+    """
+    if nombre == "primeras_8_semanas_2017":
+        semanas = np.sort(origenes.loc[origenes.semana_inicio.dt.year.eq(2017), "semana_inicio"].unique())[:8]
+        return origenes.semana_inicio.isin(semanas)
+    if nombre == "temporada_2018":
+        from src.eda.temporal import asignar_temporada
+        from src.modeling.train import SEMANA_INICIO_TEMPORADA
+        return pd.Series(asignar_temporada(origenes.anio, origenes.semana, SEMANA_INICIO_TEMPORADA).eq(2018).to_numpy(),
+                         index=origenes.index)
+    raise ValueError(f"Recorte desconocido: {nombre}")
+
+
+def signos_por_temporada(resumen_a: dict, resumen_b: dict, bloques: tuple[str, ...] = pa.BLOQUES_SELECCION) -> pd.DataFrame:
+    """Signo de la diferencia A − B de F1 a 0,50 y de antelación (medianas de semillas) por h y temporada."""
+    ma = resumen_a["medianas"].set_index(["horizonte", "bloque"])
+    mb = resumen_b["medianas"].set_index(["horizonte", "bloque"])
+    aa = resumen_a["antelacion"].set_index(["horizonte", "bloque"])
+    ab = resumen_b["antelacion"].set_index(["horizonte", "bloque"])
+    filas = []
+    for h in eh.HORIZONTES_ESTRATEGIA:
+        for b in bloques:
+            df1 = float(ma.at[(h, b), "f1_050"] - mb.at[(h, b), "f1_050"])
+            dan = float(aa.at[(h, b), "mediana"] - ab.at[(h, b), "mediana"])
+            filas.append({"horizonte": h, "bloque": b, "delta_f1_050": df1, "signo_f1": int(np.sign(df1)),
+                          "delta_antelacion": dan, "signo_antelacion": int(np.sign(dan))})
+    return pd.DataFrame(filas)
+
+
+# ---------------------------------------------------------------------------
+# Verificación cruzada (fase 4)
+# ---------------------------------------------------------------------------
+
+def rangos_configuracion(evaluaciones: dict[int, dict],
+                         metricas: tuple[str, ...] = ("f1_050", "auprc", "brier", "razon_mae", "razon_rmse")
+                         ) -> pd.DataFrame:
+    """Mínimo, mediana, máximo y rango entre semillas por métrica, bloque y horizonte (4.4)."""
+    todas = pd.concat([r["metricas"].assign(semilla=s) for s, r in evaluaciones.items()], ignore_index=True)
+    largo = todas.melt(id_vars=["horizonte", "bloque", "semilla"], value_vars=list(metricas), var_name="metrica")
+    tabla = (largo.groupby(["metrica", "bloque", "horizonte"]).value
+             .agg(minimo="min", mediana="median", maximo="max").reset_index())
+    return tabla.assign(rango=tabla.maximo - tabla.minimo)
+
+
+def resumen_alfas(alfas: pd.DataFrame) -> pd.DataFrame:
+    """α por bloque y horizonte: mediana de semillas de cada método y semillas con respaldo."""
+    columnas = [c for c in ("alpha_dentro_muestra", "alpha_oos", "alpha_usada") if c in alfas]
+    tabla = alfas.groupby(["bloque", "horizonte"])[columnas].median()
+    if "respaldo" in alfas:
+        tabla["semillas_con_respaldo"] = alfas.groupby(["bloque", "horizonte"]).respaldo.sum().astype(int)
+    return tabla.reset_index()
+
+
+def figura_alfas(resumen: pd.DataFrame, titulo: str):
+    """α dentro de la muestra frente a α OOS por bloque, un panel por horizonte (escala log)."""
+    import matplotlib.pyplot as plt
+
+    horizontes = sorted(resumen.horizonte.unique())
+    fig, ejes = plt.subplots(1, len(horizontes), figsize=(5 * len(horizontes), 3.8), squeeze=False, sharey=True)
+    for ax, h in zip(ejes.ravel(), horizontes):
+        t = resumen[resumen.horizonte.eq(h)].reset_index(drop=True)
+        x = np.arange(len(t))
+        ax.bar(x - 0.2, t.alpha_dentro_muestra, 0.4, label="Dentro de la muestra")
+        ax.bar(x + 0.2, t.alpha_oos, 0.4, label="OOS (bloques previos)")
+        ax.set_xticks(x, [b.replace("temporada_", "T ").replace("calendario_", "C ") for b in t.bloque])
+        ax.set_yscale("log")
+        ax.set_title(f"h={h}")
+    ejes[0, 0].set_ylabel("α de la binomial negativa (mediana de semillas)")
+    ejes[0, 0].legend(fontsize=8)
+    fig.suptitle(titulo)
+    fig.tight_layout()
+    return fig
+
+
+def figura_shap(shap: dict[str, pd.DataFrame], titulo: str):
+    """Media de |SHAP| por variable y horizonte (filas = horizontes), un panel por bloque."""
+    import matplotlib.pyplot as plt
+
+    bloques = list(shap)
+    fig, ejes = plt.subplots(1, len(bloques), figsize=(6 * len(bloques), 0.35 * len(next(iter(shap.values())).columns) + 2),
+                             squeeze=False, sharey=True)
+    for ax, bloque in zip(ejes.ravel(), bloques):
+        tabla = shap[bloque].T
+        orden = tabla.mean(axis=1).sort_values().index
+        y = np.arange(len(orden))
+        for i, h in enumerate(tabla.columns):
+            ax.barh(y + (i - 1) * 0.27, tabla.loc[orden, h], 0.27, label=f"h={h}")
+        ax.set_yticks(y, orden)
+        ax.set_xlabel("Media de |SHAP| (log de casos esperados)")
+        ax.set_title(bloque.replace("temporada_", "Temporada "))
+    ejes[0, 0].legend(fontsize=8)
+    fig.suptitle(titulo)
+    fig.tight_layout()
+    return fig

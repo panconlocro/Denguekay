@@ -2,7 +2,7 @@
 Bronze (diario, por distrito) -> Silver (semanal, todos los distritos).
 
 Junta los parquets de data/bronze/meteo/cache_meteo/, agrega a semana
-(domingo-sábado, aprox. semana epidemiológica) y cruza con el catálogo
+(domingo-sábado, calendario MMWR) y cruza con el catálogo
 de distritos para tener nombre/lat/lon en la salida.
 """
 
@@ -10,6 +10,7 @@ import pandas as pd
 
 from src.utils.paths import CACHE_METEO
 from src.utils.keys import normalizar
+from src.utils.calendario import semana_epi_mmwr
 
 # Correcciones puntuales de nombres que salen mal separados/duplicados al
 # cruzar meteo (via GADM) con los otros catálogos. Detectadas la primera vez
@@ -66,9 +67,12 @@ def cargar_diario_desde_cache(n_distritos_esperado: int) -> pd.DataFrame:
     return diario
 
 
-def agregar_a_semanal(diario: pd.DataFrame, distritos: pd.DataFrame) -> pd.DataFrame:
+def agregar_a_semanal(
+    diario: pd.DataFrame, distritos: pd.DataFrame, *, include_id: bool = False,
+) -> pd.DataFrame:
     """Agrega el clima diario a semanal y le pega nombre/lat/lon de cada distrito."""
     diario = diario.copy()
+    diario["time"] = pd.to_datetime(diario["time"])
     diario["semana_inicio"] = diario["time"].dt.to_period("W-SAT").dt.start_time
 
     semanal = (
@@ -81,13 +85,14 @@ def agregar_a_semanal(diario: pd.DataFrame, distritos: pd.DataFrame) -> pd.DataF
     # Quitar semanas parciales en los bordes (primera y última)
     semanal = semanal[semanal["n_dias"] == 7].drop(columns="n_dias")
 
-    # Año y semana epidemiológica aproximada (jueves de la semana)
-    iso = semanal["semana_inicio"] + pd.Timedelta(days=3)
-    semanal["anio"] = iso.dt.isocalendar().year.values
-    semanal["semana"] = iso.dt.isocalendar().week.values
+    # La numeración MMWR conserva 2025-S53 y comienza 2026-S01 el 4 de enero.
+    calendario = semana_epi_mmwr(semanal["semana_inicio"])
+    semanal["anio"] = calendario["anio_epi"].to_numpy()
+    semanal["semana"] = calendario["semana_epi"].to_numpy()
 
     final = semanal.merge(distritos, on="id_distrito", how="left")
-    final = final[COLUMNAS_FINALES].sort_values(["distrito", "semana_inicio"])
+    columns = (["id_distrito"] if include_id else []) + COLUMNAS_FINALES
+    final = final[columns].sort_values(["distrito", "semana_inicio"])
     return final
 
 

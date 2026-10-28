@@ -1,10 +1,26 @@
 data/bronze/
 data/silver/
-data/gold/
+data/gold/*
+!data/gold/.gitkeep
 models/*.pkl
 models/*.joblib
+models/experimentos/
+models/serving/
+models/storage/
+.coverage
+htmlcov/
+coverage.xml
 __pycache__/
 *.ipynb_checkpoints/
 .env
 .venv
-data/
+.DS_Store
+trazabilidad_scraper_dengue_piura_2025/
+trazabilidad_scraper_dengue_piura_2025.zip
+.claude/settings.local.json
+# Seguimiento de experimentos (MLflow) y calidad de datos (Great Expectations):
+# se regeneran localmente al correr los módulos; no se versionan.
+mlflow.db
+mlartifacts/
+mlruns/
+great_expectations/gx/

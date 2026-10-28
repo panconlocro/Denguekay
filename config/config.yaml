@@ -13,3 +13,25 @@ meteo:
   fecha_inicio: "2017-01-01"
   fecha_fin: "2025-12-31"
   batch_size: 20
+
+xgboost:
+  # auto = GPU NVIDIA (CUDA) si existe; si no, CPU. Opciones: auto | cuda | cpu.
+  # En Mac (Apple Silicon) XGBoost no usa la GPU: auto cae a CPU sin error.
+  device: auto
+  # auto = todos los núcleos de la CPU. No cambia los resultados.
+  n_jobs: auto
+
+serving:
+  horizontes: [2, 4]
+  variantes:
+    clasificacion: base_6_poblacion_2017
+    regresion: base_6
+  # Demo experimental (desviación temporal OE2): si no hay versión activa, se usa
+  # esta selección. Solo siembra parametro_sistema.seleccion_experimental.
+  servir_no_validadas: true
+  seleccion_experimental:
+    "2": {clasificacion: clf-h2-v1, regresion: reg-h2-v1}
+    "4": {clasificacion: clf-h4-v1, regresion: reg-h4-v1}
+  cors_origen: "http://localhost:5173"
+  # Cortes de riesgo, umbrales de aceptación (bloque temporada_2024) y regla de
+  # brote viven en parametro_sistema; los siembra la migración 0003_oe2.

@@ -1,0 +1,462 @@
+{
+  "fecha_verificacion_utc": "2026-10-02T00:35:11.615159+00:00",
+  "motor": "postgresql",
+  "version_bd": "PostgreSQL 17.5 (Homebrew) on aarch64-apple-darwin24.4.0, compiled by Apple clang version 17.0.0 (clang-1700.0.13.3), 64-bit",
+  "conteos": {
+    "distrito": 65,
+    "observacion_semanal": 30485,
+    "carga_datos": 1,
+    "version_modelo": 30,
+    "importancia_variable": 26,
+    "ejecucion_prediccion": 1,
+    "prediccion": 27170,
+    "alerta": 4002,
+    "activacion_modelo": 6
+  },
+  "ejecucion": {
+    "ejecucion_id": 1,
+    "reutilizada": false,
+    "mlflow_run_id": "3056d2d538aa4d9a9b9455af6210b29a",
+    "fecha_corte_datos": "2025-12-27",
+    "filas_generadas": 27170,
+    "predicciones_por_tipo": {
+      "vigente": 130,
+      "retrospectiva": 27040
+    },
+    "alertas": {
+      "retiradas_anteriores": 0,
+      "activas_nuevas": 0,
+      "historicas_nuevas": 4002
+    },
+    "no_disponibles": [],
+    "versiones_servicio": [
+      {
+        "id": 1,
+        "horizonte": 2,
+        "tipo": "clasificacion",
+        "variante": "base_6_poblacion_2017",
+        "estado_validacion": "experimental"
+      },
+      {
+        "id": 2,
+        "horizonte": 2,
+        "tipo": "regresion",
+        "variante": "base_6",
+        "estado_validacion": "experimental"
+      },
+      {
+        "id": 3,
+        "horizonte": 2,
+        "tipo": "persistencia",
+        "variante": "persistencia",
+        "estado_validacion": "referencia"
+      },
+      {
+        "id": 4,
+        "horizonte": 4,
+        "tipo": "clasificacion",
+        "variante": "base_6_poblacion_2017",
+        "estado_validacion": "experimental"
+      },
+      {
+        "id": 5,
+        "horizonte": 4,
+        "tipo": "regresion",
+        "variante": "base_6",
+        "estado_validacion": "experimental"
+      },
+      {
+        "id": 6,
+        "horizonte": 4,
+        "tipo": "persistencia",
+        "variante": "persistencia",
+        "estado_validacion": "referencia"
+      }
+    ],
+    "duracion_segundos": 12.3429643749987,
+    "huella": "cb43cdb9153fac380db18f83656a5001b8efa9266127d9e8cd379b1889514003"
+  },
+  "vigentes": {
+    "2": {
+      "filas": 65,
+      "anio": 2026,
+      "semana_epi": 1,
+      "semana_inicio": "2026-01-04",
+      "origen_cierre": "2025-12-27",
+      "probabilidad_minima": 0.0030978908762335777,
+      "probabilidad_maxima": 0.1852608472108841,
+      "casos_estimados_minimos": 0.021049855276942253,
+      "casos_estimados_maximos": 1.2733210325241089,
+      "niveles": {
+        "Bajo": 65
+      },
+      "alerta_modelo_verdadera": 0,
+      "artefactos_bd_reproducen_predicciones": true
+    },
+    "4": {
+      "filas": 65,
+      "anio": 2026,
+      "semana_epi": 3,
+      "semana_inicio": "2026-01-18",
+      "origen_cierre": "2025-12-27",
+      "probabilidad_minima": 0.0045252772979438305,
+      "probabilidad_maxima": 0.20375892519950867,
+      "casos_estimados_minimos": 0.027920225635170937,
+      "casos_estimados_maximos": 1.3237982988357544,
+      "niveles": {
+        "Bajo": 65
+      },
+      "alerta_modelo_verdadera": 0,
+      "artefactos_bd_reproducen_predicciones": true
+    }
+  },
+  "retrospectivas": {
+    "2": {
+      "filas": 13520,
+      "probabilidades_identicas_csv": true,
+      "casos_identicos_csv": true,
+      "vectores_identicos_gold": true
+    },
+    "4": {
+      "filas": 13520,
+      "probabilidades_identicas_csv": true,
+      "casos_identicos_csv": true,
+      "vectores_identicos_gold": true
+    }
+  },
+  "anti_fuga_todas_las_predicciones": true,
+  "migracion_coincide_orm": true,
+  "criterios_validacion": {
+    "bloques": [
+      "temporada_2024"
+    ],
+    "recall_minimo": 0.8,
+    "precision_minima": 0.6,
+    "f1_minimo": 0.7,
+    "proporcion_error_persistencia": 0.85
+  },
+  "versiones_activas": 6,
+  "versiones_historicas_sin_booster": 16,
+  "alertas_activas": 0,
+  "gx": {
+    "herramienta": "great_expectations 1.23.2",
+    "exito": true,
+    "suites": {
+      "silver_integrado": {
+        "suite": "silver_integrado",
+        "activo": "silver_integrado",
+        "filas": 30485,
+        "exito": true,
+        "evaluadas": 107,
+        "exitosas": 107,
+        "fallidas_n": 0,
+        "porcentaje_exito": 100.0,
+        "fallidas": [],
+        "data_docs": "great_expectations/gx/uncommitted/data_docs/local_site/index.html",
+        "archivo": "meteo_socio_epi_piura_2017_2025.csv"
+      },
+      "gold_h2": {
+        "suite": "gold_h2",
+        "activo": "gold_h2",
+        "filas": 30485,
+        "exito": true,
+        "evaluadas": 92,
+        "exitosas": 92,
+        "fallidas_n": 0,
+        "porcentaje_exito": 100.0,
+        "fallidas": [],
+        "data_docs": "great_expectations/gx/uncommitted/data_docs/local_site/index.html",
+        "archivo": "meteo_socio_epi_piura_2017_2025_h2_gold.csv"
+      },
+      "gold_h4": {
+        "suite": "gold_h4",
+        "activo": "gold_h4",
+        "filas": 30485,
+        "exito": true,
+        "evaluadas": 92,
+        "exitosas": 92,
+        "fallidas_n": 0,
+        "porcentaje_exito": 100.0,
+        "fallidas": [],
+        "data_docs": "great_expectations/gx/uncommitted/data_docs/local_site/index.html",
+        "archivo": "meteo_socio_epi_piura_2017_2025_h4_gold.csv"
+      }
+    },
+    "data_docs": "great_expectations/gx/uncommitted/data_docs/local_site/index.html"
+  },
+  "hashes_fuentes": {
+    "data/reference/catalogo_ubigeos_piura.csv": "5ca987e295ba3b11041c8aea935fa3747e5cb46e28f733ff3986366ed3742841",
+    "data/reference/distritos_piura_coords.csv": "e30b1e480d32b94320afa58aa84b808fc461821007e3dc9086b5cb08a6d4891b",
+    "data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv": "b04dc8c31793a08b417e5bafd9db101f4a18c9299686cb2dd4bfe2e5049b6c88",
+    "data/silver/integrado/meteo_socio_epi_piura_2017_2025.coverage.csv": "e85f7e68b1b78ef97bb31aef56247d22b7eebac3cd0e28ba82e980641cacfb67",
+    "data/silver/epi_piura_semanal.csv": "c4b67ce03d6915d4fcdd98cba7f525daecad34cddeb98cc1816b2d8750c8eda9",
+    "data/silver/epi_sala_semanal.csv": "b53a1fd75b9c39f0de3cc4353bef825ecc417ffac54383052a3d47247bbf0c24",
+    "data/gold/manifest_fase6.json": "33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57",
+    "data/gold/meteo_socio_epi_piura_2017_2025_h2_gold.csv": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3",
+    "data/gold/meteo_socio_epi_piura_2017_2025_h4_gold.csv": "f9fbed66572e8641eee82ce1a148562f5121cf8dbd111498f73a8aa78f5f19c6"
+  },
+  "estados_modelos": {
+    "7": "experimental",
+    "8": "experimental",
+    "9": "experimental",
+    "10": "experimental",
+    "11": "experimental",
+    "12": "experimental",
+    "13": "experimental",
+    "14": "experimental",
+    "15": "referencia",
+    "16": "referencia",
+    "17": "referencia",
+    "18": "referencia",
+    "19": "experimental",
+    "20": "experimental",
+    "21": "experimental",
+    "22": "experimental",
+    "23": "experimental",
+    "24": "experimental",
+    "25": "experimental",
+    "26": "experimental",
+    "27": "referencia",
+    "28": "referencia",
+    "29": "referencia",
+    "30": "referencia",
+    "1": "experimental",
+    "2": "experimental",
+    "3": "referencia",
+    "4": "experimental",
+    "5": "experimental",
+    "6": "referencia"
+  },
+  "cobertura": {
+    "covered_lines": 1033,
+    "num_statements": 1103,
+    "percent_covered": 93.65367180417044,
+    "percent_covered_display": "94",
+    "missing_lines": 70,
+    "excluded_lines": 0,
+    "percent_statements_covered": 93.65367180417044,
+    "percent_statements_covered_display": "94"
+  },
+  "cobertura_por_archivo": {
+    "src/db/__init__.py": {
+      "covered_lines": 0,
+      "num_statements": 0,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "percent_statements_covered": 100.0,
+      "percent_statements_covered_display": "100"
+    },
+    "src/db/configuracion.py": {
+      "covered_lines": 21,
+      "num_statements": 21,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "percent_statements_covered": 100.0,
+      "percent_statements_covered_display": "100"
+    },
+    "src/db/migraciones/env.py": {
+      "covered_lines": 14,
+      "num_statements": 19,
+      "percent_covered": 73.6842105263158,
+      "percent_covered_display": "74",
+      "missing_lines": 5,
+      "excluded_lines": 0,
+      "percent_statements_covered": 73.6842105263158,
+      "percent_statements_covered_display": "74"
+    },
+    "src/db/migraciones/versions/0001_backend_esquema_inicial_del_backend.py": {
+      "covered_lines": 44,
+      "num_statements": 44,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "percent_statements_covered": 100.0,
+      "percent_statements_covered_display": "100"
+    },
+    "src/db/migraciones/versions/0002_serving_versiones_de_servicio_y_trazabilidad_de_.py": {
+      "covered_lines": 49,
+      "num_statements": 51,
+      "percent_covered": 96.07843137254902,
+      "percent_covered_display": "96",
+      "missing_lines": 2,
+      "excluded_lines": 0,
+      "percent_statements_covered": 96.07843137254902,
+      "percent_statements_covered_display": "96"
+    },
+    "src/db/modelos.py": {
+      "covered_lines": 168,
+      "num_statements": 169,
+      "percent_covered": 99.40828402366864,
+      "percent_covered_display": "99",
+      "missing_lines": 1,
+      "excluded_lines": 0,
+      "percent_statements_covered": 99.40828402366864,
+      "percent_statements_covered_display": "99"
+    },
+    "src/db/sesion.py": {
+      "covered_lines": 30,
+      "num_statements": 31,
+      "percent_covered": 96.7741935483871,
+      "percent_covered_display": "97",
+      "missing_lines": 1,
+      "excluded_lines": 0,
+      "percent_statements_covered": 96.7741935483871,
+      "percent_statements_covered_display": "97"
+    },
+    "src/modeling/inferencia_futura.py": {
+      "covered_lines": 65,
+      "num_statements": 67,
+      "percent_covered": 97.01492537313433,
+      "percent_covered_display": "97",
+      "missing_lines": 2,
+      "excluded_lines": 0,
+      "percent_statements_covered": 97.01492537313433,
+      "percent_statements_covered_display": "97"
+    },
+    "src/serving/__init__.py": {
+      "covered_lines": 0,
+      "num_statements": 0,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "percent_statements_covered": 100.0,
+      "percent_statements_covered_display": "100"
+    },
+    "src/serving/artefactos.py": {
+      "covered_lines": 44,
+      "num_statements": 50,
+      "percent_covered": 88.0,
+      "percent_covered_display": "88",
+      "missing_lines": 6,
+      "excluded_lines": 0,
+      "percent_statements_covered": 88.0,
+      "percent_statements_covered_display": "88"
+    },
+    "src/serving/cargar_datos.py": {
+      "covered_lines": 138,
+      "num_statements": 155,
+      "percent_covered": 89.03225806451613,
+      "percent_covered_display": "89",
+      "missing_lines": 17,
+      "excluded_lines": 0,
+      "percent_statements_covered": 89.03225806451613,
+      "percent_statements_covered_display": "89"
+    },
+    "src/serving/configuracion.py": {
+      "covered_lines": 39,
+      "num_statements": 39,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "percent_statements_covered": 100.0,
+      "percent_statements_covered_display": "100"
+    },
+    "src/serving/modelos.py": {
+      "covered_lines": 67,
+      "num_statements": 68,
+      "percent_covered": 98.52941176470588,
+      "percent_covered_display": "99",
+      "missing_lines": 1,
+      "excluded_lines": 0,
+      "percent_statements_covered": 98.52941176470588,
+      "percent_statements_covered_display": "99"
+    },
+    "src/serving/protocolo.py": {
+      "covered_lines": 78,
+      "num_statements": 88,
+      "percent_covered": 88.63636363636364,
+      "percent_covered_display": "89",
+      "missing_lines": 10,
+      "excluded_lines": 0,
+      "percent_statements_covered": 88.63636363636364,
+      "percent_statements_covered_display": "89"
+    },
+    "src/serving/publicacion.py": {
+      "covered_lines": 112,
+      "num_statements": 118,
+      "percent_covered": 94.91525423728814,
+      "percent_covered_display": "95",
+      "missing_lines": 6,
+      "excluded_lines": 0,
+      "percent_statements_covered": 94.91525423728814,
+      "percent_statements_covered_display": "95"
+    },
+    "src/serving/publicar.py": {
+      "covered_lines": 103,
+      "num_statements": 122,
+      "percent_covered": 84.42622950819673,
+      "percent_covered_display": "84",
+      "missing_lines": 19,
+      "excluded_lines": 0,
+      "percent_statements_covered": 84.42622950819673,
+      "percent_statements_covered_display": "84"
+    },
+    "src/serving/riesgo.py": {
+      "covered_lines": 23,
+      "num_statements": 23,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "percent_statements_covered": 100.0,
+      "percent_statements_covered_display": "100"
+    },
+    "src/validation/validacion_modelo.py": {
+      "covered_lines": 38,
+      "num_statements": 38,
+      "percent_covered": 100.0,
+      "percent_covered_display": "100",
+      "missing_lines": 0,
+      "excluded_lines": 0,
+      "percent_statements_covered": 100.0,
+      "percent_statements_covered_display": "100"
+    }
+  },
+  "archivos_entrada_protegidos_sin_cambios": 503,
+  "cobertura_backend": {
+    "lineas_ejecutables": 998,
+    "lineas_cubiertas": 930,
+    "porcentaje": 93.18637274549098,
+    "grupos": {
+      "src/db/": {
+        "lineas_ejecutables": 335,
+        "lineas_cubiertas": 326,
+        "porcentaje": 97.31343283582089
+      },
+      "src/serving/": {
+        "lineas_ejecutables": 663,
+        "lineas_cubiertas": 604,
+        "porcentaje": 91.10105580693816
+      }
+    },
+    "alcance": "unittest completo más CLI real SQLite instrumentado; API aún no implementada"
+  },
+  "pruebas": {
+    "comando": ".venv/bin/python -m coverage run --append --source=src/db,src/serving,src.modeling.inferencia_futura,src.validation.validacion_modelo -m unittest discover -s tests",
+    "total": 218,
+    "duracion_segundos": 28.094,
+    "resultado": "OK",
+    "tests_nuevos_fase2": 30
+  },
+  "idempotencia": {
+    "segunda_publicacion_reutilizada": true,
+    "ejecucion_id_segunda": 1,
+    "mlflow_run_id_segunda": "3056d2d538aa4d9a9b9455af6210b29a",
+    "ejecuciones_tras_repetir": 1,
+    "predicciones_tras_repetir": 27170,
+    "versiones_tras_repetir": 30
+  },
+  "mlflow": {
+    "run_raiz_estado": "FINISHED",
+    "runs_hijos": 6,
+    "todos_hijos_estado": "FINISHED",
+    "registros_model_registry_realizados": 0
+  }
+}
