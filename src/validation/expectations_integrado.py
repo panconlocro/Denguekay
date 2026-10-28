@@ -9,7 +9,7 @@ from src.processing.socio_interpolacion import SOCIO_COLUMNS
 from src.processing.epi_sala import load_ubigeo_catalog
 from src.utils.calendario import semana_epi_mmwr
 from src.utils.keys import normalizar_sala
-from src.utils.paths import UBIGEO_CATALOG
+from denguekay.config.paths import UBIGEO_CATALOG
 
 KEY = ["ubigeo", "anio", "semana"]
 CORE_COLUMNS = ["provincia", "distrito", "lat", "lon", "ubigeo", "anio", "semana", "semana_inicio"]

@@ -11,11 +11,11 @@ de acá en vez de hardcodear paths nuevos.
 
 from pathlib import Path
 
-# Raíz del repo (este archivo vive en src/utils/paths.py -> subir 2 niveles)
-ROOT = Path(__file__).resolve().parents[2]
+# Raíz del repo (este archivo vive en src/denguekay/config/paths.py -> subir 3 niveles)
+ROOT = Path(__file__).resolve().parents[3]
 SRC = ROOT / "src"
 
-CONFIG = ROOT / "config" / "config.yaml"
+CONFIG = ROOT / "configs" / "config.yaml"
 
 DATA = ROOT / "data"
 

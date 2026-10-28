@@ -9,7 +9,7 @@ import pandas as pd
 
 from src.modeling.train import evaluar_fold, preparar_gold, separar_temporada, separar_anio_calendario
 from src.modeling.validacion_temporal_compacta import ejecutar_validacion_temporal_compacta, variantes_compactas
-from src.utils.paths import (GOLD, GOLD_MANIFEST, METRICAS_COMPACTAS, PREDICCIONES_COMPACTAS,
+from denguekay.config.paths import (GOLD, GOLD_MANIFEST, METRICAS_COMPACTAS, PREDICCIONES_COMPACTAS,
                              SERVING_PROTOCOLO_REGENERADO, SILVER_INTEGRADO)
 from src.validation.calidad_gx import leer_gold
 from src.validation.contrato_pronostico import CLAVE

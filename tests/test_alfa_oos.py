@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from src.modeling import salida_probabilistica as sp
-from src.utils.paths import GOLD_MANIFEST, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRADO
 
 HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists()
 H = (2, 3, 4)

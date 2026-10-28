@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 import yaml
 
-from src.utils.paths import CONFIG
+from denguekay.config.paths import CONFIG
 
 VARIANTES_PERMITIDAS = {"base_4", "base_6", "base_6_poblacion_2017"}
 

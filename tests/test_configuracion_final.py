@@ -10,7 +10,7 @@ from src.modeling import diccionario_variables as dv
 from src.modeling import estrategias_horizonte as eh
 from src.modeling import hiperparametros as hp
 from src.modeling import salida_probabilistica as sp
-from src.utils.paths import EXPERIMENTOS_FE_HIPERPARAMETROS, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import EXPERIMENTOS_FE_HIPERPARAMETROS, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
 
 GUARDADAS = EXPERIMENTOS_FE_HIPERPARAMETROS / "fase4" / "predicciones_s4s3_dentro_muestra.csv.gz"
 GUARDADAS_V2 = EXPERIMENTOS_FE_HIPERPARAMETROS / "complemento_clima" / "predicciones_F_A3.csv.gz"

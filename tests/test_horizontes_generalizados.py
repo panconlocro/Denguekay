@@ -15,7 +15,7 @@ from src.modeling.contrato_xgboost import familias_predictoras
 from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
 from src.modeling.features import HORIZONTES, construir_etiquetas, construir_gold
 from src.modeling.historia_calendario import construir_historia_calendario
-from src.utils.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
 from src.validation.contrato_pronostico import HORIZONTES_EXPERIMENTALES
 
 HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()

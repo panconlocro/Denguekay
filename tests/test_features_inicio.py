@@ -11,7 +11,7 @@ from src.modeling import features_inicio as fi
 from src.modeling import salida_probabilistica as sp
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional
 from src.utils.calendario import semana_epi_mmwr
-from src.utils.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
 
 HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
 TODAS = [c for f in ("B1", "B2", "B3", "B5") for c in fi.COLUMNAS[f]]

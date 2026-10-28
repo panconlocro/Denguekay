@@ -44,7 +44,7 @@ def bajar_una_revision(motor):
     """alembic downgrade -1 sobre el motor de la prueba."""
     from alembic import command
     from alembic.config import Config
-    from src.utils.paths import ALEMBIC_CONFIG
+    from denguekay.config.paths import ALEMBIC_CONFIG
     config = Config(str(ALEMBIC_CONFIG))
     config.attributes["motor"] = motor
     command.downgrade(config, "-1")

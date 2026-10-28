@@ -1,6 +1,6 @@
 """Elige dónde entrena XGBoost: GPU NVIDIA (CUDA) si existe, si no CPU.
 
-La configuración vive en ``config/config.yaml`` (sección ``xgboost``) y se
+La configuración vive en ``configs/config.yaml`` (sección ``xgboost``) y se
 puede sobrescribir con variables de entorno, útiles para una sola corrida:
 
 - ``DENGUEKAY_XGB_DEVICE``: ``auto`` (por defecto), ``cuda`` o ``cpu``.
@@ -32,7 +32,7 @@ from functools import lru_cache
 import numpy as np
 import xgboost as xgb
 
-from src.utils.paths import CONFIG
+from denguekay.config.paths import CONFIG
 
 DISPOSITIVOS_VALIDOS = {"auto", "cuda", "cpu"}
 
@@ -82,7 +82,7 @@ def configuracion_xgboost() -> dict:
         if pedido == "cuda" and not hay_gpu:
             raise RuntimeError(
                 "Se pidió device=cuda pero XGBoost no encuentra una GPU NVIDIA utilizable. "
-                "Usa device: auto o cpu en config/config.yaml.")
+                "Usa device: auto o cpu en configs/config.yaml.")
         dispositivo = "cuda" if hay_gpu else "cpu"
     hilos = str(os.environ.get("DENGUEKAY_XGB_NJOBS") or config.get("n_jobs") or "auto").lower()
     n_jobs = (os.cpu_count() or 1) if hilos == "auto" else int(hilos)
@@ -94,7 +94,7 @@ def _comparar_tiempos() -> None:
     import pandas as pd
 
     from src.modeling import train
-    from src.utils.paths import GOLD, SILVER_INTEGRADO
+    from denguekay.config.paths import GOLD, SILVER_INTEGRADO
 
     gold = pd.read_csv(GOLD / f"{SILVER_INTEGRADO.stem}_h4_gold.csv", dtype={"ubigeo": "string"},
                        parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])

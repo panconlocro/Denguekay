@@ -16,7 +16,7 @@ from backend_soporte import entorno_bd
 from src.api.benchmark import ejecutar_benchmark, main, medir_caso, percentil
 from src.db.modelos import Ejecucion, ObservacionSemanal, Prediccion, VersionModelo
 from src.db.sesion import transaccion
-from src.utils.paths import ROOT, SERVING_MODELS
+from denguekay.config.paths import ROOT, SERVING_MODELS
 
 
 class TestBenchmarkReal(unittest.TestCase):

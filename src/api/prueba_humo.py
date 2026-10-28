@@ -14,7 +14,7 @@ from importlib.metadata import version
 import httpx
 from dotenv import load_dotenv
 
-from src.utils.paths import ENV_FILE, EVIDENCIA_BACKEND
+from denguekay.config.paths import ENV_FILE, EVIDENCIA_BACKEND
 
 DESTINO = EVIDENCIA_BACKEND / "evidencia_tb1.md"
 

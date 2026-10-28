@@ -8,7 +8,7 @@ de distritos para tener nombre/lat/lon en la salida.
 
 import pandas as pd
 
-from src.utils.paths import CACHE_METEO
+from denguekay.config.paths import CACHE_METEO
 from src.utils.keys import normalizar
 from src.utils.calendario import semana_epi_mmwr
 

@@ -16,7 +16,7 @@ from src.db.configuracion import ConfiguracionBDInvalida
 from src.db.sesion import crear_fabrica_sesiones, crear_motor
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.configuracion import configuracion_servicio
-from src.utils.paths import ENV_FILE
+from denguekay.config.paths import ENV_FILE
 
 
 def crear_app(motor=None, cfg=None, clave_api=None, ttl_cache=10, almacenamiento=None):

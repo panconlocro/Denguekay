@@ -3,7 +3,7 @@ Reemplaza el montaje de Google Drive (drive.mount) que usábamos en Colab.
 
 Ahora, corriendo local en VS Code, bajamos los Excel crudos de epi y
 socio directo desde Google Drive con `gdown`, usando el ID del archivo
-(no la carpeta). Los IDs van en config/config.yaml — no hardcodeados acá.
+(no la carpeta). Los IDs van en configs/config.yaml — no hardcodeados acá.
 
 Cómo conseguir el ID: en el link de Drive
   https://drive.google.com/file/d/AAAA.../view?usp=sharing
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import gdown
 
-from src.utils.paths import BRONZE_EPI, BRONZE_SOCIO
+from denguekay.config.paths import BRONZE_EPI, BRONZE_SOCIO
 
 
 def descargar_desde_drive(file_id: str, destino: Path, forzar: bool = False) -> Path:

@@ -15,7 +15,7 @@ from src.modeling.features import HORIZONTES, columnas_gold, validar_gold
 from src.validation.contrato_pronostico import HORIZONTES_EXPERIMENTALES
 from src.modeling.sociodemografia import DIRECTAS
 from src.processing.socio_interpolacion import SOCIO_COLUMNS
-from src.utils.paths import (
+from denguekay.config.paths import (
     GOLD, RESEARCH, SILVER_EPI_HISTORICO, SILVER_INTEGRADO, UBIGEO_CATALOG,
 )
 from src.validation.contrato_pronostico import CLAVE

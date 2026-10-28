@@ -8,7 +8,7 @@ from backend_soporte import leer_csv
 from src.serving.configuracion import configuracion_servicio
 from src.serving.modelos import entrenar_versiones_servicio
 from src.serving.protocolo import Protocolo
-from src.utils.paths import BACKEND_FIXTURES
+from denguekay.config.paths import BACKEND_FIXTURES
 
 CORTE = date(2025, 12, 27)
 

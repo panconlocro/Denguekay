@@ -16,7 +16,7 @@ from src.db.sesion import transaccion
 from src.serving.artefactos import huella_json
 from src.serving.cargar_datos import main as cargar_cli, persistir_carga
 from src.serving.publicar import hashes_codigo, main as publicar_cli
-from src.utils.paths import ROOT
+from denguekay.config.paths import ROOT
 
 
 class TestOperacionServing(unittest.TestCase):

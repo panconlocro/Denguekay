@@ -9,7 +9,7 @@ import pandas as pd
 from src.modeling import estrategias_horizonte as eh
 from src.modeling import fe_hiperparametros as fh
 from src.modeling import salida_probabilistica as sp
-from src.utils.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
 
 HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
 

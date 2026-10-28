@@ -8,7 +8,7 @@ El documento OE2 define buckets de Supabase Storage (``modelos``, ``geodatos``,
 from pathlib import Path, PurePosixPath
 from typing import Protocol
 
-from src.utils.paths import STORAGE
+from denguekay.config.paths import STORAGE
 
 BUCKETS = ("modelos", "geodatos", "reportes")
 

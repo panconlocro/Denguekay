@@ -22,7 +22,7 @@ from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.cargar_datos import persistir_carga
 from src.serving.inferencia import actualizar_alertas
 from src.serving.publicar import publicar_en_bd
-from src.utils.paths import ROOT
+from denguekay.config.paths import ROOT
 
 CLAVE = "clave-local-de-prueba"
 UBIGEOS = ["200101", "200201", "200502"]
@@ -401,7 +401,7 @@ from fastapi.testclient import TestClient
 from src.api.main import crear_app
 from src.db.sesion import crear_motor
 from src.serving.almacenamiento import AlmacenamientoLocal
-from src.utils.paths import DATA
+from denguekay.config.paths import DATA
 motor = crear_motor(sys.argv[1])
 def auditar(evento, argumentos):
     if evento == "open" and isinstance(argumentos[0], (str, bytes)):

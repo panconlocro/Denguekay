@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.utils.paths import SILVER_INTEGRADO
+from denguekay.config.paths import SILVER_INTEGRADO
 from src.utils.calendario import semana_epi_mmwr
 
 OBJETIVO = "casos_Dengue"

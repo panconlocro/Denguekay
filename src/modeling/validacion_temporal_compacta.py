@@ -22,7 +22,7 @@ from src.modeling.train import (
     preparar_gold, separar_anio_calendario, separar_temporada,
 )
 from src.modeling.seguimiento_mlflow import registrar_o_avisar
-from src.utils.paths import DOCS, GOLD, MODELS, SILVER_INTEGRADO
+from denguekay.config.paths import DOCS, GOLD, MODELS, SILVER_INTEGRADO
 from src.validation.contrato_pronostico import CLAVE
 from src.validation.calidad_gx import validar_entradas_modelado
 

@@ -36,7 +36,7 @@ from pathlib import Path
 
 import numpy as np
 
-from src.utils.paths import MLFLOW_ARTEFACTOS, MLFLOW_DB, ROOT
+from denguekay.config.paths import MLFLOW_ARTEFACTOS, MLFLOW_DB, ROOT
 
 # MLflow 3 imprime sugerencias para agentes de IA al importarse; no aportan aquí.
 os.environ.setdefault("MLFLOW_DISABLE_AGENT_HINT", "1")

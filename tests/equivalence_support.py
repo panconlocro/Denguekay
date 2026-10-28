@@ -46,7 +46,7 @@ def subprocess_env(**extra):
 # --- frozen configurations (V1 and V2) -------------------------------------------------------
 
 def data_available():
-    from src.utils.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+    from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
 
     return SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
 
@@ -71,7 +71,7 @@ def frozen_prediction_digests():
     from src.modeling import configuracion_final as cf
     from src.modeling import fe_hiperparametros as fh
     from src.modeling.dispositivo import configuracion_xgboost
-    from src.utils.paths import GOLD_MANIFEST, SILVER_INTEGRADO
+    from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRADO
 
     panel = cargar_integrado(SILVER_INTEGRADO)
     rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
@@ -124,7 +124,7 @@ def openapi_contract():
 
 
 def committed_openapi():
-    from src.utils.paths import OPENAPI_JSON
+    from denguekay.config.paths import OPENAPI_JSON
 
     return json.loads(OPENAPI_JSON.read_text(encoding="utf-8"))
 
@@ -140,7 +140,7 @@ def offline_postgresql_sql():
 
 
 def committed_offline_sql():
-    from src.utils.paths import MIGRACION_OE2_SQL
+    from denguekay.config.paths import MIGRACION_OE2_SQL
 
     return MIGRACION_OE2_SQL.read_text(encoding="utf-8").replace("\r\n", "\n")
 

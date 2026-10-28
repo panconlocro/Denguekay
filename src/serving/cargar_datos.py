@@ -26,7 +26,7 @@ from src.db.sesion import crear_motor, transaccion, upsert
 from src.processing.agregacion_semanal import limpiar_nombres_para_cruce
 from src.utils.calendario import semana_epi_mmwr
 from src.utils.keys import normalizar
-from src.utils.paths import (DISTRITOS_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICO,
+from denguekay.config.paths import (DISTRITOS_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICO,
                              SILVER_INTEGRADO, SILVER_SALA, UBIGEO_CATALOG)
 
 TRANSFORMACION = 2  # versión de esta transformación; forma parte de la huella de ingesta

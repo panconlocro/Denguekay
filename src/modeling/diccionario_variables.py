@@ -195,7 +195,7 @@ def main() -> None:
     from src.modeling import configuracion_final as cf
     from src.modeling import diagnostico_arquitectura as d
     from src.modeling import fe_hiperparametros as fh
-    from src.utils.paths import DICCIONARIO_VARIABLES, GOLD_MANIFEST, METRICAS_FE_HIPERPARAMETROS, SILVER_INTEGRADO
+    from denguekay.config.paths import DICCIONARIO_VARIABLES, GOLD_MANIFEST, METRICAS_FE_HIPERPARAMETROS, SILVER_INTEGRADO
 
     panel = cargar_integrado(SILVER_INTEGRADO)
     regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]

@@ -11,7 +11,7 @@ import pandas as pd
 
 from src.db.sesion import crear_motor
 from src.processing.epi_sala import load_ubigeo_catalog
-from src.utils.paths import ALEMBIC_CONFIG, BACKEND_FIXTURES, DISTRITOS_COORDS, UBIGEO_CATALOG
+from denguekay.config.paths import ALEMBIC_CONFIG, BACKEND_FIXTURES, DISTRITOS_COORDS, UBIGEO_CATALOG
 
 
 @contextmanager

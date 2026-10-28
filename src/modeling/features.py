@@ -24,7 +24,7 @@ from src.modeling.sociodemografia import (
 )
 from src.modeling.vecinos_jerarquia import construir_vecinos_jerarquia
 from src.processing.socio_interpolacion import SOCIO_COLUMNS
-from src.utils.paths import GOLD, SILVER_EPI_HISTORICO, SILVER_INTEGRADO, UBIGEO_CATALOG
+from denguekay.config.paths import GOLD, SILVER_EPI_HISTORICO, SILVER_INTEGRADO, UBIGEO_CATALOG
 from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
 from src.validation.expectations_integrado import (
     coverage_path, load_case_coverage, validate_complete, validate_geography,

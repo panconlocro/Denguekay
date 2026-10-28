@@ -23,7 +23,7 @@ from src.modeling.evaluate import (
     seleccionar_umbral_f1,
 )
 from src.modeling.seguimiento_mlflow import registrar_o_avisar
-from src.utils.paths import GOLD, MODELS, RESEARCH_PRIMEROS_MODELOS, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD, MODELS, RESEARCH_PRIMEROS_MODELOS, SILVER_INTEGRADO
 from src.utils.calendario import semana_epi_mmwr
 from src.validation.contrato_pronostico import CLAVE
 from src.validation.calidad_gx import validar_entradas_modelado
@@ -44,7 +44,7 @@ PARAMETROS_BASE = {
     "reg_lambda": 5.0,
     "tree_method": "hist",
     "random_state": SEMILLA,
-    # GPU NVIDIA si hay, si no CPU con todos los núcleos (config/config.yaml,
+    # GPU NVIDIA si hay, si no CPU con todos los núcleos (configs/config.yaml,
     # sección xgboost). Los hilos no cambian resultados; la GPU puede cambiar
     # decimales, por eso "device" queda en los parámetros del reporte.
     **configuracion_xgboost(),

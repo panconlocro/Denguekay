@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional
-from src.utils.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
 from src.utils.calendario import semana_epi_mmwr
 
 HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()

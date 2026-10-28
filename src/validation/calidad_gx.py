@@ -29,7 +29,7 @@ import pandas as pd
 
 from src.modeling.features import HORIZONTES
 from src.processing.epi_sala import load_ubigeo_catalog
-from src.utils.paths import GOLD, GX_DIR, SILVER_INTEGRADO, UBIGEO_CATALOG
+from denguekay.config.paths import GOLD, GX_DIR, SILVER_INTEGRADO, UBIGEO_CATALOG
 from src.validation.expectations_gold import expectativas_gold
 from src.validation.expectations_integrado import expectativas_integrado_gx
 

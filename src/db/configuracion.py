@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy.engine import URL, make_url
 
-from src.utils.paths import ENV_FILE
+from denguekay.config.paths import ENV_FILE
 
 
 class ConfiguracionBDInvalida(ValueError):

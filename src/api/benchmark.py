@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 import httpx
 from dotenv import load_dotenv
 
-from src.utils.paths import API_BENCHMARK_JSON, BACKEND_DOCS, ENV_FILE, MODELS, ROOT
+from denguekay.config.paths import API_BENCHMARK_JSON, BACKEND_DOCS, ENV_FILE, MODELS, ROOT
 
 
 def percentil(valores, proporcion):

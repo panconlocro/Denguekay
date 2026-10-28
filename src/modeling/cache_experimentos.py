@@ -7,7 +7,7 @@ cubre:
 
 - los datos de entrada (silver integrado, historia epidemiológica, gold h=2 y
   h=4 y su manifiesto);
-- la configuración (``config/config.yaml``);
+- la configuración (``configs/config.yaml``);
 - el código de los módulos de modelado (``src/modeling/*.py``) y de los que
   estos usan para el contrato temporal y el calendario.
 
@@ -25,7 +25,7 @@ import pickle
 import tempfile
 from pathlib import Path
 
-from src.utils.paths import (
+from denguekay.config.paths import (
     CONFIG, EXPERIMENTOS_ARQUITECTURA, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICO, SILVER_INTEGRADO,
 )
 

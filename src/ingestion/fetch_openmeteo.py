@@ -11,7 +11,7 @@ import time
 import pandas as pd
 import requests
 
-from src.utils.paths import CACHE_METEO
+from denguekay.config.paths import CACHE_METEO
 
 URL = "https://archive-api.open-meteo.com/v1/archive"
 

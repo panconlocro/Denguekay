@@ -30,7 +30,7 @@ from src.serving.configuracion import configuracion_servicio
 from src.serving.inferencia import importar_oos, inferir
 from src.serving.modelos import entrenar_versiones_servicio, guardar_versiones, reporte_servicio
 from src.serving.protocolo import cargar_protocolo
-from src.utils.paths import GOLD, ROOT, SERVING_EJECUCIONES, SILVER_INTEGRADO, SRC
+from denguekay.config.paths import GOLD, ROOT, SERVING_EJECUCIONES, SILVER_INTEGRADO, SRC
 
 
 def hashes_codigo():

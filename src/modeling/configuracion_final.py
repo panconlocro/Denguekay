@@ -102,7 +102,7 @@ def origenes(panel: pd.DataFrame, insumos: dict, regla: dict, historia: pd.DataF
     ``base_6`` + B3 siempre; si la configuración usa A3, se quitan los orígenes
     con nulos de arranque de A3 (las columnas ya vienen de gold h=2).
     """
-    from src.utils.paths import SILVER_EPI_HISTORICO
+    from denguekay.config.paths import SILVER_EPI_HISTORICO
 
     configuracion = CONFIGURACION_2026 if configuracion is None else configuracion
     if historia is None:

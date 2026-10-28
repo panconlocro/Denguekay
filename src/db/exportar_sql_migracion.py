@@ -11,7 +11,7 @@ import io
 from alembic import command
 from alembic.config import Config
 
-from src.utils.paths import ALEMBIC_CONFIG, MIGRACION_OE2_SQL
+from denguekay.config.paths import ALEMBIC_CONFIG, MIGRACION_OE2_SQL
 
 URL_DIALECTO = "postgresql+psycopg://offline@localhost/sin_conexion"
 
