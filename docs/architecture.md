@@ -1,11 +1,43 @@
-# Estructura del repositorio — Tesis Dengue Piura
+# Arquitectura y mapa del repositorio — Denguekay
+
+> Reemplaza a `docs/estructuraRepo.md` desde la fase 5 de la reestructuración ([ADR 0001](decisions/0001-repo-restructure.md)).
 
 Esta guía explica cómo está organizado el repo y **dónde va cada archivo nuevo** que agreguemos (código, datos, modelos, docs). La idea es que cualquiera del equipo (o alguien que se sume después) sepa en 30 segundos dónde poner algo sin tener que preguntar.
+
+## Componentes y flujo
+
+```mermaid
+flowchart LR
+  fuentes[Open-Meteo, censo,<br/>Excel epi, Sala MINSA] --> nb[pipelines/notebooks<br/>01–09]
+  nb --> silver[(data/silver/integrado)]
+  silver --> gold_nb[10_silver_to_gold] --> gold[(data/gold h2/h4)]
+  silver --> weekly[denguekay.pipelines<br/>weekly_update] --> silver
+  gold --> model[denguekay.features / model / evaluation]
+  model --> registry[models/registry<br/>v0 · v1 · v2]
+  gold --> serving[denguekay.serving<br/>load_data, publish]
+  registry -. v0 .-> serving
+  serving --> db[(PostgreSQL OE2<br/>denguekay.db)]
+  serving --> storage[(models/storage<br/>boosters)]
+  db --> api[apps/api<br/>FastAPI /api/v1]
+  storage --> api
+  api --> web[apps/web<br/>React + Vite, plan]
+  research[research/<br/>estudios congelados] -. importa .-> model
+```
+
+- **Pipeline de datos** (`pipelines/notebooks/`, `denguekay.data`): bronze → silver → integrado → gold.
+- **Modelado** (`denguekay.features`, `model`, `evaluation`): variables, entrenamiento, protocolos y las
+  configuraciones congeladas; cada versión tiene su ficha en `models/registry/`.
+- **Backend** (`denguekay.serving`, `denguekay.db`, `apps/api`): carga validada, ajuste de servicio, Storage,
+  inferencia y la API del documento OE2. Hoy sirve la v0 como experimental.
+- **Frontend** (`apps/web/`): solo el plan por ahora.
+- **Investigación** (`research/`): congelada; puede importar el paquete, nunca al revés.
+
+---
 
 ## Árbol completo
 
 ```
-tesis-dengue-piura/
+Denguekay/
 ├── README.md
 ├── CONTRIBUTING.md            # ramas, commits, PR, tags e idioma del código
 ├── .mailmap                   # unifica las identidades de autor en git log/shortlog
@@ -21,6 +53,7 @@ tesis-dengue-piura/
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
 ├── .github/workflows/         # tests (SQLite y PostgreSQL) y cobertura en push/PR; sin despliegue
 ├── requirements.txt
+├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan) e install_claude_setup.ps1
 ├── configs/
 │   └── config.yaml
 │
@@ -44,9 +77,11 @@ tesis-dengue-piura/
 │   ├── serving/               # carga, inferencia real y publicación batch
 │   └── pipelines/             # actualización semanal selectiva del integrado
 │
-├── apps/api/                  # aplicación FastAPI (no se instala; corre desde la raíz)
-│   ├── routers/
-│   └── tools/                 # benchmark, export_openapi, smoke_test
+├── apps/
+│   ├── api/                   # aplicación FastAPI (no se instala; corre desde la raíz)
+│   │   ├── routers/
+│   │   └── tools/             # benchmark, export_openapi, smoke_test
+│   └── web/                   # frontend (React + Vite): por ahora solo README.md con el plan
 │
 ├── pipelines/notebooks/       # pipeline: 01–09 (bronze/silver) y 10_silver_to_gold
 ├── research/                  # estudios congelados: 01_eda … 05_fe_hyperparameters (README por estudio)
@@ -363,6 +398,10 @@ models/*.pkl
 models/*.joblib
 models/experimentos/
 models/serving/
+models/storage/
+models/registry/**/*.csv   # y *.ubj, *.pkl, *.joblib, *.parquet, artefactos/: el registro versiona fichas, no artefactos
+.coverage
+coverage.xml
 __pycache__/
 *.ipynb_checkpoints/
 .env
@@ -405,7 +444,10 @@ great_expectations/gx/
 | Catálogo chico que casi no cambia | `data/reference/` (sí se sube a Git) |
 | Estudio nuevo (análisis o experimento) | `research/06_<nombre>/` con `README.md`, `notebooks/`, `code/`, `tests/` y `docs/`; importa el producto, nunca al revés |
 | EDA congelado (notebooks, código, figuras, cifras) | `research/01_eda/` |
-| Modelo entrenado | `models/` |
+| Modelo entrenado (artefacto) | `models/storage/` o `models/experimentos/` (no se versionan) |
+| Ficha de una versión de modelo | `models/registry/vN/` (`ficha.md`, `ficha.json`) y una entrada en `models/registry/CHANGELOG.md` |
+| Pantalla o componente del frontend | `apps/web/` (React + Vite; hoy solo el plan) |
+| Script de instalación o mantenimiento | `scripts/` |
 | Suite de Great Expectations | `src/denguekay/data/validation/<dataset>_expectations.py` |
 | Registro de experimentos en MLflow | `src/denguekay/model/tracking.py` (no crear otro tracker) |
 | Documento de tesis / explicación de arquitectura | `docs/` |

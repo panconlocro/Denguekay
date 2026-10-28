@@ -9,7 +9,7 @@ description: Análisis exploratorio (EDA) del panel distrito-semana de dengue en
 
 Objetivo del EDA: **entender el dataset lo suficiente para decidir bien el feature engineering, la definición de brote y el esquema de validación** de un modelo que predice brotes con ≥4 semanas de anticipación. Un EDA bueno no es una colección de gráficos: es una cadena de preguntas respondidas con evidencia, cada una terminando en una decisión o en una duda concreta para el asesor.
 
-Antes de empezar lee, en este orden: `CLAUDE.md`, `docs/estructuraRepo.md`, `references/diccionario_datos.md` (hechos ya verificados del dataset y sus trampas), `references/dominio_dengue.md` y la fase que toque en `references/fases_eda.md`.
+Antes de empezar lee, en este orden: `CLAUDE.md`, `docs/architecture.md`, `references/diccionario_datos.md` (hechos ya verificados del dataset y sus trampas), `references/dominio_dengue.md` y la fase que toque en `references/fases_eda.md`.
 
 ## Contrato de trabajo
 - **Una fase a la vez.** Ejecuta una fase, presenta el resumen y **detente hasta que Rosa confirme**. No adelantes fases ni "aprovechando que estás".
@@ -36,7 +36,7 @@ Antes de empezar lee, en este orden: `CLAUDE.md`, `docs/estructuraRepo.md`, `ref
 - Una sección nueva al final de `research/01_eda/docs/hallazgos.md` con este formato por hallazgo:
   `Hallazgo N — <título>` · **Evidencia** (cifra + figura) · **Interpretación** (observación/hipótesis) · **Implicación para el modelado** · **Confianza** (alta/media/baja y por qué) · **Pendiente / pregunta**.
   Cierra cada sección con "Lo que este análisis NO permite concluir" y "Problemas y propuestas de corrección" (si hubo).
-- Funciones reutilizables en `research/<estudio>/code/` (+ test simple en `research/<estudio>/tests/` si tienen lógica no trivial). Si agregas carpetas o archivos que `docs/estructuraRepo.md` no contempla, actualízalo.
+- Funciones reutilizables en `research/<estudio>/code/` (+ test simple en `research/<estudio>/tests/` si tienen lógica no trivial). Si agregas carpetas o archivos que `docs/architecture.md` no contempla, actualízalo.
 
 ## Cierre de cada fase (obligatorio, en este orden)
 1. Ejecuta el notebook completo de cero y confirma que no falla.

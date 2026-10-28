@@ -1,8 +1,8 @@
 # Instala la skill eda-dengue, el subagente revisor-eda y los permisos en .claude/.
 # Correr UNA vez desde la raíz del repo:
-#   powershell -ExecutionPolicy Bypass -File .\instalar_claude_setup.ps1
+#   powershell -ExecutionPolicy Bypass -File .\scripts\install_claude_setup.ps1
 $ErrorActionPreference = "Stop"
-Set-Location $PSScriptRoot
+Set-Location (Join-Path $PSScriptRoot "..")
 
 if (-not (Test-Path "_claude_setup")) { throw "No encuentro la carpeta _claude_setup en la raíz del repo." }
 

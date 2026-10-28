@@ -21,7 +21,7 @@ Recibirás el nombre de una fase. Haz esto:
    - Uso de información futura (leakage) o particiones aleatorias.
    - Errores confundidos con eventos reales (o al revés) sin contrastar con el contexto.
    - Tratar la sociodemografía interpolada como dinámica real; ignorar la ruptura de fuente de 2025; usar `precip_total_mm` y `lluvia_total_mm` como señales distintas.
-   - Violaciones de reglas: archivos escritos en `data/`, columnas derivadas persistidas, feature engineering, `ubigeo` como entero, rutas absolutas, referencias o citas inventadas, archivos fuera de la estructura de `docs/estructuraRepo.md`.
+   - Violaciones de reglas: archivos escritos en `data/`, columnas derivadas persistidas, feature engineering, `ubigeo` como entero, rutas absolutas, referencias o citas inventadas, archivos fuera de la estructura de `docs/architecture.md`.
    - Conclusiones de dominio presentadas como hechos en vez de hipótesis.
 
 Entrega **solo** este reporte:

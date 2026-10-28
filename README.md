@@ -1,209 +1,135 @@
 # Denguekay
 
-Monorepo ([ADR 0001](docs/decisions/0001-repo-restructure.md)); la estructura completa está en
-[docs/estructuraRepo.md](docs/estructuraRepo.md):
+Aplicación de Machine Learning para **pronosticar brotes de dengue por distrito y semana epidemiológica
+en Piura (Perú)**, con al menos dos semanas de anticipación y cuatro como objetivo principal. Es la tesis
+de Rosa y Nicolás (UPC), con metodología CRISP-DM.
+
+- **Datos:** panel de los 65 distritos de Piura × semana epidemiológica, 2017–2025. Clima de Open-Meteo,
+  sociodemografía del censo y casos de dengue (Excel epidemiológico hasta 2024 y Sala Situacional
+  MINSA/DGE para 2025).
+- **Modelo:** XGBoost. La configuración vigente es la [v2](models/registry/v2/ficha.md) y la que sirve hoy
+  el backend es la [v0](models/registry/v0/ficha.md), como experimental. Historial en
+  [models/registry/CHANGELOG.md](models/registry/CHANGELOG.md).
+- **Backend:** PostgreSQL con el esquema del documento OE2, carga validada con Great Expectations,
+  seguimiento en MLflow y una API FastAPI. En TB1 todo corre en local (sin Supabase ni Render).
+- **Frontend:** planificado en [apps/web/](apps/web/README.md) (React + Vite).
+
+## Estructura
+
+Monorepo ([ADR 0001](docs/decisions/0001-repo-restructure.md)); el mapa completo está en
+[docs/architecture.md](docs/architecture.md):
 
 | Ruta | Contenido |
 |---|---|
 | `src/denguekay/` | Paquete instalable: `config`, `data`, `features`, `model`, `evaluation`, `db`, `serving`, `pipelines` |
-| `apps/api/` | Aplicación FastAPI; `apps/api/tools/` con el benchmark, la exportación OpenAPI y la prueba de humo |
+| `apps/api/` | API FastAPI; `apps/api/tools/` con el benchmark, la exportación OpenAPI y la prueba de humo |
+| `apps/web/` | Plan del frontend (todavía sin código) |
 | `pipelines/notebooks/` | Notebooks del pipeline de datos: 01–09 (bronze → silver) y `10_silver_to_gold` |
-| `research/` | Estudios congelados (EDA, feature engineering, modelado); no se importan desde el producto |
-| `configs/` | `config.yaml` del proyecto |
+| `models/registry/` | Ficha de cada versión de modelo (v0, v1, v2) y `CHANGELOG.md` |
+| `research/` | Estudios congelados (EDA, feature engineering, modelado); el producto no los importa |
+| `configs/`, `scripts/` | `config.yaml` del proyecto; scripts de instalación |
 | `tests/` | Tests, con la misma estructura que el paquete (`tests/<subpaquete>/`, `tests/api/`) |
+| `docs/` | Arquitectura, decisiones (ADR), backend (OE2, contrato de la API, operación) y modelado |
 
-## Backend
+`data/` no se versiona (salvo `data/reference/`) y el código lo trata como **solo lectura**.
 
-Backend local alineado al documento OE2 (sección 5, Anexo B y Tabla 2): PostgreSQL con el esquema
-de [ddl_oe2.sql](docs/backend/ddl_oe2.sql), carga validada, boosters XGBoost en Storage local
-(`models/storage/`) y API FastAPI. En TB1 no se despliega nada (ni Supabase ni Render). Copia
-`.env.example` como `.env`, define `DATABASE_URL` (PostgreSQL local) y `API_KEY`, y desde la raíz,
-en PowerShell:
+## Instalación
+
+Requiere Python 3.12 o superior. Desde la raíz del repositorio:
 
 ```powershell
-.\.venv\Scripts\python -m pip install -r requirements.txt
-.\.venv\Scripts\python -m pip install -e .
+powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
+```
+
+```bash
+./scripts/setup.sh
+```
+
+Los dos crean `.venv`, instalan `requirements.txt` y el paquete `denguekay` en modo editable
+(`pip install -e .`). Para el backend, copia `.env.example` como `.env` y define `DATABASE_URL`
+(PostgreSQL local) y `API_KEY`. Los comandos de abajo usan la ruta de Windows del entorno
+(`.\.venv\Scripts\python`); en macOS/Linux es `.venv/bin/python`.
+
+## Pipeline de datos
+
+Los notebooks de `pipelines/notebooks/` se ejecutan en orden y escriben bronze, silver, el integrado y,
+con el 10, gold:
+
+```powershell
+.\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace pipelines/notebooks/10_silver_to_gold.ipynb
+```
+
+Para completar semanas nuevas del integrado sin rehacer todo, existe el actualizador selectivo
+(`--dry-run` solo informa qué fuentes consultaría):
+
+```powershell
+.\.venv\Scripts\python -m denguekay.pipelines.weekly_update --input data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv --output data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv --dry-run
+```
+
+Detalle del actualizador, la cobertura de casos verificados y la procedencia de los datos de 2025:
+[docs/pipeline.md](docs/pipeline.md). Calidad de datos con Great Expectations:
+`python -m denguekay.data.validation.gx_quality` (guía en
+[docs/modeling/mlflow_great_expectations.md](docs/modeling/mlflow_great_expectations.md)).
+
+## API
+
+Con la BD creada y `.env` configurado:
+
+```powershell
 .\.venv\Scripts\python -m alembic upgrade head
 .\.venv\Scripts\python -m denguekay.serving.load_data
 .\.venv\Scripts\python -m denguekay.serving.publish --horizontes 2 4
 .\.venv\Scripts\python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-La API queda en `http://127.0.0.1:8000/api/v1` (documentación en `/docs`). Con uvicorn levantado,
+La API queda en `http://127.0.0.1:8000/api/v1` (documentación interactiva en `/docs`; contrato en
+[docs/backend/openapi.json](docs/backend/openapi.json)). Con uvicorn levantado,
 `.\.venv\Scripts\python -m apps.api.tools.smoke_test` llama a cada endpoint de la Tabla 2 y escribe
-[evidencia_tb1.md](docs/backend/evidencia/evidencia_tb1.md). `data/` es solo lectura.
+[evidencia_tb1.md](docs/backend/evidencia/evidencia_tb1.md).
 
-Ninguna versión de modelo cumple todavía los umbrales de aceptación: se sirven como
-`experimental: true` mediante `parametro_sistema.seleccion_experimental` (desviación temporal).
-Corte de datos publicado: 27/12/2025.
+Ninguna versión de modelo cumple todavía los umbrales de aceptación (HU0007-4): se sirven como
+`experimental: true` mediante `parametro_sistema.seleccion_experimental`. Operación, respaldo y
+benchmark: [docs/backend/operacion.md](docs/backend/operacion.md). Contrato y decisiones:
+[contrato API](docs/backend/contrato_api.md), [arquitectura del backend](docs/backend/arquitectura.md),
+[especificación OE2](docs/backend/especificacion_oe2.md) y [desviaciones](docs/backend/desviaciones_oe2.md).
 
-Tests y cobertura (SQLite temporal; PostgreSQL si existe `DENGUEKAY_PG_PRUEBAS_URL`):
+## Tests
 
 ```powershell
-.\.venv\Scripts\python -m coverage run --source=src/denguekay/db,src/denguekay/serving,apps/api -m unittest discover -s tests
+.\.venv\Scripts\python -m unittest discover -s tests
+.\.venv\Scripts\python -m coverage run -m unittest discover -s tests
 .\.venv\Scripts\python -m coverage report -m
 ```
 
-La suite incluye las guardas de la reestructuración. `tests/test_layout.py` impide referencias al
-antiguo paquete `src` y que el producto importe `research/`. `tests/test_equivalence.py` comprueba:
-predicciones de V1 y V2 idénticas bit a bit (requiere los datos locales), contrato de
-`docs/backend/openapi.json`, esquema tras `alembic upgrade head` (SQLite y PostgreSQL) y prueba de humo
-contra uvicorn. Su línea base está en `tests/fixtures/equivalence/` y no se regenera.
+Los tests usan SQLite temporal y, si existe `DENGUEKAY_PG_PRUEBAS_URL` (una BD desechable cuyo nombre
+contiene «prueba»), repiten esquema e inferencia en PostgreSQL. Nunca usan `DATABASE_URL`. Las pruebas
+que necesitan `data/` o `models/experimentos/` se omiten si faltan, como en el CI.
 
-Documentación: [operación](docs/backend/operacion.md), [contrato API](docs/backend/contrato_api.md),
-[arquitectura](docs/backend/arquitectura.md), [decisiones](docs/backend/decisiones_tecnicas.md),
-[trazabilidad HU](docs/backend/trazabilidad_hu.md), [especificación OE2](docs/backend/especificacion_oe2.md)
-y [desviaciones](docs/backend/desviaciones_oe2.md). Los cierres `fase1_bd.md` … `fase4_calidad.md`
-describen el backend anterior al refactor y se conservan como historia.
+La suite incluye las guardas de la reestructuración:
 
-## Feature engineering con Codex
+- `tests/test_equivalence.py`: predicciones de V1 y V2 idénticas bit a bit, contrato de
+  `docs/backend/openapi.json`, esquema tras `alembic upgrade head` (SQLite y PostgreSQL) y prueba de humo
+  contra uvicorn. Su línea base está en `tests/fixtures/equivalence/` y no se regenera.
+- `tests/test_layout.py`: sin restos del antiguo paquete `src` y dependencias en un solo sentido (el
+  producto nunca importa `research/`).
+- `tests/model/test_registry.py`: las fichas del registro coinciden con el paquete.
 
-Las instrucciones locales de Codex están en `AGENTS.md` y la skill
-`.codex/skills/feature-engineering-dengue/SKILL.md`. El plan por fases,
-fundado en el EDA y contrastado con la investigación guardada en
-`research/02_feature_engineering/docs/references/investigacion_series_epidemiologicas.pdf`, está en
-`research/02_feature_engineering/docs/plan.md`. Cada fase requiere revisión de resultados
-y aprobación de Rosa antes de iniciar la siguiente. El primer modelo previsto
-es XGBoost, con anticipación mínima de dos semanas y objetivo principal de cuatro;
-cada horizonte se evaluará por separado. El dataset integrado de `data/silver/integrado/` es la entrada sin
-features y `data/gold/` contiene la salida validada de la fase 6.
+El CI (`.github/workflows/backend.yml`) corre la suite en Linux, Windows y macOS sobre SQLite, y en Linux
+contra PostgreSQL 18, con cobertura mínima del 80 % en `apps/api`, `denguekay.serving` y `denguekay.db`.
 
-Las fases 1–7 ya tienen notebooks ejecutados (`17`–`23`) e informes; el estudio está congelado en
-`research/02_feature_engineering/` (el antiguo notebook 22, que regenera gold, es ahora `pipelines/notebooks/10_silver_to_gold.ipynb`). La [fase 4](research/02_feature_engineering/docs/fase4_clima.md)
-prueba ventanas climáticas causales. La [fase 5](research/02_feature_engineering/docs/fase5_sociodemografia.md)
-compara demografía fija y anual reconstruida. La [fase 6](research/02_feature_engineering/docs/fase6_integracion.md)
-integra candidatos para `h=2` y `h=4`, y conserva un manifiesto de linaje.
-La [fase 7](research/02_feature_engineering/docs/fase7_sintesis_traspaso.md) audita los gold,
-enumera las variables candidatas y documenta el contrato para el primer XGBoost.
-El [primer experimento](research/03_first_models_and_ablations/docs/primer_xgboost.md) compara regresión de casos
-y clasificación directa, con cortes temporales para ambos horizontes. La
-[ablación espacial](research/03_first_models_and_ablations/docs/ablacion_espacial.md) prueba por separado
-vecinos y jerarquía, y la [ablación climática](research/03_first_models_and_ablations/docs/ablacion_clima.md)
-compara medias observadas y anomalías ajustadas por corte, conservando F1 como
-criterio provisional. La [ablación sociodemográfica](research/03_first_models_and_ablations/docs/ablacion_sociodemografica.md)
-separa rasgos censales fijos de estimaciones anuales reconstruidas; el
-[cribado individual de fracciones](research/03_first_models_and_ablations/docs/ablacion_fracciones.md)
-compara las 15 por separado. La [comparación condicional](research/03_first_models_and_ablations/docs/ablacion_poblacion_sin_seguro.md)
-evalúa población censal fija y fracción sin seguro, solas y juntas. La
-[validación temporal compacta](research/03_first_models_and_ablations/docs/validacion_temporal_compacta.md)
-compara tres matrices pequeñas con umbrales calibrados solo en temporadas anteriores.
-Ambos gold
-incluyen `brote`, definido como
-semana distrital con casos por encima de la media de esa semana en los cinco
-años previos + **1,5 DE**, con un mínimo provisional de **2 casos**;
-[la sensibilidad](research/02_feature_engineering/docs/revision_definicion_brote.md)
-documenta el efecto de exigir 1 o 5 casos.
+## Modelado e investigación
 
-Para regenerar los dos CSV de `data/gold/` desde el silver completo:
+XGBoost entrena en una GPU NVIDIA (CUDA) si la encuentra y, si no, en CPU (sección `xgboost` de
+`configs/config.yaml`; `python -m denguekay.model.device --comparar` muestra qué detecta tu equipo). GPU y
+CPU, y distinto número de hilos en CPU, dan decimales distintos; por eso las huellas de las versiones
+congeladas se guardan por entorno. Los experimentos se registran en MLflow (`mlflow.db` y `mlartifacts/`,
+locales): `.venv\Scripts\mlflow ui --backend-store-uri sqlite:///mlflow.db --workers 1`.
 
-```bash
-.venv/bin/jupyter nbconvert --to notebook --execute --inplace pipelines/notebooks/10_silver_to_gold.ipynb
-```
+Los estudios (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, y
+feature engineering e hiperparámetros) están congelados en `research/<estudio>/`; cada uno tiene un README
+con su pregunta, su decisión y el tag desde el que se reproduce. Índice: [research/README.md](research/README.md).
+Las instrucciones de Codex están en `AGENTS.md` y `.codex/skills/`; las de Claude Code, en `CLAUDE.md`.
 
-El gold conserva `casos_Dengue` como conteo junto a la etiqueta `brote` y su
-umbral auditable. El entrenamiento excluye de los predictores
-`casos_Dengue`, `brote` y `umbral_brote_casos`. El primer ensayo usa historia
-propia y calendario; vecinos, jerarquía, clima y demografía se compararon en
-bloques separados. Las variantes anuales de demografía son retrospectivas.
+## Contribuir
 
-La auditoría de traspaso (notebook 23), el primer entrenamiento, las ablaciones y la validación
-temporal compacta son estudios cerrados: se reproducen desde su tag, como explica el README de
-[research/02_feature_engineering](research/02_feature_engineering/README.md) y de
-[research/03_first_models_and_ablations](research/03_first_models_and_ablations/README.md).
-Índice de todos los estudios: [research/README.md](research/README.md).
-
-Los módulos de entrenamiento y evaluación del producto (`denguekay.model.train`, `denguekay.evaluation.compact_validation`) validan antes sus entradas con **Great Expectations**
-y, al terminar, registran la corrida en **MLflow** (`mlflow.db` y `mlartifacts/`
-locales). Para ver y comparar los experimentos:
-
-```bash
-.venv/bin/mlflow ui --backend-store-uri sqlite:///mlflow.db --workers 1
-.venv/bin/python -m denguekay.data.validation.gx_quality   # solo calidad de datos
-```
-
-La guía completa está en
-[docs/modeling/mlflow_great_expectations.md](docs/modeling/mlflow_great_expectations.md).
-Las opciones `--sin-mlflow` y `--sin-validacion-datos` desactivan cada parte.
-
-XGBoost entrena en una GPU NVIDIA (CUDA) si la encuentra y, si no, en CPU con
-todos los núcleos; en Mac siempre usa CPU porque XGBoost no soporta su GPU. Se
-controla en la sección `xgboost` de `configs/config.yaml` (`device: auto | cuda | cpu`).
-Para ver qué detecta tu equipo y comparar tiempos:
-
-```bash
-.venv/bin/python -m denguekay.model.device --comparar
-```
-
-El dispositivo queda en los parámetros de cada reporte y en MLflow (`xgb.device`),
-porque entrenar en GPU puede cambiar decimales respecto de CPU.
-
-La prueba principal es la temporada epidemiológica 2024; el año calendario
-2025, con solo tres semanas distritales positivas, se reporta por separado
-como sensibilidad. Las métricas de cada ensayo están en
-`research/<estudio>/docs/metricas/`; los modelos y las predicciones están en
-`models/experimentos/` (no versionado).
-
-## Actualización selectiva del dataset
-
-El dataset integrado (`data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv`)
-tiene una fila por `ubigeo`, `anio` y `semana`. El
-actualizador inspecciona sus filas, completa únicamente los componentes
-faltantes y conserva los valores históricos ya poblados. Los datos de clima
-proceden de Open-Meteo; los demográficos, del Excel y la tabla anual local;
-y los nuevos casos de dengue, de la Sala Situacional MINSA/DGE.
-
-Instala las dependencias con `./run_setup.sh`. Desde la raíz del repositorio:
-
-```bash
-.venv/bin/python -m denguekay.pipelines.weekly_update \
-  --input data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv \
-  --output data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv \
-  --dry-run
-```
-
-Quita `--dry-run` para efectuar la actualización. Para escribir otro archivo,
-indica una ruta distinta en `--output`. El CLI informa cuántas filas necesitan
-cada componente y cuáles fuentes ejecutará. Las opciones
-`--force-epidemiological`, `--force-weather` y `--force-demographic` fuerzan una
-actualización explícita; requieren `--start-date` y `--end-date` con los
-domingos de inicio de la primera y última semana solicitadas.
-
-El archivo `<dataset>.coverage.csv`, junto al dataset, registra las semanas
-con casos verificados. Si aún no existe, el primer uso considera los valores
-ya poblados como la línea base validada. Tras ello, una fila nueva sin estado
-de cobertura epidemiológica se consulta en la Sala aunque tenga un cero. Una
-solicitud fallida no escribe ceros de relleno ni marca cobertura exitosa.
-Las columnas climáticas y demográficas se revisan por valores faltantes.
-Ejecuta una vez sin `--dry-run` sobre el snapshot actual antes de agregar
-semanas nuevas, para dejar creada esa línea base de cobertura.
-
-Si solo `casos_Dengue` falta en filas nuevas, la inspección indica
-`[RUN] epidemiological`, `[SKIP] weather` y `[SKIP] demographic`.
-
-El scraper reutilizable vive en `src/denguekay/data/ingestion/minsa_sala_scraper.py`. Sus
-respuestas y exportaciones normalizadas se guardan como artefactos de ejecución
-en `data/bronze/epi/sala/` y `data/silver/epi_sala_semanal.csv`; ninguno es
-necesario en Git para ejecutar el actualizador. El catálogo pequeño de UBIGEO
-vive en `data/reference/` y sí se versiona.
-
-## Alcance y procedencia
-
-El snapshot actual conserva los casos históricos del Excel epidemiológico
-hasta 2024. Para 2025, las 3 380 filas de semanas 1–52 suman **1 114** casos
-de la Sala. Sus **3** casos de semana 53 se mantienen en el artefacto de
-fuente porque esa semana no corresponde a una fila completa de clima del
-modelo. La trazabilidad original está en el archivo local
-`trazabilidad_scraper_dengue_piura_2025.zip`.
-
-La documentación de esa extracción señala una discrepancia no resuelta:
-otro panel registró 12 067 casos para semanas 1–52 de 2025. El actualizador
-usa la serie de la Sala para las nuevas consultas, sin mezclar ambos conteos.
-Para la tesis, Rosa confirmó que los casos de la Sala son una fuente de verdad
-válida; el cambio de procedencia se registra y no determina por sí solo el
-corte de entrenamiento o prueba.
-
-Los valores demográficos de 2017–2025 se conservan. Para filas nuevas de
-2026 en adelante, se extrapola la tendencia de los extremos 2017 y 2025;
-las fracciones se acotan a `[0, 1]` con un registro de cada ajuste, y la
-población se redondea a un entero positivo. No se recalculan filas históricas
-salvo con una opción de actualización forzada.
+Ramas, commits, PR, tags e idioma del código: [CONTRIBUTING.md](CONTRIBUTING.md).

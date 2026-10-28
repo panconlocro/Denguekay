@@ -7,8 +7,8 @@ Variables with a single available year (e.g. fraccion_menores_5 only 2017,
 fraccion_60_mas only 2025) are dropped from the final dataset: there is no way
 to interpolate them or to assume they stayed constant for 8 years, so they
 are excluded instead of filled with an unreliable assumption.
-Decision taken; it closes the item that was pending in docs/estructuraRepo.md,
-section 8.
+Decision taken; it closes the item that was pending in the repository map
+(docs/architecture.md, section 8).
 """
 
 import re

@@ -8,7 +8,7 @@ Pregunta guía: ¿puedo confiar en estos datos para analizarlos, y dónde no?
 - Nulos, tipos, duplicados de fila y **de columna** (precip ≡ lluvia), columnas constantes o casi constantes.
 - Rangos físicos y consistencia interna: `temp_min ≤ temp_media ≤ temp_max`, humedad 0-100, precipitación ≥ 0, fracciones en [0, 1], pares complementarios coherentes, población > 0 y su evolución por distrito.
 - Extremos: separa error de evento real (706 mm en Salitral 2017; 4.5 °C en El Carmen de la Frontera 2021). Contrasta con distrito, provincia, fecha y con el resto de distritos esa misma semana.
-- Procedencia: ruptura de fuente epidemiológica en 2025; sociodemografía interpolada (verifica la linealidad y documéntala); cruce con `docs/estructuraRepo.md` sección de pendientes.
+- Procedencia: ruptura de fuente epidemiológica en 2025; sociodemografía interpolada (verifica la linealidad y documéntala); cruce con `docs/architecture.md` sección de pendientes.
 - Compara el panel con el archivo `.coverage.csv` de `silver/integrado` (qué semanas tienen casos verificados) y con las validaciones de `src/denguekay/data/validation/integrated_expectations.py`.
 - **Decisión que produce:** lista de columnas redundantes/inservibles, tratamiento propuesto del 2025 y de cada anomalía, y qué problemas deben corregirse en el pipeline (no aquí).
 

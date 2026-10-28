@@ -11,7 +11,7 @@ requires-python = ">=3.12"
 dynamic = ["dependencies"]
 
 [tool.setuptools.dynamic]
-# Single source of truth for pinned ranges: requirements.txt (also used by CI and run_setup.*).
+# Single source of truth for pinned ranges: requirements.txt (also used by CI and scripts/setup.*).
 dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools.packages.find]
