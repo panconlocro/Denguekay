@@ -10,6 +10,7 @@ en PowerShell:
 
 ```powershell
 .\.venv\Scripts\python -m pip install -r requirements.txt
+.\.venv\Scripts\python -m pip install -e .
 .\.venv\Scripts\python -m alembic upgrade head
 .\.venv\Scripts\python -m src.serving.cargar_datos
 .\.venv\Scripts\python -m src.serving.publicar --horizontes 2 4
@@ -30,6 +31,11 @@ Tests y cobertura (SQLite temporal; PostgreSQL si existe `DENGUEKAY_PG_PRUEBAS_U
 .\.venv\Scripts\python -m coverage run --source=src/db,src/serving,src/api -m unittest discover -s tests
 .\.venv\Scripts\python -m coverage report -m
 ```
+
+La suite incluye las guardas de equivalencia de la reestructuración (`tests/test_equivalence.py`):
+predicciones de V1 y V2 idénticas bit a bit (requiere los datos locales), contrato de
+`docs/backend/openapi.json`, esquema tras `alembic upgrade head` (SQLite y PostgreSQL) y prueba de humo
+contra uvicorn. Su línea base está en `tests/fixtures/equivalence/` y no se regenera.
 
 Documentación: [operación](docs/backend/operacion.md), [contrato API](docs/backend/contrato_api.md),
 [arquitectura](docs/backend/arquitectura.md), [decisiones](docs/backend/decisiones_tecnicas.md),

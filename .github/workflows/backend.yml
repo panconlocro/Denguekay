@@ -36,9 +36,13 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
       - name: Instalar dependencias del proyecto
         run: python -m pip install -r requirements.txt
+      - name: Instalar el paquete denguekay en modo editable
+        run: python -m pip install -e . --no-deps
       - name: Comprobar dependencias instaladas
         run: python -m pip check
       - name: Ejecutar todos los tests con cobertura
@@ -98,10 +102,14 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
       - name: Instalar dependencias del proyecto
         run: python -m pip install -r requirements.txt
-      - name: Ejecutar todos los tests, incluidas las pruebas en PostgreSQL
+      - name: Instalar el paquete denguekay en modo editable
+        run: python -m pip install -e . --no-deps
+      - name: Ejecutar todos los tests, incluidas las pruebas y guardas de equivalencia en PostgreSQL
         shell: bash
         run: |
           set -o pipefail
@@ -116,3 +124,5 @@ jobs:
           n=$(grep -cE "\((test_esquema_oe2\.TestEsquemaOE2PostgreSQL|test_serving_inferencia\.TestInferenciaPostgreSQL)\.[^)]*\) \.\.\. ok$" pruebas.log || true)
           echo "Pruebas en PostgreSQL aprobadas: $n"
           test "$n" -gt 0
+          # Guarda de la reestructuración: el esquema migrado en PostgreSQL es el de la línea base.
+          grep -qE "\(test_equivalence\.TestMigratedSchema\.test_postgresql_schema_matches_baseline\) \.\.\. ok$" pruebas.log

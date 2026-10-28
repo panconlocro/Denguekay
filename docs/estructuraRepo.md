@@ -17,6 +17,7 @@ tesis-dengue-piura/
 ├── .gitignore
 ├── .env.example               # conexión y secretos sin valores reales
 ├── alembic.ini                # migraciones del backend, sin credenciales
+├── pyproject.toml             # paquete instalable denguekay (pip install -e .); dependencias = requirements.txt
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
 ├── .github/workflows/         # tests (SQLite y PostgreSQL) y cobertura en push/PR; sin despliegue
 ├── environment.yml            # o requirements.txt
@@ -31,6 +32,7 @@ tesis-dengue-piura/
 │   └── reference/
 │
 ├── src/
+│   ├── denguekay/             # paquete instalable; recibe los módulos de src/ durante la reestructuración
 │   ├── ingestion/
 │   ├── processing/
 │   ├── validation/
@@ -46,6 +48,7 @@ tesis-dengue-piura/
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
 ├── tests/fixtures/backend/    # muestra agregada real, pequeña y versionada
+├── tests/fixtures/equivalence/ # línea base de las guardas de la reestructuración (no se regenera)
 ├── mlflow.db                  # tracking de MLflow (generado, no se versiona)
 ├── mlartifacts/               # artefactos de MLflow (generado, no se versiona)
 └── docs/
@@ -262,7 +265,10 @@ tests/
 ├── test_db_backend.py, test_esquema_oe2.py
 ├── test_serving_*.py         # carga, inferencia, publicación, políticas, protocolo
 ├── test_api_backend.py, test_api_benchmark.py
-└── fixtures/backend/         # filas reales copiadas de silver/gold/Sala, con procedencia
+├── test_equivalence.py, equivalence_support.py  # guardas de la reestructuración
+└── fixtures/
+    ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
+    └── equivalence/          # línea base: predicciones V1/V2, esquemas, prueba de humo
 docs/backend/                 # especificación OE2, desviaciones, operación y contrato
 └── evidencia/                # SQL de la migración, prueba de humo TB1 (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes); no se versiona
@@ -401,6 +407,7 @@ great_expectations/gx/
 | Router o esquema de la API (fase 3) | `src/api/` |
 | Documentación y evidencia del backend | `docs/backend/` |
 | Muestra real para pruebas del backend | `tests/fixtures/backend/` |
+| Guarda de equivalencia de la reestructuración | `tests/test_equivalence.py` (línea base en `tests/fixtures/equivalence/`) |
 | Función chica usada por varios módulos | `src/utils/` |
 | Notebook que orquesta un paso del pipeline | `notebooks/`, numerado |
 | Dato tal cual vino de la fuente | `data/bronze/<fuente>/` |

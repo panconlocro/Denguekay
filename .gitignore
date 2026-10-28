@@ -11,6 +11,8 @@ models/storage/
 htmlcov/
 coverage.xml
 __pycache__/
+# Metadatos de la instalación editable (pip install -e .)
+*.egg-info/
 *.ipynb_checkpoints/
 .env
 .venv

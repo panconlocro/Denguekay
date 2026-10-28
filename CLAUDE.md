@@ -25,9 +25,10 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `features.py`/noteb
 8. **Honestidad estadística:** no afirmes algo que no esté calculado en una celda ejecutada. Distingue observación / hipótesis / conclusión. Con pocos brotes (años 2017 y 2023 concentran la mayor parte de los casos) no generalices ni uses lenguaje causal.
 
 ## Entorno
-- Windows + PowerShell. Python del proyecto: `.venv\Scripts\python` (`.\.venv\Scripts\python -m pip install -r requirements.txt`). Corre los módulos desde la raíz del repo: `python -m src...`.
+- Windows + PowerShell. Python del proyecto: `.venv\Scripts\python` (`.\.venv\Scripts\python -m pip install -r requirements.txt` y luego `.\.venv\Scripts\python -m pip install -e .`, que instala el paquete `denguekay` de `pyproject.toml`). Corre los módulos desde la raíz del repo: `python -m src...`.
 - Los archivos del repo usan **CRLF**; no cambies finales de línea de archivos existentes. Codificación UTF-8 (hay tildes y ñ).
 - Tests: `python -m unittest discover -s tests` (o `python -m unittest tests.test_<nombre>`).
+- Reestructuración en monorepo (en curso, una fase por PR): `src/denguekay/` es el paquete instalable que recibirá los módulos de `src/`. Las guardas de equivalencia (`tests/test_equivalence.py`, línea base en `tests/fixtures/equivalence/`) deben pasar al cerrar cada fase. Nunca regeneres esa línea base para que un test pase: si una guarda falla, hay un cambio de comportamiento.
 - Ejecutar un notebook de punta a punta: `python -m jupyter nbconvert --to notebook --execute --inplace notebooks/<archivo>.ipynb`.
 
 ## Convenciones

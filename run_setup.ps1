@@ -29,5 +29,6 @@ if (-not (Test-Path $venvPath)) {
 $venvPython = Join-Path $venvPath "Scripts\python.exe"
 & $venvPython -m pip install --upgrade pip
 & $venvPython -m pip install -r requirements.txt
+& $venvPython -m pip install -e .
 
 Write-Host "Done. Activate with: .\\.venv\\Scripts\\Activate.ps1"

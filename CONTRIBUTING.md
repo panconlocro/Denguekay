@@ -74,3 +74,6 @@ nombre. Para recuperar una: `git switch -c experiment/model-architecture archive
 
 Las pruebas de PostgreSQL corren en local solo si `DENGUEKAY_PG_PRUEBAS_URL` apunta a
 una base desechable cuyo nombre contenga «prueba». En el CI siempre corren.
+
+Durante la reestructuración, un PR de `refactor/` solo entra si `tests/test_equivalence.py` pasa
+completo en local (las predicciones de V1 y V2 necesitan los datos, que no están en el CI).
