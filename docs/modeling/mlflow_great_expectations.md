@@ -14,11 +14,13 @@ gold h2/h4 (+ silver integrado si el módulo lo usa)
   → Great Expectations: suites silver_integrado, gold_h2, gold_h4
         ↳ si alguna expectativa falla, el experimento se detiene antes de entrenar
   → entrenamiento y evaluación              (igual que antes)
-  → docs/modeling/metricas/*.json + models/experimentos/*   (igual que antes)
+  → metricas/*.json del informe + models/experimentos/*   (igual que antes)
   → MLflow: run padre + runs por variante + runs por fold
 ```
 
 Los siete módulos están instrumentados: `train` (primer XGBoost), `ablacion_espacial`, `ablacion_clima`, `ablacion_sociodemografica`, `ablacion_fracciones`, `ablacion_poblacion_sin_seguro` y `validacion_temporal_compacta`. Los notebooks 24–30 llaman a esas funciones con los valores por defecto, así que **también registran en MLflow sin cambiar una línea**.
+
+> **Desde la reestructuración** ([ADR 0001](../decisions/0001-repo-restructure.md)), las ablaciones, los notebooks 24–30 y sus métricas están congelados en `research/03_first_models_and_ablations/`; `train` y `validacion_temporal_compacta` siguen en `src/modeling/`. Los ejemplos de esta guía conservan los nombres de módulo de entonces.
 
 Se comprobó que la instrumentación no altera resultados: con el mismo equipo, los siete JSON de métricas generados antes y después de los cambios son idénticos (ver §7).
 
@@ -149,8 +151,8 @@ runs[["tags.mlflow.runName", "metrics.validacion_media.cls_f1",
 Cada función `ejecutar_*` acepta `validar_datos=False` y `registrar_mlflow=False`. En la CLI:
 
 ```powershell
-.\.venv\Scripts\python -m src.modeling.ablacion_clima --sin-mlflow
-.\.venv\Scripts\python -m src.modeling.ablacion_clima --sin-validacion-datos
+.\.venv\Scripts\python -m src.modeling.train --sin-mlflow
+.\.venv\Scripts\python -m src.modeling.train --sin-validacion-datos
 ```
 
 Si el registro en MLflow falla (por ejemplo, la base está bloqueada), el módulo imprime un `AVISO` y **no pierde nada**: el JSON, las predicciones y los modelos ya se guardaron en `docs/` y `models/` antes de registrar. En cambio, si falla Great Expectations, el experimento no entrena.
@@ -169,7 +171,7 @@ Cualquiera de los siete módulos sirve de ejemplo.
 ## 6. Límites y próximos pasos
 
 - **Sin Model Registry todavía.** Cuando el equipo apruebe un modelo final, el paso natural es registrarlo con `mlflow.xgboost.log_model(...)` y `mlflow.register_model(...)`. No se implementó porque no hay modelo aprobado y porque 2024 ya se consultó varias veces: no es un test independiente.
-- **Experimentos históricos.** Los resultados anteriores a esta integración siguen en `docs/modeling/metricas/*.json`. No se importaron a MLflow para no presentarlos como si se hubieran ejecutado con él. Al volver a correr los módulos, quedan registrados.
+- **Experimentos históricos.** Los resultados anteriores a esta integración siguen en los `metricas/*.json` de cada estudio (`research/03_first_models_and_ablations/docs/metricas/` y `docs/modeling/metricas/validacion_temporal_compacta.json`). No se importaron a MLflow para no presentarlos como si se hubieran ejecutado con él. Al volver a correr los módulos, quedan registrados.
 - **Reproducibilidad entre equipos.** En el mismo equipo, dos corridas dan métricas idénticas. Entre equipos no. `config/config.yaml` deja `device: auto`: XGBoost usa la GPU NVIDIA (CUDA) si existe y la CPU si no; en una Mac con Apple Silicon entrena en CPU. GPU y CPU no suman en el mismo orden al construir los histogramas, y también se observaron diferencias entre dos CPU distintas. El número de hilos no cambia resultados. Los JSON actuales de `docs/modeling/metricas/` se generaron en el equipo de Rosa con GPU (`device="cuda"`, `n_jobs=12`), y los informes de `docs/modeling/` citan esas cifras. Con la misma versión de XGBoost (3.4.1) se compararon tres corridas: la que respaldaba la versión anterior de los informes (CPU), una corrida en el entorno Linux de esta integración (CPU) y la actual (GPU). Las diferencias movieron métricas en milésimas, desplazaron algunos umbrales de probabilidad un paso de la rejilla (por ejemplo, `h=2 / historia_4_mas_2` dio 0,150 en Linux y 0,175 en las otras dos) y cambiaron estas elecciones de variante:
 
   | Experimento | h | Elección | Versión anterior (CPU) | Linux (CPU) | JSON actual (GPU) |

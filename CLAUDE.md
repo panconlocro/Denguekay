@@ -20,7 +20,7 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `features.py`/noteb
 3. **Variables derivadas: solo en memoria.** En el EDA no se construyen features. En el modelado sí se calculan variables nuevas, pero solo en memoria, con funciones de `src/modeling/` y un test de no fuga por perturbación. Nunca se guardan en `data/`. Si una variable entra a la configuración final, se **propone** el cambio en `features.py` y el equipo regenera gold.
 4. **`ubigeo` es string de 6 dígitos** (con ceros a la izquierda) en todo el pipeline. Nunca lo castees a int.
 5. **Rutas** siempre desde `src/utils/paths.py`. Nada de rutas absolutas ni `C:\...` en código.
-6. **`src/` vs `notebooks/`:** si la lógica se reutiliza o pasa de ~10 líneas, va en `src/` (para EDA: `src/eda/`) con un test simple en `tests/` si tiene lógica no trivial. El notebook orquesta, muestra y comenta.
+6. **`src/` vs `notebooks/`:** si la lógica se reutiliza o pasa de ~10 líneas, va en `src/` con un test simple en `tests/` si tiene lógica no trivial. El notebook orquesta, muestra y comenta.
 7. **Citas y referencias:** solo reales y verificadas. Prohibido inventar autores, títulos, cifras de la literatura o URLs. Si no puedes verificar una afirmación de dominio, márcala como *hipótesis* o pídele la fuente a Rosa.
 8. **Honestidad estadística:** no afirmes algo que no esté calculado en una celda ejecutada. Distingue observación / hipótesis / conclusión. Con pocos brotes (años 2017 y 2023 concentran la mayor parte de los casos) no generalices ni uses lenguaje causal.
 
@@ -36,8 +36,8 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `features.py`/noteb
   - **Código en inglés:** identificadores (snake_case), comentarios y docstrings del código nuevo. No renombres código existente solo por el idioma.
   - **Sin cambios hasta nuevo aviso:** el esquema de BD sigue el documento OE2 (nombres en español de `docs/backend/ddl_oe2.sql`) y las columnas de los datos conservan sus nombres actuales.
   - **Documentación en español:** `docs/`, markdown de notebooks, informes, títulos y etiquetas de gráficos (con unidades: °C, mm, casos por 100 000 hab.).
-- Notebooks numerados según el paso del pipeline; los del EDA usan el rango `10_eda_*` en adelante (ver la skill `eda-dengue`).
-- Salidas del EDA: figuras en `docs/eda/figuras/<fase>/`, cifras clave en `docs/eda/metricas/<fase>.json`, conclusiones en `docs/eda/hallazgos.md`. Todo eso sí se versiona.
+- `notebooks/` contiene solo el pipeline (01–09 y 22, que regenera gold), numerado según el paso. La investigación (EDA, feature engineering y estudios de modelado: notebooks 10–21 y 23–35, su código, tests, informes, métricas y figuras) está congelada en `research/<estudio>/`, con un README por estudio que dice cómo reproducirlo desde su tag. No se vuelve a correr en `main`, no corre en el CI y el producto nunca la importa. Un estudio nuevo va en `research/06_<nombre>/`.
+- Salidas del EDA (cerrado): figuras en `research/01_eda/docs/figuras/<fase>/`, cifras clave en `research/01_eda/docs/metricas/<fase>.json`, conclusiones en `research/01_eda/docs/hallazgos.md`.
 
 ## Control de versiones (detalle en `CONTRIBUTING.md`)
 - Solo `main` es permanente; no hagas commits directos en ella. Cada cambio va en una rama `feat/`, `fix/`, `refactor/`, `docs/`, `chore/` o `exp/`, con nombre en inglés y kebab-case, y entra a `main` por PR con el CI en verde.
@@ -51,8 +51,9 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `features.py`/noteb
 - Ante una ambigüedad que cambie el análisis (definición de brote, tratamiento del 2025, qué variables descartar) **pregunta**; no decidas en silencio.
 
 ## Herramientas del proyecto
-- Skill `eda-dengue` (`.claude/skills/eda-dengue/`): método, fases y estándares del EDA. Úsala para cualquier tarea de análisis exploratorio.
-- Subagente `revisor-eda` (`.claude/agents/revisor-eda.md`): auditor independiente que recalcula cada cifra citada al cierre de cada fase.
+- Skill `eda-dengue` y subagente `revisor-eda`: método del EDA y auditor que recalcula cada cifra citada. Están versionados en `_claude_setup/` (no instalados en `.claude/`; se instalan con `instalar_claude_setup.ps1`) y apuntan al EDA congelado en `research/01_eda/`. Úsalos para cualquier análisis exploratorio nuevo.
+- Subagentes versionados en `.claude/agents/`: `revisor-backend` y `revisor-modelado`.
+- Decisiones de arquitectura del repo: `docs/decisions/` (ADR 0001: reestructuración en monorepo, con las decisiones D1–D6).
 
 
 <!-- inicio: backend OE2 -->

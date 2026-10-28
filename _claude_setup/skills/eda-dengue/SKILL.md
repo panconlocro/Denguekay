@@ -3,6 +3,8 @@ name: eda-dengue
 description: Análisis exploratorio (EDA) del panel distrito-semana de dengue en Piura (Denguekay), antes del feature engineering. Úsala para cualquier pedido de EDA, exploración, calidad de datos, análisis de casos/clima/sociodemografía o "Data Understanding" de la tesis.
 ---
 
+> **EDA cerrado y congelado** en `research/01_eda/` (ADR 0001, `docs/decisions/0001-repo-restructure.md`): notebooks en `research/01_eda/notebooks/`, código en `research/01_eda/code/`, salidas en `research/01_eda/docs/`. Un análisis exploratorio nuevo va en su propio estudio, `research/06_<nombre>/`, con la misma forma.
+
 # EDA de dengue en Piura
 
 Objetivo del EDA: **entender el dataset lo suficiente para decidir bien el feature engineering, la definición de brote y el esquema de validación** de un modelo que predice brotes con ≥4 semanas de anticipación. Un EDA bueno no es una colección de gráficos: es una cadena de preguntas respondidas con evidencia, cada una terminando en una decisión o en una duda concreta para el asesor.
@@ -12,7 +14,7 @@ Antes de empezar lee, en este orden: `CLAUDE.md`, `docs/estructuraRepo.md`, `ref
 ## Contrato de trabajo
 - **Una fase a la vez.** Ejecuta una fase, presenta el resumen y **detente hasta que Rosa confirme**. No adelantes fases ni "aprovechando que estás".
 - **Solo lectura sobre `data/`.** Carga con `src.eda.carga.cargar_integrado()`. No escribas en `data/`, no toques gold, no agregues columnas derivadas al dataset. Lags, tasas y anomalías se calculan en memoria solo para analizar.
-- **No arregles datos.** Si encuentras un problema, va a la lista "Problemas y propuestas de corrección" de `docs/eda/hallazgos.md` con evidencia y una propuesta; Rosa decide.
+- **No arregles datos.** Si encuentras un problema, va a la lista "Problemas y propuestas de corrección" de `research/01_eda/docs/hallazgos.md` con evidencia y una propuesta; Rosa decide.
 - **No hagas feature engineering ni modelado.** Puedes cuantificar qué lags o transformaciones *parecen* útiles; no los implementas como features ni entrenas modelos. Una línea base ingenua (persistencia, estacional) solo para dimensionar la dificultad está permitida si la fase lo pide.
 
 ## Estándares de calidad (lo que separa un EDA bueno de uno malo)
@@ -25,16 +27,16 @@ Antes de empezar lee, en este orden: `CLAUDE.md`, `docs/estructuraRepo.md`, `ref
 7. **Tiempo importa.** Para un pronóstico a 4 semanas, cualquier relación se examina con rezagos (0-12 semanas) y **sin usar información futura**. Señala riesgos de fuga de información (leakage) que verás en el feature engineering.
 8. **Observación ≠ hipótesis ≠ conclusión.** Etiquétalas. Las explicaciones de dominio (El Niño costero, biología del *Aedes*) son hipótesis a menos que estén verificadas; no inventes citas ni cifras de literatura (ver `CLAUDE.md`).
 9. **Anomalía no es error.** Antes de llamar error a un valor extremo, contrástalo con el contexto (distrito, altitud/provincia, fecha, evento). Reporta ambos lados.
-10. **Reproducible.** Notebook ejecutable de arriba abajo (`nbconvert --execute`), sin rutas absolutas, semillas fijas, funciones reutilizables en `src/eda/`. Sin auto-profilers (ydata-profiling, sweetviz) como sustituto del análisis, ni pairplots de todas las variables.
-11. **Gráficos de tesis.** Español, ejes con unidades, título que dice el mensaje, paleta de `src/eda/estilo.py` (Okabe-Ito, un color = un significado), una idea por figura, guardado con `guardar_figura()`.
+10. **Reproducible.** Notebook ejecutable de arriba abajo (`nbconvert --execute`), sin rutas absolutas, semillas fijas, funciones reutilizables en el `code/` del estudio (`research/<estudio>/code/`). Sin auto-profilers (ydata-profiling, sweetviz) como sustituto del análisis, ni pairplots de todas las variables.
+11. **Gráficos de tesis.** Español, ejes con unidades, título que dice el mensaje, paleta de `research/01_eda/code/estilo.py` (Okabe-Ito, un color = un significado), una idea por figura, guardado con `guardar_figura()`.
 
 ## Entregables por fase
-- Notebook `notebooks/1X_eda_<tema>.ipynb` ya ejecutado (salidas guardadas). Numeración: `10_eda_integridad_calidad`, `11_eda_variable_objetivo`, `12_eda_temporal`, `13_eda_espacial`, `14_eda_clima`, `15_eda_sociodemografico`, `16_eda_sintesis`.
-- Figuras en `docs/eda/figuras/<fase>/` y cifras clave en `docs/eda/metricas/<fase>.json` (vía `guardar_figura` / `guardar_metricas`). **Toda cifra que aparezca en `hallazgos.md` debe estar en ese JSON.**
-- Una sección nueva al final de `docs/eda/hallazgos.md` con este formato por hallazgo:
+- Notebook `research/01_eda/notebooks/1X_eda_<tema>.ipynb` ya ejecutado (salidas guardadas). Numeración: `10_eda_integridad_calidad`, `11_eda_variable_objetivo`, `12_eda_temporal`, `13_eda_espacial`, `14_eda_clima`, `15_eda_sociodemografico`, `16_eda_sintesis`.
+- Figuras en `research/01_eda/docs/figuras/<fase>/` y cifras clave en `research/01_eda/docs/metricas/<fase>.json` (vía `guardar_figura` / `guardar_metricas`). **Toda cifra que aparezca en `hallazgos.md` debe estar en ese JSON.**
+- Una sección nueva al final de `research/01_eda/docs/hallazgos.md` con este formato por hallazgo:
   `Hallazgo N — <título>` · **Evidencia** (cifra + figura) · **Interpretación** (observación/hipótesis) · **Implicación para el modelado** · **Confianza** (alta/media/baja y por qué) · **Pendiente / pregunta**.
   Cierra cada sección con "Lo que este análisis NO permite concluir" y "Problemas y propuestas de corrección" (si hubo).
-- Funciones reutilizables en `src/eda/` (+ test simple en `tests/` si tienen lógica no trivial). Si agregas carpetas o archivos que `docs/estructuraRepo.md` no contempla, actualízalo.
+- Funciones reutilizables en `research/<estudio>/code/` (+ test simple en `research/<estudio>/tests/` si tienen lógica no trivial). Si agregas carpetas o archivos que `docs/estructuraRepo.md` no contempla, actualízalo.
 
 ## Cierre de cada fase (obligatorio, en este orden)
 1. Ejecuta el notebook completo de cero y confirma que no falla.

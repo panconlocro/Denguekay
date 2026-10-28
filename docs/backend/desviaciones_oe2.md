@@ -36,7 +36,7 @@ Tipos de desviación:
 
 - **`estado_cobertura`.** Las 30 485 filas del integrado tienen `source = verified` y ningún
   `casos_Dengue` nulo; con los datos actuales `estado_cobertura` vale siempre `verificado`.
-  El EDA ya señaló (P5 en `docs/eda/problemas_y_decisiones.md`) que la cobertura no
+  El EDA ya señaló (P5 en `research/01_eda/docs/problemas_y_decisiones.md`) que la cobertura no
   distingue cero notificado de sin registro.
 - **Semana 53 de 2025.** El calendario MMWR la incluye (inicia 2025-12-28) y va a
   `semana_epidemiologica`; el panel termina en la semana 52 (inicio 2025-12-21), así que no
@@ -45,7 +45,7 @@ Tipos de desviación:
   `data/bronze/socio/data_socio_2017_2025.xlsx`, que procede del INEI (Censos Nacionales
   2017 para `pob_censada_2017`; confirmado por Rosa el 2026-10-01). Coincide exactamente con
   la población 2017 de `socio_anual.csv` en los 65 distritos
-  (`docs/feature_engineering/fase5_sociodemografia.md`).
+  (`research/02_feature_engineering/docs/fase5_sociodemografia.md`).
 - **Regla de brote, cortes y umbrales.** Los valores del manifiesto gold y de `config.yaml`
   (1,5 DE, 5 años, mínimo 2 casos; cortes 0,25/0,50/0,75; recall 0,80, precisión 0,60,
   F1 0,70, razón 0,85) coinciden con las semillas del DDL.
@@ -249,7 +249,7 @@ Operación y datos:
 
 ## 8. Propuesta pendiente (no implementada): modelo multi-salida E3·S4_s2
 
-Origen: encargo de arquitectura multi-horizonte (`docs/modeling/arquitectura_horizontes.md`, fase 5). Requiere aprobación de Rosa antes de implementarse.
+Origen: encargo de arquitectura multi-horizonte (`research/04_horizon_architecture/docs/arquitectura_horizontes.md`, fase 5). Requiere aprobación de Rosa antes de implementarse.
 
 | Tema | Propuesta | Tipo |
 |---|---|---|
