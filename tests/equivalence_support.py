@@ -133,10 +133,10 @@ def committed_openapi():
 
 def offline_postgresql_sql():
     """``alembic upgrade 0002_serving:head --sql`` for PostgreSQL, without a connection."""
-    from denguekay.db.export_migration_sql import exportar
+    from denguekay.db.export_migration_sql import export
 
     with tempfile.TemporaryDirectory() as folder:
-        return exportar(Path(folder) / "offline.sql").read_text(encoding="utf-8").replace("\r\n", "\n")
+        return export(Path(folder) / "offline.sql").read_text(encoding="utf-8").replace("\r\n", "\n")
 
 
 def committed_offline_sql():
@@ -151,10 +151,10 @@ def sqlite_schema():
     from sqlalchemy.engine import URL
 
     from backend_soporte import migrar
-    from denguekay.db.session import crear_motor
+    from denguekay.db.session import make_engine
 
     with tempfile.TemporaryDirectory() as folder:
-        engine = crear_motor(URL.create("sqlite", database=str(Path(folder) / "schema.db")))
+        engine = make_engine(URL.create("sqlite", database=str(Path(folder) / "schema.db")))
         try:
             migrar(engine)
             with engine.connect() as connection:
@@ -213,9 +213,9 @@ def postgresql_schema(url):
     from sqlalchemy import text
 
     from backend_soporte import migrar
-    from denguekay.db.session import crear_motor
+    from denguekay.db.session import make_engine
 
-    engine = crear_motor(url)
+    engine = make_engine(url)
     try:
         migrar(engine, "base")
         migrar(engine)
@@ -242,7 +242,7 @@ def build_smoke_database(folder):
 
     from backend_soporte import datos_muestra, motor_temporal
     from serving_soporte import preparar_muestra
-    from denguekay.db.session import transaccion
+    from denguekay.db.session import transaction
     from src.serving.almacenamiento import AlmacenamientoLocal
     from src.serving.cargar_datos import persistir_carga
     from src.serving.publicar import publicar_en_bd
@@ -253,7 +253,7 @@ def build_smoke_database(folder):
     storage = folder / "storage"
     engine = motor_temporal(folder)
     try:
-        with transaccion(engine) as session:
+        with transaction(engine) as session:
             persistir_carga(session, data)
         publicar_en_bd(engine, data, protocol, prepared, (2, 4), cfg, "run-equivalencia", "huella-equivalencia",
                        AlmacenamientoLocal(storage), 0)

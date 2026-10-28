@@ -10,7 +10,7 @@ from pydantic import Field, StringConstraints
 from sqlalchemy import func, select
 
 from src.api.errores import ErrorAPI
-from denguekay.db.models import Ejecucion
+from denguekay.db.models import Run
 
 Ubigeo = Annotated[str, StringConstraints(pattern=r"^[0-9]{6}$"),
                    Field(description="Código distrital de seis dígitos, conservado como texto")]
@@ -49,7 +49,7 @@ def validar_rango(desde: date | None, hasta: date | None):
 def lectura(request: Request, response: Response, sesion, construir):
     """Verifica la BD incluso en aciertos; nuevas publicaciones invalidan claves."""
     # Toda carga, inferencia, publicación o activación crea una fila en ejecucion.
-    revision = tuple(sesion.execute(select(func.max(Ejecucion.id_ejecucion), func.max(Ejecucion.fin))).one())
+    revision = tuple(sesion.execute(select(func.max(Run.id_ejecucion), func.max(Run.fin))).one())
     clave = (str(request.url), revision)
     cache = request.app.state.cache
     directivas = {p.strip().lower() for p in request.headers.get("Cache-Control", "").split(",")}

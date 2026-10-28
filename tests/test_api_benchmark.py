@@ -14,8 +14,8 @@ from sqlalchemy import func, select
 import test_api_backend as soporte_api
 from backend_soporte import entorno_bd
 from src.api.benchmark import ejecutar_benchmark, main, medir_caso, percentil
-from denguekay.db.models import Ejecucion, ObservacionSemanal, Prediccion, VersionModelo
-from denguekay.db.session import transaccion
+from denguekay.db.models import Run, WeeklyObservation, Prediction, ModelVersion
+from denguekay.db.session import transaction
 from denguekay.config.paths import ROOT, SERVING_MODELS
 
 
@@ -25,9 +25,9 @@ class TestBenchmarkReal(unittest.TestCase):
     tearDown = soporte_api.TestAPIReal.tearDown
 
     def conteos(self):
-        with transaccion(self.motor) as s:
+        with transaction(self.motor) as s:
             return {m.__tablename__: s.scalar(select(func.count()).select_from(m))
-                    for m in (VersionModelo, Prediccion, Ejecucion)}
+                    for m in (ModelVersion, Prediction, Run)}
 
     @classmethod
     def setUpClass(cls):
@@ -110,9 +110,9 @@ class TestBenchmarkReal(unittest.TestCase):
 
     def test_tablero_casos_observados_de_la_ultima_semana(self):
         r = self.cliente.get("/api/v1/tablero/resumen?horizonte=2").json()["casos_observados_ultima_semana"]
-        with transaccion(self.motor) as s:
-            semana = s.scalar(select(func.max(ObservacionSemanal.id_semana)))
-            casos = s.scalars(select(ObservacionSemanal.casos_dengue).where(ObservacionSemanal.id_semana == semana)).all()
+        with transaction(self.motor) as s:
+            semana = s.scalar(select(func.max(WeeklyObservation.id_semana)))
+            casos = s.scalars(select(WeeklyObservation.casos_dengue).where(WeeklyObservation.id_semana == semana)).all()
         self.assertEqual(r["valor"], sum(c for c in casos if c is not None))
         self.assertTrue(r["disponible"])
         sin_modelo = self.cliente.get("/api/v1/tablero/resumen?horizonte=3").json()

@@ -6,7 +6,7 @@ from sqlalchemy import select
 from src.api import consultas as q
 from src.api.dependencias import PaginaNumero, Sesion, TamanoPagina, Ubigeo, lectura
 from src.api.esquemas import DistritoRespuesta, Pagina, SaludRespuesta
-from denguekay.db.models import Distrito
+from denguekay.db.models import District
 
 router = APIRouter(tags=["Salud y distritos"])
 
@@ -22,7 +22,7 @@ def distritos(request: Request, response: Response, sesion: Sesion,
               pagina: PaginaNumero = 1, tamano_pagina: TamanoPagina = 65):
     """Catálogo con provincia, centroide y población censal 2017; ubigeo como texto."""
     return lectura(request, response, sesion, lambda: q.paginar(sesion,
-        select(Distrito).order_by(Distrito.ubigeo), pagina, tamano_pagina,
+        select(District).order_by(District.ubigeo), pagina, tamano_pagina,
         lambda filas: [q.distrito_dto(d) for d in filas]))
 
 

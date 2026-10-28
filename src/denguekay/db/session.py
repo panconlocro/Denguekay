@@ -1,4 +1,4 @@
-"""Motores y transacciones portables entre SQLite y PostgreSQL."""
+"""Engines and transactions portable between SQLite and PostgreSQL."""
 
 from contextlib import contextmanager
 
@@ -6,66 +6,66 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from denguekay.db.settings import obtener_url
+from denguekay.db.settings import get_url
 
 
-def crear_motor(url=None):
-    """Activa claves foráneas en SQLite y comprueba conexiones del pool."""
-    url = url if url is not None else obtener_url()
+def make_engine(url=None):
+    """Turn on foreign keys in SQLite and check the pool connections."""
+    url = url if url is not None else get_url()
     from sqlalchemy.engine import make_url
 
     url = make_url(url)
-    opciones = {"pool_pre_ping": True, "hide_parameters": True}
+    options = {"pool_pre_ping": True, "hide_parameters": True}
     if url.get_backend_name() == "sqlite":
-        opciones["connect_args"] = {"check_same_thread": False}
+        options["connect_args"] = {"check_same_thread": False}
         if url.database in {None, "", ":memory:"}:
-            opciones["poolclass"] = StaticPool
+            options["poolclass"] = StaticPool
     else:
-        opciones["connect_args"] = {"connect_timeout": 10}
-    motor = create_engine(url, **opciones)
+        options["connect_args"] = {"connect_timeout": 10}
+    engine = create_engine(url, **options)
     if url.get_backend_name() == "sqlite":
-        @event.listens_for(motor, "connect")
-        def configurar_sqlite(conexion, _):
-            cursor = conexion.cursor()
+        @event.listens_for(engine, "connect")
+        def configure_sqlite(connection, _):
+            cursor = connection.cursor()
             cursor.execute("PRAGMA foreign_keys=ON")
             cursor.execute("PRAGMA busy_timeout=10000")
             cursor.close()
-    return motor
+    return engine
 
 
-def crear_fabrica_sesiones(motor):
-    """Crea sesiones sin caducar objetos al confirmar una transacción."""
-    return sessionmaker(bind=motor, expire_on_commit=False)
+def create_session_factory(engine):
+    """Create sessions that do not expire objects when a transaction commits."""
+    return sessionmaker(bind=engine, expire_on_commit=False)
 
 
 @contextmanager
-def transaccion(motor):
-    """Confirma todo el lote o revierte todos sus cambios si falla."""
-    with crear_fabrica_sesiones(motor)() as sesion:
-        with sesion.begin():
-            yield sesion
+def transaction(engine):
+    """Commit the whole batch, or roll back all of its changes if it fails."""
+    with create_session_factory(engine)() as session:
+        with session.begin():
+            yield session
 
 
-def upsert(sesion, tabla, filas, claves, actualizar=None, lote=2000):
-    """INSERT ... ON CONFLICT (claves) DO UPDATE portable entre SQLite y PostgreSQL.
+def upsert(session, table, rows, keys, update=None, batch=2000):
+    """INSERT ... ON CONFLICT (keys) DO UPDATE, portable between SQLite and PostgreSQL.
 
-    ``actualizar`` limita las columnas que se sobrescriben; por defecto, todas
-    las de la fila salvo las claves. Con ``actualizar=()`` no se modifica nada
-    (ON CONFLICT DO NOTHING). Inserta por lotes para no exceder parámetros.
+    ``update`` limits the columns that are overwritten; by default, every column of
+    the row except the keys. With ``update=()`` nothing is modified
+    (ON CONFLICT DO NOTHING). It inserts in batches so as not to exceed the parameters.
     """
-    if not filas:
+    if not rows:
         return
-    if sesion.bind.dialect.name == "postgresql":
+    if session.bind.dialect.name == "postgresql":
         from sqlalchemy.dialects.postgresql import insert
     else:
         from sqlalchemy.dialects.sqlite import insert
-    columnas = list(filas[0])
-    actualizables = [c for c in (columnas if actualizar is None else actualizar) if c not in claves]
-    for inicio in range(0, len(filas), lote):
-        consulta = insert(tabla).values(filas[inicio:inicio + lote])
-        if actualizables:
-            consulta = consulta.on_conflict_do_update(
-                index_elements=list(claves), set_={c: consulta.excluded[c] for c in actualizables})
+    columns = list(rows[0])
+    updatable = [c for c in (columns if update is None else update) if c not in keys]
+    for start in range(0, len(rows), batch):
+        query = insert(table).values(rows[start:start + batch])
+        if updatable:
+            query = query.on_conflict_do_update(
+                index_elements=list(keys), set_={c: query.excluded[c] for c in updatable})
         else:
-            consulta = consulta.on_conflict_do_nothing(index_elements=list(claves))
-        sesion.execute(consulta)
+            query = query.on_conflict_do_nothing(index_elements=list(keys))
+        session.execute(query)

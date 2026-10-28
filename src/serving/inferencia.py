@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import select
 
-from denguekay.db.models import (Alerta, Distrito, Ejecucion, ObservacionSemanal, Prediccion,
-                            SemanaEpidemiologica, VersionModelo, ahora_utc)
+from denguekay.db.models import (Alert, District, Run, WeeklyObservation, Prediction,
+                            EpiWeek, ModelVersion, utc_now)
 from denguekay.db.session import upsert
 from denguekay.model.future_rows import build_future_rows
 from denguekay.features.sociodemographics import DIRECT
@@ -32,7 +32,7 @@ class InferenciaNoDisponible(ValueError):
 # --- calendario y datos ------------------------------------------------------
 
 def semana(sesion, id_semana):
-    fila = sesion.get(SemanaEpidemiologica, id_semana)
+    fila = sesion.get(EpiWeek, id_semana)
     if fila is None:
         raise InferenciaNoDisponible(f"La semana {id_semana} no está en el calendario epidemiológico")
     return fila
@@ -40,14 +40,14 @@ def semana(sesion, id_semana):
 
 def semana_objetivo(sesion, corte, horizonte):
     inicio = corte.fecha_inicio + pd.Timedelta(weeks=horizonte).to_pytimedelta()
-    fila = sesion.scalar(select(SemanaEpidemiologica).where(SemanaEpidemiologica.fecha_inicio == inicio))
+    fila = sesion.scalar(select(EpiWeek).where(EpiWeek.fecha_inicio == inicio))
     if fila is None:
         raise InferenciaNoDisponible("La semana objetivo no está en el calendario; recargue los datos")
     return fila
 
 
 def ultima_semana_observada(sesion):
-    valor = sesion.scalar(select(ObservacionSemanal.id_semana).order_by(ObservacionSemanal.id_semana.desc()).limit(1))
+    valor = sesion.scalar(select(WeeklyObservation.id_semana).order_by(WeeklyObservation.id_semana.desc()).limit(1))
     if valor is None:
         raise InferenciaNoDisponible("No hay observaciones cargadas")
     return valor
@@ -56,10 +56,10 @@ def ultima_semana_observada(sesion):
 def panel_desde_bd(sesion, hasta):
     """Panel mínimo (casos por distrito y semana) cerrado a la fecha ``hasta``."""
     filas = sesion.execute(select(
-        ObservacionSemanal.ubigeo, SemanaEpidemiologica.anio, SemanaEpidemiologica.semana,
-        SemanaEpidemiologica.fecha_inicio, ObservacionSemanal.casos_dengue
-    ).join(SemanaEpidemiologica, SemanaEpidemiologica.id_semana == ObservacionSemanal.id_semana
-    ).where(SemanaEpidemiologica.fecha_fin <= hasta)).all()
+        WeeklyObservation.ubigeo, EpiWeek.anio, EpiWeek.semana,
+        EpiWeek.fecha_inicio, WeeklyObservation.casos_dengue
+    ).join(EpiWeek, EpiWeek.id_semana == WeeklyObservation.id_semana
+    ).where(EpiWeek.fecha_fin <= hasta)).all()
     panel = pd.DataFrame(filas, columns=["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"])
     panel["ubigeo"] = panel.ubigeo.astype("string")
     panel["semana_inicio"] = pd.to_datetime(panel.semana_inicio)
@@ -74,8 +74,8 @@ def referencia_desde_bd(sesion):
     modelos de servicio solo usan ``log_poblacion_censo_2017``, así que esas
     fracciones se completan con 0 y no entran al vector (se descartan).
     """
-    filas = sesion.execute(select(Distrito.ubigeo, Distrito.poblacion_censo_2017).where(
-        Distrito.poblacion_censo_2017.is_not(None))).all()
+    filas = sesion.execute(select(District.ubigeo, District.poblacion_censo_2017).where(
+        District.poblacion_censo_2017.is_not(None))).all()
     referencia = pd.DataFrame(filas, columns=["ubigeo", "poblacion"])
     referencia["ubigeo"] = referencia.ubigeo.astype("string")
     for columna in DIRECT:
@@ -106,14 +106,14 @@ def seleccionar_versiones(sesion, horizonte, servir_no_validadas):
     Devuelve ({tarea: VersionModelo}, motivo); el diccionario está incompleto
     cuando no hay versión utilizable para alguna tarea.
     """
-    versiones = {v.tarea: v for v in sesion.scalars(select(VersionModelo).where(
-        VersionModelo.horizonte == horizonte, VersionModelo.estado == "activa"))}
+    versiones = {v.tarea: v for v in sesion.scalars(select(ModelVersion).where(
+        ModelVersion.horizonte == horizonte, ModelVersion.estado == "activa"))}
     faltan = [t for t in TAREAS if t not in versiones]
     if faltan and servir_no_validadas:
         codigos = parametros.seleccion_experimental(sesion).get(horizonte, {})
         for tarea in faltan:
             codigo = codigos.get(tarea)
-            version = codigo and sesion.scalar(select(VersionModelo).where(VersionModelo.codigo == codigo))
+            version = codigo and sesion.scalar(select(ModelVersion).where(ModelVersion.codigo == codigo))
             if version is not None and version.tarea == tarea and version.horizonte == horizonte:
                 versiones[tarea] = version
     if all(t in versiones for t in TAREAS):
@@ -140,7 +140,7 @@ def _registro(ubigeo, corte, objetivo, horizonte, ejecucion, versiones, probabil
             "motivo_no_disponible": None if disponible else motivo,
             "id_version_clasificador": versiones["clasificacion"].id_version if "clasificacion" in versiones else None,
             "id_version_regresor": versiones["regresion"].id_version if "regresion" in versiones else None,
-            "id_ejecucion": ejecucion, "fecha_generacion": ahora_utc()}
+            "id_ejecucion": ejecucion, "fecha_generacion": utc_now()}
 
 
 def inferir(sesion, horizonte, id_semana_corte=None, *, almacenamiento, servir_no_validadas, origen="api"):
@@ -156,17 +156,17 @@ def inferir(sesion, horizonte, id_semana_corte=None, *, almacenamiento, servir_n
         raise ValueError("horizonte debe ser 2, 3 o 4")
     id_semana_corte = id_semana_corte or ultima_semana_observada(sesion)
     corte = semana(sesion, id_semana_corte)
-    if sesion.scalar(select(ObservacionSemanal.id_semana).where(
-            ObservacionSemanal.id_semana == id_semana_corte).limit(1)) is None:
+    if sesion.scalar(select(WeeklyObservation.id_semana).where(
+            WeeklyObservation.id_semana == id_semana_corte).limit(1)) is None:
         raise InferenciaNoDisponible(f"No hay observaciones para la semana de corte {id_semana_corte}")
     objetivo = semana_objetivo(sesion, corte, horizonte)
     cortes = parametros.cortes_riesgo(sesion)
     versiones, motivo = seleccionar_versiones(sesion, horizonte, servir_no_validadas)
-    ejecucion = Ejecucion(tipo="inferencia", estado="en_curso", id_semana_corte=id_semana_corte,
+    ejecucion = Run(tipo="inferencia", estado="en_curso", id_semana_corte=id_semana_corte,
                           detalle={"origen": origen, "horizonte": horizonte})
     sesion.add(ejecucion)
     sesion.flush()
-    distritos = list(sesion.scalars(select(Distrito.ubigeo).where(Distrito.activo.is_(True)).order_by(Distrito.ubigeo)))
+    distritos = list(sesion.scalars(select(District.ubigeo).where(District.activo.is_(True)).order_by(District.ubigeo)))
     probabilidades, casos, motivos = {}, {}, {}
     if motivo is None:
         columnas = sorted({c for v in versiones.values() for c in v.variables})
@@ -180,13 +180,13 @@ def inferir(sesion, horizonte, id_semana_corte=None, *, almacenamiento, servir_n
                            probabilidades.get(u), casos.get(u),
                            motivo or motivos.get(u, "No hay vector de características para el distrito"), cortes)
                  for u in distritos]
-    upsert(sesion, Prediccion.__table__, registros, ["ubigeo", "id_semana_corte", "horizonte"])
+    upsert(sesion, Prediction.__table__, registros, ["ubigeo", "id_semana_corte", "horizonte"])
     sesion.flush()
     alertas = actualizar_alertas(sesion, horizonte, id_semana_corte)
     experimental = motivo is None and es_experimental(versiones)
     disponibles = sum(r["estado"] == "disponible" for r in registros)
     ejecucion.estado = "exitosa"
-    ejecucion.fin = ahora_utc()
+    ejecucion.fin = utc_now()
     ejecucion.detalle = {
         "origen": origen, "horizonte": horizonte, "id_semana_corte": id_semana_corte,
         "id_semana_objetivo": objetivo.id_semana, "experimental": experimental,
@@ -208,24 +208,24 @@ def actualizar_alertas(sesion, horizonte, id_semana_corte):
     La alerta activa es siempre la del corte más reciente; inferir un corte
     pasado no reactiva alertas viejas ni deja dos activas.
     """
-    ahora = ahora_utc()
-    actuales = list(sesion.scalars(select(Prediccion).where(
-        Prediccion.horizonte == horizonte, Prediccion.id_semana_corte == id_semana_corte)))
+    ahora = utc_now()
+    actuales = list(sesion.scalars(select(Prediction).where(
+        Prediction.horizonte == horizonte, Prediction.id_semana_corte == id_semana_corte)))
     if not actuales:
         return {"nuevas_o_actualizadas": 0, "retiradas": 0}
     corte = semana(sesion, id_semana_corte)
-    previa = sesion.scalar(select(SemanaEpidemiologica.id_semana).where(
-        SemanaEpidemiologica.fecha_inicio == corte.fecha_inicio - pd.Timedelta(weeks=1).to_pytimedelta()))
-    niveles_previos = dict(sesion.execute(select(Prediccion.ubigeo, Prediccion.nivel_riesgo).where(
-        Prediccion.horizonte == horizonte, Prediccion.id_semana_corte == previa)).all()) if previa else {}
+    previa = sesion.scalar(select(EpiWeek.id_semana).where(
+        EpiWeek.fecha_inicio == corte.fecha_inicio - pd.Timedelta(weeks=1).to_pytimedelta()))
+    niveles_previos = dict(sesion.execute(select(Prediction.ubigeo, Prediction.nivel_riesgo).where(
+        Prediction.horizonte == horizonte, Prediction.id_semana_corte == previa)).all()) if previa else {}
     activas = {}
-    for alerta, corte in sesion.execute(select(Alerta, Prediccion.id_semana_corte).join(
-            Prediccion, Prediccion.id_prediccion == Alerta.id_prediccion).where(
-            Prediccion.horizonte == horizonte, Prediccion.id_semana_corte != id_semana_corte,
-            Alerta.estado == "activa")):
+    for alerta, corte in sesion.execute(select(Alert, Prediction.id_semana_corte).join(
+            Prediction, Prediction.id_prediccion == Alert.id_prediccion).where(
+            Prediction.horizonte == horizonte, Prediction.id_semana_corte != id_semana_corte,
+            Alert.estado == "activa")):
         activas.setdefault(alerta.ubigeo, []).append((corte, alerta))
-    propias = {a.id_prediccion: a for a in sesion.scalars(select(Alerta).where(
-        Alerta.id_prediccion.in_([p.id_prediccion for p in actuales])))}
+    propias = {a.id_prediccion: a for a in sesion.scalars(select(Alert).where(
+        Alert.id_prediccion.in_([p.id_prediccion for p in actuales])))}
     conteo = {"nuevas_o_actualizadas": 0, "retiradas": 0}
 
     def retirar(alerta, motivo):
@@ -241,7 +241,7 @@ def actualizar_alertas(sesion, horizonte, id_semana_corte):
             previo = niveles_previos.get(p.ubigeo)
             cambio = cambio_alerta(previo if previo in NIVELES_ALERTA else None, p.nivel_riesgo)
             if propia is None:
-                propia = Alerta(id_prediccion=p.id_prediccion, ubigeo=p.ubigeo, nivel=p.nivel_riesgo,
+                propia = Alert(id_prediccion=p.id_prediccion, ubigeo=p.ubigeo, nivel=p.nivel_riesgo,
                                 estado="activa", cambio=cambio, fecha_generacion=ahora)
                 sesion.add(propia)
             else:
@@ -273,7 +273,7 @@ def importar_oos(sesion, protocolo, horizontes, cfg, versiones_servicio):
     """
     cortes = parametros.cortes_riesgo(sesion)
     calendario = pd.DataFrame(sesion.execute(select(
-        SemanaEpidemiologica.id_semana, SemanaEpidemiologica.fecha_fin)).all(), columns=["id_semana", "fecha_fin"])
+        EpiWeek.id_semana, EpiWeek.fecha_fin)).all(), columns=["id_semana", "fecha_fin"])
     corte_por_fecha = dict(zip(pd.to_datetime(calendario.fecha_fin), calendario.id_semana))
     fin_por_id = dict(zip(calendario.id_semana, pd.to_datetime(calendario.fecha_fin)))
     resumen = []
@@ -287,7 +287,7 @@ def importar_oos(sesion, protocolo, horizontes, cfg, versiones_servicio):
             reg = base.loc[base.variante.eq(cfg.variantes["regresion"])].set_index(["ubigeo", "anio", "semana"]).sort_index()
             if cls.empty or not cls.index.equals(reg.index):
                 raise ValueError(f"Clasificación y regresión OOS no comparten semanas en {bloque} h={h}")
-            ejecucion = Ejecucion(tipo="inferencia", estado="en_curso", detalle={"origen": "oos_protocolo"})
+            ejecucion = Run(tipo="inferencia", estado="en_curso", detalle={"origen": "oos_protocolo"})
             sesion.add(ejecucion)
             sesion.flush()
             registros = []
@@ -304,8 +304,8 @@ def importar_oos(sesion, protocolo, horizontes, cfg, versiones_servicio):
                     raise ValueError("La predicción OOS no respeta la distancia corte-objetivo h")
                 registros.append(_registro(ubigeo, int(corte), objetivo, h,
                                            ejecucion.id_ejecucion, {}, probabilidad, casos, None, cortes))
-            upsert(sesion, Prediccion.__table__, registros, ["ubigeo", "id_semana_corte", "horizonte"])
-            ejecucion.estado, ejecucion.fin = "exitosa", ahora_utc()
+            upsert(sesion, Prediction.__table__, registros, ["ubigeo", "id_semana_corte", "horizonte"])
+            ejecucion.estado, ejecucion.fin = "exitosa", utc_now()
             ejecucion.id_semana_corte = max(r["id_semana_corte"] for r in registros)
             ejecucion.detalle = {"origen": "oos_protocolo", "horizonte": h, "bloque": bloque,
                                  "experimental": experimental, "predicciones": len(registros),

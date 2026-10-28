@@ -10,8 +10,8 @@ from sqlalchemy import func, select
 
 from backend_soporte import datos_muestra, motor_temporal
 from serving_soporte import CORTE, preparar_muestra
-from denguekay.db.models import Ejecucion, ImportanciaVariable, ParametroSistema, Prediccion, VersionModelo
-from denguekay.db.session import transaccion
+from denguekay.db.models import Run, VariableImportance, SystemParameter, Prediction, ModelVersion
+from denguekay.db.session import transaction
 from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.cargar_datos import persistir_carga
@@ -36,7 +36,7 @@ class TestPublicacion(unittest.TestCase):
         self.carpeta = tempfile.TemporaryDirectory()
         self.motor = motor_temporal(Path(self.carpeta.name))
         self.almacenamiento = AlmacenamientoLocal(Path(self.carpeta.name) / "storage")
-        with transaccion(self.motor) as s:
+        with transaction(self.motor) as s:
             persistir_carga(s, self.datos)
 
     def tearDown(self):
@@ -44,7 +44,7 @@ class TestPublicacion(unittest.TestCase):
         self.carpeta.cleanup()
 
     def guardar(self, preparadas=None):
-        with transaccion(self.motor) as s:
+        with transaction(self.motor) as s:
             versiones = guardar_versiones(s, preparadas or self.preparadas, "run-prueba",
                                           parametros.criterios_aceptacion(s), self.almacenamiento)
             return {k: (v.codigo, v.id_version) for k, v in versiones.items()}
@@ -53,8 +53,8 @@ class TestPublicacion(unittest.TestCase):
         codigos = self.guardar()
         self.assertEqual(codigos[2, "clasificacion"][0], "clf-h2-v1")
         self.assertEqual(codigos[4, "regresion"][0], "reg-h4-v1")
-        with transaccion(self.motor) as s:
-            for v in s.scalars(select(VersionModelo)):
+        with transaction(self.motor) as s:
+            for v in s.scalars(select(ModelVersion)):
                 with self.subTest(codigo=v.codigo):
                     self.assertEqual(v.estado, "candidata")
                     self.assertFalse(v.cumple_umbrales)  # métricas reales de 2024 no cumplen
@@ -64,7 +64,7 @@ class TestPublicacion(unittest.TestCase):
                     self.assertEqual(v.mlflow_run_id, "run-prueba")
                     self.assertIn("temporada_2024", v.metricas["bloques"])
                     self.assertEqual(v.reproducibilidad["entrenamiento_corte"], str(CORTE))
-            self.assertGreater(s.scalar(select(func.count()).select_from(ImportanciaVariable)), 0)
+            self.assertGreater(s.scalar(select(func.count()).select_from(VariableImportance)), 0)
 
     def test_mismo_artefacto_reutiliza_y_otro_crea_nueva_version(self):
         primera = self.guardar()
@@ -74,15 +74,15 @@ class TestPublicacion(unittest.TestCase):
         distinta = VersionPreparada({**original.datos, "sha256_artefacto": "b" * 64}, original.artefacto + b" ", [])
         nuevas = self.guardar({clave: distinta})
         self.assertEqual(nuevas[clave][0], "clf-h2-v2")
-        with transaccion(self.motor) as s:
+        with transaction(self.motor) as s:
             self.assertEqual(siguiente_codigo(s, "clasificacion", 2), "clf-h2-v3")
 
     def test_storage_compartido_no_sobrescribe_artefactos_ajenos(self):
         ajeno = b'{"booster": "de otra BD"}'
         self.almacenamiento.guardar("modelos/clf-h2-v1.json", ajeno)
         codigos = self.guardar()
-        with transaccion(self.motor) as s:
-            v = s.get(VersionModelo, codigos[2, "clasificacion"][1])
+        with transaction(self.motor) as s:
+            v = s.get(ModelVersion, codigos[2, "clasificacion"][1])
             self.assertTrue(v.ruta_artefacto.startswith("modelos/clf-h2-v1-"))
             self.assertEqual(hashlib.sha256(self.almacenamiento.leer(v.ruta_artefacto)).hexdigest(), v.sha256_artefacto)
         self.assertEqual(self.almacenamiento.leer("modelos/clf-h2-v1.json"), ajeno)
@@ -91,11 +91,11 @@ class TestPublicacion(unittest.TestCase):
     def test_cumple_umbrales_lee_la_bd(self):
         metricas = self.preparadas[2, "clasificacion"].datos["metricas"]
         alerta = metricas["bloques"]["temporada_2024"]["clasificacion"]["alerta_directa"]
-        with transaccion(self.motor) as s:
+        with transaction(self.motor) as s:
             criterios = parametros.criterios_aceptacion(s)
             self.assertEqual(criterios["bloques"], ["temporada_2024"])
             self.assertFalse(cumple_umbrales("clasificacion", metricas, criterios))
-            p = s.get(ParametroSistema, "umbrales_aceptacion")
+            p = s.get(SystemParameter, "umbrales_aceptacion")
             p.valor = {**p.valor, "recall": alerta["recall"], "precision": alerta["precision"], "f1": alerta["f1"]}
             s.flush()
             self.assertTrue(cumple_umbrales("clasificacion", metricas, parametros.criterios_aceptacion(s)))
@@ -108,12 +108,12 @@ class TestPublicacion(unittest.TestCase):
         self.assertTrue(r["oos"])
         self.assertEqual([v["id_semana_corte"] for v in r["inferencias_vigentes"]], [202552, 202552])
         self.assertTrue(all(v["experimental"] for v in r["inferencias_vigentes"]))
-        with transaccion(self.motor) as s:
-            e = s.get(Ejecucion, r["id_ejecucion"])
+        with transaction(self.motor) as s:
+            e = s.get(Run, r["id_ejecucion"])
             self.assertEqual((e.tipo, e.estado), ("reentrenamiento", "exitosa"))
             self.assertEqual(publicacion_existente(s, "huella-prueba").id_ejecucion, e.id_ejecucion)
             self.assertIsNone(publicacion_existente(s, "otra"))
-            vigentes = s.scalar(select(func.count()).select_from(Prediccion).where(Prediccion.id_semana_corte == 202552))
+            vigentes = s.scalar(select(func.count()).select_from(Prediction).where(Prediction.id_semana_corte == 202552))
             self.assertEqual(vigentes, 130)
 
     def test_reporte_mlflow_no_declara_folds_historicos_como_nuevos(self):

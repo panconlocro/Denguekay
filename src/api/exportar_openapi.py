@@ -4,17 +4,17 @@ import json
 
 from src.api.main import crear_app
 from src.api.openapi import especificacion
-from denguekay.db.session import crear_fabrica_sesiones, crear_motor
+from denguekay.db.session import create_session_factory, make_engine
 from denguekay.config.paths import OPENAPI_JSON
 
 
 def exportar(motor=None):
     """Exige conexión y tablas reales antes de escribir el archivo versionable."""
     propio = motor is None
-    motor = motor if motor is not None else crear_motor()
+    motor = motor if motor is not None else make_engine()
     try:
         app = crear_app(motor=motor)
-        app.state.fabrica_sesiones = crear_fabrica_sesiones(motor)
+        app.state.fabrica_sesiones = create_session_factory(motor)
         # Fuerza una consulta antes de exportar; no acepta una exportación vacía por BD caída.
         from src.api.consultas import salud
         with app.state.fabrica_sesiones() as sesion:

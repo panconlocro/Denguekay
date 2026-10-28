@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from serving_soporte import protocolo_muestra
-from denguekay.db.models import VersionModelo
+from denguekay.db.models import ModelVersion
 from denguekay.model.train import fit_models, counts_from_log1p, evaluate_fold
 from denguekay.evaluation.compact_validation import compact_variants
 from src.serving.almacenamiento import AlmacenamientoLocal
@@ -66,7 +66,7 @@ class TestContratoProtocolo(unittest.TestCase):
                 contenido = serializar_booster(modelo)
                 ruta = f"modelos/{tarea}.json"
                 almacenamiento.guardar(ruta, contenido)
-                version = VersionModelo(codigo=tarea, tarea=tarea, variables=cols, ruta_artefacto=ruta,
+                version = ModelVersion(codigo=tarea, tarea=tarea, variables=cols, ruta_artefacto=ruta,
                                         sha256_artefacto=sha256_bytes(contenido))
                 np.testing.assert_array_equal(predecir_con_version(version, vectores.to_dict("records"), almacenamiento), esperado)
 

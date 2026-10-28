@@ -19,10 +19,10 @@ import pandas as pd
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 
-from denguekay.db.settings import ConfiguracionBDInvalida
-from denguekay.db.models import (Distrito, Ejecucion, ObservacionSemanal, Provincia,
-                            SemanaEpidemiologica, ahora_utc)
-from denguekay.db.session import crear_motor, transaccion, upsert
+from denguekay.db.settings import InvalidDatabaseSettings
+from denguekay.db.models import (District, Run, WeeklyObservation, Province,
+                            EpiWeek, utc_now)
+from denguekay.db.session import make_engine, transaction, upsert
 from denguekay.data.processing.weekly_aggregation import clean_names_for_join
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.keys import normalize
@@ -217,8 +217,8 @@ def huella_carga(datos):
 
 def ingesta_existente(sesion, huella):
     """Búsqueda portable por detalle->>'huella' (en PostgreSQL la respalda un índice único)."""
-    for ejecucion in sesion.scalars(select(Ejecucion).where(
-            Ejecucion.tipo == "ingesta", Ejecucion.estado == "exitosa").order_by(Ejecucion.id_ejecucion.desc())):
+    for ejecucion in sesion.scalars(select(Run).where(
+            Run.tipo == "ingesta", Run.estado == "exitosa").order_by(Run.id_ejecucion.desc())):
         if (ejecucion.detalle or {}).get("huella") == huella:
             return ejecucion
     return None
@@ -234,14 +234,14 @@ def persistir_carga(sesion, datos):
     previa = ingesta_existente(sesion, huella)
     if previa is not None:
         return {**previa.detalle["resumen"], "id_ejecucion": previa.id_ejecucion, "reutilizada": True}
-    ejecucion = Ejecucion(tipo="ingesta", estado="en_curso", detalle={"huella": huella})
+    ejecucion = Run(tipo="ingesta", estado="en_curso", detalle={"huella": huella})
     sesion.add(ejecucion)
     sesion.flush()
-    instante = ahora_utc()
-    upsert(sesion, Provincia.__table__, datos.provincias, ["ubigeo_provincia"])
-    upsert(sesion, Distrito.__table__, datos.distritos, ["ubigeo"])
-    upsert(sesion, SemanaEpidemiologica.__table__, datos.semanas, ["id_semana"])
-    upsert(sesion, ObservacionSemanal.__table__,
+    instante = utc_now()
+    upsert(sesion, Province.__table__, datos.provincias, ["ubigeo_provincia"])
+    upsert(sesion, District.__table__, datos.distritos, ["ubigeo"])
+    upsert(sesion, EpiWeek.__table__, datos.semanas, ["id_semana"])
+    upsert(sesion, WeeklyObservation.__table__,
            [{**o, "fecha_extraccion": instante, "id_ejecucion": ejecucion.id_ejecucion} for o in datos.observaciones],
            ["ubigeo", "id_semana"])
     if datos.seleccion_experimental:
@@ -252,7 +252,7 @@ def persistir_carga(sesion, datos):
                "fecha_corte_datos": str(datos.fecha_corte_datos), "id_semana_corte": ultima}
     ejecucion.estado = "exitosa"
     ejecucion.id_semana_corte = ultima
-    ejecucion.fin = ahora_utc()
+    ejecucion.fin = utc_now()
     ejecucion.detalle = {"huella": huella, "hashes_entrada": datos.hashes,
                          "validacion_gx": datos.validacion_gx, "resumen": resumen,
                          "fecha_extraccion": instante.isoformat()}
@@ -262,8 +262,8 @@ def persistir_carga(sesion, datos):
 
 def registrar_fallo(motor, tipo, error, detalle=None):
     """Deja constancia de una ejecución fallida en su propia transacción."""
-    with transaccion(motor) as sesion:
-        sesion.add(Ejecucion(tipo=tipo, estado="fallida", fin=ahora_utc(), detalle=detalle or {},
+    with transaction(motor) as sesion:
+        sesion.add(Run(tipo=tipo, estado="fallida", fin=utc_now(), detalle=detalle or {},
                              mensaje_error=f"{type(error).__name__}: {error}"[:2000]))
 
 
@@ -282,7 +282,7 @@ def cargar_datos(motor):
         registrar_fallo(motor, "ingesta", error, {"etapa": "preparacion"})
         raise
     try:
-        with transaccion(motor) as sesion:
+        with transaction(motor) as sesion:
             return persistir_carga(sesion, datos)
     except (SQLAlchemyError, ValueError) as error:
         registrar_fallo(motor, "ingesta", error, {"huella": huella_carga(datos)})
@@ -294,13 +294,13 @@ def main(argv=None):
     argparse.ArgumentParser(description=__doc__).parse_args(argv)
     motor = None
     try:
-        motor = crear_motor()
+        motor = make_engine()
         print(json.dumps(cargar_datos(motor), ensure_ascii=False))
         return 0
     except SQLAlchemyError:
         print("No se pudo completar la carga en la BD; revise conexión, migraciones y permisos", file=sys.stderr)
         return 1
-    except (ConfiguracionBDInvalida, ValueError, OSError) as error:
+    except (InvalidDatabaseSettings, ValueError, OSError) as error:
         print(f"Carga rechazada: {error}", file=sys.stderr)
         return 1
     finally:

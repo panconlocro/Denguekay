@@ -9,9 +9,9 @@ import unittest
 from sqlalchemy import func, select
 
 from backend_soporte import datos_muestra, leer_muestra, motor_temporal
-from denguekay.db.models import (Distrito, Ejecucion, ObservacionSemanal, ParametroSistema, Provincia,
-                            SemanaEpidemiologica)
-from denguekay.db.session import transaccion
+from denguekay.db.models import (District, Run, WeeklyObservation, SystemParameter, Province,
+                            EpiWeek)
+from denguekay.db.session import transaction
 from src.serving import cargar_datos as carga
 from src.serving.configuracion import configuracion_servicio
 
@@ -35,7 +35,7 @@ class TestCargaOE2(unittest.TestCase):
         self.carpeta.cleanup()
 
     def cargar(self, datos=None):
-        with transaccion(self.motor) as s:
+        with transaction(self.motor) as s:
             return carga.persistir_carga(s, datos or self.datos)
 
     def contar(self, s, modelo):
@@ -46,31 +46,31 @@ class TestCargaOE2(unittest.TestCase):
         self.assertFalse(r["reutilizada"])
         self.assertEqual((r["provincias"], r["distritos"], r["observaciones"]), (8, 65, 75))
         self.assertEqual(r["id_semana_corte"], 202552)
-        with transaccion(self.motor) as s:
-            self.assertEqual(self.contar(s, Provincia), 8)
-            piura = s.get(Distrito, "200101")
+        with transaction(self.motor) as s:
+            self.assertEqual(self.contar(s, Province), 8)
+            piura = s.get(District, "200101")
             self.assertEqual((piura.ubigeo_provincia, piura.poblacion_censo_2017), ("2001", 158495))
             self.assertIsInstance(piura.ubigeo, str)
-            self.assertEqual(s.get(Provincia, "2001").nombre, "Piura")
-            o2017 = s.get(ObservacionSemanal, ("200101", 201720))
-            o2025 = s.get(ObservacionSemanal, ("200101", 202552))
+            self.assertEqual(s.get(Province, "2001").nombre, "Piura")
+            o2017 = s.get(WeeklyObservation, ("200101", 201720))
+            o2025 = s.get(WeeklyObservation, ("200101", 202552))
             self.assertEqual((o2017.fuente_casos, o2025.fuente_casos), ("excel_historico", "sala_situacional"))
             self.assertEqual(o2025.estado_cobertura, "verificado")
             self.assertIsNotNone(o2025.temp_media_c)
             self.assertLessEqual(o2025.temp_min_c, o2025.temp_media_c)
-            ejecucion = s.get(Ejecucion, r["id_ejecucion"])
+            ejecucion = s.get(Run, r["id_ejecucion"])
             self.assertEqual((ejecucion.tipo, ejecucion.estado, ejecucion.id_semana_corte), ("ingesta", "exitosa", 202552))
             self.assertEqual(ejecucion.detalle["hashes_entrada"], self.datos.hashes)
             self.assertTrue(ejecucion.detalle["validacion_gx"]["exito"])
             self.assertEqual(o2025.id_ejecucion, ejecucion.id_ejecucion)
-            seleccion = s.get(ParametroSistema, "seleccion_experimental").valor
+            seleccion = s.get(SystemParameter, "seleccion_experimental").valor
             self.assertEqual(seleccion["4"]["clasificacion"], "clf-h4-v1")
 
     def test_ceros_se_conservan_y_casos_de_gold_coinciden(self):
         self.cargar()
         silver = leer_muestra()["silver"]
-        with transaccion(self.motor) as s:
-            casos = {(o.ubigeo, o.id_semana): o.casos_dengue for o in s.scalars(select(ObservacionSemanal))}
+        with transaction(self.motor) as s:
+            casos = {(o.ubigeo, o.id_semana): o.casos_dengue for o in s.scalars(select(WeeklyObservation))}
         for fila in silver.itertuples():
             self.assertEqual(casos[fila.ubigeo, fila.anio * 100 + fila.semana], fila.casos_Dengue)
         self.assertIn(0, casos.values())
@@ -91,19 +91,19 @@ class TestCargaOE2(unittest.TestCase):
         distritos = [{**d, "nombre": d["nombre"].upper()} for d in self.datos.distritos]
         tercera = self.cargar(replace(self.datos, distritos=distritos, hashes={**self.datos.hashes, "otra": "x"}))
         self.assertNotEqual(tercera["id_ejecucion"], primera["id_ejecucion"])
-        with transaccion(self.motor) as s:
-            self.assertEqual(self.contar(s, ObservacionSemanal), 75)
-            self.assertEqual(self.contar(s, Distrito), 65)
-            self.assertEqual(s.get(Distrito, "200101").nombre, "PIURA")
-            self.assertEqual(self.contar(s, Ejecucion), 2)
+        with transaction(self.motor) as s:
+            self.assertEqual(self.contar(s, WeeklyObservation), 75)
+            self.assertEqual(self.contar(s, District), 65)
+            self.assertEqual(s.get(District, "200101").nombre, "PIURA")
+            self.assertEqual(self.contar(s, Run), 2)
 
     def test_semilla_experimental_no_pisa_un_valor_existente(self):
         self.cargar()
-        with transaccion(self.motor) as s:
-            s.get(ParametroSistema, "seleccion_experimental").valor = {"2": {"clasificacion": "x", "regresion": "y"}}
+        with transaction(self.motor) as s:
+            s.get(SystemParameter, "seleccion_experimental").valor = {"2": {"clasificacion": "x", "regresion": "y"}}
         self.cargar(replace(self.datos, hashes={**self.datos.hashes, "otra": "x"}))
-        with transaccion(self.motor) as s:
-            self.assertEqual(s.get(ParametroSistema, "seleccion_experimental").valor["2"]["clasificacion"], "x")
+        with transaction(self.motor) as s:
+            self.assertEqual(s.get(SystemParameter, "seleccion_experimental").valor["2"]["clasificacion"], "x")
 
     def test_rechaza_gx_fallido(self):
         with self.assertRaisesRegex(ValueError, "GX"):
@@ -128,23 +128,23 @@ class TestCargaOE2(unittest.TestCase):
 
     def test_exige_esquema_y_registra_fallos(self):
         from sqlalchemy.engine import URL
-        from denguekay.db.session import crear_motor
-        vacio = crear_motor(URL.create("sqlite", database=str(Path(self.carpeta.name) / "vacia.db")))
+        from denguekay.db.session import make_engine
+        vacio = make_engine(URL.create("sqlite", database=str(Path(self.carpeta.name) / "vacia.db")))
         try:
             with self.assertRaisesRegex(ValueError, "alembic upgrade head"):
                 carga.cargar_datos(vacio)
         finally:
             vacio.dispose()
         carga.registrar_fallo(self.motor, "ingesta", ValueError("fuente ilegible"), {"huella": "h"})
-        with transaccion(self.motor) as s:
-            fallida = s.scalar(select(Ejecucion).where(Ejecucion.estado == "fallida"))
+        with transaction(self.motor) as s:
+            fallida = s.scalar(select(Run).where(Run.estado == "fallida"))
             self.assertEqual(fallida.tipo, "ingesta")
             self.assertIn("fuente ilegible", fallida.mensaje_error)
 
     def test_semanas_cubren_objetivos_futuros(self):
         self.cargar()
-        with transaccion(self.motor) as s:
-            ultima = s.scalar(select(func.max(SemanaEpidemiologica.id_semana)))
+        with transaction(self.motor) as s:
+            ultima = s.scalar(select(func.max(EpiWeek.id_semana)))
         self.assertGreaterEqual(ultima, 202605)
 
 

@@ -5,8 +5,8 @@ from datetime import timedelta
 from sqlalchemy import func, select
 
 from src.api.errores import ErrorAPI
-from denguekay.db.models import (Alerta, Distrito, Ejecucion, ImportanciaVariable, ObservacionSemanal,
-                            Prediccion, SemanaEpidemiologica, VersionModelo)
+from denguekay.db.models import (Alert, District, Run, VariableImportance, WeeklyObservation,
+                            Prediction, EpiWeek, ModelVersion)
 from src.serving import parametros
 from src.serving.inferencia import MOTIVO_H3, TAREAS, seleccionar_versiones
 from src.serving.riesgo import ETIQUETAS, NIVELES
@@ -19,9 +19,9 @@ NOTA_EXPERIMENTAL = ("Demo experimental: ningún modelo cumple todavía los umbr
 
 def metadatos(sesion, disponible=True, motivo=None):
     """Corte de la última ingesta y fin de la última ejecución exitosa."""
-    ingesta = sesion.scalar(select(Ejecucion).where(Ejecucion.tipo == "ingesta", Ejecucion.estado == "exitosa")
-                            .order_by(Ejecucion.id_ejecucion.desc()).limit(1))
-    fin = sesion.scalar(select(func.max(Ejecucion.fin)).where(Ejecucion.estado == "exitosa"))
+    ingesta = sesion.scalar(select(Run).where(Run.tipo == "ingesta", Run.estado == "exitosa")
+                            .order_by(Run.id_ejecucion.desc()).limit(1))
+    fin = sesion.scalar(select(func.max(Run.fin)).where(Run.estado == "exitosa"))
     corte = ((ingesta.detalle or {}).get("resumen") or {}).get("fecha_corte_datos") if ingesta else None
     return {"disponible": disponible, "motivo": motivo, "fecha_corte_datos": corte, "fecha_actualizacion": fin}
 
@@ -43,13 +43,13 @@ def semanas(sesion, ids):
     ids = set(ids)
     if not ids:
         return {}
-    return {s.id_semana: s for s in sesion.scalars(select(SemanaEpidemiologica).where(SemanaEpidemiologica.id_semana.in_(ids)))}
+    return {s.id_semana: s for s in sesion.scalars(select(EpiWeek).where(EpiWeek.id_semana.in_(ids)))}
 
 
 # --- distritos y observaciones ---------------------------------------------------
 
 def distrito_existente(sesion, ubigeo):
-    d = sesion.get(Distrito, ubigeo)
+    d = sesion.get(District, ubigeo)
     if d is None:
         raise ErrorAPI(404, "distrito_no_encontrado", "El ubigeo no pertenece al catálogo de Piura")
     return d
@@ -62,7 +62,7 @@ def distrito_dto(d):
 
 
 def nombres_distritos(sesion):
-    return dict(sesion.execute(select(Distrito.ubigeo, Distrito.nombre)).all())
+    return dict(sesion.execute(select(District.ubigeo, District.nombre)).all())
 
 
 def observacion_dtos(sesion, filas):
@@ -75,30 +75,30 @@ def observacion_dtos(sesion, filas):
 
 
 def consulta_observaciones(ubigeo=None, desde=None, hasta=None):
-    consulta = select(ObservacionSemanal).join(
-        SemanaEpidemiologica, SemanaEpidemiologica.id_semana == ObservacionSemanal.id_semana)
+    consulta = select(WeeklyObservation).join(
+        EpiWeek, EpiWeek.id_semana == WeeklyObservation.id_semana)
     if ubigeo:
-        consulta = consulta.where(ObservacionSemanal.ubigeo == ubigeo)
+        consulta = consulta.where(WeeklyObservation.ubigeo == ubigeo)
     if desde:
-        consulta = consulta.where(SemanaEpidemiologica.fecha_inicio >= desde)
+        consulta = consulta.where(EpiWeek.fecha_inicio >= desde)
     if hasta:
-        consulta = consulta.where(SemanaEpidemiologica.fecha_inicio <= hasta)
-    return consulta.order_by(ObservacionSemanal.id_semana, ObservacionSemanal.ubigeo)
+        consulta = consulta.where(EpiWeek.fecha_inicio <= hasta)
+    return consulta.order_by(WeeklyObservation.id_semana, WeeklyObservation.ubigeo)
 
 
 # --- predicciones -----------------------------------------------------------------
 
 def ejecuciones_oos(sesion):
-    return [e.id_ejecucion for e in sesion.scalars(select(Ejecucion).where(Ejecucion.tipo == "inferencia"))
+    return [e.id_ejecucion for e in sesion.scalars(select(Run).where(Run.tipo == "inferencia"))
             if (e.detalle or {}).get("origen") == "oos_protocolo"]
 
 
 def corte_vigente(sesion, horizonte):
     """Último corte publicado por una inferencia operativa (no por la importación OOS)."""
-    consulta = select(func.max(Prediccion.id_semana_corte)).where(Prediccion.horizonte == horizonte)
+    consulta = select(func.max(Prediction.id_semana_corte)).where(Prediction.horizonte == horizonte)
     oos = ejecuciones_oos(sesion)
     if oos:
-        consulta = consulta.where(Prediccion.id_ejecucion.not_in(oos))
+        consulta = consulta.where(Prediction.id_ejecucion.not_in(oos))
     return sesion.scalar(consulta)
 
 
@@ -108,13 +108,13 @@ def prediccion_dtos(sesion, filas):
         return []
     nombres = nombres_distritos(sesion)
     cal = semanas(sesion, [p.id_semana_corte for p in filas] + [p.id_semana_objetivo for p in filas])
-    versiones = {v.id_version: v for v in sesion.scalars(select(VersionModelo))}
-    detalles = dict(sesion.execute(select(Ejecucion.id_ejecucion, Ejecucion.detalle).where(
-        Ejecucion.id_ejecucion.in_({p.id_ejecucion for p in filas}))).all())
+    versiones = {v.id_version: v for v in sesion.scalars(select(ModelVersion))}
+    detalles = dict(sesion.execute(select(Run.id_ejecucion, Run.detalle).where(
+        Run.id_ejecucion.in_({p.id_ejecucion for p in filas}))).all())
     persistencia = dict(((u, s), c) for u, s, c in sesion.execute(select(
-        ObservacionSemanal.ubigeo, ObservacionSemanal.id_semana, ObservacionSemanal.casos_dengue).where(
-        ObservacionSemanal.id_semana.in_({p.id_semana_corte for p in filas}),
-        ObservacionSemanal.ubigeo.in_({p.ubigeo for p in filas}))))
+        WeeklyObservation.ubigeo, WeeklyObservation.id_semana, WeeklyObservation.casos_dengue).where(
+        WeeklyObservation.id_semana.in_({p.id_semana_corte for p in filas}),
+        WeeklyObservation.ubigeo.in_({p.ubigeo for p in filas}))))
     vigentes = {h: corte_vigente(sesion, h) for h in {p.horizonte for p in filas}}
     resultado = []
     for p in filas:
@@ -141,10 +141,10 @@ def prediccion_dtos(sesion, filas):
 
 
 def consulta_predicciones(horizonte, corte, ubigeo=None):
-    consulta = select(Prediccion).where(Prediccion.horizonte == horizonte, Prediccion.id_semana_corte == corte)
+    consulta = select(Prediction).where(Prediction.horizonte == horizonte, Prediction.id_semana_corte == corte)
     if ubigeo:
-        consulta = consulta.where(Prediccion.ubigeo == ubigeo)
-    return consulta.order_by(Prediccion.ubigeo)
+        consulta = consulta.where(Prediction.ubigeo == ubigeo)
+    return consulta.order_by(Prediction.ubigeo)
 
 
 def sin_prediccion(sesion, horizonte):
@@ -160,25 +160,25 @@ def series(sesion, ubigeo, horizonte, desde, hasta):
     """Semanas continuas del calendario con observado y predicción (null si falta)."""
     d = distrito_existente(sesion, ubigeo)
     if hasta is None:
-        ultima = sesion.scalar(select(func.max(SemanaEpidemiologica.fecha_inicio)).join(
-            Prediccion, Prediccion.id_semana_objetivo == SemanaEpidemiologica.id_semana).where(
-            Prediccion.ubigeo == ubigeo, Prediccion.horizonte == horizonte))
-        ultima = ultima or sesion.scalar(select(func.max(SemanaEpidemiologica.fecha_inicio)).join(
-            ObservacionSemanal, ObservacionSemanal.id_semana == SemanaEpidemiologica.id_semana))
+        ultima = sesion.scalar(select(func.max(EpiWeek.fecha_inicio)).join(
+            Prediction, Prediction.id_semana_objetivo == EpiWeek.id_semana).where(
+            Prediction.ubigeo == ubigeo, Prediction.horizonte == horizonte))
+        ultima = ultima or sesion.scalar(select(func.max(EpiWeek.fecha_inicio)).join(
+            WeeklyObservation, WeeklyObservation.id_semana == EpiWeek.id_semana))
         if ultima is None:
             raise ErrorAPI(409, "sin_datos", "No hay observaciones ni predicciones cargadas")
         hasta = ultima
     desde = desde or hasta - timedelta(weeks=25)
     if (hasta - desde).days > 7 * 520:
         raise ErrorAPI(422, "rango_invalido", "El rango de la serie no puede superar 10 años")
-    cal = list(sesion.scalars(select(SemanaEpidemiologica).where(
-        SemanaEpidemiologica.fecha_inicio >= desde, SemanaEpidemiologica.fecha_inicio <= hasta
-    ).order_by(SemanaEpidemiologica.id_semana)))
+    cal = list(sesion.scalars(select(EpiWeek).where(
+        EpiWeek.fecha_inicio >= desde, EpiWeek.fecha_inicio <= hasta
+    ).order_by(EpiWeek.id_semana)))
     ids = [s.id_semana for s in cal]
-    obs = {o.id_semana: o for o in sesion.scalars(select(ObservacionSemanal).where(
-        ObservacionSemanal.ubigeo == ubigeo, ObservacionSemanal.id_semana.in_(ids)))} if ids else {}
-    preds = list(sesion.scalars(select(Prediccion).where(
-        Prediccion.ubigeo == ubigeo, Prediccion.horizonte == horizonte, Prediccion.id_semana_objetivo.in_(ids)))) if ids else []
+    obs = {o.id_semana: o for o in sesion.scalars(select(WeeklyObservation).where(
+        WeeklyObservation.ubigeo == ubigeo, WeeklyObservation.id_semana.in_(ids)))} if ids else {}
+    preds = list(sesion.scalars(select(Prediction).where(
+        Prediction.ubigeo == ubigeo, Prediction.horizonte == horizonte, Prediction.id_semana_objetivo.in_(ids)))) if ids else []
     dtos = {dto["semana_objetivo"]["id_semana"]: dto for dto in prediccion_dtos(sesion, preds)}
     motivo = MOTIVO_H3 if horizonte == 3 else None
     return {**metadatos(sesion, motivo is None, motivo), "ubigeo": ubigeo, "distrito": d.nombre,
@@ -200,13 +200,13 @@ def tablero(sesion, horizonte):
     corte, dtos = predicciones_vigentes(sesion, horizonte)
     disponibles = [p for p in dtos if p["disponible"]]
     niveles = {n: sum(p["nivel_riesgo"] == n for p in disponibles) for n in NIVELES}
-    total_distritos = sesion.scalar(select(func.count()).select_from(Distrito).where(Distrito.activo.is_(True)))
-    activas = sesion.scalar(select(func.count()).select_from(Alerta).join(
-        Prediccion, Prediccion.id_prediccion == Alerta.id_prediccion).where(
-        Alerta.estado == "activa", Prediccion.horizonte == horizonte))
-    ultima_obs = sesion.scalar(select(func.max(ObservacionSemanal.id_semana)))
-    casos_obs = sesion.scalar(select(func.sum(ObservacionSemanal.casos_dengue)).where(
-        ObservacionSemanal.id_semana == ultima_obs)) if ultima_obs else None
+    total_distritos = sesion.scalar(select(func.count()).select_from(District).where(District.activo.is_(True)))
+    activas = sesion.scalar(select(func.count()).select_from(Alert).join(
+        Prediction, Prediction.id_prediccion == Alert.id_prediccion).where(
+        Alert.estado == "activa", Prediction.horizonte == horizonte))
+    ultima_obs = sesion.scalar(select(func.max(WeeklyObservation.id_semana)))
+    casos_obs = sesion.scalar(select(func.sum(WeeklyObservation.casos_dengue)).where(
+        WeeklyObservation.id_semana == ultima_obs)) if ultima_obs else None
     completo = bool(dtos) and len(disponibles) == len(dtos)
     motivo = None if dtos else sin_prediccion(sesion, horizonte)
     return {**metadatos(sesion, bool(dtos), motivo), "horizonte": horizonte,
@@ -231,7 +231,7 @@ def mapa_riesgo(sesion, horizonte):
     motivo_general = sin_prediccion(sesion, horizonte) if not dtos else None
     cortes = parametros.cortes_riesgo(sesion)
     features = []
-    for d in sesion.scalars(select(Distrito).where(Distrito.activo.is_(True)).order_by(Distrito.ubigeo)):
+    for d in sesion.scalars(select(District).where(District.activo.is_(True)).order_by(District.ubigeo)):
         p = por_ubigeo.get(d.ubigeo)
         features.append({"type": "Feature", "id": d.ubigeo,
             "geometry": {"type": "Point", "coordinates": [d.longitud, d.latitud]},
@@ -257,20 +257,20 @@ def mapa_riesgo(sesion, horizonte):
 # --- alertas -----------------------------------------------------------------------
 
 def consulta_alertas(horizonte=None, ubigeo=None, nivel=None, estado=None):
-    consulta = select(Alerta).join(Prediccion, Prediccion.id_prediccion == Alerta.id_prediccion)
-    for condicion in (Prediccion.horizonte == horizonte if horizonte else None,
-                      Alerta.ubigeo == ubigeo if ubigeo else None,
-                      Alerta.nivel == nivel if nivel else None,
-                      Alerta.estado == estado if estado else None):
+    consulta = select(Alert).join(Prediction, Prediction.id_prediccion == Alert.id_prediccion)
+    for condicion in (Prediction.horizonte == horizonte if horizonte else None,
+                      Alert.ubigeo == ubigeo if ubigeo else None,
+                      Alert.nivel == nivel if nivel else None,
+                      Alert.estado == estado if estado else None):
         if condicion is not None:
             consulta = consulta.where(condicion)
     # Activas primero, luego muy_alto antes que alto y lo más reciente arriba.
-    return consulta.order_by(Alerta.estado, Alerta.nivel.desc(), Alerta.fecha_generacion.desc(), Alerta.id_alerta.desc())
+    return consulta.order_by(Alert.estado, Alert.nivel.desc(), Alert.fecha_generacion.desc(), Alert.id_alerta.desc())
 
 
 def alerta_dtos(sesion, filas):
     ids = {a.id_prediccion for a in filas}
-    predicciones = list(sesion.scalars(select(Prediccion).where(Prediccion.id_prediccion.in_(ids)))) if ids else []
+    predicciones = list(sesion.scalars(select(Prediction).where(Prediction.id_prediccion.in_(ids)))) if ids else []
     preds = {p["id_prediccion"]: p for p in prediccion_dtos(sesion, predicciones)}
     return [{"id_alerta": a.id_alerta, "ubigeo": a.ubigeo, "distrito": preds[a.id_prediccion]["distrito"],
              "horizonte": preds[a.id_prediccion]["horizonte"], "nivel": a.nivel,
@@ -283,7 +283,7 @@ def alerta_dtos(sesion, filas):
 # --- modelos -----------------------------------------------------------------------
 
 def modelo_existente(sesion, identificador):
-    v = sesion.get(VersionModelo, identificador)
+    v = sesion.get(ModelVersion, identificador)
     if v is None:
         raise ErrorAPI(404, "modelo_no_encontrado", "La versión de modelo no existe")
     return v
@@ -303,7 +303,7 @@ def modelo_dto(v, detalle=False):
 
 
 def modelos_en_uso(sesion, horizonte, servir_no_validadas):
-    horizontes = [horizonte] if horizonte else sorted(set(sesion.scalars(select(VersionModelo.horizonte))))
+    horizontes = [horizonte] if horizonte else sorted(set(sesion.scalars(select(ModelVersion.horizonte))))
     elementos = []
     for h in horizontes:
         versiones, _ = seleccionar_versiones(sesion, h, servir_no_validadas)
@@ -319,8 +319,8 @@ def modelos_en_uso(sesion, horizonte, servir_no_validadas):
 
 def variables(sesion, identificador):
     modelo_existente(sesion, identificador)
-    filas = list(sesion.scalars(select(ImportanciaVariable).where(
-        ImportanciaVariable.id_version == identificador).order_by(ImportanciaVariable.rango)))
+    filas = list(sesion.scalars(select(VariableImportance).where(
+        VariableImportance.id_version == identificador).order_by(VariableImportance.rango)))
     return {**metadatos(sesion, bool(filas), None if filas else "La versión no tiene importancias guardadas"),
             "id_version": identificador,
             "elementos": [{"variable": f.variable, "importancia": f.importancia, "rango": f.rango} for f in filas],
@@ -330,8 +330,8 @@ def variables(sesion, identificador):
 # --- salud -----------------------------------------------------------------------
 
 def salud(sesion, version_api):
-    ultima = sesion.scalar(select(Ejecucion).where(Ejecucion.estado == "exitosa")
-                           .order_by(Ejecucion.id_ejecucion.desc()).limit(1))
+    ultima = sesion.scalar(select(Run).where(Run.estado == "exitosa")
+                           .order_by(Run.id_ejecucion.desc()).limit(1))
     return {**metadatos(sesion), "estado": "ok", "conexion_bd": True, "version_api": version_api,
             "ultima_ejecucion": None if ultima is None else {
                 "id_ejecucion": ultima.id_ejecucion, "tipo": ultima.tipo, "estado": ultima.estado,

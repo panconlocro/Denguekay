@@ -9,7 +9,7 @@ from alembic.config import Config
 from sqlalchemy.engine import make_url
 import pandas as pd
 
-from denguekay.db.session import crear_motor
+from denguekay.db.session import make_engine
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.config.paths import ALEMBIC_CONFIG, BACKEND_FIXTURES, DISTRICT_COORDS, UBIGEO_CATALOG
 
@@ -59,7 +59,7 @@ def motor_temporal(carpeta):
     """SQLite aislado, con claves foráneas activas."""
     from sqlalchemy.engine import URL
 
-    motor = crear_motor(URL.create("sqlite", database=str(carpeta / "pruebas.db")))
+    motor = make_engine(URL.create("sqlite", database=str(carpeta / "pruebas.db")))
     migrar(motor)
     return motor
 

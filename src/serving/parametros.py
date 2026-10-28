@@ -2,7 +2,7 @@
 
 from sqlalchemy import select
 
-from denguekay.db.models import ParametroSistema, ahora_utc
+from denguekay.db.models import SystemParameter, utc_now
 from denguekay.db.session import upsert
 
 
@@ -11,7 +11,7 @@ class ParametroFaltante(ValueError):
 
 
 def leer(sesion, clave):
-    valor = sesion.scalar(select(ParametroSistema.valor).where(ParametroSistema.clave == clave))
+    valor = sesion.scalar(select(SystemParameter.valor).where(SystemParameter.clave == clave))
     if valor is None:
         raise ParametroFaltante(f"Falta el parámetro {clave} en parametro_sistema")
     return valor
@@ -33,14 +33,14 @@ def criterios_aceptacion(sesion):
 
 def seleccion_experimental(sesion):
     """{horizonte: {tarea: codigo}}; vacío si no se sembró."""
-    valor = sesion.scalar(select(ParametroSistema.valor).where(ParametroSistema.clave == "seleccion_experimental"))
+    valor = sesion.scalar(select(SystemParameter.valor).where(SystemParameter.clave == "seleccion_experimental"))
     return {int(h): v for h, v in (valor or {}).items()}
 
 
 def sembrar_seleccion_experimental(sesion, seleccion):
     """Siembra desde config.yaml sin pisar un valor ya existente (ON CONFLICT DO NOTHING)."""
-    upsert(sesion, ParametroSistema.__table__, [{
+    upsert(sesion, SystemParameter.__table__, [{
         "clave": "seleccion_experimental", "valor": {str(h): v for h, v in seleccion.items()},
         "descripcion": "Desviación temporal: versiones candidatas que se sirven como experimentales "
                        "mientras no haya una versión activa que cumpla los umbrales",
-        "fecha_actualizacion": ahora_utc()}], ["clave"], actualizar=())
+        "fecha_actualizacion": utc_now()}], ["clave"], update=())

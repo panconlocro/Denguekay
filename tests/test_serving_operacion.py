@@ -11,8 +11,8 @@ import unittest
 from sqlalchemy.engine import URL
 
 from backend_soporte import datos_muestra, entorno_bd, motor_temporal
-from denguekay.db.models import Distrito
-from denguekay.db.session import transaccion
+from denguekay.db.models import District
+from denguekay.db.session import transaction
 from src.serving.artefactos import huella_json
 from src.serving.cargar_datos import main as cargar_cli, persistir_carga
 from src.serving.publicar import hashes_codigo, main as publicar_cli
@@ -58,12 +58,12 @@ class TestOperacionServing(unittest.TestCase):
                 distritos = [{**d, "nombre": d["nombre"].title()} for d in datos.distritos]
                 previa = replace(datos, distritos=distritos,
                     hashes={**datos.hashes, "presentacion_catalogo": huella_json(distritos)})
-                with transaccion(motor) as s:
+                with transaction(motor) as s:
                     primera = persistir_carga(s, previa)
-                with transaccion(motor) as s:
+                with transaction(motor) as s:
                     segunda = persistir_carga(s, datos)
                     self.assertNotEqual(primera["id_ejecucion"], segunda["id_ejecucion"])
                     for d in datos.distritos:
-                        self.assertEqual(s.get(Distrito, d["ubigeo"]).nombre, d["nombre"])
+                        self.assertEqual(s.get(District, d["ubigeo"]).nombre, d["nombre"])
             finally:
                 motor.dispose()

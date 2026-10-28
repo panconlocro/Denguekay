@@ -16,8 +16,8 @@ from backend_soporte import datos_muestra, entorno_bd, motor_temporal
 from serving_soporte import preparar_muestra
 from src.api.cache import CacheLecturas
 from src.api.main import crear_app
-from denguekay.db.models import Alerta, Ejecucion, Prediccion, VersionModelo
-from denguekay.db.session import crear_motor, transaccion
+from denguekay.db.models import Alert, Run, Prediction, ModelVersion
+from denguekay.db.session import make_engine, transaction
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.cargar_datos import persistir_carga
 from src.serving.inferencia import actualizar_alertas
@@ -46,18 +46,18 @@ class TestAPIReal(unittest.TestCase):
         plantilla = ruta / "plantilla"
         plantilla.mkdir()
         motor = motor_temporal(plantilla)
-        with transaccion(motor) as s:
+        with transaction(motor) as s:
             persistir_carga(s, datos)
         publicar_en_bd(motor, datos, cls.protocolo, cls.preparadas, (2, 4), cls.cfg, "run-prueba",
                        "huella-api", cls.almacenamiento, 0)
-        with transaccion(motor) as s:
+        with transaction(motor) as s:
             # Una predicción real elevada a muy_alto para ejercitar alertas (los datos de fin de año dan riesgo bajo).
-            p = s.scalar(select(Prediccion).where(Prediccion.ubigeo == "200101", Prediccion.horizonte == 2,
-                                                  Prediccion.id_semana_corte == 202552))
+            p = s.scalar(select(Prediction).where(Prediction.ubigeo == "200101", Prediction.horizonte == 2,
+                                                  Prediction.id_semana_corte == 202552))
             p.probabilidad_brote, p.nivel_riesgo = 0.8, "muy_alto"
             s.flush()
             actualizar_alertas(s, 2, 202552)
-            cls.oos_corte = s.scalar(select(func.min(Prediccion.id_semana_corte)).where(Prediccion.horizonte == 2))
+            cls.oos_corte = s.scalar(select(func.min(Prediction.id_semana_corte)).where(Prediction.horizonte == 2))
         motor.dispose()
         cls.plantilla = plantilla / "pruebas.db"
 
@@ -69,7 +69,7 @@ class TestAPIReal(unittest.TestCase):
         self.carpeta = tempfile.TemporaryDirectory()
         destino = Path(self.carpeta.name) / "api.db"
         shutil.copyfile(self.plantilla, destino)
-        self.motor = crear_motor(URL.create("sqlite", database=str(destino)))
+        self.motor = make_engine(URL.create("sqlite", database=str(destino)))
         self.app = crear_app(self.motor, self.cfg, clave_api=CLAVE, almacenamiento=self.almacenamiento)
         self.cliente = TestClient(self.app)
         self.cliente.__enter__()
@@ -90,8 +90,8 @@ class TestAPIReal(unittest.TestCase):
         return self.cliente.post("/api/v1" + ruta, json=cuerpo, headers=cabeceras)
 
     def version(self, codigo):
-        with transaccion(self.motor) as s:
-            return s.scalar(select(VersionModelo.id_version).where(VersionModelo.codigo == codigo))
+        with transaction(self.motor) as s:
+            return s.scalar(select(ModelVersion.id_version).where(ModelVersion.codigo == codigo))
 
     # --- lecturas --------------------------------------------------------------
 
@@ -223,8 +223,8 @@ class TestAPIReal(unittest.TestCase):
         pasado = self.post("/admin/inferencias", {"horizonte": 4, "id_semana_corte": 202540}).json()
         self.assertEqual(pasado["id_semana_objetivo"], 202544)
         self.assertEqual(self.post("/admin/inferencias", {"horizonte": 2}).json()["id_semana_corte"], 202552)
-        with transaccion(self.motor) as s:
-            e = s.get(Ejecucion, cuerpo["id_ejecucion"])
+        with transaction(self.motor) as s:
+            e = s.get(Run, cuerpo["id_ejecucion"])
             self.assertEqual((e.tipo, e.detalle["origen"]), ("inferencia", "api"))
 
     def test_inferencia_rechazos(self):
@@ -244,10 +244,10 @@ class TestAPIReal(unittest.TestCase):
             self.assertEqual((r.status_code, r.json()["codigo"]), (409, "artefacto_invalido"))
         finally:
             ruta.write_bytes(original)
-        with transaccion(self.motor) as s:
-            self.assertEqual(s.scalar(select(func.count()).select_from(Ejecucion).where(
-                Ejecucion.detalle.is_not(None), Ejecucion.tipo == "inferencia", Ejecucion.estado == "en_curso")), 0)
-            fallidas = list(s.scalars(select(Ejecucion).where(Ejecucion.estado == "fallida")))
+        with transaction(self.motor) as s:
+            self.assertEqual(s.scalar(select(func.count()).select_from(Run).where(
+                Run.detalle.is_not(None), Run.tipo == "inferencia", Run.estado == "en_curso")), 0)
+            fallidas = list(s.scalars(select(Run).where(Run.estado == "fallida")))
             self.assertEqual(len(fallidas), 3)  # h=3, corte sin datos y artefacto alterado
             self.assertTrue(all(f.tipo == "inferencia" and f.mensaje_error for f in fallidas))
             s.execute(text("DELETE FROM parametro_sistema WHERE clave = 'cortes_riesgo'"))
@@ -259,16 +259,16 @@ class TestAPIReal(unittest.TestCase):
         r = self.post(f"/admin/modelos/{clf}/activar")
         self.assertEqual((r.status_code, r.json()["codigo"]), (409, "no_cumple_umbrales"))
         self.assertEqual(self.post("/admin/modelos/99999/activar").status_code, 404)
-        with transaccion(self.motor) as s:
-            s.execute(VersionModelo.__table__.update().where(VersionModelo.horizonte == 2).values(cumple_umbrales=True))
+        with transaction(self.motor) as s:
+            s.execute(ModelVersion.__table__.update().where(ModelVersion.horizonte == 2).values(cumple_umbrales=True))
         r = self.post(f"/admin/modelos/{clf}/activar")
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(r.json()["activada"]["estado"], "activa")
         self.assertIsNone(r.json()["archivada"])
         self.assertEqual(self.post(f"/admin/modelos/{clf}/activar").json()["codigo"], "ya_activa")
-        with transaccion(self.motor) as s:
-            s.get(VersionModelo, self.version("reg-h4-v1")).estado = "rechazada"
-            s.get(VersionModelo, self.version("reg-h4-v1")).cumple_umbrales = True
+        with transaction(self.motor) as s:
+            s.get(ModelVersion, self.version("reg-h4-v1")).estado = "rechazada"
+            s.get(ModelVersion, self.version("reg-h4-v1")).cumple_umbrales = True
         self.assertEqual(self.post(f"/admin/modelos/{self.version('reg-h4-v1')}/activar").json()["codigo"], "version_rechazada")
         self.post(f"/admin/modelos/{self.version('reg-h2-v1')}/activar")
         en_uso = self.get("/modelos/activo?horizonte=2")["elementos"]
@@ -276,8 +276,8 @@ class TestAPIReal(unittest.TestCase):
         inferencia = self.post("/admin/inferencias", {"horizonte": 2}).json()
         self.assertFalse(inferencia["experimental"])
         self.assertEqual(inferencia["seleccion"], "activa")
-        with transaccion(self.motor) as s:
-            otra = VersionModelo(**{c: getattr(s.get(VersionModelo, clf), c) for c in (
+        with transaction(self.motor) as s:
+            otra = ModelVersion(**{c: getattr(s.get(ModelVersion, clf), c) for c in (
                 "tarea", "horizonte", "algoritmo", "variables", "hiperparametros", "metricas", "umbral_probabilidad",
                 "mlflow_run_id", "ruta_artefacto", "sha256_artefacto", "sha256_dataset")},
                 codigo="clf-h2-v2", cumple_umbrales=True)
@@ -286,8 +286,8 @@ class TestAPIReal(unittest.TestCase):
             nueva = otra.id_version
         r = self.post(f"/admin/modelos/{nueva}/activar").json()
         self.assertEqual((r["activada"]["codigo"], r["archivada"]["codigo"]), ("clf-h2-v2", "clf-h2-v1"))
-        with transaccion(self.motor) as s:
-            e = s.get(Ejecucion, r["id_ejecucion"])
+        with transaction(self.motor) as s:
+            e = s.get(Run, r["id_ejecucion"])
             self.assertEqual((e.tipo, e.detalle["archivada"]), ("mantenimiento", "clf-h2-v1"))
 
     def test_clave_escritura_y_cors(self):
@@ -399,10 +399,10 @@ import sys
 from pathlib import Path
 from fastapi.testclient import TestClient
 from src.api.main import crear_app
-from denguekay.db.session import crear_motor
+from denguekay.db.session import make_engine
 from src.serving.almacenamiento import AlmacenamientoLocal
 from denguekay.config.paths import DATA
-motor = crear_motor(sys.argv[1])
+motor = make_engine(sys.argv[1])
 def auditar(evento, argumentos):
     if evento == "open" and isinstance(argumentos[0], (str, bytes)):
         if Path(argumentos[0]).resolve().is_relative_to(DATA):

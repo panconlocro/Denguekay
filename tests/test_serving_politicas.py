@@ -10,8 +10,8 @@ import yaml
 
 from backend_soporte import motor_temporal
 from serving_soporte import protocolo_muestra
-from denguekay.db.models import ParametroSistema
-from denguekay.db.session import transaccion
+from denguekay.db.models import SystemParameter
+from denguekay.db.session import transaction
 from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal, validar_ruta
 from src.serving.configuracion import configuracion_servicio
@@ -90,17 +90,17 @@ class TestParametrosYAlmacenamiento(unittest.TestCase):
         with tempfile.TemporaryDirectory() as carpeta:
             motor = motor_temporal(Path(carpeta))
             try:
-                with transaccion(motor) as s:
+                with transaction(motor) as s:
                     self.assertEqual(parametros.cortes_riesgo(s), CORTES)
                     self.assertEqual(parametros.criterios_aceptacion(s), CRITERIOS)
                     self.assertEqual(parametros.seleccion_experimental(s), {})
                     parametros.sembrar_seleccion_experimental(s, {2: {"clasificacion": "a", "regresion": "b"}})
                     self.assertEqual(parametros.seleccion_experimental(s)[2]["regresion"], "b")
-                    s.get(ParametroSistema, "cortes_riesgo").valor = {"medio": .5, "alto": .25, "muy_alto": .75}
+                    s.get(SystemParameter, "cortes_riesgo").valor = {"medio": .5, "alto": .25, "muy_alto": .75}
                     s.flush()
                     with self.assertRaises(ValueError):
                         parametros.cortes_riesgo(s)
-                    s.delete(s.get(ParametroSistema, "regla_brote"))
+                    s.delete(s.get(SystemParameter, "regla_brote"))
                     s.flush()
                     with self.assertRaises(parametros.ParametroFaltante):
                         parametros.leer(s, "regla_brote")

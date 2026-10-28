@@ -1,30 +1,30 @@
-"""Conexión de Alembic; la URL se obtiene del mismo entorno que la aplicación."""
+"""Alembic connection; the URL comes from the same environment as the application."""
 
 from alembic import context
 
-from denguekay.db.settings import obtener_url
+from denguekay.db.settings import get_url
 from denguekay.db.models import Base
-from denguekay.db.session import crear_motor
+from denguekay.db.session import make_engine
 
 
 if context.is_offline_mode():
-    # El modo offline solo necesita el dialecto: admite una URL inyectada sin credenciales.
-    url = context.config.attributes.get("url") or obtener_url()
+    # Offline mode only needs the dialect: it accepts an injected URL without credentials.
+    url = context.config.attributes.get("url") or get_url()
     context.configure(url=url, target_metadata=Base.metadata,
                       literal_binds=True, compare_type=True)
     with context.begin_transaction():
         context.run_migrations()
 else:
-    motor = context.config.attributes.get("motor")
-    propio = motor is None
-    if propio:
-        motor = crear_motor()
+    engine = context.config.attributes.get("motor")
+    owned = engine is None
+    if owned:
+        engine = make_engine()
     try:
-        with motor.connect() as conexion:
-            context.configure(connection=conexion, target_metadata=Base.metadata,
-                              compare_type=True, render_as_batch=conexion.dialect.name == "sqlite")
+        with engine.connect() as connection:
+            context.configure(connection=connection, target_metadata=Base.metadata,
+                              compare_type=True, render_as_batch=connection.dialect.name == "sqlite")
             with context.begin_transaction():
                 context.run_migrations()
     finally:
-        if propio:
-            motor.dispose()
+        if owned:
+            engine.dispose()

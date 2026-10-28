@@ -12,7 +12,7 @@ import pandas as pd
 from sqlalchemy import select
 from xgboost import __version__ as XGBOOST_VERSION
 
-from denguekay.db.models import ImportanciaVariable, VersionModelo
+from denguekay.db.models import VariableImportance, ModelVersion
 from denguekay.model.device import xgboost_settings
 from denguekay.model.train import BASE_PARAMS, fit_models
 from denguekay.evaluation.compact_validation import compact_variants
@@ -88,7 +88,7 @@ def cumple_umbrales(tarea, metricas, criterios):
 
 def siguiente_codigo(sesion, tarea, horizonte):
     prefijo = f"{PREFIJOS[tarea]}-h{horizonte}-v"
-    existentes = sesion.scalars(select(VersionModelo.codigo).where(VersionModelo.codigo.like(f"{prefijo}%")))
+    existentes = sesion.scalars(select(ModelVersion.codigo).where(ModelVersion.codigo.like(f"{prefijo}%")))
     numeros = [int(c.removeprefix(prefijo)) for c in existentes if c.removeprefix(prefijo).isdigit()]
     return f"{prefijo}{max(numeros, default=0) + 1}"
 
@@ -117,20 +117,20 @@ def guardar_versiones(sesion, preparadas, mlflow_run_id, criterios, almacenamien
     resultado = {}
     for clave, preparada in preparadas.items():
         datos = preparada.datos
-        version = sesion.scalar(select(VersionModelo).where(
-            VersionModelo.tarea == datos["tarea"], VersionModelo.horizonte == datos["horizonte"],
-            VersionModelo.sha256_artefacto == datos["sha256_artefacto"],
-            VersionModelo.sha256_dataset == datos["sha256_dataset"]))
+        version = sesion.scalar(select(ModelVersion).where(
+            ModelVersion.tarea == datos["tarea"], ModelVersion.horizonte == datos["horizonte"],
+            ModelVersion.sha256_artefacto == datos["sha256_artefacto"],
+            ModelVersion.sha256_dataset == datos["sha256_dataset"]))
         if version is None:
             codigo = siguiente_codigo(sesion, datos["tarea"], datos["horizonte"])
             ruta = ruta_artefacto(almacenamiento, codigo, preparada.artefacto)
-            version = VersionModelo(**datos, codigo=codigo, ruta_artefacto=ruta, estado="candidata",
+            version = ModelVersion(**datos, codigo=codigo, ruta_artefacto=ruta, estado="candidata",
                                     mlflow_run_id=mlflow_run_id,
                                     cumple_umbrales=cumple_umbrales(datos["tarea"], datos["metricas"], criterios))
             sesion.add(version)
             sesion.flush()
             for importancia in preparada.importancias:
-                sesion.add(ImportanciaVariable(id_version=version.id_version, **importancia))
+                sesion.add(VariableImportance(id_version=version.id_version, **importancia))
             sesion.flush()
         resultado[clave] = version
     return resultado

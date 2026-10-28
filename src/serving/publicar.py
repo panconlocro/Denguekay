@@ -17,8 +17,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from xgboost import __version__ as XGBOOST_VERSION
 
-from denguekay.db.models import Ejecucion, ahora_utc
-from denguekay.db.session import crear_motor, transaccion
+from denguekay.db.models import Run, utc_now
+from denguekay.db.session import make_engine, transaction
 from denguekay.model.tracking import log_report
 from denguekay.model.train import BASE_PARAMS
 from src.serving import parametros
@@ -42,8 +42,8 @@ def hashes_codigo():
 
 
 def publicacion_existente(sesion, huella):
-    for ejecucion in sesion.scalars(select(Ejecucion).where(
-            Ejecucion.tipo == "reentrenamiento", Ejecucion.estado == "exitosa").order_by(Ejecucion.id_ejecucion.desc())):
+    for ejecucion in sesion.scalars(select(Run).where(
+            Run.tipo == "reentrenamiento", Run.estado == "exitosa").order_by(Run.id_ejecucion.desc())):
         if (ejecucion.detalle or {}).get("huella") == huella:
             return ejecucion
     return None
@@ -51,8 +51,8 @@ def publicacion_existente(sesion, huella):
 
 def publicar_en_bd(motor, carga, protocolo, preparadas, horizontes, cfg, run_id, huella, almacenamiento, inicio):
     """Versiones, OOS e inferencia vigente en una sola transacción."""
-    with transaccion(motor) as sesion:
-        ejecucion = Ejecucion(tipo="reentrenamiento", estado="en_curso", detalle={"huella": huella})
+    with transaction(motor) as sesion:
+        ejecucion = Run(tipo="reentrenamiento", estado="en_curso", detalle={"huella": huella})
         sesion.add(ejecucion)
         sesion.flush()
         versiones = guardar_versiones(sesion, preparadas, run_id, parametros.criterios_aceptacion(sesion), almacenamiento)
@@ -65,7 +65,7 @@ def publicar_en_bd(motor, carga, protocolo, preparadas, horizontes, cfg, run_id,
                                   "cumple_umbrales": v.cumple_umbrales, "estado": v.estado,
                                   "ruta_artefacto": v.ruta_artefacto} for v in versiones.values()],
                    "oos": oos, "inferencias_vigentes": vigentes}
-        ejecucion.estado, ejecucion.fin = "exitosa", ahora_utc()
+        ejecucion.estado, ejecucion.fin = "exitosa", utc_now()
         ejecucion.id_semana_corte = vigentes[0]["id_semana_corte"] if vigentes else None
         ejecucion.detalle = {"huella": huella, "resumen": resumen,
                              "duracion_segundos": round(time.perf_counter() - inicio, 3)}
@@ -93,7 +93,7 @@ def publicar(motor, horizontes=None, *, cfg=None, almacenamiento=None):
     huella = huella_json({"hashes": hashes, "configuracion": asdict(cfg), "horizontes": horizontes,
                           "parametros": BASE_PARAMS, "xgboost": XGBOOST_VERSION,
                           "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}"})
-    with transaccion(motor) as sesion:
+    with transaction(motor) as sesion:
         persistir_carga(sesion, carga)
         previa = publicacion_existente(sesion, huella)
         if previa is not None:
@@ -127,7 +127,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     motor = None
     try:
-        motor = crear_motor()
+        motor = make_engine()
         print(json.dumps(publicar(motor, args.horizontes), ensure_ascii=False, default=str))
         return 0
     except SQLAlchemyError:

@@ -9,7 +9,7 @@ from src.api import consultas as q
 from src.api.esquemas import (AlertaRespuesta, DistritoRespuesta, MapaRiesgoRespuesta, ModeloDetalle,
                               ModelosActivosRespuesta, ObservacionRespuesta, Pagina, PrediccionRespuesta,
                               SaludRespuesta, SeriesRespuesta, TableroRespuesta, VariablesRespuesta)
-from denguekay.db.models import Alerta, Distrito, Prediccion, VersionModelo
+from denguekay.db.models import Alert, District, Prediction, ModelVersion
 
 DESCRIPCIONES = {
     "Disponibilidad": "Distingue valores existentes, incluidos ceros, de valores ausentes con motivo",
@@ -38,15 +38,15 @@ def ejemplos_reales(sesion, cfg, version_api):
         ejemplos[ruta] = jsonable_encoder(esquema.model_validate(datos))
 
     agregar("/salud", q.salud(sesion, version_api), SaludRespuesta)
-    d = sesion.scalar(select(Distrito).order_by(Distrito.ubigeo).limit(1))
+    d = sesion.scalar(select(District).order_by(District.ubigeo).limit(1))
     if d is None:
         return ejemplos
-    agregar("/distritos", q.paginar(sesion, select(Distrito).order_by(Distrito.ubigeo), 1, 1,
+    agregar("/distritos", q.paginar(sesion, select(District).order_by(District.ubigeo), 1, 1,
                                     lambda filas: [q.distrito_dto(x) for x in filas]), Pagina[DistritoRespuesta])
     agregar("/distritos/{ubigeo}", q.distrito_dto(d), DistritoRespuesta)
     agregar("/observaciones", q.paginar(sesion, q.consulta_observaciones(), 1, 1,
                                         lambda filas: q.observacion_dtos(sesion, filas)), Pagina[ObservacionRespuesta])
-    h = sesion.scalar(select(Prediccion.horizonte).order_by(Prediccion.horizonte).limit(1))
+    h = sesion.scalar(select(Prediction.horizonte).order_by(Prediction.horizonte).limit(1))
     if h is not None:
         corte = q.corte_vigente(sesion, h)
         if corte is not None:
@@ -57,11 +57,11 @@ def ejemplos_reales(sesion, cfg, version_api):
             mapa = q.mapa_riesgo(sesion, h)
             agregar("/mapa-riesgo", {**mapa, "features": mapa["features"][:1]}, MapaRiesgoRespuesta)
     agregar("/modelos/activo", q.modelos_en_uso(sesion, None, cfg.servir_no_validadas), ModelosActivosRespuesta)
-    v = sesion.scalar(select(VersionModelo).order_by(VersionModelo.id_version).limit(1))
+    v = sesion.scalar(select(ModelVersion).order_by(ModelVersion.id_version).limit(1))
     if v is not None:
         agregar("/modelos/{identificador}", q.modelo_dto(v, True), ModeloDetalle)
         agregar("/modelos/{identificador}/variables", q.variables(sesion, v.id_version), VariablesRespuesta)
-    a = sesion.scalar(select(Alerta).order_by(Alerta.id_alerta).limit(1))
+    a = sesion.scalar(select(Alert).order_by(Alert.id_alerta).limit(1))
     if a is not None:
         agregar("/alertas", q.paginar(sesion, q.consulta_alertas(), 1, 1,
                                       lambda filas: q.alerta_dtos(sesion, filas)), Pagina[AlertaRespuesta])

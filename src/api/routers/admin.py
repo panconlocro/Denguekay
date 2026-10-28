@@ -7,7 +7,7 @@ from src.api import consultas as q
 from src.api.dependencias import Identificador, Sesion, exigir_clave
 from src.api.errores import ErrorAPI
 from src.api.esquemas import ActivacionRespuesta, InferenciaRespuesta, SolicitudInferencia
-from denguekay.db.models import Ejecucion, VersionModelo, ahora_utc
+from denguekay.db.models import Run, ModelVersion, utc_now
 from src.serving.artefactos import ArtefactoInvalido
 from src.serving.inferencia import InferenciaNoDisponible, inferir
 from src.serving.parametros import ParametroFaltante
@@ -35,7 +35,7 @@ def inferencias(solicitud: SolicitudInferencia, request: Request, sesion: Sesion
     except (InferenciaNoDisponible, ArtefactoInvalido, ParametroFaltante) as error:
         sesion.rollback()
         # Se audita el intento fallido, como en la carga y la publicación.
-        sesion.add(Ejecucion(tipo="inferencia", estado="fallida", fin=ahora_utc(),
+        sesion.add(Run(tipo="inferencia", estado="fallida", fin=utc_now(),
                              detalle={"origen": "api", "horizonte": solicitud.horizonte,
                                       "id_semana_corte": solicitud.id_semana_corte},
                              mensaje_error=f"{type(error).__name__}: {error}"[:2000]))
@@ -56,7 +56,7 @@ def activar(version: Identificador, request: Request, sesion: Sesion):
 
     Una versión con cumple_umbrales = false no se activa (409): así lo exige el DDL.
     """
-    nueva = sesion.scalar(select(VersionModelo).where(VersionModelo.id_version == version).with_for_update())
+    nueva = sesion.scalar(select(ModelVersion).where(ModelVersion.id_version == version).with_for_update())
     if nueva is None:
         raise ErrorAPI(404, "modelo_no_encontrado", "La versión de modelo no existe")
     if not nueva.cumple_umbrales:
@@ -66,15 +66,15 @@ def activar(version: Identificador, request: Request, sesion: Sesion):
         raise ErrorAPI(409, "ya_activa", "La versión ya está activa")
     if nueva.estado == "rechazada":
         raise ErrorAPI(409, "version_rechazada", "Una versión rechazada no se puede activar")
-    anterior = sesion.scalar(select(VersionModelo).where(
-        VersionModelo.tarea == nueva.tarea, VersionModelo.horizonte == nueva.horizonte,
-        VersionModelo.estado == "activa").with_for_update())
-    ahora = ahora_utc()
+    anterior = sesion.scalar(select(ModelVersion).where(
+        ModelVersion.tarea == nueva.tarea, ModelVersion.horizonte == nueva.horizonte,
+        ModelVersion.estado == "activa").with_for_update())
+    ahora = utc_now()
     if anterior is not None:
         anterior.estado = "archivada"
         sesion.flush()  # libera el índice único parcial antes de activar la nueva
     nueva.estado, nueva.fecha_activacion = "activa", ahora
-    ejecucion = Ejecucion(tipo="mantenimiento", estado="exitosa", fin=ahora, detalle={
+    ejecucion = Run(tipo="mantenimiento", estado="exitosa", fin=ahora, detalle={
         "accion": "activacion", "version": nueva.codigo, "id_version": nueva.id_version,
         "archivada": anterior.codigo if anterior else None})
     sesion.add(ejecucion)

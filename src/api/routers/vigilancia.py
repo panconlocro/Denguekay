@@ -8,7 +8,7 @@ from src.api import consultas as q
 from src.api.dependencias import Horizonte, Identificador, PaginaNumero, Sesion, TamanoPagina, Ubigeo, lectura
 from src.api.errores import ErrorAPI
 from src.api.esquemas import AlertaRespuesta, MapaRiesgoRespuesta, Pagina, TableroRespuesta
-from denguekay.db.models import Alerta
+from denguekay.db.models import Alert
 
 router = APIRouter(tags=["Vigilancia"])
 
@@ -43,7 +43,7 @@ def alertas(request: Request, response: Response, sesion: Sesion,
 def alerta(identificador: Identificador, request: Request, response: Response, sesion: Sesion):
     """Incluye la predicción que la sustenta; conserva estado retirado y motivo."""
     def construir():
-        a = sesion.get(Alerta, identificador)
+        a = sesion.get(Alert, identificador)
         if a is None:
             raise ErrorAPI(404, "alerta_no_encontrada", "La alerta no existe")
         return q.alerta_dtos(sesion, [a])[0]

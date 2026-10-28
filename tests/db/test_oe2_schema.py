@@ -21,10 +21,10 @@ from sqlalchemy.exc import DBAPIError, IntegrityError, StatementError
 from sqlalchemy.schema import CreateTable
 
 from backend_soporte import migrar, url_pg_pruebas
-from denguekay.db.models import (Alerta, Base, Distrito, Ejecucion, ImportanciaVariable,
-                            ObservacionSemanal, ParametroSistema, Prediccion, Provincia,
-                            SemanaEpidemiologica, VersionModelo)
-from denguekay.db.session import crear_motor, transaccion
+from denguekay.db.models import (Alert, Base, District, Run, VariableImportance,
+                            WeeklyObservation, SystemParameter, Prediction, Province,
+                            EpiWeek, ModelVersion)
+from denguekay.db.session import make_engine, transaction
 
 TABLAS_OE2 = {"provincia", "distrito", "semana_epidemiologica", "observacion_semanal",
               "version_modelo", "ejecucion", "prediccion", "alerta", "parametro_sistema"}
@@ -32,8 +32,8 @@ TABLAS_0002 = {"carga_datos", "distrito", "ejecucion_prediccion", "version_model
                "activacion_modelo", "importancia_variable", "observacion_semanal",
                "prediccion", "alerta"}
 # Orden de borrado que respeta las claves foráneas; parametro_sistema conserva sus semillas.
-ORDEN_LIMPIEZA = (Alerta, Prediccion, ImportanciaVariable, VersionModelo, ObservacionSemanal,
-                  Ejecucion, SemanaEpidemiologica, Distrito, Provincia)
+ORDEN_LIMPIEZA = (Alert, Prediction, VariableImportance, ModelVersion, WeeklyObservation,
+                  Run, EpiWeek, District, Province)
 SHA = "a" * 64
 # Motivos esperados en el mensaje del motor (SQLite y PostgreSQL).
 FK = r"foreign key"
@@ -73,31 +73,31 @@ class EsquemaOE2:
         migrar(cls.motor)
 
     def setUp(self):
-        with transaccion(self.motor) as s:
-            s.add(Provincia(ubigeo_provincia="2001", nombre="Piura"))
+        with transaction(self.motor) as s:
+            s.add(Province(ubigeo_provincia="2001", nombre="Piura"))
             s.flush()
-            s.add(Distrito(ubigeo="200101", ubigeo_provincia="2001", nombre="Piura",
+            s.add(District(ubigeo="200101", ubigeo_provincia="2001", nombre="Piura",
                            latitud=-5.194, longitud=-80.632, poblacion_censo_2017=158495))
             for id_semana, inicio in ((202551, date(2025, 12, 14)), (202552, date(2025, 12, 21)),
                                       (202553, date(2025, 12, 28))):
-                s.add(SemanaEpidemiologica(id_semana=id_semana, anio=2025, semana=id_semana % 100,
+                s.add(EpiWeek(id_semana=id_semana, anio=2025, semana=id_semana % 100,
                                            fecha_inicio=inicio, fecha_fin=date.fromordinal(inicio.toordinal() + 6),
                                            temporada=2026))
             s.flush()
-            ejecucion = Ejecucion(tipo="ingesta", estado="exitosa", detalle={"huella": "h1"})
+            ejecucion = Run(tipo="ingesta", estado="exitosa", detalle={"huella": "h1"})
             s.add(ejecucion)
             s.flush()
             self.id_ejecucion = ejecucion.id_ejecucion
 
     def tearDown(self):
-        with transaccion(self.motor) as s:
+        with transaction(self.motor) as s:
             for modelo in ORDEN_LIMPIEZA:
                 s.execute(delete(modelo))
 
     # --- utilidades -------------------------------------------------------
 
     def insertar(self, modelo, **fila):
-        with transaccion(self.motor) as s:
+        with transaction(self.motor) as s:
             resultado = s.execute(modelo.__table__.insert().values(**fila))
             return resultado.inserted_primary_key[0]
 
@@ -128,9 +128,9 @@ class EsquemaOE2:
     def upsert(self, fila):
         """UPSERT por la clave única del documento (ubigeo, id_semana_corte, horizonte)."""
         insertar = insert_postgresql if self.motor.dialect.name == "postgresql" else insert_sqlite
-        consulta = insertar(Prediccion.__table__).values(**fila)
+        consulta = insertar(Prediction.__table__).values(**fila)
         actualizables = {c: consulta.excluded[c] for c in fila if c not in ("ubigeo", "id_semana_corte", "horizonte")}
-        with transaccion(self.motor) as s:
+        with transaction(self.motor) as s:
             s.execute(consulta.on_conflict_do_update(
                 index_elements=["ubigeo", "id_semana_corte", "horizonte"], set_=actualizables))
 
@@ -150,8 +150,8 @@ class EsquemaOE2:
                               "ix_ejecucion_tipo_inicio", "ux_version_activa"}, indices)
 
     def test_semillas_de_parametros(self):
-        with transaccion(self.motor) as s:
-            valores = {p.clave: p.valor for p in s.scalars(select(ParametroSistema))}
+        with transaction(self.motor) as s:
+            valores = {p.clave: p.valor for p in s.scalars(select(SystemParameter))}
         self.assertEqual(set(valores), {"regla_brote", "cortes_riesgo", "umbrales_aceptacion"})
         self.assertEqual(valores["regla_brote"], {"anios_previos": 5, "k_desviaciones": 1.5, "minimo_casos": 2})
         self.assertEqual(valores["cortes_riesgo"], {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75})
@@ -162,22 +162,22 @@ class EsquemaOE2:
 
     def test_checks_de_catalogo_y_calendario(self):
         casos = [
-            (Provincia, "ubigeo_provincia_formato", {"ubigeo_provincia": "20a1", "nombre": "X"}),
-            (Distrito, "ubigeo_formato", {"ubigeo": "2001a1", "ubigeo_provincia": "2001", "nombre": "X",
+            (Province, "ubigeo_provincia_formato", {"ubigeo_provincia": "20a1", "nombre": "X"}),
+            (District, "ubigeo_formato", {"ubigeo": "2001a1", "ubigeo_provincia": "2001", "nombre": "X",
                                           "latitud": -5, "longitud": -80}),
-            (Distrito, "latitud_piura", {"ubigeo": "200102", "ubigeo_provincia": "2001", "nombre": "X",
+            (District, "latitud_piura", {"ubigeo": "200102", "ubigeo_provincia": "2001", "nombre": "X",
                                          "latitud": -12.0, "longitud": -80}),
-            (Distrito, "longitud_piura", {"ubigeo": "200103", "ubigeo_provincia": "2001", "nombre": "X",
+            (District, "longitud_piura", {"ubigeo": "200103", "ubigeo_provincia": "2001", "nombre": "X",
                                           "latitud": -5, "longitud": -77.0}),
-            (Distrito, "poblacion_positiva", {"ubigeo": "200104", "ubigeo_provincia": "2001", "nombre": "X",
+            (District, "poblacion_positiva", {"ubigeo": "200104", "ubigeo_provincia": "2001", "nombre": "X",
                                               "latitud": -5, "longitud": -80, "poblacion_censo_2017": 0}),
-            (Distrito, FK, {"ubigeo": "200105", "ubigeo_provincia": "9999", "nombre": "X",
+            (District, FK, {"ubigeo": "200105", "ubigeo_provincia": "9999", "nombre": "X",
                             "latitud": -5, "longitud": -80}),
-            (SemanaEpidemiologica, "semana_valida", {"id_semana": 202554, "anio": 2025, "semana": 54,
+            (EpiWeek, "semana_valida", {"id_semana": 202554, "anio": 2025, "semana": 54,
                 "fecha_inicio": date(2026, 1, 4), "fecha_fin": date(2026, 1, 10), "temporada": 2026}),
-            (SemanaEpidemiologica, "fecha_fin_valida", {"id_semana": 202601, "anio": 2026, "semana": 1,
+            (EpiWeek, "fecha_fin_valida", {"id_semana": 202601, "anio": 2026, "semana": 1,
                 "fecha_inicio": date(2026, 1, 4), "fecha_fin": date(2026, 1, 11), "temporada": 2026}),
-            (SemanaEpidemiologica, UNICA, {"id_semana": 202599, "anio": 2025, "semana": 52,
+            (EpiWeek, UNICA, {"id_semana": 202599, "anio": 2025, "semana": 52,
                 "fecha_inicio": date(2025, 12, 21), "fecha_fin": date(2025, 12, 27), "temporada": 2026}),
         ]
         for modelo, motivo, fila in casos:
@@ -191,49 +191,49 @@ class EsquemaOE2:
                  ("temperaturas_ordenadas", {"temp_max_c": 24.0}), (FK, {"id_semana": 209901})]
         for motivo, cambio in casos:
             with self.subTest(cambio=cambio):
-                self.assert_rechaza(ObservacionSemanal, motivo, **self.fila_observacion(**cambio))
-        self.insertar(ObservacionSemanal, **self.fila_observacion(casos_dengue=None))
-        self.assert_rechaza(ObservacionSemanal, UNICA, **self.fila_observacion())  # PK (ubigeo, id_semana)
+                self.assert_rechaza(WeeklyObservation, motivo, **self.fila_observacion(**cambio))
+        self.insertar(WeeklyObservation, **self.fila_observacion(casos_dengue=None))
+        self.assert_rechaza(WeeklyObservation, UNICA, **self.fila_observacion())  # PK (ubigeo, id_semana)
 
     def test_observacion_conserva_cero_y_nulo(self):
-        self.insertar(ObservacionSemanal, **self.fila_observacion(casos_dengue=0))
-        self.insertar(ObservacionSemanal, **self.fila_observacion(id_semana=202551, casos_dengue=None))
-        with transaccion(self.motor) as s:
-            casos = dict(s.execute(select(ObservacionSemanal.id_semana, ObservacionSemanal.casos_dengue)).all())
+        self.insertar(WeeklyObservation, **self.fila_observacion(casos_dengue=0))
+        self.insertar(WeeklyObservation, **self.fila_observacion(id_semana=202551, casos_dengue=None))
+        with transaction(self.motor) as s:
+            casos = dict(s.execute(select(WeeklyObservation.id_semana, WeeklyObservation.casos_dengue)).all())
         self.assertEqual(casos, {202552: 0, 202551: None})
 
     def test_enum_invalido_rechazado_por_la_bd(self):
         fila = self.fila_observacion(fuente_casos="otra_fuente")
         columnas = ", ".join(fila)
         marcadores = ", ".join(f":{c}" for c in fila)
-        with self.assertRaises((IntegrityError, DBAPIError)) as error, transaccion(self.motor) as s:
+        with self.assertRaises((IntegrityError, DBAPIError)) as error, transaction(self.motor) as s:
             s.execute(text(f"INSERT INTO observacion_semanal ({columnas}) VALUES ({marcadores})"), fila)
         self.assertRegex(str(error.exception.orig), r"fuente_casos_t")
         with self.assertRaises(StatementError):
-            self.insertar(ObservacionSemanal, **self.fila_observacion(estado_cobertura="desconocido"))
+            self.insertar(WeeklyObservation, **self.fila_observacion(estado_cobertura="desconocido"))
 
     def test_checks_de_version_modelo(self):
         casos = [("horizonte_valido", {"horizonte": 5}), ("umbral_valido", {"umbral_probabilidad": 1.5}),
                  ("activa_cumple_umbrales", {"estado": "activa", "cumple_umbrales": False})]
         for i, (motivo, cambio) in enumerate(casos):
             with self.subTest(cambio=cambio):
-                self.assert_rechaza(VersionModelo, motivo, **fila_version(codigo=f"v{i}", **cambio))
-        id_version = self.insertar(VersionModelo, **fila_version())
-        self.assert_rechaza(VersionModelo, UNICA, **fila_version())  # codigo único
+                self.assert_rechaza(ModelVersion, motivo, **fila_version(codigo=f"v{i}", **cambio))
+        id_version = self.insertar(ModelVersion, **fila_version())
+        self.assert_rechaza(ModelVersion, UNICA, **fila_version())  # codigo único
         for cambio in ({"importancia": -0.1}, {"rango": 0}):
             with self.subTest(importancia=cambio):
-                self.assert_rechaza(ImportanciaVariable, "importancia_valida", **{
+                self.assert_rechaza(VariableImportance, "importancia_valida", **{
                     "id_version": id_version, "variable": "casos_lag_4", "importancia": 1.0, "rango": 1, **cambio})
 
     def test_una_sola_version_activa_por_tarea_y_horizonte(self):
-        self.insertar(VersionModelo, **fila_version(codigo="a", estado="activa", cumple_umbrales=True))
-        self.assert_rechaza(VersionModelo, UNICA, **fila_version(codigo="b", estado="activa", cumple_umbrales=True))
+        self.insertar(ModelVersion, **fila_version(codigo="a", estado="activa", cumple_umbrales=True))
+        self.assert_rechaza(ModelVersion, UNICA, **fila_version(codigo="b", estado="activa", cumple_umbrales=True))
         # Otra tarea, otro horizonte y versiones no activas sí conviven.
-        self.insertar(VersionModelo, **fila_version(codigo="c", tarea="regresion", estado="activa",
+        self.insertar(ModelVersion, **fila_version(codigo="c", tarea="regresion", estado="activa",
                                                     cumple_umbrales=True, umbral_probabilidad=None))
-        self.insertar(VersionModelo, **fila_version(codigo="d", horizonte=2, estado="activa", cumple_umbrales=True))
-        self.insertar(VersionModelo, **fila_version(codigo="e", estado="archivada"))
-        self.insertar(VersionModelo, **fila_version(codigo="f", estado="archivada"))
+        self.insertar(ModelVersion, **fila_version(codigo="d", horizonte=2, estado="activa", cumple_umbrales=True))
+        self.insertar(ModelVersion, **fila_version(codigo="e", estado="archivada"))
+        self.insertar(ModelVersion, **fila_version(codigo="f", estado="archivada"))
 
     def test_checks_de_prediccion(self):
         casos = [("horizonte_valido", {"horizonte": 1}), ("probabilidad_valida", {"probabilidad_brote": 1.2}),
@@ -241,7 +241,7 @@ class EsquemaOE2:
                  (FK, {"ubigeo": "200199"})]
         for motivo, cambio in casos:
             with self.subTest(cambio=cambio):
-                self.assert_rechaza(Prediccion, motivo, **self.fila_prediccion(**cambio))
+                self.assert_rechaza(Prediction, motivo, **self.fila_prediccion(**cambio))
 
     def test_coherencia_disponible_no_disponible(self):
         invalidas = [
@@ -252,34 +252,34 @@ class EsquemaOE2:
         ]
         for cambio in invalidas:
             with self.subTest(cambio=cambio):
-                self.assert_rechaza(Prediccion, "estado_coherente", **self.fila_prediccion(**cambio))
-        self.insertar(Prediccion, **self.fila_prediccion(
+                self.assert_rechaza(Prediction, "estado_coherente", **self.fila_prediccion(**cambio))
+        self.insertar(Prediction, **self.fila_prediccion(
             estado="no_disponible", probabilidad_brote=None, nivel_riesgo=None, casos_estimados=None,
             motivo_no_disponible="sin modelo para h=3", horizonte=3))
-        self.insertar(Prediccion, **self.fila_prediccion())
+        self.insertar(Prediction, **self.fila_prediccion())
 
     def test_upsert_de_prediccion_por_clave_del_documento(self):
         self.upsert(self.fila_prediccion())
         self.upsert(self.fila_prediccion(probabilidad_brote=0.8, nivel_riesgo="muy_alto"))
-        with transaccion(self.motor) as s:
-            filas = s.execute(select(Prediccion.probabilidad_brote, Prediccion.nivel_riesgo)).all()
+        with transaction(self.motor) as s:
+            filas = s.execute(select(Prediction.probabilidad_brote, Prediction.nivel_riesgo)).all()
         self.assertEqual(len(filas), 1)
         self.assertAlmostEqual(filas[0][0], 0.8)
         self.assertEqual(filas[0][1], "muy_alto")
-        self.assert_rechaza(Prediccion, UNICA, **self.fila_prediccion())  # insert simple duplicado
+        self.assert_rechaza(Prediction, UNICA, **self.fila_prediccion())  # insert simple duplicado
         self.upsert(self.fila_prediccion(horizonte=4))  # otra clave: nueva fila
-        with transaccion(self.motor) as s:
-            self.assertEqual(s.scalar(select(func.count()).select_from(Prediccion)), 2)
+        with transaction(self.motor) as s:
+            self.assertEqual(s.scalar(select(func.count()).select_from(Prediction)), 2)
 
     def test_alerta_solo_alto_o_muy_alto_y_retiro_con_fecha(self):
-        id_prediccion = self.insertar(Prediccion, **self.fila_prediccion())
+        id_prediccion = self.insertar(Prediction, **self.fila_prediccion())
         base = {"id_prediccion": id_prediccion, "ubigeo": "200101", "nivel": "alto", "cambio": "nueva"}
         for nivel in ("bajo", "medio"):
             with self.subTest(nivel=nivel):
-                self.assert_rechaza(Alerta, "nivel_alerta", **{**base, "nivel": nivel})
-        self.assert_rechaza(Alerta, "retiro_con_fecha", **{**base, "estado": "retirada"})
-        self.insertar(Alerta, **base)
-        self.assert_rechaza(Alerta, UNICA, **{**base, "nivel": "muy_alto"})  # una alerta por predicción
+                self.assert_rechaza(Alert, "nivel_alerta", **{**base, "nivel": nivel})
+        self.assert_rechaza(Alert, "retiro_con_fecha", **{**base, "estado": "retirada"})
+        self.insertar(Alert, **base)
+        self.assert_rechaza(Alert, UNICA, **{**base, "nivel": "muy_alto"})  # una alerta por predicción
 
     def test_nombres_de_check_iguales_en_orm_y_bd(self):
         """La migración no debe duplicar el prefijo de la convención de nombres."""
@@ -294,10 +294,10 @@ class EsquemaOE2:
     def test_validacion_en_python(self):
         for valor in (200101, "20101", "1234a6", "٢٠٠١٠١"):
             with self.subTest(valor=valor), self.assertRaisesRegex(ValueError, "seis dígitos"):
-                Distrito(ubigeo=valor)
+                District(ubigeo=valor)
         with self.assertRaisesRegex(ValueError, "cuatro dígitos"):
-            Provincia(ubigeo_provincia=2001)
-        for modelo in (VersionModelo, Prediccion):
+            Province(ubigeo_provincia=2001)
+        for modelo in (ModelVersion, Prediction):
             with self.subTest(modelo=modelo.__name__), self.assertRaisesRegex(ValueError, "2, 3 o 4"):
                 modelo(horizonte=5)
 
@@ -307,7 +307,7 @@ class TestEsquemaOE2SQLite(EsquemaOE2, unittest.TestCase):
     def crear_motor(cls):
         from sqlalchemy.engine import URL
         cls.carpeta = tempfile.TemporaryDirectory()
-        return crear_motor(URL.create("sqlite", database=str(Path(cls.carpeta.name) / "oe2.db")))
+        return make_engine(URL.create("sqlite", database=str(Path(cls.carpeta.name) / "oe2.db")))
 
     @classmethod
     def tearDownClass(cls):
@@ -326,7 +326,7 @@ class TestEsquemaOE2SQLite(EsquemaOE2, unittest.TestCase):
 class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
     @classmethod
     def crear_motor(cls):
-        motor = crear_motor(url_pg_pruebas())
+        motor = make_engine(url_pg_pruebas())
         migrar(motor, "base")  # BD desechable: parte de cero aunque una corrida previa fallara
         return motor
 
@@ -363,11 +363,11 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
             "SELECT table_name, identity_generation FROM information_schema.columns "
             "WHERE table_schema = 'public' AND is_identity = 'YES'"))
         self.assertEqual(identidad["prediccion"], "ALWAYS")
-        self.assert_rechaza(Ejecucion, r"generated always|cannot insert", id_ejecucion=999, tipo="ingesta")
+        self.assert_rechaza(Run, r"generated always|cannot insert", id_ejecucion=999, tipo="ingesta")
 
     def test_check_regex_de_ubigeo(self):
         # CHAR(6) rellena con espacios un código corto; la regex lo rechaza.
-        self.assert_rechaza(Distrito, "ubigeo_formato", ubigeo="20011", ubigeo_provincia="2001", nombre="X",
+        self.assert_rechaza(District, "ubigeo_formato", ubigeo="20011", ubigeo_provincia="2001", nombre="X",
                             latitud=-5, longitud=-80)
 
     def test_rls_politicas_y_roles(self):
@@ -397,10 +397,10 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
 
     def test_huella_de_ingesta_unica(self):
         # setUp ya creó una ingesta exitosa con huella h1.
-        self.assert_rechaza(Ejecucion, r"\"ux_ejecucion_huella_ingesta\"", tipo="ingesta", estado="exitosa",
+        self.assert_rechaza(Run, r"\"ux_ejecucion_huella_ingesta\"", tipo="ingesta", estado="exitosa",
                             detalle={"huella": "h1"})
-        self.insertar(Ejecucion, tipo="ingesta", estado="fallida", detalle={"huella": "h1"})
-        self.insertar(Ejecucion, tipo="inferencia", estado="exitosa", detalle={"huella": "h1"})
+        self.insertar(Run, tipo="ingesta", estado="fallida", detalle={"huella": "h1"})
+        self.insertar(Run, tipo="inferencia", estado="exitosa", detalle={"huella": "h1"})
 
 
 if __name__ == "__main__":

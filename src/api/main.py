@@ -12,8 +12,8 @@ from src.api.cache import CacheLecturas
 from src.api.errores import registrar_errores
 from src.api.esquemas import ErrorRespuesta
 from src.api.routers import admin, datos, modelos, referencia, vigilancia
-from denguekay.db.settings import ConfiguracionBDInvalida
-from denguekay.db.session import crear_fabrica_sesiones, crear_motor
+from denguekay.db.settings import InvalidDatabaseSettings
+from denguekay.db.session import create_session_factory, make_engine
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.configuracion import configuracion_servicio
 from denguekay.config.paths import ENV_FILE
@@ -30,10 +30,10 @@ def crear_app(motor=None, cfg=None, clave_api=None, ttl_cache=10, almacenamiento
         elegido = motor
         if propio:
             try:
-                elegido = crear_motor()
-            except ConfiguracionBDInvalida:
+                elegido = make_engine()
+            except InvalidDatabaseSettings:
                 elegido = None
-        app.state.fabrica_sesiones = crear_fabrica_sesiones(elegido) if elegido is not None else None
+        app.state.fabrica_sesiones = create_session_factory(elegido) if elegido is not None else None
         try:
             yield
         finally:
@@ -52,7 +52,7 @@ def crear_app(motor=None, cfg=None, clave_api=None, ttl_cache=10, almacenamiento
     app.state.clave_api = os.environ.get("API_KEY", "") if clave_api is None else clave_api
     app.state.cache = CacheLecturas(ttl=ttl_cache)
     app.state.almacenamiento = almacenamiento or AlmacenamientoLocal()
-    app.state.fabrica_sesiones = crear_fabrica_sesiones(motor) if motor is not None else None
+    app.state.fabrica_sesiones = create_session_factory(motor) if motor is not None else None
     registrar_errores(app)
     app.add_middleware(CORSMiddleware, allow_origins=[cfg.cors_origen],
         allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-API-Key", "Cache-Control"],
