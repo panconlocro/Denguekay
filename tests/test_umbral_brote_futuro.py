@@ -7,10 +7,10 @@ import numpy as np
 import pandas as pd
 
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional, umbral_brote_futuro
-from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from src.utils.calendario import semana_epi_mmwr
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 def _sintetico():
@@ -58,9 +58,9 @@ class TestContraGold(unittest.TestCase):
     def setUpClass(cls):
         from src.eda.carga import cargar_integrado
 
-        cls.panel = cargar_integrado(SILVER_INTEGRADO)
+        cls.panel = cargar_integrado(SILVER_INTEGRATED)
         cls.regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        historia = pd.read_csv(SILVER_EPI_HISTORICO, dtype={"ubigeo": "string"})
+        historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
         cls.historia = historia[historia.anio.lt(int(cls.panel.anio.min()))]
 
     def _umbral(self, objetivos):
@@ -82,7 +82,7 @@ class TestContraGold(unittest.TestCase):
 
         for h in (2, 4):
             with self.subTest(h=h):
-                gold = pd.read_csv(GOLD / f"{SILVER_INTEGRADO.stem}_h{h}_gold.csv", dtype={"ubigeo": "string"},
+                gold = pd.read_csv(GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv", dtype={"ubigeo": "string"},
                                    usecols=["ubigeo", "anio", "semana", "casos_Dengue", "umbral_brote_casos", "brote"])
                 u = self._umbral(gold).to_numpy()
                 np.testing.assert_allclose(u, gold.umbral_brote_casos.to_numpy(), rtol=0, atol=1e-12)

@@ -24,7 +24,7 @@ from src.modeling.sociodemografia import (
 )
 from src.modeling.vecinos_jerarquia import construir_vecinos_jerarquia
 from src.processing.socio_interpolacion import SOCIO_COLUMNS
-from denguekay.config.paths import GOLD, SILVER_EPI_HISTORICO, SILVER_INTEGRADO, UBIGEO_CATALOG
+from denguekay.config.paths import GOLD, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED, UBIGEO_CATALOG
 from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
 from src.validation.expectations_integrado import (
     coverage_path, load_case_coverage, validate_complete, validate_geography,
@@ -208,7 +208,7 @@ def _sha256(path: Path) -> str:
 
 def construir_etiquetas(
     panel: pd.DataFrame, brote: ConfiguracionBroteEstacional,
-    historia_path: Path = SILVER_EPI_HISTORICO,
+    historia_path: Path = SILVER_EPI_HISTORICAL,
 ) -> pd.DataFrame:
     """Etiqueta brote con la historia previa al panel, igual que ``generar_gold``."""
     historia = pd.read_csv(Path(historia_path), dtype={"ubigeo": "string"})
@@ -221,10 +221,10 @@ def construir_etiquetas(
 
 
 def generar_gold(
-    input_path: Path = SILVER_INTEGRADO, output_dir: Path = GOLD,
+    input_path: Path = SILVER_INTEGRATED, output_dir: Path = GOLD,
     catalog_path: Path = UBIGEO_CATALOG,
     *, brote: ConfiguracionBroteEstacional | None = None,
-    historia_path: Path = SILVER_EPI_HISTORICO,
+    historia_path: Path = SILVER_EPI_HISTORICAL,
 ) -> dict[int, dict[str, object]]:
     """Valida silver, genera ambos horizontes y escribe CSV/linaje reproducibles."""
     input_path, output_dir = Path(input_path), Path(output_dir)

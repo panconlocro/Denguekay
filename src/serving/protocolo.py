@@ -9,8 +9,8 @@ import pandas as pd
 
 from src.modeling.train import evaluar_fold, preparar_gold, separar_temporada, separar_anio_calendario
 from src.modeling.validacion_temporal_compacta import ejecutar_validacion_temporal_compacta, variantes_compactas
-from denguekay.config.paths import (GOLD, GOLD_MANIFEST, METRICAS_COMPACTAS, PREDICCIONES_COMPACTAS,
-                             SERVING_PROTOCOLO_REGENERADO, SILVER_INTEGRADO)
+from denguekay.config.paths import (GOLD, GOLD_MANIFEST, COMPACT_METRICS, COMPACT_PREDICTIONS,
+                             SERVING_REGENERATED_PROTOCOL, SILVER_INTEGRATED)
 from src.validation.calidad_gx import leer_gold
 from src.validation.contrato_pronostico import CLAVE
 
@@ -26,15 +26,15 @@ class Protocolo:
     predicciones_path: object
 
 
-def cargar_protocolo(horizontes, variantes, *, metricas_path=METRICAS_COMPACTAS,
-                    predicciones_path=PREDICCIONES_COMPACTAS):
+def cargar_protocolo(horizontes, variantes, *, metricas_path=COMPACT_METRICS,
+                    predicciones_path=COMPACT_PREDICTIONS):
     """Si falta el CSV, regenera en models/serving sin sobrescribir a Rosa."""
     if not predicciones_path.exists():
-        metricas_path = SERVING_PROTOCOLO_REGENERADO / "metricas.json"
-        predicciones_path = SERVING_PROTOCOLO_REGENERADO / "predicciones_por_bloque.csv"
+        metricas_path = SERVING_REGENERATED_PROTOCOL / "metricas.json"
+        predicciones_path = SERVING_REGENERATED_PROTOCOL / "predicciones_por_bloque.csv"
         if not predicciones_path.exists() or not metricas_path.exists():
             print("Falta el CSV OOS: se ejecutará el protocolo existente en models/serving")
-            ejecutar_validacion_temporal_compacta(salida_dir=SERVING_PROTOCOLO_REGENERADO,
+            ejecutar_validacion_temporal_compacta(salida_dir=SERVING_REGENERATED_PROTOCOL,
                 metricas_path=metricas_path)
     reporte = json.loads(metricas_path.read_text(encoding="utf-8"))
     pred = pd.read_csv(predicciones_path, dtype={"ubigeo": "string"},

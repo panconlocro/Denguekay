@@ -26,8 +26,8 @@ from src.db.sesion import crear_motor, transaccion, upsert
 from src.processing.agregacion_semanal import limpiar_nombres_para_cruce
 from src.utils.calendario import semana_epi_mmwr
 from src.utils.keys import normalizar
-from denguekay.config.paths import (DISTRITOS_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICO,
-                             SILVER_INTEGRADO, SILVER_SALA, UBIGEO_CATALOG)
+from denguekay.config.paths import (DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL,
+                             SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
 TRANSFORMACION = 2  # versión de esta transformación; forma parte de la huella de ingesta
 SEMANA_INICIO_TEMPORADA = 35  # misma regla que el modelado (src/modeling/train.py)
@@ -51,10 +51,10 @@ class DatosCarga:
 
 def hashes_fuentes():
     """Huella de todas las entradas utilizadas, sin guardar credenciales."""
-    fuentes = [UBIGEO_CATALOG, DISTRITOS_COORDS, SILVER_INTEGRADO,
-               SILVER_INTEGRADO.with_suffix(".coverage.csv"), SILVER_EPI_HISTORICO,
+    fuentes = [UBIGEO_CATALOG, DISTRICT_COORDS, SILVER_INTEGRATED,
+               SILVER_INTEGRATED.with_suffix(".coverage.csv"), SILVER_EPI_HISTORICAL,
                SILVER_SALA, GOLD_MANIFEST]
-    fuentes += [GOLD / f"{SILVER_INTEGRADO.stem}_h{h}_gold.csv" for h in (2, 4)]
+    fuentes += [GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv" for h in (2, 4)]
     return {str(p.relative_to(ROOT)).replace("\\", "/"):
             hashlib.sha256(p.read_bytes()).hexdigest() for p in fuentes}
 
@@ -185,7 +185,7 @@ def preparar_desde_tablas(catalogo, coordenadas, silver, cobertura, gold, sala, 
                       seleccion_experimental or {})
 
 
-def leer_silver(ruta=SILVER_INTEGRADO):
+def leer_silver(ruta=SILVER_INTEGRATED):
     return pd.read_csv(ruta, dtype={"ubigeo": "string"}, parse_dates=["semana_inicio"])
 
 
@@ -198,11 +198,11 @@ def preparar_carga():
 
     hashes = hashes_fuentes()
     auditar_traspaso()
-    calidad = validar_entradas_modelado(gold_dir=GOLD, silver_path=SILVER_INTEGRADO)
+    calidad = validar_entradas_modelado(gold_dir=GOLD, silver_path=SILVER_INTEGRATED)
     gold, _ = leer_gold(GOLD, 2)
     datos = preparar_desde_tablas(
-        load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRITOS_COORDS), leer_silver(),
-        pd.read_csv(SILVER_INTEGRADO.with_suffix(".coverage.csv"), dtype={"ubigeo": "string"}),
+        load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS), leer_silver(),
+        pd.read_csv(SILVER_INTEGRATED.with_suffix(".coverage.csv"), dtype={"ubigeo": "string"}),
         gold, pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}), hashes, calidad,
         configuracion_servicio().seleccion_experimental)
     if hashes != hashes_fuentes():

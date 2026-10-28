@@ -195,9 +195,9 @@ def main() -> None:
     from src.modeling import configuracion_final as cf
     from src.modeling import diagnostico_arquitectura as d
     from src.modeling import fe_hiperparametros as fh
-    from denguekay.config.paths import DICCIONARIO_VARIABLES, GOLD_MANIFEST, METRICAS_FE_HIPERPARAMETROS, SILVER_INTEGRADO
+    from denguekay.config.paths import VARIABLE_DICTIONARY, GOLD_MANIFEST, FE_HYPERPARAMETERS_METRICS, SILVER_INTEGRATED
 
-    panel = cargar_integrado(SILVER_INTEGRADO)
+    panel = cargar_integrado(SILVER_INTEGRATED)
     regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
     ins = fh.insumos(panel, regla)
     origenes = cf.origenes(panel, ins, regla)
@@ -205,11 +205,11 @@ def main() -> None:
     tabla = diccionario(columnas, origenes)
     por_temporada = estadisticas(origenes, columnas)
     texto = a_markdown(tabla, por_temporada, cf.CONFIGURACION_2026)
-    DICCIONARIO_VARIABLES.write_bytes(texto.replace("\n", "\r\n").encode("utf-8"))
-    d.guardar_seccion_metricas(METRICAS_FE_HIPERPARAMETROS, "fase5_diccionario_variables",
+    VARIABLE_DICTIONARY.write_bytes(texto.replace("\n", "\r\n").encode("utf-8"))
+    d.guardar_seccion_metricas(FE_HYPERPARAMETERS_METRICS, "fase5_diccionario_variables",
                                {"variables": d.a_json(tabla), "por_temporada": d.a_json(por_temporada),
                                 "insumo_inferencia": INSUMO_INFERENCIA})
-    print(f"{DICCIONARIO_VARIABLES} ({len(tabla)} variables)")
+    print(f"{VARIABLE_DICTIONARY} ({len(tabla)} variables)")
 
 
 if __name__ == "__main__":

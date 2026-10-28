@@ -94,9 +94,9 @@ def _comparar_tiempos() -> None:
     import pandas as pd
 
     from src.modeling import train
-    from denguekay.config.paths import GOLD, SILVER_INTEGRADO
+    from denguekay.config.paths import GOLD, SILVER_INTEGRATED
 
-    gold = pd.read_csv(GOLD / f"{SILVER_INTEGRADO.stem}_h4_gold.csv", dtype={"ubigeo": "string"},
+    gold = pd.read_csv(GOLD / f"{SILVER_INTEGRATED.stem}_h4_gold.csv", dtype={"ubigeo": "string"},
                        parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
     datos, _ = train.preparar_gold(gold, 4)
     entrenamiento, _, _ = train.separar_temporada(datos, 2024)

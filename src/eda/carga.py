@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from denguekay.config.paths import SILVER_INTEGRADO
+from denguekay.config.paths import SILVER_INTEGRATED
 from src.utils.calendario import semana_epi_mmwr
 
 OBJETIVO = "casos_Dengue"
@@ -64,7 +64,7 @@ def validar_panel(df: pd.DataFrame) -> list[str]:
     return problemas
 
 
-def cargar_integrado(path: Path = SILVER_INTEGRADO) -> pd.DataFrame:
+def cargar_integrado(path: Path = SILVER_INTEGRATED) -> pd.DataFrame:
     """
     Lee el dataset integrado (meteo + socio + epi, sin feature engineering),
     valida el panel y lo devuelve ordenado por distrito y semana.

@@ -9,9 +9,9 @@ from scipy import stats
 
 from src.modeling import estrategias_horizonte as eh
 from src.modeling import salida_probabilistica as sp
-from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 class TestBinomialNegativa(unittest.TestCase):
@@ -56,7 +56,7 @@ class TestFormulacionesConDatos(unittest.TestCase):
         from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
         from src.modeling.features import construir_etiquetas
 
-        panel = cargar_integrado(SILVER_INTEGRADO)
+        panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         etiquetas = construir_etiquetas(panel, ConfiguracionBroteEstacional(
             regla["multiplicador"], regla["anios_previos"], regla["minimo_casos"]))

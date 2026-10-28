@@ -29,7 +29,7 @@ import pandas as pd
 
 from src.modeling.features import HORIZONTES
 from src.processing.epi_sala import load_ubigeo_catalog
-from denguekay.config.paths import GOLD, GX_DIR, SILVER_INTEGRADO, UBIGEO_CATALOG
+from denguekay.config.paths import GOLD, GX_DIR, SILVER_INTEGRATED, UBIGEO_CATALOG
 from src.validation.expectations_gold import expectativas_gold
 from src.validation.expectations_integrado import expectativas_integrado_gx
 
@@ -159,7 +159,7 @@ def ubigeos_catalogo(catalog_path: Path = UBIGEO_CATALOG) -> list[str]:
     return sorted(load_ubigeo_catalog(Path(catalog_path))["ubigeo"].astype(str))
 
 
-def leer_gold(gold_dir: Path, horizonte: int, stem: str = SILVER_INTEGRADO.stem) -> tuple[pd.DataFrame, Path]:
+def leer_gold(gold_dir: Path, horizonte: int, stem: str = SILVER_INTEGRATED.stem) -> tuple[pd.DataFrame, Path]:
     """Lee gold igual que los módulos de entrenamiento (ubigeo como texto)."""
     archivo = Path(gold_dir) / f"{stem}_h{horizonte}_gold.csv"
     gold = pd.read_csv(archivo, dtype={"ubigeo": "string"}, parse_dates=COLUMNAS_FECHA_GOLD)
@@ -185,7 +185,7 @@ def validar_gold_gx(
 
 
 def validar_integrado_gx(
-    silver_path: Path = SILVER_INTEGRADO, *, contexto=None,
+    silver_path: Path = SILVER_INTEGRATED, *, contexto=None,
     catalog_path: Path = UBIGEO_CATALOG, lanzar: bool = True,
 ) -> dict:
     """Valida el panel silver integrado (sin features) con su suite."""
@@ -226,7 +226,7 @@ def validar_entradas_modelado(
 def main() -> None:
     """CLI: ``python -m src.validation.calidad_gx``. Sale con código 1 si algo falla."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--silver", type=Path, default=SILVER_INTEGRADO)
+    parser.add_argument("--silver", type=Path, default=SILVER_INTEGRATED)
     parser.add_argument("--gold-dir", type=Path, default=GOLD)
     parser.add_argument("--sin-gold", action="store_true", help="Valida solo silver integrado")
     parser.add_argument("--json", type=Path, default=None, help="Ruta opcional para guardar el resumen")

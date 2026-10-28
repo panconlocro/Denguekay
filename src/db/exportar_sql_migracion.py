@@ -11,12 +11,12 @@ import io
 from alembic import command
 from alembic.config import Config
 
-from denguekay.config.paths import ALEMBIC_CONFIG, MIGRACION_OE2_SQL
+from denguekay.config.paths import ALEMBIC_CONFIG, OE2_MIGRATION_SQL
 
 URL_DIALECTO = "postgresql+psycopg://offline@localhost/sin_conexion"
 
 
-def exportar(destino=MIGRACION_OE2_SQL, rango="0002_serving:head"):
+def exportar(destino=OE2_MIGRATION_SQL, rango="0002_serving:head"):
     salida = io.StringIO()
     config = Config(str(ALEMBIC_CONFIG), stdout=salida)
     config.attributes["url"] = URL_DIALECTO

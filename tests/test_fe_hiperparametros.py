@@ -9,9 +9,9 @@ import pandas as pd
 from src.modeling import estrategias_horizonte as eh
 from src.modeling import fe_hiperparametros as fh
 from src.modeling import salida_probabilistica as sp
-from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 class TestComparacion(unittest.TestCase):
@@ -75,7 +75,7 @@ class TestConDatos(unittest.TestCase):
     def setUpClass(cls):
         from src.eda.carga import cargar_integrado
 
-        cls.panel = cargar_integrado(SILVER_INTEGRADO)
+        cls.panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.ins = fh.insumos(cls.panel, regla)
 
@@ -94,7 +94,7 @@ class TestConDatos(unittest.TestCase):
             sp.predecir_e3(self.ins["matrices"], 17, "S4_s2", columnas=[*eh.GENERICAS, "no_existe"])
 
     def test_inventario_de_gold_h2(self):
-        gold = pd.read_csv(GOLD / f"{SILVER_INTEGRADO.stem}_h2_gold.csv", dtype={"ubigeo": "string"},
+        gold = pd.read_csv(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv", dtype={"ubigeo": "string"},
                            parse_dates=["semana_inicio"])
         inv = fh.inventario_candidatas(gold, self.ins["matrices"][2])
         self.assertEqual(len(inv), 34)

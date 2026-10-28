@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 
 from src.modeling import estrategias_horizonte as eh
-from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 def _matriz(h: int, semanas: int = 12) -> pd.DataFrame:
@@ -88,7 +88,7 @@ class TestEstrategiasConDatos(unittest.TestCase):
         from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
         from src.modeling.features import construir_etiquetas
 
-        cls.panel = cargar_integrado(SILVER_INTEGRADO)
+        cls.panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.etiquetas = construir_etiquetas(cls.panel, ConfiguracionBroteEstacional(
             regla["multiplicador"], regla["anios_previos"], regla["minimo_casos"]))

@@ -30,7 +30,7 @@ from src.serving.configuracion import configuracion_servicio
 from src.serving.inferencia import importar_oos, inferir
 from src.serving.modelos import entrenar_versiones_servicio, guardar_versiones, reporte_servicio
 from src.serving.protocolo import cargar_protocolo
-from denguekay.config.paths import GOLD, ROOT, SERVING_EJECUCIONES, SILVER_INTEGRADO, SRC
+from denguekay.config.paths import GOLD, ROOT, SERVING_RUNS, SILVER_INTEGRATED, SRC
 
 
 def hashes_codigo():
@@ -84,7 +84,7 @@ def publicar(motor, horizontes=None, *, cfg=None, almacenamiento=None):
     for h in horizontes:
         if h not in (2, 4):
             raise ValueError("No hay gold ni contrato de modelado para horizonte 3; no se inventarán predicciones")
-        if not (GOLD / f"{SILVER_INTEGRADO.stem}_h{h}_gold.csv").exists():
+        if not (GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv").exists():
             raise ValueError(f"Falta el gold para horizonte {h}")
     exigir_esquema(motor)
     carga = preparar_carga()
@@ -100,7 +100,7 @@ def publicar(motor, horizontes=None, *, cfg=None, almacenamiento=None):
             return {"id_ejecucion": previa.id_ejecucion, "reutilizada": True, **previa.detalle["resumen"]}
     try:
         preparadas = entrenar_versiones_servicio(protocolo, horizontes, cfg, carga.fecha_corte_datos)
-        directorio = SERVING_EJECUCIONES / huella
+        directorio = SERVING_RUNS / huella
         directorio.mkdir(parents=True, exist_ok=True)
         reporte = reporte_servicio(preparadas, protocolo, carga.fecha_corte_datos)
         reporte_path = directorio / "reporte_servicio.json"

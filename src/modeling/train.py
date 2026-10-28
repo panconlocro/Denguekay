@@ -23,7 +23,7 @@ from src.modeling.evaluate import (
     seleccionar_umbral_f1,
 )
 from src.modeling.seguimiento_mlflow import registrar_o_avisar
-from denguekay.config.paths import GOLD, MODELS, RESEARCH_PRIMEROS_MODELOS, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD, MODELS, RESEARCH_FIRST_MODELS, SILVER_INTEGRATED
 from src.utils.calendario import semana_epi_mmwr
 from src.validation.contrato_pronostico import CLAVE
 from src.validation.calidad_gx import validar_entradas_modelado
@@ -249,7 +249,7 @@ def evaluar_fold(
 
 def ejecutar_experimento(
     *, gold_dir: Path = GOLD, salida_dir: Path = MODELS / "experimentos",
-    metricas_path: Path = RESEARCH_PRIMEROS_MODELOS / "docs" / "metricas" / "primer_xgboost.json",
+    metricas_path: Path = RESEARCH_FIRST_MODELS / "docs" / "metricas" / "primer_xgboost.json",
     auditar: bool = True, validar_datos: bool = True,
     registrar_mlflow: bool = True,
 ) -> dict:
@@ -286,7 +286,7 @@ def ejecutar_experimento(
     modelos_guardar = []
     predicciones_guardar = []
     for h in (2, 4):
-        archivo = gold_dir / f"{SILVER_INTEGRADO.stem}_h{h}_gold.csv"
+        archivo = gold_dir / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv"
         gold = pd.read_csv(archivo, dtype={"ubigeo": "string"},
                            parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
         datos, excluidas = preparar_gold(gold, h)
@@ -365,7 +365,7 @@ def main() -> None:
     parser.add_argument("--gold-dir", type=Path, default=GOLD)
     parser.add_argument("--salida-dir", type=Path, default=MODELS / "experimentos")
     parser.add_argument("--metricas", type=Path,
-                        default=RESEARCH_PRIMEROS_MODELOS / "docs" / "metricas" / "primer_xgboost.json")
+                        default=RESEARCH_FIRST_MODELS / "docs" / "metricas" / "primer_xgboost.json")
     parser.add_argument("--sin-validacion-datos", action="store_true",
                         help="No ejecutar las suites de Great Expectations")
     parser.add_argument("--sin-mlflow", action="store_true",

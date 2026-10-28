@@ -11,9 +11,9 @@ from src.modeling import features_inicio as fi
 from src.modeling import salida_probabilistica as sp
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional
 from src.utils.calendario import semana_epi_mmwr
-from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 TODAS = [c for f in ("B1", "B2", "B3", "B5") for c in fi.COLUMNAS[f]]
 
 
@@ -81,11 +81,11 @@ class TestConDatos(unittest.TestCase):
         from src.eda.carga import cargar_integrado
         from src.modeling import fe_hiperparametros as fh
 
-        cls.panel = cargar_integrado(SILVER_INTEGRADO)
+        cls.panel = cargar_integrado(SILVER_INTEGRATED)
         cls.regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         ins = fh.insumos(cls.panel, cls.regla)
         cls.serie, cls.matrices = ins["serie"], ins["matrices"]
-        cls.historia = pd.read_csv(SILVER_EPI_HISTORICO, dtype={"ubigeo": "string"})
+        cls.historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
         cls.vi = fi.VariablesInicio(cls.panel, cls.serie, cls.historia, cls.regla)
         cls.origenes = eh.tabla_origenes(cls.matrices[2])
 

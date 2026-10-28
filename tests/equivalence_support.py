@@ -46,9 +46,9 @@ def subprocess_env(**extra):
 # --- frozen configurations (V1 and V2) -------------------------------------------------------
 
 def data_available():
-    from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+    from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
-    return SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+    return SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 def prediction_digest(predictions):
@@ -71,9 +71,9 @@ def frozen_prediction_digests():
     from src.modeling import configuracion_final as cf
     from src.modeling import fe_hiperparametros as fh
     from src.modeling.dispositivo import configuracion_xgboost
-    from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRADO
+    from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRATED
 
-    panel = cargar_integrado(SILVER_INTEGRADO)
+    panel = cargar_integrado(SILVER_INTEGRATED)
     rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
     inputs = fh.insumos(panel, rule)
     result = {"setup": configuracion_xgboost()}
@@ -140,9 +140,9 @@ def offline_postgresql_sql():
 
 
 def committed_offline_sql():
-    from denguekay.config.paths import MIGRACION_OE2_SQL
+    from denguekay.config.paths import OE2_MIGRATION_SQL
 
-    return MIGRACION_OE2_SQL.read_text(encoding="utf-8").replace("\r\n", "\n")
+    return OE2_MIGRATION_SQL.read_text(encoding="utf-8").replace("\r\n", "\n")
 
 
 def sqlite_schema():

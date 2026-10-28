@@ -22,7 +22,7 @@ from src.modeling.train import (
     preparar_gold, separar_anio_calendario, separar_temporada,
 )
 from src.modeling.seguimiento_mlflow import registrar_o_avisar
-from denguekay.config.paths import DOCS, GOLD, MODELS, SILVER_INTEGRADO
+from denguekay.config.paths import DOCS, GOLD, MODELS, SILVER_INTEGRATED
 from src.validation.contrato_pronostico import CLAVE
 from src.validation.calidad_gx import validar_entradas_modelado
 
@@ -134,7 +134,7 @@ def ejecutar_validacion_temporal_compacta(
     }
     predicciones = []
     for h in (2, 4):
-        archivo = gold_dir / f"{SILVER_INTEGRADO.stem}_h{h}_gold.csv"
+        archivo = gold_dir / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv"
         gold = pd.read_csv(archivo, dtype={"ubigeo": "string"},
                            parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
         datos, excluidas = preparar_gold(gold, h)

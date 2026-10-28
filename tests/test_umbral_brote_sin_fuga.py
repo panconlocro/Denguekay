@@ -12,10 +12,10 @@ import numpy as np
 import pandas as pd
 
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional
-from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from src.utils.calendario import semana_epi_mmwr
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 def _panel_sintetico() -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -63,9 +63,9 @@ class TestUmbralSinFugaConDatos(unittest.TestCase):
     def test_panel_real(self):
         from src.eda.carga import cargar_integrado
 
-        panel = cargar_integrado(SILVER_INTEGRADO)
+        panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-        historia = pd.read_csv(SILVER_EPI_HISTORICO, dtype={"ubigeo": "string"})
+        historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
         primero = int(panel.anio.min())
         historia = historia.loc[historia.anio.between(primero - regla["anios_previos"], primero - 1)]
         for corte in pd.to_datetime(["2021-08-21", "2022-12-31", "2023-08-19"]):

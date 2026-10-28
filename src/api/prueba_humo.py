@@ -14,9 +14,9 @@ from importlib.metadata import version
 import httpx
 from dotenv import load_dotenv
 
-from denguekay.config.paths import ENV_FILE, EVIDENCIA_BACKEND
+from denguekay.config.paths import ENV_FILE, BACKEND_EVIDENCE
 
-DESTINO = EVIDENCIA_BACKEND / "evidencia_tb1.md"
+DESTINO = BACKEND_EVIDENCE / "evidencia_tb1.md"
 
 
 def resumir(ruta, cuerpo):

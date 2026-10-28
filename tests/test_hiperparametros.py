@@ -10,9 +10,9 @@ import pandas as pd
 from src.modeling import estrategias_horizonte as eh
 from src.modeling import hiperparametros as hp
 from src.modeling import salida_probabilistica as sp
-from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 def _evaluacion(celdas=((2, 3, 4), ("temporada_2022", "temporada_2023"))):
@@ -138,10 +138,10 @@ class TestConDatos(unittest.TestCase):
         from src.modeling import fe_hiperparametros as fh
         from src.modeling import features_inicio as fi
 
-        panel = cargar_integrado(SILVER_INTEGRADO)
+        panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         ins = fh.insumos(panel, regla)
-        historia = pd.read_csv(SILVER_EPI_HISTORICO, dtype={"ubigeo": "string"})
+        historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
         vi = fi.VariablesInicio(panel, ins["serie"], historia, regla)
         origenes = vi.origenes(eh.tabla_origenes(ins["matrices"][2]), ["B3"], pd.Timestamp("2021-08-28"))
         columnas = [*eh.GENERICAS, *fi.COLUMNAS["B3"]]

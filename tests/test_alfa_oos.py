@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 
 from src.modeling import salida_probabilistica as sp
-from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRATED
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists()
 H = (2, 3, 4)
 
 
@@ -90,7 +90,7 @@ class TestConDatos(unittest.TestCase):
         from src.eda.carga import cargar_integrado
         from src.modeling import fe_hiperparametros as fh
 
-        panel = cargar_integrado(SILVER_INTEGRADO)
+        panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.matrices = fh.insumos(panel, regla)["matrices"]
 

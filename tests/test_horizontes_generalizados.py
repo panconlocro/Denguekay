@@ -15,10 +15,10 @@ from src.modeling.contrato_xgboost import familias_predictoras
 from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
 from src.modeling.features import HORIZONTES, construir_etiquetas, construir_gold
 from src.modeling.historia_calendario import construir_historia_calendario
-from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from src.validation.contrato_pronostico import HORIZONTES_EXPERIMENTALES
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 def _panel_sintetico(semanas: int = 20) -> pd.DataFrame:
@@ -60,7 +60,7 @@ class TestGoldGeneralizadoConDatos(unittest.TestCase):
     def setUpClass(cls):
         from src.eda.carga import cargar_integrado
 
-        cls.panel = cargar_integrado(SILVER_INTEGRADO)
+        cls.panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.config = ConfiguracionBroteEstacional(
             multiplicador=regla["multiplicador"], anios_previos=regla["anios_previos"],
@@ -70,7 +70,7 @@ class TestGoldGeneralizadoConDatos(unittest.TestCase):
     def test_regresion_reproduce_gold_actual_h2_h4(self):
         for h in HORIZONTES:
             with self.subTest(h=h):
-                archivo = GOLD / f"{SILVER_INTEGRADO.stem}_h{h}_gold.csv"
+                archivo = GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv"
                 disco = pd.read_csv(archivo, dtype={"ubigeo": "string"},
                                     parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"],
                                     float_precision="round_trip")

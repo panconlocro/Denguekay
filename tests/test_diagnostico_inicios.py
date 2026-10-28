@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 
 from src.modeling import diagnostico_inicios as di
-from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICO, SILVER_INTEGRADO
+from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
-HAY_DATOS = SILVER_INTEGRADO.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICO.exists()
+HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
 
 def _resumen(medias: dict, ic: dict) -> pd.DataFrame:
@@ -69,7 +69,7 @@ class TestConDatos(unittest.TestCase):
         from src.eda.carga import cargar_integrado
         from src.modeling import fe_hiperparametros as fh
 
-        cls.panel = cargar_integrado(SILVER_INTEGRADO)
+        cls.panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.serie = fh.insumos(cls.panel, regla)["serie"]
         cls.corte = di.corte_diseno(cls.serie)

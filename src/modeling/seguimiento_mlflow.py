@@ -36,7 +36,7 @@ from pathlib import Path
 
 import numpy as np
 
-from denguekay.config.paths import MLFLOW_ARTEFACTOS, MLFLOW_DB, ROOT
+from denguekay.config.paths import MLFLOW_ARTIFACTS, MLFLOW_DB, ROOT
 
 # MLflow 3 imprime sugerencias para agentes de IA al importarse; no aportan aquí.
 os.environ.setdefault("MLFLOW_DISABLE_AGENT_HINT", "1")
@@ -75,7 +75,7 @@ def configurar_experimento(nombre: str, tracking_uri: str | None = None) -> str:
     ubicacion = None
     if uri.startswith("sqlite:///"):
         base = Path(uri[len("sqlite:///"):]).resolve()
-        raiz = MLFLOW_ARTEFACTOS if base == MLFLOW_DB.resolve() else base.parent / "mlartifacts"
+        raiz = MLFLOW_ARTIFACTS if base == MLFLOW_DB.resolve() else base.parent / "mlartifacts"
         ubicacion = (raiz / nombre.replace("/", "_")).as_uri()
     return mlflow.create_experiment(nombre, artifact_location=ubicacion)
 

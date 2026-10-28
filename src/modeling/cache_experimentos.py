@@ -26,10 +26,10 @@ import tempfile
 from pathlib import Path
 
 from denguekay.config.paths import (
-    CONFIG, EXPERIMENTOS_ARQUITECTURA, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICO, SILVER_INTEGRADO,
+    CONFIG, ARCHITECTURE_EXPERIMENTS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED,
 )
 
-DIRECTORIO_CACHE = EXPERIMENTOS_ARQUITECTURA / "cache"
+DIRECTORIO_CACHE = ARCHITECTURE_EXPERIMENTS / "cache"
 CODIGO_EXTRA = ("src/validation/contrato_pronostico.py", "src/eda/temporal.py", "src/eda/carga.py",
                 "src/utils/calendario.py", "src/serving/riesgo.py")
 VARIABLE_FORZAR = "DENGUEKAY_FORZAR_REENTRENO"
@@ -52,8 +52,8 @@ def huella_archivos(archivos: list[Path]) -> str:
 
 def insumos_encargo() -> list[Path]:
     """Datos, configuración y código que determinan los resultados del encargo."""
-    datos = [SILVER_INTEGRADO, SILVER_EPI_HISTORICO, GOLD_MANIFEST,
-             *sorted(GOLD.glob(f"{SILVER_INTEGRADO.stem}_h*_gold.csv"))]
+    datos = [SILVER_INTEGRATED, SILVER_EPI_HISTORICAL, GOLD_MANIFEST,
+             *sorted(GOLD.glob(f"{SILVER_INTEGRATED.stem}_h*_gold.csv"))]
     codigo = [*sorted((ROOT / "src" / "modeling").glob("*.py")), *(ROOT / c for c in CODIGO_EXTRA)]
     return [*datos, CONFIG, *codigo]
 

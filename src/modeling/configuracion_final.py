@@ -102,11 +102,11 @@ def origenes(panel: pd.DataFrame, insumos: dict, regla: dict, historia: pd.DataF
     ``base_6`` + B3 siempre; si la configuración usa A3, se quitan los orígenes
     con nulos de arranque de A3 (las columnas ya vienen de gold h=2).
     """
-    from denguekay.config.paths import SILVER_EPI_HISTORICO
+    from denguekay.config.paths import SILVER_EPI_HISTORICAL
 
     configuracion = CONFIGURACION_2026 if configuracion is None else configuracion
     if historia is None:
-        historia = pd.read_csv(SILVER_EPI_HISTORICO, dtype={"ubigeo": "string"})
+        historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
     vi = fi.VariablesInicio(panel, insumos["serie"], historia, regla)
     salida = vi.origenes(eh.tabla_origenes(insumos["matrices"][2]), ["B3"], CORTE_REFERENCIA_B3)
     clima = [c for c in COLUMNAS_A3 if c in configuracion["columnas"]]

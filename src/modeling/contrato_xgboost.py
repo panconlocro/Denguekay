@@ -16,7 +16,7 @@ from src.validation.contrato_pronostico import HORIZONTES_EXPERIMENTALES
 from src.modeling.sociodemografia import DIRECTAS
 from src.processing.socio_interpolacion import SOCIO_COLUMNS
 from denguekay.config.paths import (
-    GOLD, RESEARCH, SILVER_EPI_HISTORICO, SILVER_INTEGRADO, UBIGEO_CATALOG,
+    GOLD, RESEARCH, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED, UBIGEO_CATALOG,
 )
 from src.validation.contrato_pronostico import CLAVE
 from src.validation.expectations_integrado import (
@@ -83,9 +83,9 @@ def _sha256(path: Path) -> str:
 
 
 def auditar_traspaso(
-    silver_path: Path = SILVER_INTEGRADO, gold_dir: Path = GOLD,
+    silver_path: Path = SILVER_INTEGRATED, gold_dir: Path = GOLD,
     catalog_path: Path = UBIGEO_CATALOG,
-    historia_path: Path = SILVER_EPI_HISTORICO,
+    historia_path: Path = SILVER_EPI_HISTORICAL,
 ) -> dict:
     """Valida archivos persistidos, linaje y cobertura antes del modelado.
 
