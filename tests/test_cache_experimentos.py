@@ -50,7 +50,7 @@ class TestCacheExperimentos(unittest.TestCase):
     def test_insumos_cubren_datos_configuracion_y_codigo(self):
         nombres = {p.name for p in ce.insumos_encargo()}
         self.assertTrue({"config.yaml", "manifest_fase6.json", "probabilistic_output.py",
-                         "protocolo_arquitectura.py", "contrato_pronostico.py"} <= nombres)
+                         "protocolo_arquitectura.py", "forecast_contract.py"} <= nombres)
 
     def test_forzar_desde_entorno(self):
         with mock.patch.dict(os.environ, {ce.VARIABLE_FORZAR: "1"}):

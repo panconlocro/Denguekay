@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from src.validation.contrato_pronostico import auditar_origen, observaciones_disponibles
+from denguekay.data.validation.forecast_contract import auditar_origen, observaciones_disponibles
 
 
 class ContratoPronosticoTests(unittest.TestCase):

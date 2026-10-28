@@ -191,7 +191,7 @@ def a_markdown(tabla: pd.DataFrame, por_temporada: pd.DataFrame | None, configur
 
 
 def main() -> None:
-    from src.eda.carga import cargar_integrado
+    from denguekay.data.loading import cargar_integrado
     from denguekay.model import frozen_configs as cf
     from src.modeling import diagnostico_arquitectura as d
     from src.modeling import fe_hiperparametros as fh

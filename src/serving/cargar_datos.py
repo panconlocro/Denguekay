@@ -23,9 +23,9 @@ from src.db.configuracion import ConfiguracionBDInvalida
 from src.db.modelos import (Distrito, Ejecucion, ObservacionSemanal, Provincia,
                             SemanaEpidemiologica, ahora_utc)
 from src.db.sesion import crear_motor, transaccion, upsert
-from src.processing.agregacion_semanal import limpiar_nombres_para_cruce
-from src.utils.calendario import semana_epi_mmwr
-from src.utils.keys import normalizar
+from denguekay.data.processing.weekly_aggregation import limpiar_nombres_para_cruce
+from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.keys import normalizar
 from denguekay.config.paths import (DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL,
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
@@ -192,9 +192,9 @@ def leer_silver(ruta=SILVER_INTEGRATED):
 def preparar_carga():
     """Valida archivos originales antes de preparar cualquier escritura."""
     from src.modeling.contrato_xgboost import auditar_traspaso
-    from src.processing.epi_sala import load_ubigeo_catalog
+    from denguekay.data.processing.epi_sala import load_ubigeo_catalog
     from src.serving.configuracion import configuracion_servicio
-    from src.validation.calidad_gx import leer_gold, validar_entradas_modelado
+    from denguekay.data.validation.gx_quality import leer_gold, validar_entradas_modelado
 
     hashes = hashes_fuentes()
     auditar_traspaso()

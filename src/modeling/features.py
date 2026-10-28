@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from src.eda.carga import cargar_integrado
+from denguekay.data.loading import cargar_integrado
 from src.modeling.clima import construir_clima_observado
 from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional, etiquetar_brote_estacional
 from src.modeling.historia_calendario import construir_historia_calendario
@@ -23,10 +23,10 @@ from src.modeling.sociodemografia import (
     referencia_2017,
 )
 from src.modeling.vecinos_jerarquia import construir_vecinos_jerarquia
-from src.processing.socio_interpolacion import SOCIO_COLUMNS
+from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.config.paths import GOLD, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED, UBIGEO_CATALOG
-from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
-from src.validation.expectations_integrado import (
+from denguekay.data.validation.forecast_contract import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
+from denguekay.data.validation.integrated_expectations import (
     coverage_path, load_case_coverage, validate_complete, validate_geography,
 )
 

@@ -10,7 +10,7 @@ from sqlalchemy.engine import make_url
 import pandas as pd
 
 from src.db.sesion import crear_motor
-from src.processing.epi_sala import load_ubigeo_catalog
+from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.config.paths import ALEMBIC_CONFIG, BACKEND_FIXTURES, DISTRICT_COORDS, UBIGEO_CATALOG
 
 
@@ -83,10 +83,10 @@ def leer_muestra():
 def datos_muestra(carpeta, seleccion_experimental=None):
     """Ejecuta GX sobre gold real y prepara el lote de carga OE2 desde las fixtures."""
     # Importación diferida: evita cargar GX al importar este módulo.
-    from src.processing.epi_sala import load_ubigeo_catalog
+    from denguekay.data.processing.epi_sala import load_ubigeo_catalog
     from src.serving.cargar_datos import preparar_desde_tablas
-    from src.validation.calidad_gx import obtener_contexto, validar_dataframe
-    from src.validation.expectations_gold import expectativas_gold
+    from denguekay.data.validation.gx_quality import obtener_contexto, validar_dataframe
+    from denguekay.data.validation.gold_expectations import expectativas_gold
 
     muestra = leer_muestra()
     calidad = validar_dataframe(

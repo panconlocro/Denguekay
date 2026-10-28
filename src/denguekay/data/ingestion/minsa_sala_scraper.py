@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import urlopen
 
-from src.utils.keys import normalizar_sala
+from denguekay.data.keys import normalizar_sala
 
 URL = "https://app7.dge.gob.pe/maps2/shiny_metaxenicas_web/"
 CHART = "ten-fig02b-echart"

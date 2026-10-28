@@ -13,7 +13,7 @@ from denguekay.model.train import (
     columnas_variantes, predecir_fold, preparar_gold, separar_anio_calendario,
     separar_temporada,
 )
-from src.utils.calendario import semana_epi_mmwr
+from denguekay.data.calendar import semana_epi_mmwr
 
 
 def panel_sintetico(horizonte: int = 2, periods: int = 20) -> pd.DataFrame:

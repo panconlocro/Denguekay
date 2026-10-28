@@ -1,11 +1,11 @@
-"""Tests de src/eda/temporal.py con datos sintéticos (no dependen de data/)."""
+"""Tests de src/denguekay/data/seasons.py con datos sintéticos (no dependen de data/)."""
 
 import unittest
 
 import numpy as np
 import pandas as pd
 
-from src.eda.temporal import (
+from denguekay.data.seasons import (
     acf_simple, asignar_temporada, metricas_binarias, perfil_normalizado,
     prediccion_estacional, prediccion_persistencia, semana_valle,
 )

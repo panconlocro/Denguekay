@@ -23,8 +23,8 @@ from denguekay.model.train import (
 )
 from denguekay.model.tracking import registrar_o_avisar
 from denguekay.config.paths import DOCS, GOLD, MODELS, SILVER_INTEGRATED
-from src.validation.contrato_pronostico import CLAVE
-from src.validation.calidad_gx import validar_entradas_modelado
+from denguekay.data.validation.forecast_contract import CLAVE
+from denguekay.data.validation.gx_quality import validar_entradas_modelado
 
 
 TEMPORADAS = (2021, 2022, 2023, 2024)

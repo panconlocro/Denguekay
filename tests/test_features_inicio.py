@@ -10,7 +10,7 @@ from denguekay.model import horizon_strategies as eh
 from src.modeling import features_inicio as fi
 from denguekay.model import probabilistic_output as sp
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional
-from src.utils.calendario import semana_epi_mmwr
+from denguekay.data.calendar import semana_epi_mmwr
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
@@ -78,7 +78,7 @@ class TestSintetico(unittest.TestCase):
 class TestConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from src.eda.carga import cargar_integrado
+        from denguekay.data.loading import cargar_integrado
         from src.modeling import fe_hiperparametros as fh
 
         cls.panel = cargar_integrado(SILVER_INTEGRATED)

@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 
 from src.modeling.features import columnas_gold
-from src.processing.socio_interpolacion import SOCIO_COLUMNS
-from src.validation.calidad_gx import ValidacionDatosError, obtener_contexto, validar_dataframe
-from src.validation.expectations_gold import expectativas_gold
-from src.validation.expectations_integrado import WEATHER_COLUMNS, expectativas_integrado_gx
+from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
+from denguekay.data.validation.gx_quality import ValidacionDatosError, obtener_contexto, validar_dataframe
+from denguekay.data.validation.gold_expectations import expectativas_gold
+from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, expectativas_integrado_gx
 
 UBIGEOS = ["200101", "200102"]
 

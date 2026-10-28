@@ -10,16 +10,16 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.eda.carga import cargar_integrado
+from denguekay.data.loading import cargar_integrado
 from src.modeling.features import HORIZONTES, columnas_gold, validar_gold
-from src.validation.contrato_pronostico import HORIZONTES_EXPERIMENTALES
+from denguekay.data.validation.forecast_contract import HORIZONTES_EXPERIMENTALES
 from src.modeling.sociodemografia import DIRECTAS
-from src.processing.socio_interpolacion import SOCIO_COLUMNS
+from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.config.paths import (
     GOLD, RESEARCH, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED, UBIGEO_CATALOG,
 )
-from src.validation.contrato_pronostico import CLAVE
-from src.validation.expectations_integrado import (
+from denguekay.data.validation.forecast_contract import CLAVE
+from denguekay.data.validation.integrated_expectations import (
     coverage_path, load_case_coverage, validate_complete, validate_geography,
 )
 

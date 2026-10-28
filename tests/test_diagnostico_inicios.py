@@ -66,7 +66,7 @@ class TestPerfiles(unittest.TestCase):
 class TestConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from src.eda.carga import cargar_integrado
+        from denguekay.data.loading import cargar_integrado
         from src.modeling import fe_hiperparametros as fh
 
         cls.panel = cargar_integrado(SILVER_INTEGRATED)

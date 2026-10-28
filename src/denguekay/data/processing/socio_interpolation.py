@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.utils.keys import normalizar
+from denguekay.data.keys import normalizar
 
 ANIOS = list(range(2017, 2026))
 SOCIO_COLUMNS = [

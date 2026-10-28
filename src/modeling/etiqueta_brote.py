@@ -11,7 +11,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from src.validation.contrato_pronostico import CLAVE
+from denguekay.data.validation.forecast_contract import CLAVE
 
 
 @dataclass(frozen=True)

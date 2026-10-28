@@ -10,8 +10,8 @@ import pandas as pd
 
 from src.modeling.features import construir_gold, generar_gold, validar_gold
 from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
-from src.processing.socio_interpolacion import SOCIO_COLUMNS
-from src.validation.expectations_integrado import WEATHER_COLUMNS, coverage_path
+from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
+from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, coverage_path
 
 
 def panel_ejemplo() -> pd.DataFrame:

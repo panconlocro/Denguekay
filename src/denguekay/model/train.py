@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor, __version__ as XGBOOST_VERSION
 
-from src.eda.temporal import asignar_temporada
+from denguekay.data.seasons import asignar_temporada
 from src.modeling.contrato_xgboost import auditar_traspaso, familias_predictoras
 from denguekay.model.device import configuracion_xgboost
 from src.modeling.evaluate import (
@@ -24,9 +24,9 @@ from src.modeling.evaluate import (
 )
 from denguekay.model.tracking import registrar_o_avisar
 from denguekay.config.paths import GOLD, MODELS, RESEARCH_FIRST_MODELS, SILVER_INTEGRATED
-from src.utils.calendario import semana_epi_mmwr
-from src.validation.contrato_pronostico import CLAVE
-from src.validation.calidad_gx import validar_entradas_modelado
+from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.validation.forecast_contract import CLAVE
+from denguekay.data.validation.gx_quality import validar_entradas_modelado
 
 TEMPORADAS_VALIDACION = (2021, 2022, 2023)
 TEMPORADA_PRUEBA_PRINCIPAL = 2024

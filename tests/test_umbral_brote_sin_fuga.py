@@ -13,7 +13,7 @@ import pandas as pd
 
 from src.modeling.etiqueta_brote import etiquetar_brote_estacional
 from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
-from src.utils.calendario import semana_epi_mmwr
+from denguekay.data.calendar import semana_epi_mmwr
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
@@ -61,7 +61,7 @@ class TestUmbralSinFuga(unittest.TestCase):
 @unittest.skipUnless(HAY_DATOS, "Requiere silver integrado e historia epi locales")
 class TestUmbralSinFugaConDatos(unittest.TestCase):
     def test_panel_real(self):
-        from src.eda.carga import cargar_integrado
+        from denguekay.data.loading import cargar_integrado
 
         panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]

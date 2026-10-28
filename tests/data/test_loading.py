@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from src.eda.carga import validar_panel
+from denguekay.data.loading import validar_panel
 
 
 def panel(n_semanas=4, distritos=("200101", "200102")):

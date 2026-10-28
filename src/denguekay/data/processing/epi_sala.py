@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.utils.keys import normalizar_sala
+from denguekay.data.keys import normalizar_sala
 
 KEY = ["ubigeo", "anio", "semana"]
 

@@ -13,8 +13,8 @@ adjunta a cada corrida de MLflow. Solo leen ``data/``; nunca escriben en ella.
 
 Uso desde la raíz del repo::
 
-    python -m src.validation.calidad_gx            # silver integrado + gold h2/h4
-    python -m src.validation.calidad_gx --sin-gold # solo silver integrado
+    python -m denguekay.data.validation.gx_quality            # silver integrado + gold h2/h4
+    python -m denguekay.data.validation.gx_quality --sin-gold # solo silver integrado
 """
 
 import argparse
@@ -28,10 +28,10 @@ import great_expectations as gx
 import pandas as pd
 
 from src.modeling.features import HORIZONTES
-from src.processing.epi_sala import load_ubigeo_catalog
+from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.config.paths import GOLD, GX_DIR, SILVER_INTEGRATED, UBIGEO_CATALOG
-from src.validation.expectations_gold import expectativas_gold
-from src.validation.expectations_integrado import expectativas_integrado_gx
+from denguekay.data.validation.gold_expectations import expectativas_gold
+from denguekay.data.validation.integrated_expectations import expectativas_integrado_gx
 
 FUENTE_GX = "denguekay_pandas"
 LOTE_COMPLETO = "dataframe_completo"
@@ -224,7 +224,7 @@ def validar_entradas_modelado(
 
 
 def main() -> None:
-    """CLI: ``python -m src.validation.calidad_gx``. Sale con código 1 si algo falla."""
+    """CLI: ``python -m denguekay.data.validation.gx_quality``. Sale con código 1 si algo falla."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--silver", type=Path, default=SILVER_INTEGRATED)
     parser.add_argument("--gold-dir", type=Path, default=GOLD)

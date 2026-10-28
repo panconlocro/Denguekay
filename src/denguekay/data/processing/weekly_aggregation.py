@@ -9,8 +9,8 @@ de distritos para tener nombre/lat/lon en la salida.
 import pandas as pd
 
 from denguekay.config.paths import CACHE_METEO
-from src.utils.keys import normalizar
-from src.utils.calendario import semana_epi_mmwr
+from denguekay.data.keys import normalizar
+from denguekay.data.calendar import semana_epi_mmwr
 
 # Correcciones puntuales de nombres que salen mal separados/duplicados al
 # cruzar meteo (via GADM) con los otros catálogos. Detectadas la primera vez

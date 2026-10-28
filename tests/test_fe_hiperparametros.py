@@ -73,7 +73,7 @@ class TestAntecedentes(unittest.TestCase):
 class TestConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from src.eda.carga import cargar_integrado
+        from denguekay.data.loading import cargar_integrado
 
         cls.panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]

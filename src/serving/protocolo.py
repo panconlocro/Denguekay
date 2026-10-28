@@ -11,8 +11,8 @@ from denguekay.model.train import evaluar_fold, preparar_gold, separar_temporada
 from src.modeling.validacion_temporal_compacta import ejecutar_validacion_temporal_compacta, variantes_compactas
 from denguekay.config.paths import (GOLD, GOLD_MANIFEST, COMPACT_METRICS, COMPACT_PREDICTIONS,
                              SERVING_REGENERATED_PROTOCOL, SILVER_INTEGRATED)
-from src.validation.calidad_gx import leer_gold
-from src.validation.contrato_pronostico import CLAVE
+from denguekay.data.validation.gx_quality import leer_gold
+from denguekay.data.validation.forecast_contract import CLAVE
 
 
 @dataclass

@@ -52,7 +52,7 @@ class TestBinomialNegativa(unittest.TestCase):
 class TestFormulacionesConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from src.eda.carga import cargar_integrado
+        from denguekay.data.loading import cargar_integrado
         from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
         from src.modeling.features import construir_etiquetas
 

@@ -31,7 +31,7 @@ from src.modeling.evaluate import (
 )
 from denguekay.model.train import MINIMO_CASOS_BROTE
 from src.serving.riesgo import NIVELES
-from src.validation.contrato_pronostico import CLAVE
+from denguekay.data.validation.forecast_contract import CLAVE
 
 BLOQUE_CALIBRACION_INICIAL = "temporada_2021"
 BLOQUES_SELECCION = ("temporada_2022", "temporada_2023")

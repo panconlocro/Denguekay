@@ -16,7 +16,7 @@ from src.modeling.etiqueta_brote import ConfiguracionBroteEstacional
 from src.modeling.features import HORIZONTES, construir_etiquetas, construir_gold
 from src.modeling.historia_calendario import construir_historia_calendario
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
-from src.validation.contrato_pronostico import HORIZONTES_EXPERIMENTALES
+from denguekay.data.validation.forecast_contract import HORIZONTES_EXPERIMENTALES
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
@@ -58,7 +58,7 @@ class TestHistoriaGeneralizada(unittest.TestCase):
 class TestGoldGeneralizadoConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from src.eda.carga import cargar_integrado
+        from denguekay.data.loading import cargar_integrado
 
         cls.panel = cargar_integrado(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]

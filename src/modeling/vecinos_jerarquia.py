@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from src.eda.espacial import distancias_km, pesos_inverso_distancia, pesos_knn
-from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
+from denguekay.data.validation.forecast_contract import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
 
 
 def catalogo_geografico(panel: pd.DataFrame) -> pd.DataFrame:

@@ -10,8 +10,8 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from src.validation.contrato_pronostico import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
-from src.processing.socio_interpolacion import SOCIO_COLUMNS
+from denguekay.data.validation.forecast_contract import CLAVE, HORIZONTES_EXPERIMENTALES, auditar_origen
+from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 
 
 DIRECTAS = ("fraccion_rural", "fraccion_menores_15", "fraccion_desague_red")

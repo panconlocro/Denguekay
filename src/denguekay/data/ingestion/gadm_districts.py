@@ -9,7 +9,7 @@ Requiere: geopandas, requests
 import pandas as pd
 import geopandas as gpd
 
-from src.utils.keys import normalizar, separar_camel
+from denguekay.data.keys import normalizar, separar_camel
 
 GADM_URL = "https://geodata.ucdavis.edu/gadm/gadm4.1/json/gadm41_PER_3.json.zip"
 

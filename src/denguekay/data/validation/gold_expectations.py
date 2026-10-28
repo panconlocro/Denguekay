@@ -10,7 +10,7 @@ de arranque estructural siguen en ``denguekay.model.train.preparar_gold``.
 import great_expectations as gx
 
 from src.modeling.features import columnas_gold
-from src.validation.contrato_pronostico import CLAVE
+from denguekay.data.validation.forecast_contract import CLAVE
 
 # Proporción mínima de filas con predictores poblados. Los nulos permitidos
 # son solo el arranque estructural de cada distrito (menos del 2 % hoy).

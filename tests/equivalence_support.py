@@ -67,7 +67,7 @@ def prediction_digest(predictions):
 
 def frozen_prediction_digests():
     """V1 and V2 predictions with the deployment seed, computed in memory (needs local data)."""
-    from src.eda.carga import cargar_integrado
+    from denguekay.data.loading import cargar_integrado
     from denguekay.model import frozen_configs as cf
     from src.modeling import fe_hiperparametros as fh
     from denguekay.model.device import configuracion_xgboost

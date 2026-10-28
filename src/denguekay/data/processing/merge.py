@@ -6,7 +6,7 @@ data/silver/integrado/ y no en gold.
 
 import pandas as pd
 
-from src.utils.keys import normalizar
+from denguekay.data.keys import normalizar
 
 
 def diagnosticar_distritos_sin_match(meteo: pd.DataFrame, socio_anual: pd.DataFrame) -> None:

@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 
 from denguekay.config.paths import SILVER_INTEGRATED
-from src.utils.calendario import semana_epi_mmwr
+from denguekay.data.calendar import semana_epi_mmwr
 
 OBJETIVO = "casos_Dengue"
 LLAVE = ["ubigeo", "anio", "semana"]

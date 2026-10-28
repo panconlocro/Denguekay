@@ -27,7 +27,7 @@ from denguekay.model.train import (
     preparar_gold, separar_anio_calendario, separar_temporada,
 )
 from src.modeling.validacion_temporal_compacta import TEMPORADAS, variantes_compactas
-from src.validation.contrato_pronostico import CLAVE
+from denguekay.data.validation.forecast_contract import CLAVE
 
 HORIZONTES_ESTRATEGIA = (2, 3, 4)
 HORIZONTES_CURVA = (1, 2, 3, 4, 5, 6)

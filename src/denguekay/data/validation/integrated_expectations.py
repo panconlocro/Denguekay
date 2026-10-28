@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.processing.socio_interpolacion import SOCIO_COLUMNS
-from src.processing.epi_sala import load_ubigeo_catalog
-from src.utils.calendario import semana_epi_mmwr
-from src.utils.keys import normalizar_sala
+from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
+from denguekay.data.processing.epi_sala import load_ubigeo_catalog
+from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.keys import normalizar_sala
 from denguekay.config.paths import UBIGEO_CATALOG
 
 KEY = ["ubigeo", "anio", "semana"]

@@ -24,7 +24,7 @@ from src.modeling import diagnostico_inicios as di
 from denguekay.model import horizon_strategies as eh
 from src.modeling import preregistro_fe as pr
 from src.modeling.etiqueta_brote import umbral_brote_futuro
-from src.utils.calendario import semana_epi_mmwr
+from denguekay.data.calendar import semana_epi_mmwr
 
 COLUMNAS = {v["id"]: list(v["columnas"]) for v in pr.VARIANTES if v["bloque"] == "B"}
 POR_BLOQUE = ("B2", "B5")

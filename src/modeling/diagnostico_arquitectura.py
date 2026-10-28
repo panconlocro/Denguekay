@@ -24,10 +24,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from src.eda.temporal import asignar_temporada
+from denguekay.data.seasons import asignar_temporada
 from src.modeling.evaluate import alertas_desde_conteos, metricas_alerta
 from denguekay.model.train import MINIMO_CASOS_BROTE, SEMANA_INICIO_TEMPORADA
-from src.validation.contrato_pronostico import CLAVE
+from denguekay.data.validation.forecast_contract import CLAVE
 
 VARIANTE_REGRESION = "base_6"
 VARIANTE_CLASIFICACION = "base_6_poblacion_2017"

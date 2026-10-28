@@ -37,7 +37,7 @@ ventana:
 import numpy as np
 import pandas as pd
 
-from src.eda.temporal import asignar_temporada
+from denguekay.data.seasons import asignar_temporada
 from src.modeling import diagnostico_arquitectura as diag
 from src.modeling.clima import ajustar_climatologia
 from src.modeling.protocolo_arquitectura import bootstrap_estratificado

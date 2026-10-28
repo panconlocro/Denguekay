@@ -8,11 +8,11 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from src.ingestion.scrape_minsa_dengue import observed_weekly_points
-from src.processing.epi_sala import normalize_sala_records
-from src.processing.socio_interpolacion import SOCIO_COLUMNS, generar_socio_para_claves
+from denguekay.data.ingestion.minsa_sala_scraper import observed_weekly_points
+from denguekay.data.processing.epi_sala import normalize_sala_records
+from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS, generar_socio_para_claves
 from src.update_dataset_module import run_weather, update_dataset
-from src.validation.expectations_integrado import WEATHER_COLUMNS, coverage_path, prepare_dataset
+from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, coverage_path, prepare_dataset
 
 
 CODE = "200502"

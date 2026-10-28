@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.eda.carga import cargar_integrado
-from src.processing.agregacion_semanal import AGG_DIARIO_A_SEMANAL, agregar_a_semanal
-from src.utils.calendario import semana_epi_mmwr
-from src.validation.expectations_integrado import prepare_dataset
+from denguekay.data.loading import cargar_integrado
+from denguekay.data.processing.weekly_aggregation import AGG_DIARIO_A_SEMANAL, agregar_a_semanal
+from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.validation.integrated_expectations import prepare_dataset
 from tests.test_update_dataset_module import model_row
 
 

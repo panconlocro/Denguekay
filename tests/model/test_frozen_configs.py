@@ -88,7 +88,7 @@ class TestDiccionario(unittest.TestCase):
 class TestReproduccion(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from src.eda.carga import cargar_integrado
+        from denguekay.data.loading import cargar_integrado
         from src.modeling import fe_hiperparametros as fh
 
         cls.panel = cargar_integrado(SILVER_INTEGRATED)

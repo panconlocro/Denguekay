@@ -7,8 +7,8 @@ from src.modeling.features import FECHA_SOCIO_2017, HORIZONTES
 from src.modeling.historia_calendario import construir_historia_calendario
 from src.modeling.sociodemografia import referencia_2017, construir_sociodemografia
 from src.modeling.validacion_temporal_compacta import variantes_compactas
-from src.utils.calendario import semana_epi_mmwr
-from src.validation.contrato_pronostico import CLAVE, auditar_origen, observaciones_disponibles
+from denguekay.data.calendar import semana_epi_mmwr
+from denguekay.data.validation.forecast_contract import CLAVE, auditar_origen, observaciones_disponibles
 
 
 def construir_filas_futuras(panel, horizonte, *, columnas=None, fecha_corte=None, referencia=None):

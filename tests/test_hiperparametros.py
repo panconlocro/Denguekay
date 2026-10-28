@@ -134,7 +134,7 @@ class TestAdopcion(unittest.TestCase):
 class TestConDatos(unittest.TestCase):
     def test_base_explicita_reproduce_los_parametros_por_defecto(self):
         """BASE (con max_delta_step = 0,7, reg_alpha = gamma = 0 explícitos) da lo mismo que los fijos heredados."""
-        from src.eda.carga import cargar_integrado
+        from denguekay.data.loading import cargar_integrado
         from src.modeling import fe_hiperparametros as fh
         from src.modeling import features_inicio as fi
 

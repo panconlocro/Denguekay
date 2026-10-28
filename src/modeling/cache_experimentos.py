@@ -30,8 +30,8 @@ from denguekay.config.paths import (
 )
 
 DIRECTORIO_CACHE = ARCHITECTURE_EXPERIMENTS / "cache"
-CODIGO_EXTRA = ("src/validation/contrato_pronostico.py", "src/eda/temporal.py", "src/eda/carga.py",
-                "src/utils/calendario.py", "src/serving/riesgo.py")
+CODIGO_EXTRA = ("src/denguekay/data/validation/forecast_contract.py", "src/denguekay/data/seasons.py", "src/denguekay/data/loading.py",
+                "src/denguekay/data/calendar.py", "src/serving/riesgo.py")
 VARIABLE_FORZAR = "DENGUEKAY_FORZAR_REENTRENO"
 
 
