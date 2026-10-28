@@ -5,8 +5,8 @@ import unittest
 from sqlalchemy import text
 
 from backend_soporte import entorno_bd
-from src.db.configuracion import ConfiguracionBDInvalida, obtener_url
-from src.db.sesion import crear_motor
+from denguekay.db.settings import ConfiguracionBDInvalida, obtener_url
+from denguekay.db.session import crear_motor
 
 
 class TestConfiguracionBD(unittest.TestCase):
@@ -44,7 +44,7 @@ class TestEvidenciaSQL(unittest.TestCase):
     def test_sql_offline_de_la_migracion_sin_credenciales(self):
         import tempfile
         from pathlib import Path
-        from src.db.exportar_sql_migracion import exportar
+        from denguekay.db.export_migration_sql import exportar
         with tempfile.TemporaryDirectory() as carpeta:
             sql = exportar(Path(carpeta) / "migracion.sql").read_text(encoding="utf-8")
         self.assertEqual(sql.count("CREATE TYPE"), 10)

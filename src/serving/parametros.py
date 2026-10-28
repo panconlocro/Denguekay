@@ -2,8 +2,8 @@
 
 from sqlalchemy import select
 
-from src.db.modelos import ParametroSistema, ahora_utc
-from src.db.sesion import upsert
+from denguekay.db.models import ParametroSistema, ahora_utc
+from denguekay.db.session import upsert
 
 
 class ParametroFaltante(ValueError):

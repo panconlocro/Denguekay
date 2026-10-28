@@ -21,10 +21,10 @@ from sqlalchemy.exc import DBAPIError, IntegrityError, StatementError
 from sqlalchemy.schema import CreateTable
 
 from backend_soporte import migrar, url_pg_pruebas
-from src.db.modelos import (Alerta, Base, Distrito, Ejecucion, ImportanciaVariable,
+from denguekay.db.models import (Alerta, Base, Distrito, Ejecucion, ImportanciaVariable,
                             ObservacionSemanal, ParametroSistema, Prediccion, Provincia,
                             SemanaEpidemiologica, VersionModelo)
-from src.db.sesion import crear_motor, transaccion
+from denguekay.db.session import crear_motor, transaccion
 
 TABLAS_OE2 = {"provincia", "distrito", "semana_epidemiologica", "observacion_semanal",
               "version_modelo", "ejecucion", "prediccion", "alerta", "parametro_sistema"}

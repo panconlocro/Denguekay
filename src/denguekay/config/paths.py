@@ -51,7 +51,7 @@ SERVING_MODELS = MODELS / "serving"
 STORAGE = MODELS / "storage"
 ENV_FILE = ROOT / ".env"
 ALEMBIC_CONFIG = ROOT / "alembic.ini"
-DB_MIGRATIONS = ROOT / "src" / "db" / "migraciones"
+DB_MIGRATIONS = ROOT / "src" / "denguekay" / "db" / "migrations"
 BACKEND_FIXTURES = ROOT / "tests" / "fixtures" / "backend"
 
 # Experiment tracking (MLflow) and data quality (Great Expectations).

@@ -2,7 +2,7 @@
 source =
     src/api
     src/serving
-    src/db
+    src/denguekay/db
 relative_files = True
 
 [report]

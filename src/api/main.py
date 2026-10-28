@@ -12,8 +12,8 @@ from src.api.cache import CacheLecturas
 from src.api.errores import registrar_errores
 from src.api.esquemas import ErrorRespuesta
 from src.api.routers import admin, datos, modelos, referencia, vigilancia
-from src.db.configuracion import ConfiguracionBDInvalida
-from src.db.sesion import crear_fabrica_sesiones, crear_motor
+from denguekay.db.settings import ConfiguracionBDInvalida
+from denguekay.db.session import crear_fabrica_sesiones, crear_motor
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.configuracion import configuracion_servicio
 from denguekay.config.paths import ENV_FILE

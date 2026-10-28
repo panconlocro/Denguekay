@@ -11,9 +11,9 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import select
 
-from src.db.modelos import (Alerta, Distrito, Ejecucion, ObservacionSemanal, Prediccion,
+from denguekay.db.models import (Alerta, Distrito, Ejecucion, ObservacionSemanal, Prediccion,
                             SemanaEpidemiologica, VersionModelo, ahora_utc)
-from src.db.sesion import upsert
+from denguekay.db.session import upsert
 from denguekay.model.future_rows import build_future_rows
 from denguekay.features.sociodemographics import DIRECT
 from src.serving import parametros

@@ -9,7 +9,7 @@ from alembic.config import Config
 from sqlalchemy.engine import make_url
 import pandas as pd
 
-from src.db.sesion import crear_motor
+from denguekay.db.session import crear_motor
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.config.paths import ALEMBIC_CONFIG, BACKEND_FIXTURES, DISTRICT_COORDS, UBIGEO_CATALOG
 

@@ -17,8 +17,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from xgboost import __version__ as XGBOOST_VERSION
 
-from src.db.modelos import Ejecucion, ahora_utc
-from src.db.sesion import crear_motor, transaccion
+from denguekay.db.models import Ejecucion, ahora_utc
+from denguekay.db.session import crear_motor, transaccion
 from denguekay.model.tracking import log_report
 from denguekay.model.train import BASE_PARAMS
 from src.serving import parametros
@@ -35,8 +35,8 @@ from denguekay.config.paths import GOLD, ROOT, SERVING_RUNS, SILVER_INTEGRATED, 
 
 def hashes_codigo():
     """Los cambios de lógica también forman parte de la identidad de la publicación."""
-    archivos = [p for nombre in ("serving", "db", "modeling", "validation", "utils")
-                for p in (SRC / nombre).rglob("*.py")]
+    # Decision D6: the code identity covers the whole denguekay package (plus serving until it moves there).
+    archivos = [*sorted((SRC / "serving").rglob("*.py")), *sorted((SRC / "denguekay").rglob("*.py"))]
     return {str(p.relative_to(ROOT)).replace("\\", "/"): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in archivos}
 

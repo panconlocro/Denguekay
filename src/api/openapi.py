@@ -9,7 +9,7 @@ from src.api import consultas as q
 from src.api.esquemas import (AlertaRespuesta, DistritoRespuesta, MapaRiesgoRespuesta, ModeloDetalle,
                               ModelosActivosRespuesta, ObservacionRespuesta, Pagina, PrediccionRespuesta,
                               SaludRespuesta, SeriesRespuesta, TableroRespuesta, VariablesRespuesta)
-from src.db.modelos import Alerta, Distrito, Prediccion, VersionModelo
+from denguekay.db.models import Alerta, Distrito, Prediccion, VersionModelo
 
 DESCRIPCIONES = {
     "Disponibilidad": "Distingue valores existentes, incluidos ceros, de valores ausentes con motivo",

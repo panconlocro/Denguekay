@@ -10,8 +10,8 @@ import yaml
 
 from backend_soporte import motor_temporal
 from serving_soporte import protocolo_muestra
-from src.db.modelos import ParametroSistema
-from src.db.sesion import transaccion
+from denguekay.db.models import ParametroSistema
+from denguekay.db.session import transaccion
 from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal, validar_ruta
 from src.serving.configuracion import configuracion_servicio

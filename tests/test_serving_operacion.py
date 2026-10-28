@@ -11,8 +11,8 @@ import unittest
 from sqlalchemy.engine import URL
 
 from backend_soporte import datos_muestra, entorno_bd, motor_temporal
-from src.db.modelos import Distrito
-from src.db.sesion import transaccion
+from denguekay.db.models import Distrito
+from denguekay.db.session import transaccion
 from src.serving.artefactos import huella_json
 from src.serving.cargar_datos import main as cargar_cli, persistir_carga
 from src.serving.publicar import hashes_codigo, main as publicar_cli
@@ -23,7 +23,7 @@ class TestOperacionServing(unittest.TestCase):
     def test_huella_incluye_codigo_real_y_detecta_su_contenido(self):
         hashes = hashes_codigo()
         self.assertIn("src/serving/publicar.py", hashes)
-        self.assertIn("src/db/modelos.py", hashes)
+        self.assertIn("src/denguekay/db/models.py", hashes)
         for ruta, huella in hashes.items():
             self.assertEqual(huella, hashlib.sha256((ROOT / ruta).read_bytes()).hexdigest())
             self.assertNotIn("\\", ruta)

@@ -9,9 +9,9 @@ import unittest
 from sqlalchemy import func, select
 
 from backend_soporte import datos_muestra, leer_muestra, motor_temporal
-from src.db.modelos import (Distrito, Ejecucion, ObservacionSemanal, ParametroSistema, Provincia,
+from denguekay.db.models import (Distrito, Ejecucion, ObservacionSemanal, ParametroSistema, Provincia,
                             SemanaEpidemiologica)
-from src.db.sesion import transaccion
+from denguekay.db.session import transaccion
 from src.serving import cargar_datos as carga
 from src.serving.configuracion import configuracion_servicio
 
@@ -128,7 +128,7 @@ class TestCargaOE2(unittest.TestCase):
 
     def test_exige_esquema_y_registra_fallos(self):
         from sqlalchemy.engine import URL
-        from src.db.sesion import crear_motor
+        from denguekay.db.session import crear_motor
         vacio = crear_motor(URL.create("sqlite", database=str(Path(self.carpeta.name) / "vacia.db")))
         try:
             with self.assertRaisesRegex(ValueError, "alembic upgrade head"):

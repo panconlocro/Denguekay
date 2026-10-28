@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from serving_soporte import protocolo_muestra
-from src.db.modelos import VersionModelo
+from denguekay.db.models import VersionModelo
 from denguekay.model.train import fit_models, counts_from_log1p, evaluate_fold
 from denguekay.evaluation.compact_validation import compact_variants
 from src.serving.almacenamiento import AlmacenamientoLocal

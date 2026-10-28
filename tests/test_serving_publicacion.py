@@ -10,8 +10,8 @@ from sqlalchemy import func, select
 
 from backend_soporte import datos_muestra, motor_temporal
 from serving_soporte import CORTE, preparar_muestra
-from src.db.modelos import Ejecucion, ImportanciaVariable, ParametroSistema, Prediccion, VersionModelo
-from src.db.sesion import transaccion
+from denguekay.db.models import Ejecucion, ImportanciaVariable, ParametroSistema, Prediccion, VersionModelo
+from denguekay.db.session import transaccion
 from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.cargar_datos import persistir_carga

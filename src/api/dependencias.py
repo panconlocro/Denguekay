@@ -10,7 +10,7 @@ from pydantic import Field, StringConstraints
 from sqlalchemy import func, select
 
 from src.api.errores import ErrorAPI
-from src.db.modelos import Ejecucion
+from denguekay.db.models import Ejecucion
 
 Ubigeo = Annotated[str, StringConstraints(pattern=r"^[0-9]{6}$"),
                    Field(description="Código distrital de seis dígitos, conservado como texto")]

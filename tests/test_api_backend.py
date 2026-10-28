@@ -16,8 +16,8 @@ from backend_soporte import datos_muestra, entorno_bd, motor_temporal
 from serving_soporte import preparar_muestra
 from src.api.cache import CacheLecturas
 from src.api.main import crear_app
-from src.db.modelos import Alerta, Ejecucion, Prediccion, VersionModelo
-from src.db.sesion import crear_motor, transaccion
+from denguekay.db.models import Alerta, Ejecucion, Prediccion, VersionModelo
+from denguekay.db.session import crear_motor, transaccion
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.cargar_datos import persistir_carga
 from src.serving.inferencia import actualizar_alertas
@@ -399,7 +399,7 @@ import sys
 from pathlib import Path
 from fastapi.testclient import TestClient
 from src.api.main import crear_app
-from src.db.sesion import crear_motor
+from denguekay.db.session import crear_motor
 from src.serving.almacenamiento import AlmacenamientoLocal
 from denguekay.config.paths import DATA
 motor = crear_motor(sys.argv[1])

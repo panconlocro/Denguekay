@@ -16,9 +16,9 @@ from sqlalchemy import delete, func, select
 
 from backend_soporte import datos_muestra, leer_csv, migrar, motor_temporal, url_pg_pruebas
 from serving_soporte import preparar_muestra
-from src.db.modelos import (Alerta, Distrito, Ejecucion, ObservacionSemanal, ParametroSistema,
+from denguekay.db.models import (Alerta, Distrito, Ejecucion, ObservacionSemanal, ParametroSistema,
                             Prediccion, SemanaEpidemiologica, VersionModelo)
-from src.db.sesion import crear_motor, transaccion
+from denguekay.db.session import crear_motor, transaccion
 from denguekay.model.future_rows import build_future_rows
 from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal

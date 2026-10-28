@@ -7,7 +7,7 @@ from src.api import consultas as q
 from src.api.dependencias import Identificador, Sesion, exigir_clave
 from src.api.errores import ErrorAPI
 from src.api.esquemas import ActivacionRespuesta, InferenciaRespuesta, SolicitudInferencia
-from src.db.modelos import Ejecucion, VersionModelo, ahora_utc
+from denguekay.db.models import Ejecucion, VersionModelo, ahora_utc
 from src.serving.artefactos import ArtefactoInvalido
 from src.serving.inferencia import InferenciaNoDisponible, inferir
 from src.serving.parametros import ParametroFaltante

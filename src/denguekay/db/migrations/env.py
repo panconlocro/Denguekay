@@ -2,9 +2,9 @@
 
 from alembic import context
 
-from src.db.configuracion import obtener_url
-from src.db.modelos import Base
-from src.db.sesion import crear_motor
+from denguekay.db.settings import obtener_url
+from denguekay.db.models import Base
+from denguekay.db.session import crear_motor
 
 
 if context.is_offline_mode():

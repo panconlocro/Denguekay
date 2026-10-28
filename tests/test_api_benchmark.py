@@ -14,8 +14,8 @@ from sqlalchemy import func, select
 import test_api_backend as soporte_api
 from backend_soporte import entorno_bd
 from src.api.benchmark import ejecutar_benchmark, main, medir_caso, percentil
-from src.db.modelos import Ejecucion, ObservacionSemanal, Prediccion, VersionModelo
-from src.db.sesion import transaccion
+from denguekay.db.models import Ejecucion, ObservacionSemanal, Prediccion, VersionModelo
+from denguekay.db.session import transaccion
 from denguekay.config.paths import ROOT, SERVING_MODELS
 
 

@@ -133,7 +133,7 @@ def committed_openapi():
 
 def offline_postgresql_sql():
     """``alembic upgrade 0002_serving:head --sql`` for PostgreSQL, without a connection."""
-    from src.db.exportar_sql_migracion import exportar
+    from denguekay.db.export_migration_sql import exportar
 
     with tempfile.TemporaryDirectory() as folder:
         return exportar(Path(folder) / "offline.sql").read_text(encoding="utf-8").replace("\r\n", "\n")
@@ -151,7 +151,7 @@ def sqlite_schema():
     from sqlalchemy.engine import URL
 
     from backend_soporte import migrar
-    from src.db.sesion import crear_motor
+    from denguekay.db.session import crear_motor
 
     with tempfile.TemporaryDirectory() as folder:
         engine = crear_motor(URL.create("sqlite", database=str(Path(folder) / "schema.db")))
@@ -213,7 +213,7 @@ def postgresql_schema(url):
     from sqlalchemy import text
 
     from backend_soporte import migrar
-    from src.db.sesion import crear_motor
+    from denguekay.db.session import crear_motor
 
     engine = crear_motor(url)
     try:
@@ -242,7 +242,7 @@ def build_smoke_database(folder):
 
     from backend_soporte import datos_muestra, motor_temporal
     from serving_soporte import preparar_muestra
-    from src.db.sesion import transaccion
+    from denguekay.db.session import transaccion
     from src.serving.almacenamiento import AlmacenamientoLocal
     from src.serving.cargar_datos import persistir_carga
     from src.serving.publicar import publicar_en_bd

@@ -8,7 +8,7 @@ from src.api import consultas as q
 from src.api.dependencias import Horizonte, Identificador, PaginaNumero, Sesion, TamanoPagina, Ubigeo, lectura
 from src.api.errores import ErrorAPI
 from src.api.esquemas import AlertaRespuesta, MapaRiesgoRespuesta, Pagina, TableroRespuesta
-from src.db.modelos import Alerta
+from denguekay.db.models import Alerta
 
 router = APIRouter(tags=["Vigilancia"])
 

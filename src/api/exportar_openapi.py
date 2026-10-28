@@ -4,7 +4,7 @@ import json
 
 from src.api.main import crear_app
 from src.api.openapi import especificacion
-from src.db.sesion import crear_fabrica_sesiones, crear_motor
+from denguekay.db.session import crear_fabrica_sesiones, crear_motor
 from denguekay.config.paths import OPENAPI_JSON
 
 

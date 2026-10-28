@@ -12,7 +12,7 @@ import pandas as pd
 from sqlalchemy import select
 from xgboost import __version__ as XGBOOST_VERSION
 
-from src.db.modelos import ImportanciaVariable, VersionModelo
+from denguekay.db.models import ImportanciaVariable, VersionModelo
 from denguekay.model.device import xgboost_settings
 from denguekay.model.train import BASE_PARAMS, fit_models
 from denguekay.evaluation.compact_validation import compact_variants

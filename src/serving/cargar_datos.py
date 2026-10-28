@@ -19,10 +19,10 @@ import pandas as pd
 from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.db.configuracion import ConfiguracionBDInvalida
-from src.db.modelos import (Distrito, Ejecucion, ObservacionSemanal, Provincia,
+from denguekay.db.settings import ConfiguracionBDInvalida
+from denguekay.db.models import (Distrito, Ejecucion, ObservacionSemanal, Provincia,
                             SemanaEpidemiologica, ahora_utc)
-from src.db.sesion import crear_motor, transaccion, upsert
+from denguekay.db.session import crear_motor, transaccion, upsert
 from denguekay.data.processing.weekly_aggregation import clean_names_for_join
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.keys import normalize

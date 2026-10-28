@@ -6,7 +6,7 @@ from sqlalchemy import select
 from src.api import consultas as q
 from src.api.dependencias import PaginaNumero, Sesion, TamanoPagina, Ubigeo, lectura
 from src.api.esquemas import DistritoRespuesta, Pagina, SaludRespuesta
-from src.db.modelos import Distrito
+from denguekay.db.models import Distrito
 
 router = APIRouter(tags=["Salud y distritos"])
 

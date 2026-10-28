@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from src.db.configuracion import obtener_url
+from denguekay.db.settings import obtener_url
 
 
 def crear_motor(url=None):

@@ -5,7 +5,7 @@ from datetime import timedelta
 from sqlalchemy import func, select
 
 from src.api.errores import ErrorAPI
-from src.db.modelos import (Alerta, Distrito, Ejecucion, ImportanciaVariable, ObservacionSemanal,
+from denguekay.db.models import (Alerta, Distrito, Ejecucion, ImportanciaVariable, ObservacionSemanal,
                             Prediccion, SemanaEpidemiologica, VersionModelo)
 from src.serving import parametros
 from src.serving.inferencia import MOTIVO_H3, TAREAS, seleccionar_versiones
