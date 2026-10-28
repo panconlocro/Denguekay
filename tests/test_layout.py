@@ -78,6 +78,10 @@ class TestNoLegacySrc(unittest.TestCase):
                     hits.append(f"{f}:{n}: {line.strip()[:120]}")
         self.assertEqual(hits, [])
 
+    def test_src_only_holds_the_denguekay_package(self):
+        legacy = [f for f in tracked_files() if f.startswith("src/") and not f.startswith("src/denguekay/")]
+        self.assertEqual(legacy, [])
+
 
 class TestOneWayDependencies(unittest.TestCase):
     def product_modules(self, prefix):
