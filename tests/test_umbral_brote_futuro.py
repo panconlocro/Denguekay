@@ -78,7 +78,7 @@ class TestContraGold(unittest.TestCase):
 
     def test_igual_al_csv_de_gold(self):
         """Contra el CSV de gold: k de S4 y etiqueta idénticos; el valor, salvo el redondeo de la escritura (<1e-12)."""
-        from src.modeling.salida_probabilistica import umbral_conteo
+        from denguekay.model.probabilistic_output import umbral_conteo
 
         for h in (2, 4):
             with self.subTest(h=h):

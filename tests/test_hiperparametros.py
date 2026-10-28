@@ -7,9 +7,9 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling import estrategias_horizonte as eh
+from denguekay.model import horizon_strategies as eh
 from src.modeling import hiperparametros as hp
-from src.modeling import salida_probabilistica as sp
+from denguekay.model import probabilistic_output as sp
 from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()

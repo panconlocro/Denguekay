@@ -9,7 +9,7 @@ from src.modeling.evaluate import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos,
     seleccionar_umbral_f1,
 )
-from src.modeling.train import (
+from denguekay.model.train import (
     columnas_variantes, predecir_fold, preparar_gold, separar_anio_calendario,
     separar_temporada,
 )

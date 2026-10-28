@@ -18,8 +18,8 @@ en MLflow (``xgb.device``).
 
 Para ver qué detecta tu equipo y comparar tiempos::
 
-    python -m src.modeling.dispositivo
-    python -m src.modeling.dispositivo --comparar
+    python -m denguekay.model.device
+    python -m denguekay.model.device --comparar
 """
 
 import argparse
@@ -93,7 +93,7 @@ def _comparar_tiempos() -> None:
     """Entrena el primer fold real (h=4, base_6) en CPU y en GPU y mide tiempos."""
     import pandas as pd
 
-    from src.modeling import train
+    from denguekay.model import train
     from denguekay.config.paths import GOLD, SILVER_INTEGRATED
 
     gold = pd.read_csv(GOLD / f"{SILVER_INTEGRATED.stem}_h4_gold.csv", dtype={"ubigeo": "string"},

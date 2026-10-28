@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.modeling.seguimiento_mlflow import (
+from denguekay.model.tracking import (
     folds_de_variante, metricas_fold, parametros_variante, registrar_reporte,
     resumen_variante, seleccionadas_por_horizonte,
 )
@@ -152,7 +152,7 @@ class RegistroTests(unittest.TestCase):
     def test_registra_estudio_con_trials_y_fallidos(self):
         import mlflow
         import pandas as pd
-        from src.modeling.seguimiento_mlflow import registrar_estudio
+        from denguekay.model.tracking import registrar_estudio
 
         trials = pd.DataFrame({"numero": [0, 1, 2], "estado": ["COMPLETE", "FAIL", "COMPLETE"],
                                "objetivo": [0.30, None, 0.28], "es_base": [True, False, False],

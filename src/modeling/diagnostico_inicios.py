@@ -41,7 +41,7 @@ from src.eda.temporal import asignar_temporada
 from src.modeling import diagnostico_arquitectura as diag
 from src.modeling.clima import ajustar_climatologia
 from src.modeling.protocolo_arquitectura import bootstrap_estratificado
-from src.modeling.train import SEMANA_INICIO_TEMPORADA
+from denguekay.model.train import SEMANA_INICIO_TEMPORADA
 from src.modeling.vecinos_jerarquia import catalogo_geografico, matriz_vecindad
 
 TEMPORADAS_DISENO = (2017, 2018, 2019, 2020, 2021)

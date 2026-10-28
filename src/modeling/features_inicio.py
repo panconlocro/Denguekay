@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 from src.modeling import diagnostico_inicios as di
-from src.modeling import estrategias_horizonte as eh
+from denguekay.model import horizon_strategies as eh
 from src.modeling import preregistro_fe as pr
 from src.modeling.etiqueta_brote import umbral_brote_futuro
 from src.utils.calendario import semana_epi_mmwr

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from serving_soporte import leer_csv
-from src.modeling.inferencia_futura import construir_filas_futuras
+from denguekay.model.future_rows import construir_filas_futuras
 from src.modeling.validacion_temporal_compacta import variantes_compactas
 
 

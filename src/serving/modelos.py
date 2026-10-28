@@ -13,8 +13,8 @@ from sqlalchemy import select
 from xgboost import __version__ as XGBOOST_VERSION
 
 from src.db.modelos import ImportanciaVariable, VersionModelo
-from src.modeling.dispositivo import configuracion_xgboost
-from src.modeling.train import PARAMETROS_BASE, ajustar_modelos
+from denguekay.model.device import configuracion_xgboost
+from denguekay.model.train import PARAMETROS_BASE, ajustar_modelos
 from src.modeling.validacion_temporal_compacta import variantes_compactas
 from src.serving.artefactos import serializar_booster, sha256_bytes
 from src.serving.protocolo import metricas_de_variante

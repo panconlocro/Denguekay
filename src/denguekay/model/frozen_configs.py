@@ -17,11 +17,11 @@ import numpy as np
 import pandas as pd
 
 from src.modeling import complemento_clima as cc
-from src.modeling import estrategias_horizonte as eh
+from denguekay.model import horizon_strategies as eh
 from src.modeling import features_inicio as fi
 from src.modeling import hiperparametros as hp
 from src.modeling import protocolo_arquitectura as pa
-from src.modeling import salida_probabilistica as sp
+from denguekay.model import probabilistic_output as sp
 
 FECHA_CONGELAMIENTO_V1 = "2026-10-27"
 FECHA_CONGELAMIENTO = "2026-10-27"  # V2: fecha del commit que introduce CONFIGURACION_2026 con A3
@@ -123,16 +123,60 @@ def predecir(matrices: dict[int, pd.DataFrame], origenes_c3: pd.DataFrame,
                           hiperparametros=c["hiperparametros"], dispersion=c["dispersion"])
 
 
-def huella(configuracion: dict | None = None) -> str:
-    """SHA-256 de la configuración y de los módulos que la producen."""
-    from pathlib import Path
+# Fingerprints under the original definition: SHA-256 of the configuration JSON plus the source text of
+# estrategias_horizonte, features_inicio, hiperparametros, protocolo_arquitectura and salida_probabilistica.
+# Moving or translating those modules changes that value without changing the model, so the restructure
+# (docs/decisions/0001-repo-restructure.md, decision D1) keeps them as history and replaces the definition.
+HISTORICAL_FINGERPRINTS = {
+    "V1": {"sha256": "88ed2a43b0171a0878b99122b70109be61b27d5d4d29a2b93eae55066fd8f945", "commit": "d6bd0be",
+           "constant": "CONFIGURACION_2026_V1"},
+    "V2": {"sha256": "c36d7a80d1896a203874bf271bd78f1078850e1faa381e2b17e9ba04b07d5569", "commit": "424a148",
+           "constant": "CONFIGURACION_2026"},
+}
+HISTORICAL_FINGERPRINT_DEFINITION = "SHA-256(configuration JSON + source of eh, fi, hp, pa and sp)"
+FINGERPRINT_DEFINITION = "SHA-256(SHA-256(configuration JSON) + ':' + predictions_digest(reference predictions))"
 
+PREDICTION_KEY = ["ubigeo", "semana_inicio", "horizonte", "bloque"]
+PREDICTION_VALUES = ["casos_predichos", "probabilidad_brote"]
+
+# Behavioural fingerprints of the reference predictions (seed 17, protocol blocks). XGBoost gives identical
+# bits for a fixed device and thread count, but CPU and CUDA (and a different n_jobs on CPU) do not, so each
+# value is keyed by the training setup (see setup_key).
+REFERENCE_FINGERPRINTS = {
+    "device=cpu,n_jobs=2": {"V1": "be86664973cf5e7ac3af4a29ae0f8887a5191ed1007a0c097aacba3c7190bff5",
+                            "V2": "0fe5d10712d4127e9e2728d7de230b8db6bfbae364b018f2b449ccd10818e2b3"},
+    "device=cuda": {"V1": "1534b535bd19d6945c852c10f64294c1d2b16cd9e4359d074fcac11a9ed3806e",
+                    "V2": "b302d838aa402017dbcf70320cd8c061ef854e0eda50460b801d557cd709a936"},
+}
+
+
+def setup_key(setup: dict) -> str:
+    """Key of REFERENCE_FINGERPRINTS for a ``configuracion_xgboost()`` result."""
+    return f"device=cpu,n_jobs={setup['n_jobs']}" if setup["device"] == "cpu" else "device=cuda"
+
+
+def predictions_digest(predictions: pd.DataFrame) -> str:
+    """SHA-256 of the prediction keys and exact float64 values, in canonical key order."""
+    ordered = predictions.sort_values(PREDICTION_KEY, kind="mergesort").reset_index(drop=True)
+    digest = hashlib.sha256()
+    # Column by column: the predictions carry DataFrames in ``attrs``, which frame-level astype rejects.
+    keys = [ordered[c].astype(str).tolist() for c in PREDICTION_KEY]
+    digest.update("|".join(",".join(row) for row in zip(*keys)).encode("utf-8"))
+    for column in PREDICTION_VALUES:
+        digest.update(np.ascontiguousarray(ordered[column].to_numpy(dtype="float64")).tobytes())
+    return digest.hexdigest()
+
+
+def fingerprint(predictions: pd.DataFrame, configuracion: dict | None = None) -> str:
+    """Behavioural fingerprint of a frozen configuration: its JSON and its reference predictions.
+
+    It does not depend on where the code lives or how it is written: two runs agree only if they use the
+    same configuration and produce bit-for-bit identical predictions.
+    """
     configuracion = CONFIGURACION_2026 if configuracion is None else configuracion
-    modulos = [eh, fi, hp, pa, sp]
-    texto = json.dumps(configuracion, sort_keys=True, default=str, ensure_ascii=False)
-    for m in modulos:
-        texto += Path(m.__file__).read_bytes().replace(b"\r\n", b"\n").decode("utf-8")
-    return hashlib.sha256(texto.encode("utf-8")).hexdigest()
+    config_digest = hashlib.sha256(
+        json.dumps(configuracion, sort_keys=True, default=str, ensure_ascii=False).encode("utf-8")).hexdigest()
+    return hashlib.sha256(f"{config_digest}:{predictions_digest(predictions)}".encode("utf-8")).hexdigest()
 
 
 def coincide_con_guardadas(pred: pd.DataFrame, guardadas: pd.DataFrame, tolerancia: float = 1e-9) -> dict:

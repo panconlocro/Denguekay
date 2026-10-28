@@ -54,7 +54,10 @@ def insumos_encargo() -> list[Path]:
     """Datos, configuración y código que determinan los resultados del encargo."""
     datos = [SILVER_INTEGRATED, SILVER_EPI_HISTORICAL, GOLD_MANIFEST,
              *sorted(GOLD.glob(f"{SILVER_INTEGRATED.stem}_h*_gold.csv"))]
-    codigo = [*sorted((ROOT / "src" / "modeling").glob("*.py")), *(ROOT / c for c in CODIGO_EXTRA)]
+    # The modelling code is moving into the denguekay package (restructure, phase 3): both trees count.
+    codigo = [*sorted((ROOT / "src" / "modeling").glob("*.py")), *sorted((ROOT / "src" / "denguekay").rglob("*.py")),
+              *(ROOT / c for c in CODIGO_EXTRA)]
+    codigo = list(dict.fromkeys(codigo))
     return [*datos, CONFIG, *codigo]
 
 

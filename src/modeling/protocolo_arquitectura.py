@@ -29,7 +29,7 @@ from src.modeling import diagnostico_arquitectura as diag
 from src.modeling.evaluate import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos, seleccionar_umbral_f1,
 )
-from src.modeling.train import MINIMO_CASOS_BROTE
+from denguekay.model.train import MINIMO_CASOS_BROTE
 from src.serving.riesgo import NIVELES
 from src.validation.contrato_pronostico import CLAVE
 

@@ -49,7 +49,7 @@ class TestCacheExperimentos(unittest.TestCase):
 
     def test_insumos_cubren_datos_configuracion_y_codigo(self):
         nombres = {p.name for p in ce.insumos_encargo()}
-        self.assertTrue({"config.yaml", "manifest_fase6.json", "salida_probabilistica.py",
+        self.assertTrue({"config.yaml", "manifest_fase6.json", "probabilistic_output.py",
                          "protocolo_arquitectura.py", "contrato_pronostico.py"} <= nombres)
 
     def test_forzar_desde_entorno(self):

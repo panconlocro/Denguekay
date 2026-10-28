@@ -19,8 +19,8 @@ from xgboost import __version__ as XGBOOST_VERSION
 
 from src.db.modelos import Ejecucion, ahora_utc
 from src.db.sesion import crear_motor, transaccion
-from src.modeling.seguimiento_mlflow import registrar_reporte
-from src.modeling.train import PARAMETROS_BASE
+from denguekay.model.tracking import registrar_reporte
+from denguekay.model.train import PARAMETROS_BASE
 from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.artefactos import huella_json

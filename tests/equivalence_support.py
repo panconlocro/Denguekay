@@ -68,9 +68,9 @@ def prediction_digest(predictions):
 def frozen_prediction_digests():
     """V1 and V2 predictions with the deployment seed, computed in memory (needs local data)."""
     from src.eda.carga import cargar_integrado
-    from src.modeling import configuracion_final as cf
+    from denguekay.model import frozen_configs as cf
     from src.modeling import fe_hiperparametros as fh
-    from src.modeling.dispositivo import configuracion_xgboost
+    from denguekay.model.device import configuracion_xgboost
     from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRATED
 
     panel = cargar_integrado(SILVER_INTEGRATED)
@@ -99,7 +99,7 @@ def setup_key(setup):
 
 
 def cuda_available():
-    from src.modeling.dispositivo import cuda_disponible
+    from denguekay.model.device import cuda_disponible
 
     return cuda_disponible()
 

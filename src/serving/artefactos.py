@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 
-from src.modeling.train import conteos_desde_log1p
+from denguekay.model.train import conteos_desde_log1p
 
 
 class ArtefactoInvalido(ValueError):

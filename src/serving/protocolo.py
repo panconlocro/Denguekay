@@ -7,7 +7,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from src.modeling.train import evaluar_fold, preparar_gold, separar_temporada, separar_anio_calendario
+from denguekay.model.train import evaluar_fold, preparar_gold, separar_temporada, separar_anio_calendario
 from src.modeling.validacion_temporal_compacta import ejecutar_validacion_temporal_compacta, variantes_compactas
 from denguekay.config.paths import (GOLD, GOLD_MANIFEST, COMPACT_METRICS, COMPACT_PREDICTIONS,
                              SERVING_REGENERATED_PROTOCOL, SILVER_INTEGRATED)

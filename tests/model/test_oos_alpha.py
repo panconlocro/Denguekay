@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling import salida_probabilistica as sp
+from denguekay.model import probabilistic_output as sp
 from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRATED
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists()

@@ -7,7 +7,7 @@ la tabla de orígenes. Nada se escribe en ``data/``.
 
 Uso (desde la raíz del repo)::
 
-    python -m src.modeling.diccionario_variables
+    python -m denguekay.model.variable_dictionary
 """
 
 import json
@@ -15,7 +15,7 @@ import json
 import pandas as pd
 
 from src.modeling import diagnostico_inicios as di
-from src.modeling import estrategias_horizonte as eh
+from denguekay.model import horizon_strategies as eh
 
 # Texto por variable genérica. "ventana" es relativa al origen o = t − 2 de la fila h=2.
 DEFINICIONES = {
@@ -115,7 +115,7 @@ INSUMO_INFERENCIA = {
     "nombre": "margen_persistencia (no es columna del modelo)",
     "definicion": "log(casos de la semana de origen + 0,5); base_margin de las tres salidas en S4_s3",
     "uso": "obligatorio en entrenamiento e inferencia: sin los casos del origen no se puede predecir",
-    "test_no_fuga": "tests/test_salida_probabilistica.py · test_s4_y_s3_sin_fuga_por_perturbacion_del_futuro",
+    "test_no_fuga": "tests/model/test_probabilistic_output.py · test_s4_y_s3_sin_fuga_por_perturbacion_del_futuro",
 }
 ROTULOS_INSUMO = {"nombre": "Nombre", "definicion": "Definición", "uso": "Uso", "test_no_fuga": "Test de no fuga"}
 
@@ -163,7 +163,7 @@ def _n(x: float) -> str:
 def a_markdown(tabla: pd.DataFrame, por_temporada: pd.DataFrame | None, configuracion: dict) -> str:
     """Documento del diccionario (se regenera; no editar a mano)."""
     lineas = ["# Diccionario de variables de la configuración final (HU0006-3)", "",
-              "> Generado por `python -m src.modeling.diccionario_variables`; no editar a mano.", "",
+              "> Generado por `python -m denguekay.model.variable_dictionary`; no editar a mano.", "",
               f"Configuración: {configuracion['matriz']} · {configuracion['estrategia']} · "
               f"{configuracion['formulacion']} · α {configuracion['dispersion']}. El origen es `o = t − 2` "
               "(fila h=2); las tres salidas (t+2, t+3, t+4) usan las mismas variables.", ""]
@@ -192,7 +192,7 @@ def a_markdown(tabla: pd.DataFrame, por_temporada: pd.DataFrame | None, configur
 
 def main() -> None:
     from src.eda.carga import cargar_integrado
-    from src.modeling import configuracion_final as cf
+    from denguekay.model import frozen_configs as cf
     from src.modeling import diagnostico_arquitectura as d
     from src.modeling import fe_hiperparametros as fh
     from denguekay.config.paths import VARIABLE_DICTIONARY, GOLD_MANIFEST, FE_HYPERPARAMETERS_METRICS, SILVER_INTEGRATED

@@ -22,7 +22,7 @@ import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor
 
 from src.modeling.features import construir_gold
-from src.modeling.train import (
+from denguekay.model.train import (
     ANIO_PRUEBA_SENSIBILIDAD, MINIMO_CASOS_BROTE, PARAMETROS_BASE, conteos_desde_log1p,
     preparar_gold, separar_anio_calendario, separar_temporada,
 )

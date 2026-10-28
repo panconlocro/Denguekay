@@ -26,7 +26,7 @@ import pandas as pd
 
 from src.eda.temporal import asignar_temporada
 from src.modeling.evaluate import alertas_desde_conteos, metricas_alerta
-from src.modeling.train import MINIMO_CASOS_BROTE, SEMANA_INICIO_TEMPORADA
+from denguekay.model.train import MINIMO_CASOS_BROTE, SEMANA_INICIO_TEMPORADA
 from src.validation.contrato_pronostico import CLAVE
 
 VARIANTE_REGRESION = "base_6"

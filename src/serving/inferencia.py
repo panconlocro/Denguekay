@@ -14,7 +14,7 @@ from sqlalchemy import select
 from src.db.modelos import (Alerta, Distrito, Ejecucion, ObservacionSemanal, Prediccion,
                             SemanaEpidemiologica, VersionModelo, ahora_utc)
 from src.db.sesion import upsert
-from src.modeling.inferencia_futura import construir_filas_futuras
+from denguekay.model.future_rows import construir_filas_futuras
 from src.modeling.sociodemografia import DIRECTAS
 from src.serving import parametros
 from src.serving.artefactos import predecir_con_version

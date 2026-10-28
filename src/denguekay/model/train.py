@@ -17,12 +17,12 @@ from xgboost import XGBClassifier, XGBRegressor, __version__ as XGBOOST_VERSION
 
 from src.eda.temporal import asignar_temporada
 from src.modeling.contrato_xgboost import auditar_traspaso, familias_predictoras
-from src.modeling.dispositivo import configuracion_xgboost
+from denguekay.model.device import configuracion_xgboost
 from src.modeling.evaluate import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos,
     seleccionar_umbral_f1,
 )
-from src.modeling.seguimiento_mlflow import registrar_o_avisar
+from denguekay.model.tracking import registrar_o_avisar
 from denguekay.config.paths import GOLD, MODELS, RESEARCH_FIRST_MODELS, SILVER_INTEGRATED
 from src.utils.calendario import semana_epi_mmwr
 from src.validation.contrato_pronostico import CLAVE
@@ -360,7 +360,7 @@ def ejecutar_experimento(
 
 
 def main() -> None:
-    """Ejecuta el primer experimento desde ``python -m src.modeling.train``."""
+    """Ejecuta el primer experimento desde ``python -m denguekay.model.train``."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gold-dir", type=Path, default=GOLD)
     parser.add_argument("--salida-dir", type=Path, default=MODELS / "experimentos")

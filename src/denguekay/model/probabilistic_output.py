@@ -43,8 +43,8 @@ import pandas as pd
 from scipy import optimize, special, stats
 from xgboost import XGBClassifier, XGBRegressor
 
-from src.modeling import estrategias_horizonte as eh
-from src.modeling.train import MINIMO_CASOS_BROTE, conteos_desde_log1p
+from denguekay.model import horizon_strategies as eh
+from denguekay.model.train import MINIMO_CASOS_BROTE, conteos_desde_log1p
 
 EPS_MARGEN = 0.5
 POTENCIA_TWEEDIE = 1.5

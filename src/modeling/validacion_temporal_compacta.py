@@ -16,12 +16,12 @@ from xgboost import __version__ as XGBOOST_VERSION
 from src.modeling.contrato_xgboost import auditar_traspaso
 from src.modeling.evaluate import seleccionar_umbral_f1
 from src.modeling.features import FECHA_SOCIO_2017
-from src.modeling.train import (
+from denguekay.model.train import (
     ANIO_PRUEBA_SENSIBILIDAD, MINIMO_CASOS_BROTE, PARAMETROS_BASE,
     SEMANA_INICIO_TEMPORADA, columnas_variantes, evaluar_fold, predecir_fold,
     preparar_gold, separar_anio_calendario, separar_temporada,
 )
-from src.modeling.seguimiento_mlflow import registrar_o_avisar
+from denguekay.model.tracking import registrar_o_avisar
 from denguekay.config.paths import DOCS, GOLD, MODELS, SILVER_INTEGRATED
 from src.validation.contrato_pronostico import CLAVE
 from src.validation.calidad_gx import validar_entradas_modelado

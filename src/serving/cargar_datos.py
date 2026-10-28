@@ -30,7 +30,7 @@ from denguekay.config.paths import (DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, 
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
 TRANSFORMACION = 2  # versión de esta transformación; forma parte de la huella de ingesta
-SEMANA_INICIO_TEMPORADA = 35  # misma regla que el modelado (src/modeling/train.py)
+SEMANA_INICIO_TEMPORADA = 35  # misma regla que el modelado (src/denguekay/model/train.py)
 COBERTURA = {"verified": "verificado", "missing": "sin_registro", "no_record": "sin_registro"}
 CLIMA = {"temp_media": "temp_media_c", "temp_min": "temp_min_c", "temp_max": "temp_max_c",
          "precip_total_mm": "precip_total_mm", "hum_rel_media": "hum_rel_media_pct"}

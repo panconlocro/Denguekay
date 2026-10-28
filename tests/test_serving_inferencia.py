@@ -19,7 +19,7 @@ from serving_soporte import preparar_muestra
 from src.db.modelos import (Alerta, Distrito, Ejecucion, ObservacionSemanal, ParametroSistema,
                             Prediccion, SemanaEpidemiologica, VersionModelo)
 from src.db.sesion import crear_motor, transaccion
-from src.modeling.inferencia_futura import construir_filas_futuras
+from denguekay.model.future_rows import construir_filas_futuras
 from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.artefactos import ArtefactoInvalido, predecir_con_version

@@ -4,7 +4,7 @@ import os
 import unittest
 from unittest import mock
 
-from src.modeling import dispositivo
+from denguekay.model import device as dispositivo
 
 
 class DispositivoTests(unittest.TestCase):

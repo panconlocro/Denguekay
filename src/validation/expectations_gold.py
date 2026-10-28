@@ -4,7 +4,7 @@ Declara en forma auditable el contrato que el entrenamiento asume: esquema
 exacto, llave única, UBIGEO del catálogo, objetivos válidos, rangos físicos
 o lógicos de las variables y ausencia de fuga temporal (la semana objetivo
 siempre empieza después del cierre del origen). Las comprobaciones estrictas
-de arranque estructural siguen en ``src.modeling.train.preparar_gold``.
+de arranque estructural siguen en ``denguekay.model.train.preparar_gold``.
 """
 
 import great_expectations as gx

@@ -1,0 +1,1 @@
+"""Tests of denguekay.model."""
