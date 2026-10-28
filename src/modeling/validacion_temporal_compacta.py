@@ -17,11 +17,11 @@ from src.modeling.contrato_xgboost import auditar_traspaso
 from src.modeling.evaluate import seleccionar_umbral_f1
 from src.modeling.features import FECHA_SOCIO_2017
 from denguekay.model.train import (
-    ANIO_PRUEBA_SENSIBILIDAD, MINIMO_CASOS_BROTE, PARAMETROS_BASE,
-    SEMANA_INICIO_TEMPORADA, columnas_variantes, evaluar_fold, predecir_fold,
-    preparar_gold, separar_anio_calendario, separar_temporada,
+    SENSITIVITY_TEST_YEAR, MIN_OUTBREAK_CASES, BASE_PARAMS,
+    SEASON_START_WEEK, variant_columns, evaluate_fold, predict_fold,
+    prepare_gold, split_calendar_year, split_season,
 )
-from denguekay.model.tracking import registrar_o_avisar
+from denguekay.model.tracking import log_or_warn
 from denguekay.config.paths import DOCS, GOLD, MODELS, SILVER_INTEGRATED
 from denguekay.data.validation.forecast_contract import KEY
 from denguekay.data.validation.gx_quality import validate_modeling_inputs
@@ -34,7 +34,7 @@ POBLACION = "log_poblacion_censo_2017"
 
 def variantes_compactas(horizonte: int) -> dict[str, list[str]]:
     """Define las matrices pequeñas antes de consultar los nuevos resultados."""
-    bases = columnas_variantes(horizonte)
+    bases = variant_columns(horizonte)
     return {
         "base_4": bases["historia_4"],
         "base_6": bases["historia_4_mas_2"],
@@ -114,7 +114,7 @@ def ejecutar_validacion_temporal_compacta(
                if validar_datos else None)
     manifiesto_path = gold_dir / "manifest_fase6.json"
     manifiesto = json.loads(manifiesto_path.read_text(encoding="utf-8"))
-    if manifiesto["regla_brote"]["minimo_casos"] != MINIMO_CASOS_BROTE:
+    if manifiesto["regla_brote"]["minimo_casos"] != MIN_OUTBREAK_CASES:
         raise ValueError("El mínimo de brote difiere del manifiesto gold")
     reporte = {
         "experimento": "validacion_temporal_progresiva_matrices_compactas",
@@ -122,12 +122,12 @@ def ejecutar_validacion_temporal_compacta(
         "temporada_calibracion_inicial": 2021,
         "temporadas_seleccion": list(TEMPORADAS_SELECCION),
         "temporada_contraste": 2024,
-        "sensibilidad_calendario": ANIO_PRUEBA_SENSIBILIDAD,
-        "semana_inicio_temporada": SEMANA_INICIO_TEMPORADA,
+        "sensibilidad_calendario": SENSITIVITY_TEST_YEAR,
+        "semana_inicio_temporada": SEASON_START_WEEK,
         "regla_calibracion": "predicciones OOS de temporadas anteriores; etiqueta con cierre <= primer origen del bloque",
         "criterio_seleccion": "F1 medio no ponderado de 2022 y 2023; empate: menos columnas",
         "nota_2024": "2024 fue inspeccionado en ensayos previos; contraste exploratorio, no test virgen",
-        "parametros": PARAMETROS_BASE,
+        "parametros": BASE_PARAMS,
         "version_xgboost": XGBOOST_VERSION,
         "sha256_manifest_gold": hashlib.sha256(manifiesto_path.read_bytes()).hexdigest(),
         "horizontes": {},
@@ -137,7 +137,7 @@ def ejecutar_validacion_temporal_compacta(
         archivo = gold_dir / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv"
         gold = pd.read_csv(archivo, dtype={"ubigeo": "string"},
                            parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
-        datos, excluidas = preparar_gold(gold, h)
+        datos, excluidas = prepare_gold(gold, h)
         validar_matriz(datos, h)
         variantes = variantes_compactas(h)
         bloque_h = {
@@ -151,10 +151,10 @@ def ejecutar_validacion_temporal_compacta(
             previas: list[pd.DataFrame] = []
             resultado = {"columnas": columnas, "calibracion_inicial": None, "folds": [], "sensibilidad_2025": None}
             for temporada in TEMPORADAS:
-                train, test, corte = separar_temporada(datos, temporada)
+                train, test, corte = split_season(datos, temporada)
                 if nombre.endswith("poblacion_2017") and test.origen_cierre.lt(pd.Timestamp(FECHA_SOCIO_2017)).any():
                     raise ValueError("Referencia censal no disponible en el bloque")
-                pred, _, _ = predecir_fold(train, test, columnas)
+                pred, _, _ = predict_fold(train, test, columnas)
                 pred[f"casos_lag_{h}"] = test[f"casos_lag_{h}"].to_numpy(float)
                 pred["horizonte"] = h
                 pred["variante"] = nombre
@@ -169,11 +169,11 @@ def ejecutar_validacion_temporal_compacta(
                     cal, excluidas_no_disponibles = calibracion_disponible(previas, corte)
                     umbral = seleccionar_umbral_f1(
                         cal.brote.to_numpy(int), cal.probabilidad_brote.to_numpy(float))
-                    fold = evaluar_fold(
-                        pred, horizonte=h, variante=nombre, bloque=f"temporada_{temporada}",
-                        tipo="seleccion" if temporada in TEMPORADAS_SELECCION else "contraste",
-                        corte=corte, n_entrenamiento=len(train),
-                        umbral_clasificacion=umbral["umbral"],
+                    fold = evaluate_fold(
+                        pred, horizon=h, variant=nombre, block=f"temporada_{temporada}",
+                        kind="seleccion" if temporada in TEMPORADAS_SELECCION else "contraste",
+                        cutoff=corte, n_training=len(train),
+                        classification_threshold=umbral["umbral"],
                     )
                     fold["positivos_entrenamiento"] = int(train.brote.sum())
                     fold["calibracion"] = {
@@ -186,19 +186,19 @@ def ejecutar_validacion_temporal_compacta(
                 previas.append(pred)
             # La sensibilidad de 2025 se calcula con sus propias predicciones;
             # tampoco recibe etiquetas posteriores a su primer origen.
-            train, test, corte = separar_anio_calendario(datos, ANIO_PRUEBA_SENSIBILIDAD)
-            pred, _, _ = predecir_fold(train, test, columnas)
+            train, test, corte = split_calendar_year(datos, SENSITIVITY_TEST_YEAR)
+            pred, _, _ = predict_fold(train, test, columnas)
             pred[f"casos_lag_{h}"] = test[f"casos_lag_{h}"].to_numpy(float)
             pred["horizonte"] = h
             pred["variante"] = nombre
-            pred["bloque"] = f"calendario_{ANIO_PRUEBA_SENSIBILIDAD}"
+            pred["bloque"] = f"calendario_{SENSITIVITY_TEST_YEAR}"
             predicciones.append(pred)
             cal, excluidas_no_disponibles = calibracion_disponible(previas, corte)
             umbral = seleccionar_umbral_f1(cal.brote.to_numpy(int), cal.probabilidad_brote.to_numpy(float))
-            fold = evaluar_fold(
-                pred, horizonte=h, variante=nombre, bloque=f"calendario_{ANIO_PRUEBA_SENSIBILIDAD}",
-                tipo="sensibilidad", corte=corte, n_entrenamiento=len(train),
-                umbral_clasificacion=umbral["umbral"],
+            fold = evaluate_fold(
+                pred, horizon=h, variant=nombre, block=f"calendario_{SENSITIVITY_TEST_YEAR}",
+                kind="sensibilidad", cutoff=corte, n_training=len(train),
+                classification_threshold=umbral["umbral"],
             )
             fold["positivos_entrenamiento"] = int(train.brote.sum())
             fold["calibracion"] = {
@@ -219,9 +219,9 @@ def ejecutar_validacion_temporal_compacta(
     pd.concat(predicciones, ignore_index=True).to_csv(salida_dir / "predicciones_por_bloque.csv", index=False)
     metricas_path.write_text(json.dumps(reporte, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     if registrar_mlflow:
-        registrar_o_avisar(
-            "validacion_temporal_compacta", reporte, metricas_path=metricas_path, salida_dir=salida_dir,
-            gold_dir=gold_dir, calidad_datos=calidad)
+        log_or_warn(
+            "validacion_temporal_compacta", reporte, metrics_path=metricas_path, output_dir=salida_dir,
+            gold_dir=gold_dir, data_quality=calidad)
     return reporte
 
 

@@ -1,11 +1,11 @@
-"""Diccionario de las variables de la configuración final (HU0006-3).
+"""Dictionary of the variables of the final configuration (HU0006-3).
 
-Se genera desde el código: las columnas salen de ``configuracion_final``, los
-nombres de gold de ``estrategias_horizonte.columnas_modelo(2)``, las etiquetas
-de ``diagnostico_inicios.ETIQUETAS`` y los rangos se calculan en memoria sobre
-la tabla de orígenes. Nada se escribe en ``data/``.
+It is generated from the code: the columns come from ``frozen_configs``, the gold
+names from ``horizon_strategies.model_columns(2)``, the labels from
+``diagnostico_inicios.ETIQUETAS`` and the ranges are computed in memory on the
+origin table. Nothing is written to ``data/``.
 
-Uso (desde la raíz del repo)::
+Usage (from the repository root)::
 
     python -m denguekay.model.variable_dictionary
 """
@@ -17,8 +17,8 @@ import pandas as pd
 from src.modeling import diagnostico_inicios as di
 from denguekay.model import horizon_strategies as eh
 
-# Texto por variable genérica. "ventana" es relativa al origen o = t − 2 de la fila h=2.
-DEFINICIONES = {
+# Text per generic variable. "ventana" is relative to the origin o = t - 2 of the h=2 row.
+DEFINITIONS = {
     "hist_lag_a": {
         "fuente": "epidemiológica (casos de dengue, silver integrado)",
         "definicion": "casos de dengue de la semana de origen o",
@@ -111,83 +111,83 @@ DEFINICIONES = {
                         "test_cambio_posterior_al_origen_no_altera_feature"},
 }
 
-INSUMO_INFERENCIA = {
+INFERENCE_INPUT = {
     "nombre": "margen_persistencia (no es columna del modelo)",
     "definicion": "log(casos de la semana de origen + 0,5); base_margin de las tres salidas en S4_s3",
     "uso": "obligatorio en entrenamiento e inferencia: sin los casos del origen no se puede predecir",
     "test_no_fuga": "tests/model/test_probabilistic_output.py · test_s4_y_s3_sin_fuga_por_perturbacion_del_futuro",
 }
-ROTULOS_INSUMO = {"nombre": "Nombre", "definicion": "Definición", "uso": "Uso", "test_no_fuga": "Test de no fuga"}
+INPUT_LABELS = {"nombre": "Nombre", "definicion": "Definición", "uso": "Uso", "test_no_fuga": "Test de no fuga"}
 
 
-def columnas_gold_h2() -> dict[str, str]:
-    """Nombre genérico → columna de gold h=2 (solo base_6)."""
-    reg, _ = eh.columnas_modelo(2)
-    return dict(zip(eh.GENERICAS, reg))
+def gold_h2_columns() -> dict[str, str]:
+    """Generic name -> gold h=2 column (base_6 only)."""
+    reg, _ = eh.model_columns(2)
+    return dict(zip(eh.GENERIC, reg))
 
 
-def estadisticas(origenes: pd.DataFrame, columnas: list[str]) -> pd.DataFrame:
-    """Mínimo, mediana, máximo y nulos por variable y temporada del origen."""
-    largo = origenes[["temporada", *columnas]].melt(id_vars="temporada", var_name="variable")
-    g = largo.groupby(["variable", "temporada"]).value
+def statistics(origins: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    """Minimum, median, maximum and nulls per variable and origin season."""
+    length = origins[["temporada", *columns]].melt(id_vars="temporada", var_name="variable")
+    g = length.groupby(["variable", "temporada"]).value
     return (g.agg(minimo="min", mediana="median", maximo="max").join(g.apply(lambda s: int(s.isna().sum())).rename("nulos"))
             .reset_index())
 
 
-def diccionario(columnas: list[str], origenes: pd.DataFrame | None = None) -> pd.DataFrame:
-    """Una fila por variable con definición, ventana, nulos, evidencia y rango global observado."""
-    faltan = [c for c in columnas if c not in DEFINICIONES]
-    if faltan:
-        raise ValueError(f"Variables sin definición en el diccionario: {faltan}")
-    gold = columnas_gold_h2()
-    filas = []
-    for c in columnas:
-        fila = {"variable": c, "etiqueta": di.ETIQUETAS.get(c, DEFINICIONES[c]["definicion"]),
+def dictionary(columns: list[str], origins: pd.DataFrame | None = None) -> pd.DataFrame:
+    """One row per variable with definition, window, nulls, evidence and observed global range."""
+    missing = [c for c in columns if c not in DEFINITIONS]
+    if missing:
+        raise ValueError(f"Variables sin definición en el diccionario: {missing}")
+    gold = gold_h2_columns()
+    rows = []
+    for c in columns:
+        row = {"variable": c, "etiqueta": di.ETIQUETAS.get(c, DEFINITIONS[c]["definicion"]),
                 "columna_gold_h2": gold.get(c, "no está en gold (propuesta)"),
-                **DEFINICIONES[c]}
-        if origenes is not None:
-            v = origenes[c]
-            fila.update({"minimo": float(v.min()), "mediana": float(v.median()), "maximo": float(v.max()),
+                **DEFINITIONS[c]}
+        if origins is not None:
+            v = origins[c]
+            row.update({"minimo": float(v.min()), "mediana": float(v.median()), "maximo": float(v.max()),
                          "nulos_observados": int(v.isna().sum()), "filas": int(len(v)),
-                         "periodo": f"{pd.to_datetime(origenes.origen_cierre).min():%Y-%m-%d} a "
-                                    f"{pd.to_datetime(origenes.origen_cierre).max():%Y-%m-%d}"})
-        filas.append(fila)
-    return pd.DataFrame(filas)
+                         "periodo": f"{pd.to_datetime(origins.origen_cierre).min():%Y-%m-%d} a "
+                                    f"{pd.to_datetime(origins.origen_cierre).max():%Y-%m-%d}"})
+        rows.append(row)
+    return pd.DataFrame(rows)
 
 
 def _n(x: float) -> str:
-    """Número corto con coma decimal; los residuos de punto flotante se muestran como 0."""
+    """Short number with a decimal comma; floating point residues show as 0."""
     return f"{round(float(x), 6) + 0.0:.4g}".replace(".", ",")
 
 
-def a_markdown(tabla: pd.DataFrame, por_temporada: pd.DataFrame | None, configuracion: dict) -> str:
-    """Documento del diccionario (se regenera; no editar a mano)."""
-    lineas = ["# Diccionario de variables de la configuración final (HU0006-3)", "",
+def to_markdown(table: pd.DataFrame, by_season: pd.DataFrame | None, configuration: dict) -> str:
+    """Dictionary document (regenerated; do not edit by hand)."""
+    lines = ["# Diccionario de variables de la configuración final (HU0006-3)", "",
               "> Generado por `python -m denguekay.model.variable_dictionary`; no editar a mano.", "",
-              f"Configuración: {configuracion['matriz']} · {configuracion['estrategia']} · "
-              f"{configuracion['formulacion']} · α {configuracion['dispersion']}. El origen es `o = t − 2` "
+              f"Configuración: {configuration['matriz']} · {configuration['estrategia']} · "
+              f"{configuration['formulacion']} · α {configuration['dispersion']}. El origen es `o = t − 2` "
               "(fila h=2); las tres salidas (t+2, t+3, t+4) usan las mismas variables.", ""]
-    for _, f in tabla.iterrows():
-        lineas += [f"## `{f.variable}`", "", f"- **Etiqueta:** {f.etiqueta}",
+    for _, f in table.iterrows():
+        lines += [f"## `{f.variable}`", "", f"- **Etiqueta:** {f.etiqueta}",
                    f"- **Columna en gold h=2:** `{f.columna_gold_h2}`", f"- **Fuente:** {f.fuente}",
                    f"- **Definición:** {f.definicion}", f"- **Ventana:** {f.ventana}",
                    f"- **Transformación:** {f.transformacion}", f"- **Tipo:** {f.tipo}", f"- **Nulos:** {f.nulos}",
                    f"- **Por qué está:** {f.por_que}", f"- **Evidencia:** {f.evidencia}",
                    f"- **Test de no fuga:** {f.test_no_fuga}"]
-        if "minimo" in tabla:
-            lineas.append(f"- **Rango observado (orígenes {f.periodo}, {f.filas} filas):** {_n(f.minimo)} a "
+        if "minimo" in table:
+            lines.append(f"- **Rango observado (orígenes {f.periodo}, {f.filas} filas):** {_n(f.minimo)} a "
                           f"{_n(f.maximo)}, mediana {_n(f.mediana)}; {int(f.nulos_observados)} nulos")
-        lineas.append("")
-    lineas += ["## Insumo de inferencia: margen de persistencia", "",
-               *(f"- **{ROTULOS_INSUMO[k]}:** {v}" for k, v in INSUMO_INFERENCIA.items()), ""]
-    if por_temporada is not None:
-        lineas += ["## Rango por temporada del origen", "", "| Variable | Temporada | Mínimo | Mediana | Máximo | Nulos |",
+        lines.append("")
+    lines += ["## Insumo de inferencia: margen de persistencia", "",
+               *(f"- **{INPUT_LABELS[k]}:** {v}" for k, v in INFERENCE_INPUT.items()), ""]
+    if by_season is not None:
+        lines += ["## Rango por temporada del origen", "", "| Variable | Temporada | Mínimo | Mediana | Máximo | Nulos |",
                    "|---|---|---|---|---|---|"]
-        for _, f in por_temporada.iterrows():
-            lineas.append(f"| `{f.variable}` | {int(f.temporada)} | {_n(f.minimo)} | {_n(f.mediana)} | {_n(f.maximo)} "
+        for _, f in by_season.iterrows():
+            lines.append(f"| `{f.variable}` | {int(f.temporada)} | {_n(f.minimo)} | {_n(f.mediana)} | {_n(f.maximo)} "
                           f"| {int(f.nulos)} |")
-        lineas.append("")
-    return "\n".join(lineas)
+        lines.append("")
+    return "\n".join(lines)
 
 
 def main() -> None:
@@ -198,18 +198,18 @@ def main() -> None:
     from denguekay.config.paths import VARIABLE_DICTIONARY, GOLD_MANIFEST, FE_HYPERPARAMETERS_METRICS, SILVER_INTEGRATED
 
     panel = load_integrated(SILVER_INTEGRATED)
-    regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
-    ins = fh.insumos(panel, regla)
-    origenes = cf.origenes(panel, ins, regla)
-    columnas = cf.CONFIGURACION_2026["columnas"]
-    tabla = diccionario(columnas, origenes)
-    por_temporada = estadisticas(origenes, columnas)
-    texto = a_markdown(tabla, por_temporada, cf.CONFIGURACION_2026)
-    VARIABLE_DICTIONARY.write_bytes(texto.replace("\n", "\r\n").encode("utf-8"))
+    rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
+    ins = fh.insumos(panel, rule)
+    origins = cf.origins(panel, ins, rule)
+    columns = cf.CONFIG_2026["columnas"]
+    table = dictionary(columns, origins)
+    by_season = statistics(origins, columns)
+    text = to_markdown(table, by_season, cf.CONFIG_2026)
+    VARIABLE_DICTIONARY.write_bytes(text.replace("\n", "\r\n").encode("utf-8"))
     d.guardar_seccion_metricas(FE_HYPERPARAMETERS_METRICS, "fase5_diccionario_variables",
-                               {"variables": d.a_json(tabla), "por_temporada": d.a_json(por_temporada),
-                                "insumo_inferencia": INSUMO_INFERENCIA})
-    print(f"{VARIABLE_DICTIONARY} ({len(tabla)} variables)")
+                               {"variables": d.a_json(table), "por_temporada": d.a_json(by_season),
+                                "insumo_inferencia": INFERENCE_INPUT})
+    print(f"{VARIABLE_DICTIONARY} ({len(table)} variables)")
 
 
 if __name__ == "__main__":

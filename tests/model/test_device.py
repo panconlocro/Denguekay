@@ -9,14 +9,14 @@ from denguekay.model import device as dispositivo
 
 class DispositivoTests(unittest.TestCase):
     def setUp(self):
-        dispositivo.configuracion_xgboost.cache_clear()
+        dispositivo.xgboost_settings.cache_clear()
 
     def tearDown(self):
-        dispositivo.configuracion_xgboost.cache_clear()
+        dispositivo.xgboost_settings.cache_clear()
 
     def configurar(self, **env):
         with mock.patch.dict(os.environ, env):
-            return dispositivo.configuracion_xgboost()
+            return dispositivo.xgboost_settings()
 
     def test_cpu_forzado_y_hilos_numericos(self):
         self.assertEqual(self.configurar(DENGUEKAY_XGB_DEVICE="cpu", DENGUEKAY_XGB_NJOBS="3"),
@@ -27,14 +27,14 @@ class DispositivoTests(unittest.TestCase):
         self.assertEqual(config["n_jobs"], os.cpu_count() or 1)
 
     def test_auto_elige_gpu_solo_si_existe(self):
-        with mock.patch.object(dispositivo, "cuda_disponible", return_value=False):
+        with mock.patch.object(dispositivo, "cuda_available", return_value=False):
             self.assertEqual(self.configurar(DENGUEKAY_XGB_DEVICE="auto")["device"], "cpu")
-        dispositivo.configuracion_xgboost.cache_clear()
-        with mock.patch.object(dispositivo, "cuda_disponible", return_value=True):
+        dispositivo.xgboost_settings.cache_clear()
+        with mock.patch.object(dispositivo, "cuda_available", return_value=True):
             self.assertEqual(self.configurar(DENGUEKAY_XGB_DEVICE="auto")["device"], "cuda")
 
     def test_cuda_pedido_sin_gpu_falla_claro(self):
-        with mock.patch.object(dispositivo, "cuda_disponible", return_value=False):
+        with mock.patch.object(dispositivo, "cuda_available", return_value=False):
             with self.assertRaises(RuntimeError):
                 self.configurar(DENGUEKAY_XGB_DEVICE="cuda")
 
@@ -43,7 +43,7 @@ class DispositivoTests(unittest.TestCase):
             self.configurar(DENGUEKAY_XGB_DEVICE="metal")
 
     def test_deteccion_real_no_rompe(self):
-        self.assertIsInstance(dispositivo.cuda_disponible(), bool)
+        self.assertIsInstance(dispositivo.cuda_available(), bool)
 
 
 if __name__ == "__main__":

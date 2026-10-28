@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from serving_soporte import leer_csv
-from denguekay.model.future_rows import construir_filas_futuras
+from denguekay.model.future_rows import build_future_rows
 from src.modeling.validacion_temporal_compacta import variantes_compactas
 
 
@@ -15,14 +15,14 @@ class TestFilasFuturas(unittest.TestCase):
         self.referencia = leer_csv("referencia_2017_muestra.csv")
 
     def construir(self, datos, h=2, **opciones):
-        return construir_filas_futuras(datos, h, referencia=self.referencia, **opciones)
+        return build_future_rows(datos, h, reference=self.referencia, **opciones)
 
     def test_valores_futuros_iguales_a_gold_y_sin_fuga_temporal(self):
         for h in (2, 4):
             with self.subTest(h=h):
                 panel = leer_csv(f"gold_temporal_h{h}_muestra.csv")
                 columnas = variantes_compactas(h)["base_6_poblacion_2017"]
-                filas, motivos = self.construir(panel, h, fecha_corte="2025-10-25")
+                filas, motivos = self.construir(panel, h, cutoff_date="2025-10-25")
                 self.assertFalse(motivos)
                 objetivo = pd.Timestamp("2025-10-19") + pd.Timedelta(weeks=h)
                 esperado = panel.loc[panel.semana_inicio.eq(objetivo)].sort_values("ubigeo")
@@ -31,7 +31,7 @@ class TestFilasFuturas(unittest.TestCase):
                 # Alterar datos posteriores al origen no puede alterar los predictores.
                 posterior = panel.semana_inicio.gt(pd.Timestamp("2025-10-19"))
                 panel.loc[posterior, "casos_Dengue"] += 99999
-                otras, _ = self.construir(panel, h, fecha_corte="2025-10-25")
+                otras, _ = self.construir(panel, h, cutoff_date="2025-10-25")
                 pd.testing.assert_frame_equal(filas, otras)
 
     def test_mmwr_cruza_2025_semana_53_sin_desplazar_el_objetivo(self):
@@ -76,8 +76,8 @@ class TestFilasFuturas(unittest.TestCase):
 
     def test_validacion_de_panel_corte_columnas_y_horizonte(self):
         panel = leer_csv("gold_temporal_h2_muestra.csv")
-        for opciones in ({"fecha_corte": "2025-10-24"}, {"fecha_corte": "2000-01-01"},
-                         {"columnas": ["clima_futuro"]}):
+        for opciones in ({"cutoff_date": "2025-10-24"}, {"cutoff_date": "2000-01-01"},
+                         {"columns": ["clima_futuro"]}):
             with self.subTest(opciones=opciones), self.assertRaises(ValueError):
                 self.construir(panel, **opciones)
         with self.assertRaises(ValueError):
@@ -89,7 +89,7 @@ class TestFilasFuturas(unittest.TestCase):
 
     def test_base_sin_censo_reutiliza_historia(self):
         panel = leer_csv("gold_temporal_h2_muestra.csv")
-        filas, _ = construir_filas_futuras(panel, 2, columnas=variantes_compactas(2)["base_4"])
+        filas, _ = build_future_rows(panel, 2, columns=variantes_compactas(2)["base_4"])
         self.assertEqual(len(filas), 3)
         self.assertNotIn("log_poblacion_censo_2017", filas)
 

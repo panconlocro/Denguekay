@@ -95,7 +95,7 @@ def linea_base(origenes: pd.DataFrame, panel: pd.DataFrame, historia: pd.DataFra
     """B4: ``log(1 + umbral)`` de las semanas objetivo o+h para h=2, 3 y 4 (una columna por h)."""
     base = semana_origen(origenes)
     salida = pd.DataFrame(index=origenes.index)
-    for h in eh.HORIZONTES_ESTRATEGIA:
+    for h in eh.STRATEGY_HORIZONS:
         destino = base + pd.Timedelta(weeks=h)
         cal = mmwr_epi_week(pd.Series(destino.to_numpy()))
         objetivos = pd.DataFrame({"ubigeo": origenes.ubigeo.to_numpy(), "anio": cal.anio_epi.to_numpy(),

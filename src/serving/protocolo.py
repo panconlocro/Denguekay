@@ -7,7 +7,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from denguekay.model.train import evaluar_fold, preparar_gold, separar_temporada, separar_anio_calendario
+from denguekay.model.train import evaluate_fold, prepare_gold, split_season, split_calendar_year
 from src.modeling.validacion_temporal_compacta import ejecutar_validacion_temporal_compacta, variantes_compactas
 from denguekay.config.paths import (GOLD, GOLD_MANIFEST, COMPACT_METRICS, COMPACT_PREDICTIONS,
                              SERVING_REGENERATED_PROTOCOL, SILVER_INTEGRATED)
@@ -51,7 +51,7 @@ def cargar_protocolo(horizontes, variantes, *, metricas_path=COMPACT_METRICS,
         bloque_h = reporte["horizontes"].get(str(h))
         if not bloque_h or bloque_h["sha256_gold"] != hashlib.sha256(archivo.read_bytes()).hexdigest():
             raise ValueError(f"Las métricas h={h} no corresponden al gold actual")
-        datos[h], _ = preparar_gold(gold, h)
+        datos[h], _ = prepare_gold(gold, h)
         for nombre in set(variantes.values()):
             cols = variantes_compactas(h).get(nombre)
             resultado = bloque_h["variantes"].get(nombre)
@@ -60,8 +60,8 @@ def cargar_protocolo(horizontes, variantes, *, metricas_path=COMPACT_METRICS,
             folds = [*resultado["folds"], resultado["sensibilidad_2025"]]
             for fold in folds:
                 bloque = fold["bloque"]
-                train, prueba, corte = (separar_anio_calendario(datos[h], 2025) if bloque == "calendario_2025"
-                                        else separar_temporada(datos[h], int(bloque.split("_")[-1])))
+                train, prueba, corte = (split_calendar_year(datos[h], 2025) if bloque == "calendario_2025"
+                                        else split_season(datos[h], int(bloque.split("_")[-1])))
                 if str(corte.date()) != fold["corte_ajuste"] or len(train) != fold["n_entrenamiento"]:
                     raise ValueError("El corte de entrenamiento difiere del protocolo guardado")
                 seleccion = pred.loc[pred.horizonte.eq(h) & pred.variante.eq(nombre) & pred.bloque.eq(bloque)]
@@ -93,9 +93,9 @@ def verificar_bloque(pred, prueba, fold, horizonte, variante):
     # evaluación; los valores originales del CSV se conservan para importar.
     for c in ("probabilidad_brote", "casos_predichos"):
         p[c] = p[c].astype("float32")
-    calculado = evaluar_fold(p, horizonte=horizonte, variante=variante, bloque=fold["bloque"],
-        tipo=fold["tipo"], corte=pd.Timestamp(fold["corte_ajuste"]), n_entrenamiento=fold["n_entrenamiento"],
-        umbral_clasificacion=fold["clasificacion"]["umbral_probabilidad"])
+    calculado = evaluate_fold(p, horizon=horizonte, variant=variante, block=fold["bloque"],
+        kind=fold["tipo"], cutoff=pd.Timestamp(fold["corte_ajuste"]), n_training=fold["n_entrenamiento"],
+        classification_threshold=fold["clasificacion"]["umbral_probabilidad"])
     for tipo in ("clasificacion", "regresion", "persistencia"):
         _comparar_metricas(calculado[tipo], fold[tipo])
 

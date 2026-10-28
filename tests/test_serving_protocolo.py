@@ -10,7 +10,7 @@ import pandas as pd
 
 from serving_soporte import protocolo_muestra
 from src.db.modelos import VersionModelo
-from denguekay.model.train import ajustar_modelos, conteos_desde_log1p, evaluar_fold
+from denguekay.model.train import fit_models, counts_from_log1p, evaluate_fold
 from src.modeling.validacion_temporal_compacta import variantes_compactas
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.artefactos import predecir_con_version, serializar_booster, sha256_bytes
@@ -27,9 +27,9 @@ class TestContratoProtocolo(unittest.TestCase):
         cast = self.pred.copy()
         cast[["probabilidad_brote", "casos_predichos"]] = cast[["probabilidad_brote", "casos_predichos"]].astype("float32")
         original = self.protocolo.particiones[2, "base_6_poblacion_2017", "temporada_2023"]["fold"]
-        self.fold = evaluar_fold(cast, horizonte=2, variante="base_6_poblacion_2017", bloque="temporada_2023",
-            tipo=original["tipo"], corte=pd.Timestamp(original["corte_ajuste"]),
-            n_entrenamiento=original["n_entrenamiento"], umbral_clasificacion=original["clasificacion"]["umbral_probabilidad"])
+        self.fold = evaluate_fold(cast, horizon=2, variant="base_6_poblacion_2017", block="temporada_2023",
+            kind=original["tipo"], cutoff=pd.Timestamp(original["corte_ajuste"]),
+            n_training=original["n_entrenamiento"], classification_threshold=original["clasificacion"]["umbral_probabilidad"])
 
     def verificar(self, pred, real=None, fold=None):
         verificar_bloque(pred, self.real if real is None else real, self.fold if fold is None else fold,
@@ -54,7 +54,7 @@ class TestContratoProtocolo(unittest.TestCase):
     def test_inferencia_del_json_igual_a_estimadores_originales(self):
         datos = self.protocolo.datos[2]
         cols = variantes_compactas(2)["base_6_poblacion_2017"]
-        reg, cls = ajustar_modelos(datos, cols)
+        reg, cls = fit_models(datos, cols)
         # El servicio predice en CPU; en GPU el estimador difiere en ~1 ULP de float32.
         reg.set_params(device="cpu")
         cls.set_params(device="cpu")
@@ -62,7 +62,7 @@ class TestContratoProtocolo(unittest.TestCase):
         with tempfile.TemporaryDirectory() as carpeta:
             almacenamiento = AlmacenamientoLocal(Path(carpeta))
             for tarea, modelo, esperado in (("clasificacion", cls, cls.predict_proba(vectores)[:, 1]),
-                ("regresion", reg, conteos_desde_log1p(reg.predict(vectores)))):
+                ("regresion", reg, counts_from_log1p(reg.predict(vectores)))):
                 contenido = serializar_booster(modelo)
                 ruta = f"modelos/{tarea}.json"
                 almacenamiento.guardar(ruta, contenido)

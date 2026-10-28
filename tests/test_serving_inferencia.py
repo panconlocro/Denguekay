@@ -19,7 +19,7 @@ from serving_soporte import preparar_muestra
 from src.db.modelos import (Alerta, Distrito, Ejecucion, ObservacionSemanal, ParametroSistema,
                             Prediccion, SemanaEpidemiologica, VersionModelo)
 from src.db.sesion import crear_motor, transaccion
-from denguekay.model.future_rows import construir_filas_futuras
+from denguekay.model.future_rows import build_future_rows
 from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.artefactos import ArtefactoInvalido, predecir_con_version
@@ -123,7 +123,7 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
                 columnas = sorted(set(clf.variables) | set(reg.variables))
                 for corte in (202540, 202552 - h):
                     fecha = pd.Timestamp(s.get(SemanaEpidemiologica, corte).fecha_fin)
-                    actual, _ = construir_filas_futuras(panel, h, columnas=columnas, fecha_corte=fecha, referencia=referencia)
+                    actual, _ = build_future_rows(panel, h, columns=columnas, cutoff_date=fecha, reference=referencia)
                     desde_bd, _ = vectores_desde_bd(s, h, corte, columnas)
                     actual, desde_bd = actual.sort_values("ubigeo"), desde_bd.sort_values("ubigeo")
                     for version in (clf, reg):

@@ -28,19 +28,19 @@ def _matriz(h: int, semanas: int = 12) -> pd.DataFrame:
 
 class TestEstrategiasSinFuga(unittest.TestCase):
     def test_apilado_solo_usa_etiquetas_cerradas(self):
-        matrices = {h: _matriz(h) for h in eh.HORIZONTES_ESTRATEGIA}
+        matrices = {h: _matriz(h) for h in eh.STRATEGY_HORIZONS}
         corte = pd.Timestamp("2022-02-12")
-        apiladas = eh.apilar_entrenamiento(matrices, corte)
+        apiladas = eh.stack_training(matrices, corte)
         self.assertTrue((apiladas.semana_inicio + pd.Timedelta(days=6)).le(corte).all())
-        self.assertEqual(sorted(apiladas.horizonte.unique()), list(eh.HORIZONTES_ESTRATEGIA))
-        self.assertTrue(set(eh.GENERICAS) <= set(apiladas))
+        self.assertEqual(sorted(apiladas.horizonte.unique()), list(eh.STRATEGY_HORIZONS))
+        self.assertTrue(set(eh.GENERIC) <= set(apiladas))
         # El rezago genérico es el del horizonte de cada fila.
-        for h in eh.HORIZONTES_ESTRATEGIA:
+        for h in eh.STRATEGY_HORIZONS:
             g = apiladas[apiladas.horizonte.eq(h)]
             self.assertTrue((g.hist_lag_a == g.casos_Dengue - h).all())
 
     def test_tabla_origenes_alinea_objetivos(self):
-        origenes = eh.tabla_origenes(_matriz(2))
+        origenes = eh.origin_table(_matriz(2))
         g = origenes[origenes.ubigeo.eq("200101")].reset_index(drop=True)
         self.assertTrue((g.casos_Dengue_h3.iloc[:-1].to_numpy() == g.casos_Dengue.iloc[1:].to_numpy()).all())
         self.assertTrue((g.semana_inicio_h4.dropna() - g.semana_inicio.iloc[:len(g.semana_inicio_h4.dropna())]
@@ -61,7 +61,7 @@ class TestEstrategiasSinFuga(unittest.TestCase):
                               "horizonte": h, "alerta_050": a, "probabilidad_calibrada": 0.5})
         serie = pd.DataFrame([{"ubigeo": u, "semana_inicio": semana - pd.Timedelta(weeks=k), "casos_Dengue": c}
                               for u in ("200101", "200102") for k, c in ((4, 1.0), (3, 5.0), (2, 5.0), (1, 5.0))])
-        r = eh.coherencia_horizontes(pd.DataFrame(filas), serie).iloc[0]
+        r = eh.horizon_coherence(pd.DataFrame(filas), serie).iloc[0]
         self.assertEqual(r.semanas_objetivo, 2)
         self.assertEqual(r.con_cambio, 1.0)
         self.assertEqual(r.cambio_sin_explicar, 0.5)
@@ -73,11 +73,11 @@ class TestEstrategiasSinFuga(unittest.TestCase):
             for b in ("temporada_2022", "temporada_2023"):
                 base.append({"estrategia": e, "bloque": b, "cambio_sin_explicar": valor,
                              "rango_cambio_sin_explicar": 0.005})
-        self.assertEqual(eh.desempatar(["E1", "E3"], pd.DataFrame(base)),
+        self.assertEqual(eh.break_tie(["E1", "E3"], pd.DataFrame(base)),
                          {"elegida": "E3", "criterio": "simplicidad operativa"})
         base[0]["cambio_sin_explicar"] = base[1]["cambio_sin_explicar"] = 0.001
-        self.assertEqual(eh.desempatar(["E1", "E3"], pd.DataFrame(base))["elegida"], "E1")
-        self.assertEqual(eh.desempatar(["E1"], pd.DataFrame(base))["criterio"], "única no descartada (no hubo desempate)")
+        self.assertEqual(eh.break_tie(["E1", "E3"], pd.DataFrame(base))["elegida"], "E1")
+        self.assertEqual(eh.break_tie(["E1"], pd.DataFrame(base))["criterio"], "única no descartada (no hubo desempate)")
 
 
 @unittest.skipUnless(HAY_DATOS, "Requiere silver integrado, historia epi y gold locales")
@@ -92,11 +92,11 @@ class TestEstrategiasConDatos(unittest.TestCase):
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
         cls.etiquetas = construir_etiquetas(cls.panel, ConfiguracionBroteEstacional(
             regla["multiplicador"], regla["anios_previos"], regla["minimo_casos"]))
-        cls.matrices = {h: eh.matriz_horizonte(cls.panel, cls.etiquetas, h) for h in eh.HORIZONTES_ESTRATEGIA}
+        cls.matrices = {h: eh.horizon_matrix(cls.panel, cls.etiquetas, h) for h in eh.STRATEGY_HORIZONS}
 
     def test_matrices_causales_para_cada_h(self):
         for h in (1, 5, 6):
-            m = eh.matriz_horizonte(self.panel, self.etiquetas, h)
+            m = eh.horizon_matrix(self.panel, self.etiquetas, h)
             self.assertTrue((m.semana_inicio > m.origen_cierre).all())
         for h, m in self.matrices.items():
             self.assertTrue((m.semana_inicio > m.origen_cierre).all())
@@ -112,8 +112,8 @@ class TestEstrategiasConDatos(unittest.TestCase):
             alteradas[h] = m
         for nombre in ("E2", "E3"):
             with self.subTest(estrategia=nombre):
-                base = eh.ESTRATEGIAS[nombre](self.matrices, 17)
-                otra = eh.ESTRATEGIAS[nombre](alteradas, 17)
+                base = eh.STRATEGIES[nombre](self.matrices, 17)
+                otra = eh.STRATEGIES[nombre](alteradas, 17)
                 sel = base.bloque.isin(["temporada_2021", "temporada_2022"])
                 np.testing.assert_allclose(base.loc[sel, "probabilidad_brote"], otra.loc[sel, "probabilidad_brote"])
                 np.testing.assert_allclose(base.loc[sel, "casos_predichos"], otra.loc[sel, "casos_predichos"])

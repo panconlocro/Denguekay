@@ -6,8 +6,8 @@ import unittest
 from pathlib import Path
 
 from denguekay.model.tracking import (
-    folds_de_variante, metricas_fold, parametros_variante, registrar_reporte,
-    resumen_variante, seleccionadas_por_horizonte,
+    variant_folds, fold_metrics, variant_params, log_report,
+    variant_summary, selected_by_horizon,
 )
 
 
@@ -53,7 +53,7 @@ def reporte_sintetico() -> dict:
 
 class AplanadoTests(unittest.TestCase):
     def test_metricas_fold_usa_prefijos_y_omite_nulos(self):
-        metricas, params = metricas_fold(fold("temporada_2022", "validacion", 0.4, 0.6, calibracion=True))
+        metricas, params = fold_metrics(fold("temporada_2022", "validacion", 0.4, 0.6, calibracion=True))
         self.assertEqual(metricas["cls_f1"], 0.4)
         self.assertEqual(metricas["reg_f1"], 0.6)
         self.assertEqual(metricas["reg_mae"], 1.0)
@@ -65,13 +65,13 @@ class AplanadoTests(unittest.TestCase):
 
     def test_encuentra_folds_con_cualquier_nombre(self):
         variantes = reporte_sintetico()["horizontes"]["2"]["variantes"]
-        self.assertEqual(len(folds_de_variante(variantes["base"])), 3)
-        self.assertEqual({f["bloque"] for f in folds_de_variante(variantes["mas_x"])},
+        self.assertEqual(len(variant_folds(variantes["base"])), 3)
+        self.assertEqual({f["bloque"] for f in variant_folds(variantes["mas_x"])},
                          {"temporada_2022", "calendario_2025"})
 
     def test_media_solo_de_validacion_y_por_bloque(self):
-        folds = folds_de_variante(reporte_sintetico()["horizontes"]["2"]["variantes"]["base"])
-        resumen = resumen_variante(folds)
+        folds = variant_folds(reporte_sintetico()["horizontes"]["2"]["variantes"]["base"])
+        resumen = variant_summary(folds)
         self.assertAlmostEqual(resumen["validacion_media.cls_f1"], 0.5)
         self.assertAlmostEqual(resumen["validacion_media.reg_f1"], 0.7)
         self.assertEqual(resumen["validacion_media.n_bloques"], 2)
@@ -79,16 +79,16 @@ class AplanadoTests(unittest.TestCase):
 
     def test_seleccion_y_parametros_de_variante(self):
         bloque = reporte_sintetico()["horizontes"]["2"]
-        self.assertEqual(seleccionadas_por_horizonte(bloque),
+        self.assertEqual(selected_by_horizon(bloque),
                          {"base": ["regresion"], "mas_x": ["clasificacion"]})
         por_familia = {"variantes": {"base": {}, "fija_a": {}, "anual_b": {}},
                        "elegidas_solo_validacion": {"fija": {"regresion": "fija_a", "clasificacion": "base"},
                                                     "anual": {"regresion": "anual_b", "clasificacion": "base"}},
                        "ganadora_por_temporada": {"fija": {"regresion": {"temporada_2021": "fija_a"}}}}
-        self.assertEqual(seleccionadas_por_horizonte(por_familia),
+        self.assertEqual(selected_by_horizon(por_familia),
                          {"fija_a": ["fija:regresion"], "base": ["fija:clasificacion", "anual:clasificacion"],
                           "anual_b": ["anual:regresion"]})
-        params, metricas = parametros_variante(bloque["variantes"]["base"])
+        params, metricas = variant_params(bloque["variantes"]["base"])
         self.assertEqual(params["n_columnas"], "2")
         self.assertEqual(metricas["seleccion_umbral.umbral"], 0.2)
 
@@ -122,9 +122,9 @@ class RegistroTests(unittest.TestCase):
             metricas.write_text("{}", encoding="utf-8")
             anterior = os.environ.pop("MLFLOW_TRACKING_URI", None)
             try:
-                run_id = registrar_reporte(
-                    "prueba", reporte_sintetico(), metricas_path=metricas, salida_dir=salida,
-                    calidad_datos={"exito": True, "suites": {"gold_h2": {"porcentaje_exito": 100.0, "fallidas_n": 0}}},
+                run_id = log_report(
+                    "prueba", reporte_sintetico(), metrics_path=metricas, output_dir=salida,
+                    data_quality={"exito": True, "suites": {"gold_h2": {"porcentaje_exito": 100.0, "fallidas_n": 0}}},
                     tracking_uri=uri)
                 runs = mlflow.search_runs(experiment_names=["denguekay/prueba"])
                 cliente = mlflow.MlflowClient(tracking_uri=uri)
@@ -152,7 +152,7 @@ class RegistroTests(unittest.TestCase):
     def test_registra_estudio_con_trials_y_fallidos(self):
         import mlflow
         import pandas as pd
-        from denguekay.model.tracking import registrar_estudio
+        from denguekay.model.tracking import log_study
 
         trials = pd.DataFrame({"numero": [0, 1, 2], "estado": ["COMPLETE", "FAIL", "COMPLETE"],
                                "objetivo": [0.30, None, 0.28], "es_base": [True, False, False],
@@ -162,10 +162,10 @@ class RegistroTests(unittest.TestCase):
             uri = f"sqlite:///{(tmp / 'mlflow.db').as_posix()}"
             anterior = os.environ.pop("MLFLOW_TRACKING_URI", None)
             try:
-                kw = dict(padre={"params": {"mejor.max_depth": 4}, "metricas": {"fallidos": 1, "mejor_objetivo": 0.28}},
-                          tablas={"comparacion": pd.DataFrame({"a": [1]})}, huella="e1", tracking_uri=uri)
-                primero = registrar_estudio("estudio", trials, **kw)
-                repetido = registrar_estudio("estudio", trials, **kw)
+                kw = dict(parent={"params": {"mejor.max_depth": 4}, "metricas": {"fallidos": 1, "mejor_objetivo": 0.28}},
+                          tables={"comparacion": pd.DataFrame({"a": [1]})}, fingerprint="e1", tracking_uri=uri)
+                primero = log_study("estudio", trials, **kw)
+                repetido = log_study("estudio", trials, **kw)
                 runs = mlflow.search_runs(experiment_names=["denguekay/estudio"])
             finally:
                 if anterior is not None:
@@ -189,10 +189,10 @@ class RegistroTests(unittest.TestCase):
             metricas.write_text("{}", encoding="utf-8")
             anterior = os.environ.pop("MLFLOW_TRACKING_URI", None)
             try:
-                kw = dict(metricas_path=metricas, salida_dir=tmp / "no_existe", tracking_uri=uri)
-                primero = registrar_reporte("prueba", reporte_sintetico(), huella="h1", **kw)
-                repetido = registrar_reporte("prueba", reporte_sintetico(), huella="h1", **kw)
-                otro = registrar_reporte("prueba", reporte_sintetico(), huella="h2", **kw)
+                kw = dict(metrics_path=metricas, output_dir=tmp / "no_existe", tracking_uri=uri)
+                primero = log_report("prueba", reporte_sintetico(), fingerprint="h1", **kw)
+                repetido = log_report("prueba", reporte_sintetico(), fingerprint="h1", **kw)
+                otro = log_report("prueba", reporte_sintetico(), fingerprint="h2", **kw)
                 runs = mlflow.search_runs(experiment_names=["denguekay/prueba"])
             finally:
                 if anterior is not None:

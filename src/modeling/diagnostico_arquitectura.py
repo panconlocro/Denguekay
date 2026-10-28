@@ -26,7 +26,7 @@ import pandas as pd
 
 from denguekay.data.seasons import assign_season
 from src.modeling.evaluate import alertas_desde_conteos, metricas_alerta
-from denguekay.model.train import MINIMO_CASOS_BROTE, SEMANA_INICIO_TEMPORADA
+from denguekay.model.train import MIN_OUTBREAK_CASES, SEASON_START_WEEK
 from denguekay.data.validation.forecast_contract import KEY
 
 VARIANTE_REGRESION = "base_6"
@@ -77,9 +77,9 @@ def agregar_alertas(datos: pd.DataFrame) -> pd.DataFrame:
     salida = datos.copy()
     limite = salida.umbral_brote_casos.to_numpy(float)
     salida["alerta_regresion"] = alertas_desde_conteos(
-        salida.casos_predichos.to_numpy(float), limite, MINIMO_CASOS_BROTE)
+        salida.casos_predichos.to_numpy(float), limite, MIN_OUTBREAK_CASES)
     salida["alerta_persistencia"] = alertas_desde_conteos(
-        salida.persistencia.to_numpy(float), limite, MINIMO_CASOS_BROTE)
+        salida.persistencia.to_numpy(float), limite, MIN_OUTBREAK_CASES)
     salida["alerta_cls_calibrada"] = salida.probabilidad_brote >= salida.umbral_probabilidad
     salida["alerta_cls_050"] = salida.probabilidad_brote >= 0.5
     return salida
@@ -111,7 +111,7 @@ def fase_curva(datos: pd.DataFrame, valle: float = 0.10, pico: float = 0.60) -> 
 
 def terciles_distrito(etiquetas: pd.DataFrame, temporada_corte: int = 2021) -> pd.Series:
     """Terciles de casos acumulados antes de la temporada de corte, por ubigeo."""
-    temporada = assign_season(etiquetas.anio, etiquetas.semana, SEMANA_INICIO_TEMPORADA)
+    temporada = assign_season(etiquetas.anio, etiquetas.semana, SEASON_START_WEEK)
     previos = etiquetas.loc[temporada < temporada_corte].groupby("ubigeo").casos_Dengue.sum()
     rango = previos.rank(method="first")
     return pd.qcut(rango, 3, labels=["bajo", "medio", "alto"]).rename("tercil_distrito")

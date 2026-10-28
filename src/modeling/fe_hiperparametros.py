@@ -25,7 +25,7 @@ from denguekay.model import horizon_strategies as eh
 from src.modeling import protocolo_arquitectura as pa
 from denguekay.model import probabilistic_output as sp
 from src.modeling.contrato_xgboost import NO_PREDICTORAS, familias_predictoras
-from denguekay.model.train import PARAMETROS_BASE
+from denguekay.model.train import BASE_PARAMS
 
 ESTRATEGIA, FORMULACION = "E3", "S4_s2"
 NOMBRE_REFERENCIA = "referencia_B"
@@ -51,7 +51,7 @@ def insumos(panel: pd.DataFrame, regla: dict) -> dict:
     serie = panel[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"]].merge(
         etiquetas[["ubigeo", "anio", "semana", "brote"]], on=["ubigeo", "anio", "semana"])
     serie["semana_inicio"] = pd.to_datetime(serie.semana_inicio)
-    matrices = {h: eh.matriz_horizonte(panel, etiquetas, h) for h in eh.HORIZONTES_ESTRATEGIA}
+    matrices = {h: eh.horizon_matrix(panel, etiquetas, h) for h in eh.STRATEGY_HORIZONS}
     return {"etiquetas": etiquetas, "serie": serie, "matrices": matrices}
 
 
@@ -69,12 +69,12 @@ def evaluar_variante(matrices: dict[int, pd.DataFrame], serie: pd.DataFrame, *,
     Devuelve ``{"predicciones": {semilla: df}, "evaluaciones": {semilla: dict},
     "alfas": df}`` (α de cada bloque, horizonte y semilla).
     """
-    calibracion = sp.FORMULACIONES[formulacion]["calibracion"]
+    calibracion = sp.FORMULATIONS[formulacion]["calibracion"]
     predicciones, evaluaciones, alfas = {}, {}, []
     for semilla in semillas:
-        pred = sp.predecir_e3(matrices, semilla, formulacion, columnas=columnas,
-                              origenes=origenes, hiperparametros=hiperparametros,
-                              preparar_bloque=preparar_bloque, dispersion=dispersion)
+        pred = sp.predict_e3(matrices, semilla, formulacion, columns=columnas,
+                              origins=origenes, hyperparameters=hiperparametros,
+                              prepare_block=preparar_bloque, dispersion=dispersion)
         alfas.append(pred.attrs.pop("alfas", pd.DataFrame()))
         predicciones[semilla] = pred
         evaluaciones[semilla] = pa.evaluar(pred, serie, calibracion)
@@ -88,7 +88,7 @@ def resumir_variante(evaluaciones: dict[int, dict], serie: pd.DataFrame) -> dict
     antelacion = pd.concat({s: r["antelacion_ic"].query("alerta == 'alerta_050'")
                             for s, r in evaluaciones.items()}, names=["semilla"]).reset_index(level=0)
     persistencia = next(iter(evaluaciones.values()))["antelacion_ic"].query("alerta == 'alerta_persistencia'")
-    recall = pd.concat({s: sp.recall_por_tipo_semana(r["datos"], serie) for s, r in evaluaciones.items()},
+    recall = pd.concat({s: sp.recall_by_week_type(r["datos"], serie) for s, r in evaluaciones.items()},
                        names=["semilla"]).reset_index(level=0)
     return {
         "medianas": pa.mediana_semillas(metricas),
@@ -150,7 +150,7 @@ def inventario_candidatas(gold_h2: pd.DataFrame, matriz_h2: pd.DataFrame) -> pd.
     sin_familia = [c for c in candidatas if c not in familia]
     if sin_familia:
         raise ValueError(f"Candidatas de gold sin familia en el contrato: {sin_familia}")
-    base = set(eh.columnas_modelo(2)[0])
+    base = set(eh.model_columns(2)[0])
     filas = []
     for c in candidatas:
         g = gold_h2[c]
@@ -225,9 +225,9 @@ def medir_ajuste(matrices: dict[int, pd.DataFrame], serie: pd.DataFrame, semilla
     filas = []
     for i in range(repeticiones):
         t0 = time.perf_counter()
-        pred = sp.predecir_e3(matrices, semilla, FORMULACION, hiperparametros=hiperparametros)
+        pred = sp.predict_e3(matrices, semilla, FORMULACION, hyperparameters=hiperparametros)
         t1 = time.perf_counter()
-        pa.evaluar(pred, serie, sp.FORMULACIONES[FORMULACION]["calibracion"])
+        pa.evaluar(pred, serie, sp.FORMULATIONS[FORMULACION]["calibracion"])
         t2 = time.perf_counter()
         filas.append({"repeticion": i + 1, "segundos_ajuste_prediccion": t1 - t0,
                       "segundos_evaluacion": t2 - t1, "segundos_total": t2 - t0})
@@ -271,8 +271,8 @@ def huella_predicciones(predicciones: pd.DataFrame) -> str:
 def reporte_mlflow(experimento: str, medianas: dict[str, pd.DataFrame],
                    semillas: tuple[int, ...] = pa.SEMILLAS, hiperparametros: dict | None = None) -> dict:
     """Reporte registrable con ``seguimiento_mlflow`` para una o varias variantes."""
-    reporte = eh.reporte_mlflow(experimento, medianas, semillas)
-    reporte["parametros"] = {**{k: v for k, v in PARAMETROS_BASE.items() if k != "random_state"},
+    reporte = eh.mlflow_report(experimento, medianas, semillas)
+    reporte["parametros"] = {**{k: v for k, v in BASE_PARAMS.items() if k != "random_state"},
                              "multi_strategy": "multi_output_tree", "objective": "count:poisson",
                              **(hiperparametros or {})}
     reporte["estrategia"], reporte["formulacion"] = ESTRATEGIA, FORMULACION

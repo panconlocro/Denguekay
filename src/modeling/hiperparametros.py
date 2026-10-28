@@ -17,7 +17,7 @@ import pandas as pd
 from denguekay.model import horizon_strategies as eh
 from src.modeling import protocolo_arquitectura as pa
 from denguekay.model import probabilistic_output as sp
-from denguekay.model.train import PARAMETROS_BASE
+from denguekay.model.train import BASE_PARAMS
 
 FORMULACION = "S4_s2"
 SEMILLA_XGB = 17
@@ -27,10 +27,10 @@ TOP_K = 5
 MAX_DELTA_STEP_POISSON = 0.7  # valor por defecto de XGBoost con count:poisson
 
 # Hiperparámetros optimizables de la base (C3 con los valores fijos heredados), todos explícitos.
-BASE = {"n_estimators": PARAMETROS_BASE["n_estimators"], "max_depth": PARAMETROS_BASE["max_depth"],
-        "learning_rate": PARAMETROS_BASE["learning_rate"], "min_child_weight": PARAMETROS_BASE["min_child_weight"],
-        "subsample": PARAMETROS_BASE["subsample"], "colsample_bytree": PARAMETROS_BASE["colsample_bytree"],
-        "reg_lambda": PARAMETROS_BASE["reg_lambda"], "reg_alpha": 0.0, "gamma": 0.0,
+BASE = {"n_estimators": BASE_PARAMS["n_estimators"], "max_depth": BASE_PARAMS["max_depth"],
+        "learning_rate": BASE_PARAMS["learning_rate"], "min_child_weight": BASE_PARAMS["min_child_weight"],
+        "subsample": BASE_PARAMS["subsample"], "colsample_bytree": BASE_PARAMS["colsample_bytree"],
+        "reg_lambda": BASE_PARAMS["reg_lambda"], "reg_alpha": 0.0, "gamma": 0.0,
         "max_delta_step": MAX_DELTA_STEP_POISSON}
 # Trial 0 del estudio: la base con reg_alpha en el mínimo del espacio log (Optuna no admite 0 en escala log).
 TRIAL_0 = {**BASE, "reg_alpha": 1e-3}
@@ -105,7 +105,7 @@ def objetivo(evaluacion: dict, bloques: tuple[str, ...] = pa.BLOQUES_SELECCION) 
     celdas = (datos.groupby(["horizonte", "bloque"])
               .apply(lambda g: logloss(g.brote, g.probabilidad_calibrada), include_groups=False)
               .rename("logloss").reset_index())
-    esperadas = len(eh.HORIZONTES_ESTRATEGIA) * len(bloques)
+    esperadas = len(eh.STRATEGY_HORIZONS) * len(bloques)
     if len(celdas) != esperadas:
         return float("nan"), celdas
     return float(celdas.logloss.mean()), celdas
@@ -113,8 +113,8 @@ def objetivo(evaluacion: dict, bloques: tuple[str, ...] = pa.BLOQUES_SELECCION) 
 
 def evaluar_configuracion(matrices, serie, origenes, columnas, params: dict, semilla: int = SEMILLA_XGB) -> dict:
     """Predicción E3·S4_s2 con ``params`` y evaluación completa del protocolo."""
-    pred = sp.predecir_e3(matrices, semilla, FORMULACION, columnas=columnas, origenes=origenes, hiperparametros=params)
-    return pa.evaluar(pred, serie, sp.FORMULACIONES[FORMULACION]["calibracion"]) | {"predicciones": pred}
+    pred = sp.predict_e3(matrices, semilla, FORMULACION, columns=columnas, origins=origenes, hyperparameters=params)
+    return pa.evaluar(pred, serie, sp.FORMULATIONS[FORMULACION]["calibracion"]) | {"predicciones": pred}
 
 
 def resumen_trial(evaluacion: dict) -> dict:
@@ -188,7 +188,7 @@ def complejidad(params: dict) -> int:
 
 def adoptar(veredictos: pd.DataFrame, candidata: dict, base: dict = BASE) -> dict:
     """Regla de adopción preregistrada a partir de los veredictos por horizonte (candidata frente a base)."""
-    resultado = eh.adopcion(veredictos).resultado.iloc[0]
+    resultado = eh.adoption(veredictos).resultado.iloc[0]
     if resultado == "adoptable":
         return {"adoptada": "candidata", "criterio": "gana a la base"}
     if resultado == "empate" and complejidad(candidata) <= complejidad(base):

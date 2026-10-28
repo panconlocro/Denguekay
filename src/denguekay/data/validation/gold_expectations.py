@@ -4,7 +4,7 @@ Declares, in an auditable way, the contract training relies on: exact schema,
 unique key, UBIGEO from the catalogue, valid targets, physical or logical
 ranges of the variables and no temporal leakage (the target week always
 starts after the origin close). The strict structural start-up checks stay in
-``denguekay.model.train.preparar_gold``.
+``denguekay.model.train.prepare_gold``.
 """
 
 import great_expectations as gx

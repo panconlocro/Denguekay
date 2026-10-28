@@ -41,7 +41,7 @@ from denguekay.data.seasons import assign_season
 from src.modeling import diagnostico_arquitectura as diag
 from src.modeling.clima import ajustar_climatologia
 from src.modeling.protocolo_arquitectura import bootstrap_estratificado
-from denguekay.model.train import SEMANA_INICIO_TEMPORADA
+from denguekay.model.train import SEASON_START_WEEK
 from src.modeling.vecinos_jerarquia import catalogo_geografico, matriz_vecindad
 
 TEMPORADAS_DISENO = (2017, 2018, 2019, 2020, 2021)
@@ -115,7 +115,7 @@ ETIQUETAS = {
 
 def con_temporada(datos: pd.DataFrame) -> pd.Series:
     """Temporada epidemiológica (semana 35 en adelante pertenece a la siguiente)."""
-    return assign_season(datos.anio, datos.semana, SEMANA_INICIO_TEMPORADA)
+    return assign_season(datos.anio, datos.semana, SEASON_START_WEEK)
 
 
 def corte_diseno(serie: pd.DataFrame, temporadas: tuple[int, ...] = TEMPORADAS_DISENO) -> pd.Timestamp:

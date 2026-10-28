@@ -1,41 +1,41 @@
-"""Formulaciones de la salida (fase 4 del encargo multi-horizonte).
+"""Output formulations (phase 4 of the multi-horizon study).
 
-Cada formulación define cómo se obtienen los **casos** y la **probabilidad de
-brote**, sobre la estrategia E1 (directa por horizonte) o E3 (multi-salida),
-con las mismas variables, bloques, semillas e hiperparámetros:
+Each formulation defines how the **cases** and the **outbreak probability** are
+obtained, on top of strategy E1 (direct per horizon) or E3 (multi-output), with
+the same variables, blocks, seeds and hyperparameters:
 
 ========  ==========================================  =======================================
-Id        Casos                                        Probabilidad
+Id        Cases                                        Probability
 ========  ==========================================  =======================================
-S1        ``log1p`` + error cuadrático                 clasificador; Platt cronológico
-S2_pois   ``count:poisson``                            clasificador; Platt
-S2_twd    ``reg:tweedie`` (potencia 1,5, fija)         clasificador; Platt
-S3        ``count:poisson`` con ``base_margin =``      clasificador; Platt
-          ``log(persistencia + 0,5)``
-S4_s2     media de S2_pois                             P(casos ≥ k) binomial negativa; Platt
-S4_s3     media de S3                                  P(casos ≥ k) binomial negativa; Platt
-S5_iso    ``log1p`` (como S1)                          clasificador; isotónica cronológica
-S5_spw    ``log1p`` (como S1)                          clasificador con ``scale_pos_weight``;
+S1        ``log1p`` + squared error                    classifier; chronological Platt
+S2_pois   ``count:poisson``                            classifier; Platt
+S2_twd    ``reg:tweedie`` (power 1.5, fixed)           classifier; Platt
+S3        ``count:poisson`` with ``base_margin =``     classifier; Platt
+          ``log(persistence + 0.5)``
+S4_s2     mean of S2_pois                              P(cases >= k) negative binomial; Platt
+S4_s3     mean of S3                                   P(cases >= k) negative binomial; Platt
+S5_iso    ``log1p`` (as S1)                            classifier; chronological isotonic
+S5_spw    ``log1p`` (as S1)                            classifier with ``scale_pos_weight``;
                                                        Platt
 ========  ==========================================  =======================================
 
-En S4, ``k = max(⌊umbral_brote_casos⌋ + 1, 2)`` reproduce la regla de gold
-(casos > umbral y ≥ 2). El umbral de la semana objetivo usa solo la misma
-semana de años anteriores; ``tests/test_umbral_brote_sin_fuga.py`` comprueba
-que no depende de casos posteriores a ``t−h``. Se usa solo para convertir la
-distribución predicha en probabilidad, nunca como variable de entrada. La
-dispersión de la binomial negativa se estima por máxima verosimilitud con las
-predicciones dentro de la muestra de entrenamiento del bloque (causal, aunque
-puede subestimarla); la calibración Platt posterior corrige la escala.
+In S4, ``k = max(floor(umbral_brote_casos) + 1, 2)`` reproduces the gold rule
+(cases > threshold and >= 2). The threshold of the target week only uses the
+same week of previous years; ``tests/test_umbral_brote_sin_fuga.py`` checks that
+it does not depend on cases after ``t-h``. It is only used to turn the predicted
+distribution into a probability, never as an input variable. The negative
+binomial dispersion is estimated by maximum likelihood on the in-sample
+predictions of the block's training data (causal, although it may underestimate
+it); the subsequent Platt calibration fixes the scale.
 
-Con ``dispersion="oos"`` (fase 4.2 del encargo de FE) la α de cada bloque se
-estima con las predicciones fuera de muestra de los bloques anteriores cuya
-semana objetivo ya cerró en el corte (acumuladas). El primer bloque
-(temporada 2021) usa un pseudo-bloque ``temporada_2020`` que solo sirve para
-eso. Respaldo preregistrado: si la α OOS de un bloque y horizonte no converge,
-queda en el límite del optimizador o sale de [mín / 5, máx × 5] de las α dentro
-de la muestra de 2021–2024 (mismo horizonte y semilla), ese bloque usa la α
-dentro de la muestra y se marca.
+With ``dispersion="oos"`` (phase 4.2 of the FE study) each block's alpha is
+estimated with the out-of-sample predictions of the previous blocks whose
+target week had closed at the cutoff (accumulated). The first block (season
+2021) uses a pseudo-block ``temporada_2020`` that only serves that purpose.
+Preregistered fallback: if the OOS alpha of a block and horizon does not
+converge, ends at the optimizer bound or falls outside [min / 5, max x 5] of the
+in-sample alphas of 2021-2024 (same horizon and seed), that block uses the
+in-sample alpha and is flagged.
 """
 
 import numpy as np
@@ -44,11 +44,11 @@ from scipy import optimize, special, stats
 from xgboost import XGBClassifier, XGBRegressor
 
 from denguekay.model import horizon_strategies as eh
-from denguekay.model.train import MINIMO_CASOS_BROTE, conteos_desde_log1p
+from denguekay.model.train import MIN_OUTBREAK_CASES, counts_from_log1p
 
-EPS_MARGEN = 0.5
-POTENCIA_TWEEDIE = 1.5
-FORMULACIONES = {
+MARGIN_EPS = 0.5
+TWEEDIE_POWER = 1.5
+FORMULATIONS = {
     "S1": {"conteo": "log1p", "probabilidad": "clasificador", "calibracion": "platt"},
     "S2_pois": {"conteo": "poisson", "probabilidad": "clasificador", "calibracion": "platt"},
     "S2_twd": {"conteo": "tweedie", "probabilidad": "clasificador", "calibracion": "platt"},
@@ -58,68 +58,68 @@ FORMULACIONES = {
     "S5_iso": {"conteo": "log1p", "probabilidad": "clasificador", "calibracion": "isotonica"},
     "S5_spw": {"conteo": "log1p", "probabilidad": "clasificador_spw", "calibracion": "platt"},
 }
-DISPERSIONES = ("dentro_muestra", "oos")
-# Pseudo-bloque que solo estima la α OOS del primer bloque; no se evalúa ni entra en Platt.
-BLOQUE_ALFA_INICIAL = ("temporada_2020", "temporada", 2020)
-LIMITES_LOG_ALFA = (-12.0, 6.0)
-TOLERANCIA_LIMITE_LOG_ALFA = 1e-3
-FACTOR_RANGO_ALFA = 5.0
-BLOQUES_RANGO_ALFA = ("temporada_2021", "temporada_2022", "temporada_2023", "temporada_2024")
-# Modelos que se entrenan y despliegan por estrategia (S4 no usa clasificador).
-MODELOS = {(e, f): (n // 2 if FORMULACIONES[f]["probabilidad"] == "binomial_negativa" else n)
-           for e, n in eh.MODELOS_POR_ESTRATEGIA.items() for f in FORMULACIONES}
+DISPERSIONS = ("dentro_muestra", "oos")
+# Pseudo-block that only estimates the OOS alpha of the first block; it is not evaluated and does not enter Platt.
+INITIAL_ALPHA_BLOCK = ("temporada_2020", "temporada", 2020)
+LOG_ALPHA_BOUNDS = (-12.0, 6.0)
+LOG_ALPHA_BOUND_TOLERANCE = 1e-3
+ALPHA_RANGE_FACTOR = 5.0
+ALPHA_RANGE_BLOCKS = ("temporada_2021", "temporada_2022", "temporada_2023", "temporada_2024")
+# Models trained and deployed per strategy (S4 uses no classifier).
+MODELS = {(e, f): (n // 2 if FORMULATIONS[f]["probabilidad"] == "binomial_negativa" else n)
+           for e, n in eh.MODELS_PER_STRATEGY.items() for f in FORMULATIONS}
 
 
-def objetivo_conteo(conteo: str) -> dict:
-    """Parámetros de XGBoost para cada forma de modelar los casos."""
-    if conteo == "log1p":
+def count_objective(count: str) -> dict:
+    """XGBoost parameters for each way of modelling the cases."""
+    if count == "log1p":
         return {"objective": "reg:squarederror"}
-    if conteo in ("poisson", "poisson_margen"):
+    if count in ("poisson", "poisson_margen"):
         return {"objective": "count:poisson"}
-    if conteo == "tweedie":
-        return {"objective": "reg:tweedie", "tweedie_variance_power": POTENCIA_TWEEDIE}
-    raise ValueError(f"Conteo desconocido: {conteo}")
+    if count == "tweedie":
+        return {"objective": "reg:tweedie", "tweedie_variance_power": TWEEDIE_POWER}
+    raise ValueError(f"Conteo desconocido: {count}")
 
 
-def margen_persistencia(persistencia) -> np.ndarray:
-    """``log(persistencia + 0,5)``: punto de partida del modelo S3 en escala log."""
-    p = np.asarray(persistencia, float)
+def persistence_margin(persistence) -> np.ndarray:
+    """``log(persistence + 0.5)``: starting point of model S3 on the log scale."""
+    p = np.asarray(persistence, float)
     if (p < 0).any() or not np.isfinite(p).all():
         raise ValueError("Persistencia inválida para base_margin")
-    return np.log(p + EPS_MARGEN)
+    return np.log(p + MARGIN_EPS)
 
 
-def ajustar_conteo(x, y, conteo: str, semilla: int, margen=None, **extra) -> XGBRegressor:
-    """Regresor de casos según la formulación (``y`` puede tener varias columnas)."""
-    modelo = XGBRegressor(**objetivo_conteo(conteo), **eh.parametros(semilla, **extra))
+def fit_count(x, y, count: str, seed: int, margin=None, **extra) -> XGBRegressor:
+    """Case regressor for the formulation (``y`` may have several columns)."""
+    model = XGBRegressor(**count_objective(count), **eh.parameters(seed, **extra))
     y = np.asarray(y, float)
-    if conteo == "log1p":
-        modelo.fit(x, np.log1p(y))
-    elif conteo == "poisson_margen":
-        modelo.fit(x, y, base_margin=margen)
+    if count == "log1p":
+        model.fit(x, np.log1p(y))
+    elif count == "poisson_margen":
+        model.fit(x, y, base_margin=margin)
     else:
-        modelo.fit(x, y)
-    return modelo
+        model.fit(x, y)
+    return model
 
 
-def predecir_conteo(modelo: XGBRegressor, x, conteo: str, margen=None) -> np.ndarray:
-    """Casos esperados en escala original."""
-    if conteo == "log1p":
-        return conteos_desde_log1p(modelo.predict(x))
-    pred = modelo.predict(x, base_margin=margen) if conteo == "poisson_margen" else modelo.predict(x)
+def predict_count(model: XGBRegressor, x, count: str, margin=None) -> np.ndarray:
+    """Expected cases on the original scale."""
+    if count == "log1p":
+        return counts_from_log1p(model.predict(x))
+    pred = model.predict(x, base_margin=margin) if count == "poisson_margen" else model.predict(x)
     pred = np.asarray(pred, float)
     if not np.isfinite(pred).all() or (pred < 0).any():
         raise ValueError("El modelo de conteo produjo valores inválidos")
     return pred
 
 
-def dispersion_binomial_negativa(mu, y) -> float:
-    """α de la binomial negativa NB2 (var = μ + αμ²) por máxima verosimilitud."""
-    return dispersion_binomial_negativa_detalle(mu, y)["alpha"]
+def negative_binomial_dispersion(mu, y) -> float:
+    """alpha of the NB2 negative binomial (var = mu + alpha mu^2) by maximum likelihood."""
+    return negative_binomial_dispersion_detail(mu, y)["alpha"]
 
 
-def dispersion_binomial_negativa_detalle(mu, y) -> dict:
-    """α NB2 por máxima verosimilitud, con convergencia y si quedó en un límite del optimizador."""
+def negative_binomial_dispersion_detail(mu, y) -> dict:
+    """NB2 alpha by maximum likelihood, with convergence and whether it ended at an optimizer bound."""
     mu = np.clip(np.asarray(mu, float).ravel(), 1e-6, None)
     y = np.asarray(y, float).ravel()
 
@@ -128,243 +128,243 @@ def dispersion_binomial_negativa_detalle(mu, y) -> dict:
         r = 1 / a
         return -np.sum(special.gammaln(y + r) - special.gammaln(r) - special.gammaln(y + 1)
                        + r * np.log(r / (r + mu)) + y * np.log(mu / (r + mu)))
-    lo, hi = LIMITES_LOG_ALFA
-    resultado = optimize.minimize_scalar(nll, bounds=(lo, hi), method="bounded")
-    x = float(resultado.x)
-    return {"alpha": float(np.exp(x)), "convergio": bool(resultado.success) and np.isfinite(x),
-            "en_limite": min(x - lo, hi - x) < TOLERANCIA_LIMITE_LOG_ALFA, "n": int(mu.size)}
+    lo, hi = LOG_ALPHA_BOUNDS
+    result = optimize.minimize_scalar(nll, bounds=(lo, hi), method="bounded")
+    x = float(result.x)
+    return {"alpha": float(np.exp(x)), "convergio": bool(result.success) and np.isfinite(x),
+            "en_limite": min(x - lo, hi - x) < LOG_ALPHA_BOUND_TOLERANCE, "n": int(mu.size)}
 
 
-def alfas_oos(pruebas_por_bloque: dict, cortes: dict, alfas_dentro: dict) -> pd.DataFrame:
-    """α OOS por bloque y horizonte, con el respaldo preregistrado.
+def oos_alphas(tests_by_block: dict, cutoffs: dict, in_sample_alphas: dict) -> pd.DataFrame:
+    """OOS alpha per block and horizon, with the preregistered fallback.
 
-    ``pruebas_por_bloque[bloque][h]`` tiene ``semana_inicio``, ``casos_predichos`` y
-    ``casos_Dengue`` de la prueba del bloque, en orden cronológico de bloques (el
-    pseudo-bloque primero). Para cada bloque evaluado se juntan las pruebas de los
-    bloques anteriores con la semana objetivo cerrada en su corte.
+    ``tests_by_block[block][h]`` holds ``semana_inicio``, ``casos_predichos`` and
+    ``casos_Dengue`` of the block's test, in chronological block order (the
+    pseudo-block first). For each evaluated block the tests of the previous
+    blocks whose target week was closed at its cutoff are pooled.
     """
-    nombres = list(pruebas_por_bloque)
-    filas = []
-    for i, bloque in enumerate(nombres):
-        if bloque == BLOQUE_ALFA_INICIAL[0]:
+    names = list(tests_by_block)
+    rows = []
+    for i, block in enumerate(names):
+        if block == INITIAL_ALPHA_BLOCK[0]:
             continue
-        corte = cortes[bloque]
-        for h, a_dentro in alfas_dentro[bloque].items():
-            previas = pd.concat([pruebas_por_bloque[b][h] for b in nombres[:i]], ignore_index=True)
-            previas = previas[(previas.semana_inicio + pd.Timedelta(days=6)).le(corte)]
-            rango = [alfas_dentro[b][h] for b in BLOQUES_RANGO_ALFA if b in alfas_dentro]
-            minimo, maximo = min(rango) / FACTOR_RANGO_ALFA, max(rango) * FACTOR_RANGO_ALFA
-            if previas.empty:
+        cutoff = cutoffs[block]
+        for h, a_in_sample in in_sample_alphas[block].items():
+            previous = pd.concat([tests_by_block[b][h] for b in names[:i]], ignore_index=True)
+            previous = previous[(previous.semana_inicio + pd.Timedelta(days=6)).le(cutoff)]
+            span = [in_sample_alphas[b][h] for b in ALPHA_RANGE_BLOCKS if b in in_sample_alphas]
+            minimum, maximum = min(span) / ALPHA_RANGE_FACTOR, max(span) * ALPHA_RANGE_FACTOR
+            if previous.empty:
                 d = {"alpha": np.nan, "convergio": False, "en_limite": False, "n": 0}
             else:
-                d = dispersion_binomial_negativa_detalle(previas.casos_predichos, previas.casos_Dengue)
-            en_rango = bool(np.isfinite(d["alpha"]) and minimo <= d["alpha"] <= maximo)
-            respaldo = not (d["convergio"] and not d["en_limite"] and en_rango)
-            filas.append({"bloque": bloque, "horizonte": h, "alpha_dentro_muestra": a_dentro,
+                d = negative_binomial_dispersion_detail(previous.casos_predichos, previous.casos_Dengue)
+            in_range = bool(np.isfinite(d["alpha"]) and minimum <= d["alpha"] <= maximum)
+            fallback = not (d["convergio"] and not d["en_limite"] and in_range)
+            rows.append({"bloque": block, "horizonte": h, "alpha_dentro_muestra": a_in_sample,
                           "alpha_oos": d["alpha"], "n_oos": d["n"], "convergio": d["convergio"],
-                          "en_limite": d["en_limite"], "rango_minimo": minimo, "rango_maximo": maximo,
-                          "en_rango": en_rango, "respaldo": respaldo,
-                          "alpha_usada": a_dentro if respaldo else d["alpha"],
-                          "bloques_previos": ",".join(sorted(previas.bloque_origen.unique()))
-                          if not previas.empty else ""})
-    return pd.DataFrame(filas)
+                          "en_limite": d["en_limite"], "rango_minimo": minimum, "rango_maximo": maximum,
+                          "en_rango": in_range, "respaldo": fallback,
+                          "alpha_usada": a_in_sample if fallback else d["alpha"],
+                          "bloques_previos": ",".join(sorted(previous.bloque_origen.unique()))
+                          if not previous.empty else ""})
+    return pd.DataFrame(rows)
 
 
-def umbral_conteo(umbral_brote) -> np.ndarray:
-    """k mínimo de casos para que la semana sea ``brote`` (casos > umbral y ≥ 2)."""
-    return np.maximum(np.floor(np.asarray(umbral_brote, float)) + 1, MINIMO_CASOS_BROTE)
+def count_threshold(outbreak_threshold) -> np.ndarray:
+    """Minimum k of cases for the week to be ``brote`` (cases > threshold and >= 2)."""
+    return np.maximum(np.floor(np.asarray(outbreak_threshold, float)) + 1, MIN_OUTBREAK_CASES)
 
 
-def probabilidad_binomial_negativa(mu, alpha: float, umbral_brote) -> np.ndarray:
-    """P(casos ≥ k) con casos ~ NB2(μ, α)."""
+def negative_binomial_probability(mu, alpha: float, outbreak_threshold) -> np.ndarray:
+    """P(cases >= k) with cases ~ NB2(mu, alpha)."""
     mu = np.clip(np.asarray(mu, float), 1e-9, None)
-    k = umbral_conteo(umbral_brote)
+    k = count_threshold(outbreak_threshold)
     r = 1 / alpha
     return stats.nbinom.sf(k - 1, r, r / (r + mu))
 
 
-def _clasificador(semilla: int, spw: float | None = None, **extra) -> XGBClassifier:
-    params = eh.parametros(semilla, **extra)
+def _classifier(seed: int, spw: float | None = None, **extra) -> XGBClassifier:
+    params = eh.parameters(seed, **extra)
     if spw is not None:
         params["scale_pos_weight"] = spw
     return XGBClassifier(objective="binary:logistic", eval_metric="logloss", **params)
 
 
-def _spw(brote) -> float:
-    b = np.asarray(brote).ravel()
+def _spw(outbreak) -> float:
+    b = np.asarray(outbreak).ravel()
     return float((b == 0).sum() / max((b == 1).sum(), 1))
 
 
 # ---------------------------------------------------------------------------
-# E1 con formulación
+# E1 with formulation
 # ---------------------------------------------------------------------------
 
-def predecir_e1(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: str,
-                horizontes: tuple[int, ...] = eh.HORIZONTES_ESTRATEGIA) -> pd.DataFrame:
-    """E1 (un modelo por horizonte) con la formulación indicada."""
-    f = FORMULACIONES[formulacion]
-    partes = []
-    for h in horizontes:
-        datos = matrices[h]
-        col_reg, col_cls = eh.columnas_modelo(h)
-        for bloque, tipo, periodo in eh.bloques():
-            train, test, _ = eh.separar(datos, tipo, periodo)
-            m_tr = margen_persistencia(train.persistencia) if f["conteo"] == "poisson_margen" else None
-            m_te = margen_persistencia(test.persistencia) if f["conteo"] == "poisson_margen" else None
-            reg = ajustar_conteo(train[col_reg], train.casos_Dengue, f["conteo"], semilla, m_tr)
-            conteos = predecir_conteo(reg, test[col_reg], f["conteo"], m_te)
+def predict_e1(matrices: dict[int, pd.DataFrame], seed: int, formulation: str,
+                horizons: tuple[int, ...] = eh.STRATEGY_HORIZONS) -> pd.DataFrame:
+    """E1 (one model per horizon) with the given formulation."""
+    f = FORMULATIONS[formulation]
+    parts = []
+    for h in horizons:
+        data = matrices[h]
+        col_reg, col_cls = eh.model_columns(h)
+        for block, kind, period in eh.blocks():
+            train, test, _ = eh.split(data, kind, period)
+            m_tr = persistence_margin(train.persistencia) if f["conteo"] == "poisson_margen" else None
+            m_te = persistence_margin(test.persistencia) if f["conteo"] == "poisson_margen" else None
+            reg = fit_count(train[col_reg], train.casos_Dengue, f["conteo"], seed, m_tr)
+            counts = predict_count(reg, test[col_reg], f["conteo"], m_te)
             if f["probabilidad"] == "binomial_negativa":
-                alpha = dispersion_binomial_negativa(
-                    predecir_conteo(reg, train[col_reg], f["conteo"], m_tr), train.casos_Dengue)
-                prob = probabilidad_binomial_negativa(conteos, alpha, test.umbral_brote_casos)
+                alpha = negative_binomial_dispersion(
+                    predict_count(reg, train[col_reg], f["conteo"], m_tr), train.casos_Dengue)
+                prob = negative_binomial_probability(counts, alpha, test.umbral_brote_casos)
             else:
                 spw = _spw(train.brote) if f["probabilidad"] == "clasificador_spw" else None
-                cls = _clasificador(semilla, spw).fit(train[col_cls], train.brote.to_numpy(int))
+                cls = _classifier(seed, spw).fit(train[col_cls], train.brote.to_numpy(int))
                 prob = cls.predict_proba(test[col_cls])[:, 1]
-            partes.append(eh._salida(test, bloque, conteos, prob))
-    return pd.concat(partes, ignore_index=True).assign(estrategia="E1", formulacion=formulacion, semilla=semilla)
+            parts.append(eh._output(test, block, counts, prob))
+    return pd.concat(parts, ignore_index=True).assign(estrategia="E1", formulacion=formulation, semilla=seed)
 
 
 # ---------------------------------------------------------------------------
-# E3 con formulación
+# E3 with formulation
 # ---------------------------------------------------------------------------
 
-def predecir_e3(matrices: dict[int, pd.DataFrame], semilla: int, formulacion: str,
-                devolver_modelos: bool = False, columnas: list[str] | None = None,
-                origenes: pd.DataFrame | None = None, hiperparametros: dict | None = None,
-                preparar_bloque=None, dispersion: str = "dentro_muestra"):
-    """E3 (multi-salida desde el mismo origen) con la formulación indicada.
+def predict_e3(matrices: dict[int, pd.DataFrame], seed: int, formulation: str,
+                return_models: bool = False, columns: list[str] | None = None,
+                origins: pd.DataFrame | None = None, hyperparameters: dict | None = None,
+                prepare_block=None, dispersion: str = "dentro_muestra"):
+    """E3 (multi-output from the same origin) with the given formulation.
 
-    En S3 el ``base_margin`` tiene una columna por salida; las tres valen
-    ``log(casos del origen + 0,5)`` porque la persistencia de h=2, 3 y 4 es
-    el mismo dato observado en el origen.
+    In S3 the ``base_margin`` has one column per output; all three are
+    ``log(origin cases + 0.5)`` because the persistence of h=2, 3 and 4 is the
+    same value observed at the origin.
 
-    Sin argumentos opcionales reproduce el encargo de arquitectura. El encargo
-    de FE e hiperparámetros pasa ``columnas`` (``base_6`` + variables nuevas),
-    ``origenes`` (``eh.tabla_origenes`` con esas columnas ya agregadas, en
-    nombres genéricos) e ``hiperparametros`` (sobrescriben los fijos).
-    ``preparar_bloque(origenes, corte)`` devuelve los orígenes con las columnas
-    que dependen de una transformación aprendida (p. ej. el CP1 socio),
-    ajustada solo con lo cerrado al ``corte`` del bloque.
+    Without optional arguments it reproduces the architecture study. The FE and
+    hyperparameter study passes ``columns`` (``base_6`` + new variables),
+    ``origins`` (``eh.origin_table`` with those columns already added, in generic
+    names) and ``hyperparameters`` (they override the fixed ones).
+    ``prepare_block(origins, cutoff)`` returns the origins with the columns that
+    depend on a learned transformation (e.g. the socio PC1), fitted only with
+    what was closed at the block's ``cutoff``.
 
-    ``dispersion`` (solo S4): ``"dentro_muestra"`` (por defecto) u ``"oos"``
-    (ver el docstring del módulo). Las α de cada bloque y horizonte quedan en
-    ``salida.attrs["alfas"]``.
+    ``dispersion`` (S4 only): ``"dentro_muestra"`` (default) or ``"oos"``
+    (see the module docstring). The alphas of each block and horizon end up in
+    ``output.attrs["alfas"]``.
     """
-    f = FORMULACIONES[formulacion]
-    if dispersion not in DISPERSIONES:
+    f = FORMULATIONS[formulation]
+    if dispersion not in DISPERSIONS:
         raise ValueError(f"Dispersión desconocida: {dispersion}")
     if dispersion == "oos" and f["probabilidad"] != "binomial_negativa":
         raise ValueError("La α OOS solo aplica a las formulaciones S4")
     oos = dispersion == "oos"
-    H = eh.HORIZONTES_ESTRATEGIA
-    base_origenes = eh.tabla_origenes(matrices[2]) if origenes is None else origenes
-    col_reg = list(eh.GENERICAS) if columnas is None else list(columnas)
-    col_cls = [*col_reg, eh.POBLACION]
-    if preparar_bloque is None:
-        faltan = [c for c in col_reg if c not in base_origenes]
-        if faltan:
-            raise ValueError(f"Columnas ausentes en la tabla de orígenes: {faltan}")
-    objetivos = [f"semana_inicio_h{h}" for h in H]
-    extra = {"multi_strategy": "multi_output_tree", **(hiperparametros or {})}
-    margen_todo = (np.repeat(margen_persistencia(base_origenes.hist_lag_a)[:, None], len(H), axis=1)
+    H = eh.STRATEGY_HORIZONS
+    base_origins = eh.origin_table(matrices[2]) if origins is None else origins
+    col_reg = list(eh.GENERIC) if columns is None else list(columns)
+    col_cls = [*col_reg, eh.POPULATION]
+    if prepare_block is None:
+        missing = [c for c in col_reg if c not in base_origins]
+        if missing:
+            raise ValueError(f"Columnas ausentes en la tabla de orígenes: {missing}")
+    targets = [f"semana_inicio_h{h}" for h in H]
+    extra = {"multi_strategy": "multi_output_tree", **(hyperparameters or {})}
+    margin_all = (np.repeat(persistence_margin(base_origins.hist_lag_a)[:, None], len(H), axis=1)
                    if f["conteo"] == "poisson_margen" else None)
-    partes, modelos = [], {}
-    pruebas_oos, cortes, alfas_dentro, pendientes = {}, {}, {}, []
-    lista = [BLOQUE_ALFA_INICIAL, *eh.bloques()] if oos else eh.bloques()
-    for bloque, tipo, periodo in lista:
-        pseudo = bloque == BLOQUE_ALFA_INICIAL[0]
-        pruebas, corte = eh._cortes_comunes(matrices, tipo, periodo)
-        cortes[bloque] = corte
-        origenes = base_origenes if preparar_bloque is None else preparar_bloque(base_origenes, corte)
-        if preparar_bloque is not None and (len(origenes) != len(base_origenes)
-                                            or not origenes.index.equals(base_origenes.index)):
+    parts, models = [], {}
+    oos_tests, cutoffs, in_sample_alphas, pending = {}, {}, {}, []
+    items = [INITIAL_ALPHA_BLOCK, *eh.blocks()] if oos else eh.blocks()
+    for block, kind, period in items:
+        pseudo = block == INITIAL_ALPHA_BLOCK[0]
+        test_sets, cutoff = eh._common_cutoffs(matrices, kind, period)
+        cutoffs[block] = cutoff
+        origins = base_origins if prepare_block is None else prepare_block(base_origins, cutoff)
+        if prepare_block is not None and (len(origins) != len(base_origins)
+                                            or not origins.index.equals(base_origins.index)):
             raise ValueError("preparar_bloque no puede quitar ni reordenar orígenes")
-        completas = origenes.dropna(subset=objetivos)
-        ultima = completas[f"semana_inicio_h{H[-1]}"]
-        sel = (ultima + pd.Timedelta(days=6)).le(corte)
-        train = completas[sel]
+        complete = origins.dropna(subset=targets)
+        last = complete[f"semana_inicio_h{H[-1]}"]
+        sel = (last + pd.Timedelta(days=6)).le(cutoff)
+        train = complete[sel]
         if train.empty or not train.origen_cierre.lt(train.semana_inicio).all():
             raise ValueError("Entrenamiento multi-salida vacío o con fuga")
-        m_tr = margen_todo[completas.index[sel]] if margen_todo is not None else None
-        y_casos = np.column_stack([train[f"casos_Dengue_h{h}"] for h in H])
-        y_brote = np.column_stack([train[f"brote_h{h}"] for h in H]).astype(int)
-        reg = ajustar_conteo(train[col_reg], y_casos, f["conteo"], semilla, m_tr, **extra)
-        conteos = predecir_conteo(reg, origenes[col_reg], f["conteo"], margen_todo)
+        m_tr = margin_all[complete.index[sel]] if margin_all is not None else None
+        y_cases = np.column_stack([train[f"casos_Dengue_h{h}"] for h in H])
+        y_outbreak = np.column_stack([train[f"brote_h{h}"] for h in H]).astype(int)
+        reg = fit_count(train[col_reg], y_cases, f["conteo"], seed, m_tr, **extra)
+        counts = predict_count(reg, origins[col_reg], f["conteo"], margin_all)
         cls, alphas = None, None
         if f["probabilidad"] == "binomial_negativa":
-            ajuste = predecir_conteo(reg, train[col_reg], f["conteo"], m_tr)
-            alphas = [dispersion_binomial_negativa(ajuste[:, i], y_casos[:, i]) for i in range(len(H))]
+            fit = predict_count(reg, train[col_reg], f["conteo"], m_tr)
+            alphas = [negative_binomial_dispersion(fit[:, i], y_cases[:, i]) for i in range(len(H))]
             if not pseudo:
-                alfas_dentro[bloque] = dict(zip(H, alphas))
+                in_sample_alphas[block] = dict(zip(H, alphas))
         else:
-            spw = _spw(y_brote) if f["probabilidad"] == "clasificador_spw" else None
-            cls = _clasificador(semilla, spw, **extra).fit(train[col_cls], y_brote)
-            prob_todo = cls.predict_proba(origenes[col_cls])
-        if devolver_modelos and not pseudo:
-            modelos[bloque] = {"regresor": reg, "clasificador": cls, "alphas": alphas,
+            spw = _spw(y_outbreak) if f["probabilidad"] == "clasificador_spw" else None
+            cls = _classifier(seed, spw, **extra).fit(train[col_cls], y_outbreak)
+            prob_all = cls.predict_proba(origins[col_cls])
+        if return_models and not pseudo:
+            models[block] = {"regresor": reg, "clasificador": cls, "alphas": alphas,
                                "x_reg": train[col_reg], "x_cls": train[col_cls]}
-        for paso, h in enumerate(H):
-            pred = pd.DataFrame({"ubigeo": origenes.ubigeo, "semana_inicio": origenes[f"semana_inicio_h{h}"],
-                                 "origen_cierre_mimo": origenes.origen_cierre, "casos_predichos": conteos[:, paso]})
+        for step, h in enumerate(H):
+            pred = pd.DataFrame({"ubigeo": origins.ubigeo, "semana_inicio": origins[f"semana_inicio_h{h}"],
+                                 "origen_cierre_mimo": origins.origen_cierre, "casos_predichos": counts[:, step]})
             if cls is not None:
-                pred["probabilidad_brote"] = prob_todo[:, paso]
-            test = pruebas[h].merge(pred.dropna(subset=["semana_inicio"]), on=["ubigeo", "semana_inicio"],
+                pred["probabilidad_brote"] = prob_all[:, step]
+            test = test_sets[h].merge(pred.dropna(subset=["semana_inicio"]), on=["ubigeo", "semana_inicio"],
                                     how="left", validate="one_to_one")
             if test.casos_predichos.isna().any() or not test.origen_cierre_mimo.eq(test.origen_cierre).all():
                 raise ValueError(f"Predicciones multi-salida incompletas o con origen distinto en h={h}")
             if oos:
-                pruebas_oos.setdefault(bloque, {})[h] = test[["semana_inicio", "casos_predichos", "casos_Dengue"]] \
-                    .assign(bloque_origen=bloque)
+                oos_tests.setdefault(block, {})[h] = test[["semana_inicio", "casos_predichos", "casos_Dengue"]] \
+                    .assign(bloque_origen=block)
                 if not pseudo:
-                    pendientes.append((bloque, h, test))
+                    pending.append((block, h, test))
                 continue
             if cls is None:
-                test["probabilidad_brote"] = probabilidad_binomial_negativa(
-                    test.casos_predichos, alphas[paso], test.umbral_brote_casos)
-            partes.append(eh._salida(test, bloque, test.casos_predichos, test.probabilidad_brote))
+                test["probabilidad_brote"] = negative_binomial_probability(
+                    test.casos_predichos, alphas[step], test.umbral_brote_casos)
+            parts.append(eh._output(test, block, test.casos_predichos, test.probabilidad_brote))
     if oos:
-        alfas = alfas_oos(pruebas_oos, cortes, alfas_dentro)
-        usada = alfas.set_index(["bloque", "horizonte"]).alpha_usada
-        for bloque, h, test in pendientes:
-            test["probabilidad_brote"] = probabilidad_binomial_negativa(
-                test.casos_predichos, usada[(bloque, h)], test.umbral_brote_casos)
-            partes.append(eh._salida(test, bloque, test.casos_predichos, test.probabilidad_brote))
+        alfas = oos_alphas(oos_tests, cutoffs, in_sample_alphas)
+        used = alfas.set_index(["bloque", "horizonte"]).alpha_usada
+        for block, h, test in pending:
+            test["probabilidad_brote"] = negative_binomial_probability(
+                test.casos_predichos, used[(block, h)], test.umbral_brote_casos)
+            parts.append(eh._output(test, block, test.casos_predichos, test.probabilidad_brote))
     else:
         alfas = pd.DataFrame([{"bloque": b, "horizonte": h, "alpha_dentro_muestra": a, "alpha_usada": a}
-                              for b, d in alfas_dentro.items() for h, a in d.items()])
-    salida = pd.concat(partes, ignore_index=True).assign(estrategia="E3", formulacion=formulacion, semilla=semilla)
-    salida.attrs["alfas"] = alfas.assign(dispersion=dispersion, semilla=semilla) if len(alfas) else alfas
-    return (salida, modelos) if devolver_modelos else salida
+                              for b, d in in_sample_alphas.items() for h, a in d.items()])
+    output = pd.concat(parts, ignore_index=True).assign(estrategia="E3", formulacion=formulation, semilla=seed)
+    output.attrs["alfas"] = alfas.assign(dispersion=dispersion, semilla=seed) if len(alfas) else alfas
+    return (output, models) if return_models else output
 
 
-PREDICTORES = {"E1": predecir_e1, "E3": predecir_e3}
+PREDICTORS = {"E1": predict_e1, "E3": predict_e3}
 
 
 # ---------------------------------------------------------------------------
-# Importancia por horizonte (HU0008-4) y compatibilidad
+# Importance per horizon (HU0008-4) and compatibility
 # ---------------------------------------------------------------------------
 
-def importancia_shap_por_horizonte(modelo, x: pd.DataFrame) -> pd.DataFrame:
-    """Media de |SHAP| por variable y salida de un modelo multi-salida."""
+def shap_importance_by_horizon(model, x: pd.DataFrame) -> pd.DataFrame:
+    """Mean |SHAP| per variable and output of a multi-output model."""
     import xgboost as xgb
 
-    contrib = modelo.get_booster().predict(xgb.DMatrix(x), pred_contribs=True)
+    contrib = model.get_booster().predict(xgb.DMatrix(x), pred_contribs=True)
     if contrib.ndim == 2:
         contrib = contrib[:, None, :]
-    margen = modelo.predict(x, output_margin=True).reshape(contrib.shape[0], contrib.shape[1])
-    if not np.allclose(contrib.sum(-1), margen, atol=1e-3):
+    margin = model.predict(x, output_margin=True).reshape(contrib.shape[0], contrib.shape[1])
+    if not np.allclose(contrib.sum(-1), margin, atol=1e-3):
         raise ValueError("SHAP no es aditivo respecto del margen")
-    tabla = pd.DataFrame(np.abs(contrib[:, :, :-1]).mean(0), columns=list(x.columns),
-                         index=[f"h={h}" for h in eh.HORIZONTES_ESTRATEGIA[:contrib.shape[1]]])
-    return tabla
+    table = pd.DataFrame(np.abs(contrib[:, :, :-1]).mean(0), columns=list(x.columns),
+                         index=[f"h={h}" for h in eh.STRATEGY_HORIZONS[:contrib.shape[1]]])
+    return table
 
 
-def compatibilidad_multi_salida(dispositivos: tuple[str, ...] = ("cuda", "cpu"), n: int = 2000) -> pd.DataFrame:
-    """Prueba en datos sintéticos qué funciona con ``multi_strategy="multi_output_tree"``.
+def multi_output_compatibility(devices: tuple[str, ...] = ("cuda", "cpu"), n: int = 2000) -> pd.DataFrame:
+    """Check on synthetic data what works with ``multi_strategy="multi_output_tree"``.
 
-    Para cada capacidad no basta con que la llamada no falle: se verifica una
-    propiedad numérica (aditividad de SHAP, media de Poisson, margen exacto).
+    For each capability it is not enough that the call does not fail: a numeric
+    property is verified (SHAP additivity, Poisson mean, exact margin).
     """
     import xgboost as xgb
 
@@ -372,16 +372,16 @@ def compatibilidad_multi_salida(dispositivos: tuple[str, ...] = ("cuda", "cpu"),
     x = rng.normal(size=(n, 6))
     y = rng.poisson(np.exp(0.5 * x[:, :3])).astype(float)
     b = (y > 1).astype(int)
-    filas = []
+    rows = []
 
-    def probar(capacidad, funcion):
-        for d in dispositivos:
+    def trial(capability, function):
+        for d in devices:
             p = dict(tree_method="hist", multi_strategy="multi_output_tree", n_estimators=40, max_depth=3, device=d)
             try:
-                ok, detalle = funcion(p)
-            except Exception as error:  # noqa: BLE001 - se reporta en la tabla
-                ok, detalle = False, f"{type(error).__name__}: {str(error).splitlines()[0][:120]}"
-            filas.append({"capacidad": capacidad, "dispositivo": d, "funciona": bool(ok), "verificacion": detalle})
+                ok, detail = function(p)
+            except Exception as error:  # noqa: BLE001 - reported in the table
+                ok, detail = False, f"{type(error).__name__}: {str(error).splitlines()[0][:120]}"
+            rows.append({"capacidad": capability, "dispositivo": d, "funciona": bool(ok), "verificacion": detail})
 
     def poisson(p):
         m = XGBRegressor(objective="count:poisson", **p).fit(x, y)
@@ -389,29 +389,29 @@ def compatibilidad_multi_salida(dispositivos: tuple[str, ...] = ("cuda", "cpu"),
         return err < 0.05, f"media predicha − real por salida ≤ {err:.4f}"
 
     def tweedie(p):
-        m = XGBRegressor(objective="reg:tweedie", tweedie_variance_power=POTENCIA_TWEEDIE, **p).fit(x, y)
+        m = XGBRegressor(objective="reg:tweedie", tweedie_variance_power=TWEEDIE_POWER, **p).fit(x, y)
         return m.predict(x).shape == y.shape, f"salida {m.predict(x).shape}"
 
-    def margen(p):
-        mg = np.log(y + EPS_MARGEN)
+    def margin(p):
+        mg = np.log(y + MARGIN_EPS)
         m = XGBRegressor(objective="count:poisson", **p).fit(x, y, base_margin=mg)
-        dif = m.predict(x, base_margin=mg, output_margin=True) - m.predict(x, base_margin=np.zeros_like(mg), output_margin=True)
-        err = float(np.abs(dif - mg).max())
+        diff = m.predict(x, base_margin=mg, output_margin=True) - m.predict(x, base_margin=np.zeros_like(mg), output_margin=True)
+        err = float(np.abs(diff - mg).max())
         return err < 1e-4, f"base_margin (n, 3) aplicado por columna; error {err:.1e}; (n,) se rechaza"
 
-    def importancia(p):
+    def importance(p):
         m = XGBRegressor(objective="count:poisson", importance_type="gain", **p).fit(x, y)
         return m.feature_importances_.shape == (6,), "feature_importances_ es agregada (una por variable, no por salida)"
 
     def shap(p):
         m = XGBRegressor(objective="count:poisson", **p).fit(x, y)
-        t = importancia_shap_por_horizonte(m, pd.DataFrame(x, columns=[f"x{i}" for i in range(6)]))
-        propia = all(t.iloc[i].idxmax() == f"x{i}" for i in range(3))
-        return propia, "pred_contribs (n, 3, p+1), aditivo por salida; detecta la variable propia de cada salida"
+        t = shap_importance_by_horizon(m, pd.DataFrame(x, columns=[f"x{i}" for i in range(6)]))
+        own = all(t.iloc[i].idxmax() == f"x{i}" for i in range(3))
+        return own, "pred_contribs (n, 3, p+1), aditivo por salida; detecta la variable propia de cada salida"
 
     def shap_cls(p):
         m = XGBClassifier(objective="binary:logistic", **p).fit(x, b)
-        importancia_shap_por_horizonte(m, pd.DataFrame(x, columns=[f"x{i}" for i in range(6)]))
+        shap_importance_by_horizon(m, pd.DataFrame(x, columns=[f"x{i}" for i in range(6)]))
         return True, "clasificador multietiqueta: SHAP aditivo por salida"
 
     def spw(p):
@@ -419,175 +419,176 @@ def compatibilidad_multi_salida(dispositivos: tuple[str, ...] = ("cuda", "cpu"),
         q5 = XGBClassifier(objective="binary:logistic", scale_pos_weight=5.0, **p).fit(x, b).predict_proba(x).mean()
         return q5 > q1, f"un solo valor para las 3 salidas; prob. media {q1:.3f} → {q5:.3f}"
 
-    probar("count:poisson", poisson)
-    probar("reg:tweedie", tweedie)
-    probar("base_margin con varias salidas (S3)", margen)
-    probar("importancia de variables (gain)", importancia)
-    probar("SHAP por horizonte, regresor", shap)
-    probar("SHAP por horizonte, clasificador", shap_cls)
-    probar("scale_pos_weight (S5)", spw)
-    for d in dispositivos:
-        filas.append({"capacidad": "calibrador por salida (S5/S4)", "dispositivo": d, "funciona": True,
+    trial("count:poisson", poisson)
+    trial("reg:tweedie", tweedie)
+    trial("base_margin con varias salidas (S3)", margin)
+    trial("importancia de variables (gain)", importance)
+    trial("SHAP por horizonte, regresor", shap)
+    trial("SHAP por horizonte, clasificador", shap_cls)
+    trial("scale_pos_weight (S5)", spw)
+    for d in devices:
+        rows.append({"capacidad": "calibrador por salida (S5/S4)", "dispositivo": d, "funciona": True,
                       "verificacion": "posterior al modelo: Platt/isotónica por horizonte en protocolo_arquitectura"})
-    return pd.DataFrame(filas)
+    return pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------
-# Selección preregistrada de formulación y par estrategia + formulación
+# Preregistered choice of formulation and of strategy + formulation pair
 # ---------------------------------------------------------------------------
 
-def clave(estrategia: str, formulacion: str) -> str:
-    """Nombre de un par estrategia + formulación (``"E3|S4_s2"``)."""
-    return f"{estrategia}|{formulacion}"
+def pair_key(strategy: str, formulation: str) -> str:
+    """Name of a strategy + formulation pair (``"E3|S4_s2"``)."""
+    return f"{strategy}|{formulation}"
 
 
-def modelos_par(nombre: str) -> int:
-    """Modelos que se entrenan y despliegan para un par."""
-    return MODELOS[tuple(nombre.split("|"))]
+def pair_models(name: str) -> int:
+    """Models trained and deployed for a pair."""
+    return MODELS[tuple(name.split("|"))]
 
 
-def elegir(evaluaciones: dict[str, dict], candidatas: list[str], referencia: str,
-           coherencia: pd.DataFrame) -> dict:
-    """Regla preregistrada: frente a la referencia, adopción y desempate.
+def choose(evaluations: dict[str, dict], candidates: list[str], reference: str,
+           coherence: pd.DataFrame) -> dict:
+    """Preregistered rule: against the reference, adoption and tie-break.
 
-    1. Cada candidata se compara con la referencia (``decidir`` con medianas
-       y rangos de semillas). Es adoptable si gana en algún horizonte y no
-       pierde en ninguno.
-    2. Si hay varias adoptables, se comparan entre sí en ambos sentidos. Se
-       descarta la que **pierde** en algún horizonte frente a otra adoptable o
-       a la que otra **gana**. Si queda más de una, o si todas se descartan
-       mutuamente (cada una mejor en horizontes distintos), desempate.
-    3. Si no hay adoptables, desempate entre la referencia y las empatadas.
-    Desempate: coherencia entre horizontes y luego número de modelos.
+    1. Each candidate is compared with the reference (``decidir`` with seed
+       medians and ranges). It is adoptable if it wins in some horizon and loses
+       in none.
+    2. If there are several adoptable ones, they are compared with each other in
+       both directions. The one that **loses** in some horizon against another
+       adoptable one, or that another one **beats**, is discarded. If more than one
+       remains, or if all discard each other (each better in different
+       horizons), tie-break.
+    3. If none is adoptable, tie-break between the reference and the tied ones.
+    Tie-break: coherence across horizons, then number of models.
     """
-    veredictos = pd.concat([eh.decidir_frente_a_referencia(evaluaciones, c, referencia) for c in candidatas],
+    verdicts = pd.concat([eh.decide_against_reference(evaluations, c, reference) for c in candidates],
                            ignore_index=True)
-    adopcion = eh.adopcion(veredictos)
-    adoptables = adopcion.query("resultado == 'adoptable'").candidata.tolist()
-    modelos = {n: modelos_par(n) for n in [referencia, *candidatas]}
-    cruces = pd.DataFrame()
-    if len(adoptables) > 1:
-        cruces = pd.concat([eh.decidir_frente_a_referencia(evaluaciones, a, b)
-                            for a in adoptables for b in adoptables if a != b], ignore_index=True)
-        vencidas = (set(cruces.loc[cruces.veredicto.eq("gana"), "referencia"])
-                    | set(cruces.loc[cruces.veredicto.eq("pierde"), "candidata"]))
-        finalistas = [a for a in adoptables if a not in vencidas] or adoptables
+    adoption = eh.adoption(verdicts)
+    adoptable = adoption.query("resultado == 'adoptable'").candidata.tolist()
+    models = {n: pair_models(n) for n in [reference, *candidates]}
+    crossings = pd.DataFrame()
+    if len(adoptable) > 1:
+        crossings = pd.concat([eh.decide_against_reference(evaluations, a, b)
+                            for a in adoptable for b in adoptable if a != b], ignore_index=True)
+        expired = (set(crossings.loc[crossings.veredicto.eq("gana"), "referencia"])
+                    | set(crossings.loc[crossings.veredicto.eq("pierde"), "candidata"]))
+        finalists = [a for a in adoptable if a not in expired] or adoptable
     else:
-        finalistas = adoptables
-    if len(finalistas) == 1:
-        decision = {"elegida": finalistas[0], "criterio": "gana según la regla preregistrada"}
-    elif finalistas:
-        decision = {**eh.desempatar(finalistas, coherencia, modelos=modelos), "empatadas": finalistas}
+        finalists = adoptable
+    if len(finalists) == 1:
+        decision = {"elegida": finalists[0], "criterio": "gana según la regla preregistrada"}
+    elif finalists:
+        decision = {**eh.break_tie(finalists, coherence, models=models), "empatadas": finalists}
     else:
-        empatadas = [referencia, *adopcion.query("resultado == 'empate'").candidata]
-        decision = {**eh.desempatar(empatadas, coherencia, modelos=modelos), "empatadas": empatadas}
-    return {"veredictos": veredictos, "adopcion": adopcion, "cruces": cruces, "decision": decision}
+        tied = [reference, *adoption.query("resultado == 'empate'").candidata]
+        decision = {**eh.break_tie(tied, coherence, models=models), "empatadas": tied}
+    return {"veredictos": verdicts, "adopcion": adoption, "cruces": crossings, "decision": decision}
 
 
-def comparar_conteos(medianas: pd.DataFrame, rangos: pd.DataFrame, estrategia: str,
-                     bloques=("temporada_2022", "temporada_2023")) -> pd.DataFrame:
-    """Razón MAE de cada modelo de conteo frente a ``log1p`` (informativo, no decide).
+def compare_counts(medians: pd.DataFrame, ranges: pd.DataFrame, strategy: str,
+                     blocks=("temporada_2022", "temporada_2023")) -> pd.DataFrame:
+    """MAE ratio of each count model against ``log1p`` (informative, it does not decide).
 
-    Las formulaciones S2 y S3 solo cambian los casos, así que la regla de
-    alerta las deja empatadas con S1; esta tabla muestra si su conteo mejora
-    más que el rango de semillas en ambas temporadas de selección.
+    Formulations S2 and S3 only change the cases, so the alert rule leaves them
+    tied with S1; this table shows whether their count improves by more than the
+    seed range in both selection seasons.
     """
-    conteos = {"log1p": "S1", "poisson": "S2_pois", "tweedie": "S2_twd", "poisson_margen": "S3"}
-    ref = medianas[medianas.par.eq(clave(estrategia, "S1"))].set_index(["horizonte", "bloque"])
-    filas = []
-    for conteo, f in conteos.items():
-        par = clave(estrategia, f)
-        m = medianas[medianas.par.eq(par)].set_index(["horizonte", "bloque"])
-        r = rangos[rangos.par.isin([par, clave(estrategia, "S1")])].groupby(["horizonte", "bloque"]).razon_mae.max()
-        for h in eh.HORIZONTES_ESTRATEGIA:
-            delta = {b: m.at[(h, b), "razon_mae"] - ref.at[(h, b), "razon_mae"] for b in bloques}
-            filas.append({"estrategia": estrategia, "conteo": conteo, "horizonte": h,
-                          **{f"razon_mae_{b}": m.at[(h, b), "razon_mae"] for b in bloques},
-                          **{f"razon_rmse_{b}": m.at[(h, b), "razon_rmse"] for b in bloques},
-                          "mejora_en_ambas": all(delta[b] < -r.at[(h, b)] for b in bloques),
-                          "empeora_en_alguna": any(delta[b] > r.at[(h, b)] for b in bloques),
+    counts = {"log1p": "S1", "poisson": "S2_pois", "tweedie": "S2_twd", "poisson_margen": "S3"}
+    ref = medians[medians.par.eq(pair_key(strategy, "S1"))].set_index(["horizonte", "bloque"])
+    rows = []
+    for count, f in counts.items():
+        pair = pair_key(strategy, f)
+        m = medians[medians.par.eq(pair)].set_index(["horizonte", "bloque"])
+        r = ranges[ranges.par.isin([pair, pair_key(strategy, "S1")])].groupby(["horizonte", "bloque"]).razon_mae.max()
+        for h in eh.STRATEGY_HORIZONS:
+            delta = {b: m.at[(h, b), "razon_mae"] - ref.at[(h, b), "razon_mae"] for b in blocks}
+            rows.append({"estrategia": strategy, "conteo": count, "horizonte": h,
+                          **{f"razon_mae_{b}": m.at[(h, b), "razon_mae"] for b in blocks},
+                          **{f"razon_rmse_{b}": m.at[(h, b), "razon_rmse"] for b in blocks},
+                          "mejora_en_ambas": all(delta[b] < -r.at[(h, b)] for b in blocks),
+                          "empeora_en_alguna": any(delta[b] > r.at[(h, b)] for b in blocks),
                           "cumple_085_en_ambas": all(m.at[(h, b), "razon_mae"] <= 0.85 and m.at[(h, b), "razon_rmse"] <= 0.85
-                                                     for b in bloques)})
-    return pd.DataFrame(filas)
+                                                     for b in blocks)})
+    return pd.DataFrame(rows)
 
 
-def figura_fiabilidad_formulaciones(fiabilidades: dict[str, pd.DataFrame], titulo: str):
-    """Curvas de fiabilidad (probabilidad calibrada) por formulación, horizonte y temporada."""
+def formulation_reliability_figure(reliabilities: dict[str, pd.DataFrame], title: str):
+    """Reliability curves (calibrated probability) per formulation, horizon and season."""
     import matplotlib.pyplot as plt
 
-    nombres = list(fiabilidades)
-    horizontes = eh.HORIZONTES_ESTRATEGIA
-    fig, ejes = plt.subplots(len(nombres), len(horizontes), figsize=(4 * len(horizontes), 2.6 * len(nombres)),
+    names = list(reliabilities)
+    horizons = eh.STRATEGY_HORIZONS
+    fig, axes = plt.subplots(len(names), len(horizons), figsize=(4 * len(horizons), 2.6 * len(names)),
                              squeeze=False, sharex=True, sharey=True)
-    for i, nombre in enumerate(nombres):
-        t = fiabilidades[nombre]
-        for j, h in enumerate(horizontes):
-            ax = ejes[i, j]
+    for i, name in enumerate(names):
+        t = reliabilities[name]
+        for j, h in enumerate(horizons):
+            ax = axes[i, j]
             ax.plot([0, 1], [0, 1], color="grey", linestyle="--", linewidth=0.8)
-            for bloque in ("temporada_2022", "temporada_2023", "temporada_2024"):
-                g = t[t.horizonte.eq(h) & t.bloque.eq(bloque)]
+            for block in ("temporada_2022", "temporada_2023", "temporada_2024"):
+                g = t[t.horizonte.eq(h) & t.bloque.eq(block)]
                 ax.plot(g.prob_media, g.frecuencia_observada, marker="o", markersize=3,
-                        label=bloque.replace("temporada_", ""))
-            ax.set_title(f"{nombre}, h={h}", fontsize=9)
+                        label=block.replace("temporada_", ""))
+            ax.set_title(f"{name}, h={h}", fontsize=9)
             if j == 0:
                 ax.set_ylabel("Frecuencia observada")
-            if i == len(nombres) - 1:
+            if i == len(names) - 1:
                 ax.set_xlabel("Probabilidad calibrada")
-    ejes[0, 0].legend(fontsize=7)
-    fig.suptitle(titulo)
+    axes[0, 0].legend(fontsize=7)
+    fig.suptitle(title)
     fig.tight_layout()
     return fig
 
 
 # ---------------------------------------------------------------------------
-# Diagnósticos complementarios de S4
+# Complementary diagnostics of S4
 # ---------------------------------------------------------------------------
 
-def probabilidad_poisson(mu, umbral_brote) -> np.ndarray:
-    """P(casos ≥ k) con casos ~ Poisson(μ): límite de la binomial negativa con α → 0."""
-    return stats.poisson.sf(umbral_conteo(umbral_brote) - 1, np.clip(np.asarray(mu, float), 1e-9, None))
+def poisson_probability(mu, outbreak_threshold) -> np.ndarray:
+    """P(cases >= k) with cases ~ Poisson(mu): the negative binomial limit as alpha -> 0."""
+    return stats.poisson.sf(count_threshold(outbreak_threshold) - 1, np.clip(np.asarray(mu, float), 1e-9, None))
 
 
-def recall_por_tipo_semana(datos: pd.DataFrame, serie: pd.DataFrame, alerta: str = "alerta_050",
-                           semanas_inicio: int = 2) -> pd.DataFrame:
-    """Recall en semanas ``brote`` de brotes nuevos frente a brotes en curso.
+def recall_by_week_type(data: pd.DataFrame, series: pd.DataFrame, alert: str = "alerta_050",
+                           onset_weeks: int = 2) -> pd.DataFrame:
+    """Recall on ``brote`` weeks of new outbreaks against ongoing outbreaks.
 
-    «Brote nuevo»: las primeras ``semanas_inicio`` semanas de un episodio con
-    inicio limpio (sin brote en las 8 semanas previas). «En curso»: el resto
-    de semanas ``brote``. Separa anticipar brotes nuevos de acertar más en
-    brotes que ya empezaron.
+    "New outbreak": the first ``onset_weeks`` weeks of an episode with a clean
+    onset (no outbreak in the previous 8 weeks). "Ongoing": the rest of the
+    ``brote`` weeks. It separates anticipating new outbreaks from doing better
+    on outbreaks that already started.
     """
     from src.modeling import diagnostico_arquitectura as diag
 
-    eps = diag.episodios(serie)
-    limpios = eps[eps.semanas_previas_sin_brote >= diag.SIN_BROTE_PREVIO]
-    nuevas = set()
-    for ep in limpios.itertuples(index=False):
-        for k in range(semanas_inicio):
-            nuevas.add((ep.ubigeo, ep.inicio + pd.Timedelta(weeks=k)))
-    pos = datos[datos.brote.eq(1) & datos.probabilidad_calibrada.notna()].copy()
-    pos["tipo"] = ["brote_nuevo" if (u, s) in nuevas else "en_curso" for u, s in zip(pos.ubigeo, pos.semana_inicio)]
-    return (pos.groupby(["horizonte", "bloque", "tipo"])[alerta]
+    eps = diag.episodios(series)
+    clean = eps[eps.semanas_previas_sin_brote >= diag.SIN_BROTE_PREVIO]
+    new_columns = set()
+    for ep in clean.itertuples(index=False):
+        for k in range(onset_weeks):
+            new_columns.add((ep.ubigeo, ep.inicio + pd.Timedelta(weeks=k)))
+    pos = data[data.brote.eq(1) & data.probabilidad_calibrada.notna()].copy()
+    pos["tipo"] = ["brote_nuevo" if (u, s) in new_columns else "en_curso" for u, s in zip(pos.ubigeo, pos.semana_inicio)]
+    return (pos.groupby(["horizonte", "bloque", "tipo"])[alert]
             .agg(semanas="size", recall="mean").reset_index())
 
 
 # ---------------------------------------------------------------------------
-# Cumplimiento de la HU0007-4 (línea base; no es criterio de decisión)
+# HU0007-4 compliance (baseline; not a decision criterion)
 # ---------------------------------------------------------------------------
 
-UMBRALES_HU0007_4 = {"precision_050": 0.60, "recall_050": 0.80, "f1_050": 0.70,
+HU0007_4_THRESHOLDS = {"precision_050": 0.60, "recall_050": 0.80, "f1_050": 0.70,
                      "razon_mae": 0.85, "razon_rmse": 0.85}
 
 
-def cumplimiento_hu0007_4(metricas: pd.DataFrame) -> pd.DataFrame:
-    """Marca, por horizonte y bloque, qué umbrales de aceptación de la HU0007-4 se cumplen.
+def hu0007_4_compliance(metrics: pd.DataFrame) -> pd.DataFrame:
+    """Flag, per horizon and block, which HU0007-4 acceptance thresholds are met.
 
-    Clasificación: P ≥ 0,60, R ≥ 0,80 y F1 ≥ 0,70 con p ≥ 0,50. Regresión:
-    MAE y RMSE ≤ 85 % de los de la persistencia.
+    Classification: P >= 0.60, R >= 0.80 and F1 >= 0.70 with p >= 0.50.
+    Regression: MAE and RMSE <= 85 % of the persistence ones.
     """
-    salida = metricas[["horizonte", "bloque", *UMBRALES_HU0007_4]].copy()
-    for m, u in UMBRALES_HU0007_4.items():
-        salida[f"cumple_{m}"] = salida[m].le(u) if m.startswith("razon") else salida[m].ge(u)
-    salida["cumple_clasificacion"] = salida[["cumple_precision_050", "cumple_recall_050", "cumple_f1_050"]].all(axis=1)
-    salida["cumple_regresion"] = salida[["cumple_razon_mae", "cumple_razon_rmse"]].all(axis=1)
-    return salida
+    output = metrics[["horizonte", "bloque", *HU0007_4_THRESHOLDS]].copy()
+    for m, u in HU0007_4_THRESHOLDS.items():
+        output[f"cumple_{m}"] = output[m].le(u) if m.startswith("razon") else output[m].ge(u)
+    output["cumple_clasificacion"] = output[["cumple_precision_050", "cumple_recall_050", "cumple_f1_050"]].all(axis=1)
+    output["cumple_regresion"] = output[["cumple_razon_mae", "cumple_razon_rmse"]].all(axis=1)
+    return output

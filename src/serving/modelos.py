@@ -13,8 +13,8 @@ from sqlalchemy import select
 from xgboost import __version__ as XGBOOST_VERSION
 
 from src.db.modelos import ImportanciaVariable, VersionModelo
-from denguekay.model.device import configuracion_xgboost
-from denguekay.model.train import PARAMETROS_BASE, ajustar_modelos
+from denguekay.model.device import xgboost_settings
+from denguekay.model.train import BASE_PARAMS, fit_models
 from src.modeling.validacion_temporal_compacta import variantes_compactas
 from src.serving.artefactos import serializar_booster, sha256_bytes
 from src.serving.protocolo import metricas_de_variante
@@ -48,7 +48,7 @@ def entrenar_versiones_servicio(protocolo, horizontes, cfg, corte):
         train = fuente.loc[(fuente.semana_inicio + pd.Timedelta(days=6)).le(pd.Timestamp(corte))].copy()
         if train.empty or train.brote.nunique() != 2:
             raise ValueError("El ajuste final requiere etiquetas cerradas y ambas clases")
-        pares = {nombre: ajustar_modelos(train, variantes_compactas(h)[nombre]) for nombre in set(cfg.variantes.values())}
+        pares = {nombre: fit_models(train, variantes_compactas(h)[nombre]) for nombre in set(cfg.variantes.values())}
         evaluacion = protocolo.reporte
         for tarea, nombre in cfg.variantes.items():
             modelo = pares[nombre][1 if tarea == "clasificacion" else 0]
@@ -56,14 +56,14 @@ def entrenar_versiones_servicio(protocolo, horizontes, cfg, corte):
             artefacto = serializar_booster(modelo)
             datos = {
                 "tarea": tarea, "horizonte": h, "algoritmo": "xgboost",
-                "variables": variantes_compactas(h)[nombre], "hiperparametros": dict(PARAMETROS_BASE),
+                "variables": variantes_compactas(h)[nombre], "hiperparametros": dict(BASE_PARAMS),
                 "metricas": metricas,
                 "umbral_probabilidad": (metricas["bloques"]["calendario_2025"]["clasificacion"]["umbral_probabilidad"]
                                         if tarea == "clasificacion" else None),
                 "sha256_dataset": evaluacion["horizontes"][str(h)]["sha256_gold"],
                 "sha256_artefacto": sha256_bytes(artefacto),
                 "reproducibilidad": {
-                    "variante": nombre, "device": configuracion_xgboost()["device"],
+                    "variante": nombre, "device": xgboost_settings()["device"],
                     "version_xgboost": XGBOOST_VERSION,
                     "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}",
                     "entrenamiento_inicio": str(train.semana_inicio.min().date()),
@@ -138,7 +138,7 @@ def guardar_versiones(sesion, preparadas, mlflow_run_id, criterios, almacenamien
 
 def reporte_servicio(preparadas, protocolo, corte):
     """Forma estándar para MLflow; las métricas temporales son importadas, no de este ajuste."""
-    reporte = {"experimento": "versiones_de_servicio", "parametros": dict(PARAMETROS_BASE),
+    reporte = {"experimento": "versiones_de_servicio", "parametros": dict(BASE_PARAMS),
                "version_xgboost": XGBOOST_VERSION, "fecha_corte_datos": str(corte),
                "device_evaluacion_importada": protocolo.reporte["parametros"]["device"],
                "evaluacion_generada_en_esta_corrida": False,

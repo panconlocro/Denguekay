@@ -19,23 +19,23 @@ HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI
 
 class TestConfiguracion(unittest.TestCase):
     def test_constante_coherente(self):
-        v1, c = cf.CONFIGURACION_2026_V1, cf.CONFIGURACION_2026
+        v1, c = cf.CONFIG_2026_V1, cf.CONFIG_2026
         self.assertEqual(len(v1["columnas"]), 9)
-        self.assertEqual(c["columnas"], [*v1["columnas"], *cf.COLUMNAS_A3])
+        self.assertEqual(c["columnas"], [*v1["columnas"], *cf.A3_COLUMNS])
         self.assertEqual({k: v for k, v in c.items() if k not in ("columnas", "matriz", "version", "decisiones",
                                                                   "fecha_congelamiento", "filas_excluidas")},
                          {k: v for k, v in v1.items() if k not in ("columnas", "matriz", "decisiones",
                                                                    "fecha_congelamiento")})
-        self.assertEqual(c["columnas"][:6], eh.GENERICAS)
-        self.assertEqual(cf.HISTORIAL["V2"]["estado"], "vigente")
+        self.assertEqual(c["columnas"][:6], eh.GENERIC)
+        self.assertEqual(cf.HISTORY["V2"]["estado"], "vigente")
         # Huellas con la definición original (configuración + código): históricas desde la reestructuración (D1).
         self.assertEqual(cf.HISTORICAL_FINGERPRINTS["V1"]["sha256"],
                          "88ed2a43b0171a0878b99122b70109be61b27d5d4d29a2b93eae55066fd8f945")
         self.assertEqual(cf.HISTORICAL_FINGERPRINTS["V2"]["sha256"],
                          "c36d7a80d1896a203874bf271bd78f1078850e1faa381e2b17e9ba04b07d5569")
         self.assertEqual({h["commit"] for h in cf.HISTORICAL_FINGERPRINTS.values()}, {"d6bd0be", "424a148"})
-        self.assertIn(c["formulacion"], sp.FORMULACIONES)
-        self.assertIn(c["dispersion"], sp.DISPERSIONES)
+        self.assertIn(c["formulacion"], sp.FORMULATIONS)
+        self.assertIn(c["dispersion"], sp.DISPERSIONS)
         self.assertEqual(c["hiperparametros"], hp.BASE)
         self.assertEqual(c["semilla_despliegue"], 17)
         for valores in cf.REFERENCE_FINGERPRINTS.values():
@@ -47,7 +47,7 @@ class TestConfiguracion(unittest.TestCase):
                           "bloque": ["b"] * 2, "casos_predichos": [1.5, 0.0], "probabilidad_brote": [0.25, 0.0]})
         h = cf.fingerprint(p)
         self.assertEqual(h, cf.fingerprint(p.iloc[::-1]))  # orden canónico
-        self.assertNotEqual(h, cf.fingerprint(p, cf.CONFIGURACION_2026_V1))
+        self.assertNotEqual(h, cf.fingerprint(p, cf.CONFIG_2026_V1))
         self.assertNotEqual(h, cf.fingerprint(p.assign(casos_predichos=[1.5, 1e-300])))  # bit a bit
         self.assertEqual(cf.setup_key({"device": "cpu", "n_jobs": 2}), "device=cpu,n_jobs=2")
         self.assertEqual(cf.setup_key({"device": "cuda", "n_jobs": 12}), "device=cuda")
@@ -63,22 +63,22 @@ class TestConfiguracion(unittest.TestCase):
 
 class TestDiccionario(unittest.TestCase):
     def test_cubre_exactamente_las_columnas_finales(self):
-        self.assertEqual(dv.diccionario(cf.CONFIGURACION_2026_V1["columnas"]).variable.tolist(),
-                         cf.CONFIGURACION_2026_V1["columnas"])
-        tabla = dv.diccionario(cf.CONFIGURACION_2026["columnas"])
-        self.assertEqual(tabla.variable.tolist(), cf.CONFIGURACION_2026["columnas"])
+        self.assertEqual(dv.dictionary(cf.CONFIG_2026_V1["columnas"]).variable.tolist(),
+                         cf.CONFIG_2026_V1["columnas"])
+        tabla = dv.dictionary(cf.CONFIG_2026["columnas"])
+        self.assertEqual(tabla.variable.tolist(), cf.CONFIG_2026["columnas"])
         campos = ["fuente", "definicion", "ventana", "transformacion", "tipo", "nulos", "por_que", "evidencia",
                   "test_no_fuga"]
         self.assertFalse(tabla[campos].isna().any().any())
         self.assertEqual(tabla.columna_gold_h2.iloc[0], "casos_lag_2")
         with self.assertRaises(ValueError):
-            dv.diccionario(["inventada"])
+            dv.dictionary(["inventada"])
 
     def test_estadisticas_y_markdown(self):
         o = pd.DataFrame({"temporada": [2017, 2017, 2018], "hist_lag_a": [0.0, 4.0, None]})
-        e = dv.estadisticas(o, ["hist_lag_a"]).set_index("temporada")
+        e = dv.statistics(o, ["hist_lag_a"]).set_index("temporada")
         self.assertEqual((e.loc[2017, "maximo"], e.loc[2017, "nulos"], e.loc[2018, "nulos"]), (4.0, 0, 1))
-        texto = dv.a_markdown(dv.diccionario(["hist_lag_a"]), e.reset_index(), cf.CONFIGURACION_2026)
+        texto = dv.to_markdown(dv.dictionary(["hist_lag_a"]), e.reset_index(), cf.CONFIG_2026)
         self.assertIn("## `hist_lag_a`", texto)
         self.assertIn("margen de persistencia", texto)
 
@@ -96,23 +96,23 @@ class TestReproduccion(unittest.TestCase):
         cls.ins = fh.insumos(cls.panel, cls.regla)
 
     def _comprobar(self, nombre, configuracion, ruta):
-        from denguekay.model.device import configuracion_xgboost
+        from denguekay.model.device import xgboost_settings
 
-        o = cf.origenes(self.panel, self.ins, self.regla, configuracion=configuracion)
-        pred = cf.predecir(self.ins["matrices"], o, configuracion=configuracion)
+        o = cf.origins(self.panel, self.ins, self.regla, configuration=configuracion)
+        pred = cf.predict(self.ins["matrices"], o, configuration=configuracion)
         guardadas = pd.read_csv(ruta, dtype={"ubigeo": "string"})
-        r = cf.coincide_con_guardadas(pred, guardadas[guardadas.semilla.eq(cf.SEMILLA_DESPLIEGUE)])
+        r = cf.matches_saved(pred, guardadas[guardadas.semilla.eq(cf.DEPLOYMENT_SEED)])
         self.assertTrue(r["coincide"], r)
         # Huella de comportamiento: misma configuración y predicciones idénticas bit a bit.
-        referencia = cf.REFERENCE_FINGERPRINTS.get(cf.setup_key(configuracion_xgboost()))
+        referencia = cf.REFERENCE_FINGERPRINTS.get(cf.setup_key(xgboost_settings()))
         if referencia is not None:
             self.assertEqual(cf.fingerprint(pred, configuracion), referencia[nombre])
 
     def test_v1_reproduce_la_fase_4_con_la_semilla_de_despliegue(self):
-        self._comprobar("V1", cf.CONFIGURACION_2026_V1, GUARDADAS)
+        self._comprobar("V1", cf.CONFIG_2026_V1, GUARDADAS)
 
     def test_v2_reproduce_el_complemento_con_la_semilla_de_despliegue(self):
-        self._comprobar("V2", cf.CONFIGURACION_2026, GUARDADAS_V2)
+        self._comprobar("V2", cf.CONFIG_2026, GUARDADAS_V2)
 
 
 if __name__ == "__main__":

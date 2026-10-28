@@ -78,7 +78,7 @@ class TestContraGold(unittest.TestCase):
 
     def test_igual_al_csv_de_gold(self):
         """Contra el CSV de gold: k de S4 y etiqueta idénticos; el valor, salvo el redondeo de la escritura (<1e-12)."""
-        from denguekay.model.probabilistic_output import umbral_conteo
+        from denguekay.model.probabilistic_output import count_threshold
 
         for h in (2, 4):
             with self.subTest(h=h):
@@ -86,7 +86,7 @@ class TestContraGold(unittest.TestCase):
                                    usecols=["ubigeo", "anio", "semana", "casos_Dengue", "umbral_brote_casos", "brote"])
                 u = self._umbral(gold).to_numpy()
                 np.testing.assert_allclose(u, gold.umbral_brote_casos.to_numpy(), rtol=0, atol=1e-12)
-                np.testing.assert_array_equal(umbral_conteo(u), umbral_conteo(gold.umbral_brote_casos))
+                np.testing.assert_array_equal(count_threshold(u), count_threshold(gold.umbral_brote_casos))
                 brote = ((gold.casos_Dengue.to_numpy() > u) & (gold.casos_Dengue.to_numpy() >= self.regla["minimo_casos"]))
                 np.testing.assert_array_equal(brote.astype(int), gold.brote.to_numpy(int))
 

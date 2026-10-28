@@ -14,7 +14,7 @@ from sqlalchemy import select
 from src.db.modelos import (Alerta, Distrito, Ejecucion, ObservacionSemanal, Prediccion,
                             SemanaEpidemiologica, VersionModelo, ahora_utc)
 from src.db.sesion import upsert
-from denguekay.model.future_rows import construir_filas_futuras
+from denguekay.model.future_rows import build_future_rows
 from src.modeling.sociodemografia import DIRECTAS
 from src.serving import parametros
 from src.serving.artefactos import predecir_con_version
@@ -90,9 +90,9 @@ def vectores_desde_bd(sesion, horizonte, id_semana_corte, columnas):
     if panel.empty:
         raise InferenciaNoDisponible("No hay observaciones cerradas al corte solicitado")
     try:
-        filas, motivos = construir_filas_futuras(panel, horizonte, columnas=columnas,
-                                                 fecha_corte=pd.Timestamp(corte.fecha_fin),
-                                                 referencia=referencia_desde_bd(sesion))
+        filas, motivos = build_future_rows(panel, horizonte, columns=columnas,
+                                                 cutoff_date=pd.Timestamp(corte.fecha_fin),
+                                                 reference=referencia_desde_bd(sesion))
     except ValueError as error:
         raise InferenciaNoDisponible(str(error)) from error
     return filas, {m["ubigeo"]: m["motivo"] for m in motivos}

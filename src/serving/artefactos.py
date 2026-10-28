@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import xgboost as xgb
 
-from denguekay.model.train import conteos_desde_log1p
+from denguekay.model.train import counts_from_log1p
 
 
 class ArtefactoInvalido(ValueError):
@@ -71,7 +71,7 @@ def predecir_con_version(version, vectores, almacenamiento):
     if not np.isfinite(salida).all():
         raise ValueError("El modelo produjo una predicción no finita")
     if version.tarea == "regresion":
-        return conteos_desde_log1p(salida)
+        return counts_from_log1p(salida)
     if ((salida < 0) | (salida > 1)).any():
         raise ValueError("El clasificador produjo probabilidades inválidas")
     return salida

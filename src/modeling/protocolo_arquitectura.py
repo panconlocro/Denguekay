@@ -29,7 +29,7 @@ from src.modeling import diagnostico_arquitectura as diag
 from src.modeling.evaluate import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos, seleccionar_umbral_f1,
 )
-from denguekay.model.train import MINIMO_CASOS_BROTE
+from denguekay.model.train import MIN_OUTBREAK_CASES
 from src.serving.riesgo import NIVELES
 from denguekay.data.validation.forecast_contract import KEY
 
@@ -164,9 +164,9 @@ def agregar_alertas_protocolo(datos: pd.DataFrame) -> pd.DataFrame:
                                        if "probabilidad_calibrada" in salida else False)
     if "casos_predichos" in salida:
         salida["alerta_regresion"] = alertas_desde_conteos(
-            salida.casos_predichos.to_numpy(float), limite, MINIMO_CASOS_BROTE)
+            salida.casos_predichos.to_numpy(float), limite, MIN_OUTBREAK_CASES)
     salida["alerta_persistencia"] = alertas_desde_conteos(
-        salida.persistencia.to_numpy(float), limite, MINIMO_CASOS_BROTE)
+        salida.persistencia.to_numpy(float), limite, MIN_OUTBREAK_CASES)
     return salida
 
 
@@ -196,14 +196,14 @@ def metricas_por_bloque(datos: pd.DataFrame) -> pd.DataFrame:
         if "alerta_regresion" in g:
             m = metricas_alerta(y, g.alerta_regresion.to_numpy(bool))
             fila.update({f"{k}_regresion": m[k] for k in ("precision", "recall", "f1")})
-        limite = np.maximum(g.umbral_brote_casos.to_numpy(float), MINIMO_CASOS_BROTE)
+        limite = np.maximum(g.umbral_brote_casos.to_numpy(float), MIN_OUTBREAK_CASES)
         m = metricas_alerta(y, g.alerta_persistencia.to_numpy(bool),
                             puntaje=g.persistencia.to_numpy(float) - limite)
         fila.update({f"{k}_persistencia": m[k] for k in ("precision", "recall", "f1", "auprc")})
         if "estacional" in g and g.estacional.notna().all():
             est = g.estacional.to_numpy(float)
             m = metricas_alerta(y, alertas_desde_conteos(est, g.umbral_brote_casos.to_numpy(float),
-                                                         MINIMO_CASOS_BROTE), puntaje=est - limite)
+                                                         MIN_OUTBREAK_CASES), puntaje=est - limite)
             fila.update({f"{k}_estacional": m[k] for k in ("precision", "recall", "f1", "auprc")})
             mae_p = metricas_conteos(g.casos_Dengue, g.persistencia)["mae"]
             fila["razon_mae_estacional"] = (metricas_conteos(g.casos_Dengue, est)["mae"] / mae_p

@@ -87,7 +87,7 @@ class TestConDatos(unittest.TestCase):
         cls.serie, cls.matrices = ins["serie"], ins["matrices"]
         cls.historia = pd.read_csv(SILVER_EPI_HISTORICAL, dtype={"ubigeo": "string"})
         cls.vi = fi.VariablesInicio(cls.panel, cls.serie, cls.historia, cls.regla)
-        cls.origenes = eh.tabla_origenes(cls.matrices[2])
+        cls.origenes = eh.origin_table(cls.matrices[2])
 
     def test_no_fuga_por_perturbacion_en_origenes(self):
         """Alterar casos, brote y clima posteriores a D no cambia ninguna variable B de orígenes ≤ D (h=2, 3, 4)."""
@@ -104,16 +104,16 @@ class TestConDatos(unittest.TestCase):
     def test_b2_y_b5_ajustados_por_bloque(self):
         """Datos posteriores a la temporada 2022 no cambian las predicciones de 2021–2022."""
         familias = ["B2", "B5"]
-        cols = [*eh.GENERICAS, *fi.COLUMNAS["B2"], *fi.COLUMNAS["B5"]]
-        pruebas, corte = eh._cortes_comunes(self.matrices, "temporada", 2022)
+        cols = [*eh.GENERIC, *fi.COLUMNAS["B2"], *fi.COLUMNAS["B5"]]
+        pruebas, corte = eh._common_cutoffs(self.matrices, "temporada", 2022)
         fin_2022 = max(p.semana_inicio.max() for p in pruebas.values())
         o = self.vi.origenes(self.origenes, familias, corte).dropna(subset=cols).reset_index(drop=True)
-        a = sp.predecir_e3(self.matrices, 17, "S4_s2", columnas=cols, origenes=o,
-                           preparar_bloque=self.vi.preparar_bloque(familias))
+        a = sp.predict_e3(self.matrices, 17, "S4_s2", columns=cols, origins=o,
+                           prepare_block=self.vi.preparar_bloque(familias))
         panel, serie = _alterar(self.panel, self.serie, fin_2022)
         otro = fi.VariablesInicio(panel, serie, self.historia, self.regla)
-        b = sp.predecir_e3(self.matrices, 17, "S4_s2", columnas=cols, origenes=o,
-                           preparar_bloque=otro.preparar_bloque(familias))
+        b = sp.predict_e3(self.matrices, 17, "S4_s2", columns=cols, origins=o,
+                           prepare_block=otro.preparar_bloque(familias))
         sel = a.bloque.isin(["temporada_2021", "temporada_2022"])
         np.testing.assert_array_equal(a.loc[sel, "casos_predichos"], b.loc[sel, "casos_predichos"])
         self.assertFalse(np.allclose(a.loc[~sel, "casos_predichos"], b.loc[~sel, "casos_predichos"]))

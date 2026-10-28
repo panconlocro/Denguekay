@@ -81,17 +81,17 @@ class TestConDatos(unittest.TestCase):
 
     def test_argumentos_opcionales_reproducen_la_version_por_defecto(self):
         m = self.ins["matrices"]
-        por_defecto = sp.predecir_e3(m, 17, "S4_s2")
-        explicita = sp.predecir_e3(m, 17, "S4_s2", columnas=list(eh.GENERICAS),
-                                   origenes=eh.tabla_origenes(m[2]), hiperparametros={})
+        por_defecto = sp.predict_e3(m, 17, "S4_s2")
+        explicita = sp.predict_e3(m, 17, "S4_s2", columns=list(eh.GENERIC),
+                                   origins=eh.origin_table(m[2]), hyperparameters={})
         np.testing.assert_array_equal(por_defecto.casos_predichos, explicita.casos_predichos)
         np.testing.assert_array_equal(por_defecto.probabilidad_brote, explicita.probabilidad_brote)
-        otra = sp.predecir_e3(m, 17, "S4_s2", hiperparametros={"max_depth": 5})
+        otra = sp.predict_e3(m, 17, "S4_s2", hyperparameters={"max_depth": 5})
         self.assertFalse(np.allclose(por_defecto.casos_predichos, otra.casos_predichos))
 
     def test_columna_ausente_falla(self):
         with self.assertRaises(ValueError):
-            sp.predecir_e3(self.ins["matrices"], 17, "S4_s2", columnas=[*eh.GENERICAS, "no_existe"])
+            sp.predict_e3(self.ins["matrices"], 17, "S4_s2", columns=[*eh.GENERIC, "no_existe"])
 
     def test_inventario_de_gold_h2(self):
         gold = pd.read_csv(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv", dtype={"ubigeo": "string"},

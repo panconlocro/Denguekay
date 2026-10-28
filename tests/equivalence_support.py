@@ -70,16 +70,16 @@ def frozen_prediction_digests():
     from denguekay.data.loading import load_integrated
     from denguekay.model import frozen_configs as cf
     from src.modeling import fe_hiperparametros as fh
-    from denguekay.model.device import configuracion_xgboost
+    from denguekay.model.device import xgboost_settings
     from denguekay.config.paths import GOLD_MANIFEST, SILVER_INTEGRATED
 
     panel = load_integrated(SILVER_INTEGRATED)
     rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
     inputs = fh.insumos(panel, rule)
-    result = {"setup": configuracion_xgboost()}
-    for name, configuration in (("V1", cf.CONFIGURACION_2026_V1), ("V2", cf.CONFIGURACION_2026)):
-        origins = cf.origenes(panel, inputs, rule, configuracion=configuration)
-        predictions = cf.predecir(inputs["matrices"], origins, configuracion=configuration)
+    result = {"setup": xgboost_settings()}
+    for name, configuration in (("V1", cf.CONFIG_2026_V1), ("V2", cf.CONFIG_2026)):
+        origins = cf.origins(panel, inputs, rule, configuration=configuration)
+        predictions = cf.predict(inputs["matrices"], origins, configuration=configuration)
         result[name] = {"rows": len(predictions), "sha256": prediction_digest(predictions)}
     return result
 
@@ -99,9 +99,9 @@ def setup_key(setup):
 
 
 def cuda_available():
-    from denguekay.model.device import cuda_disponible
+    from denguekay.model.device import cuda_available
 
-    return cuda_disponible()
+    return cuda_available()
 
 
 # --- API contract ----------------------------------------------------------------------------

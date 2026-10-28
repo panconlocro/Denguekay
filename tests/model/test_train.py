@@ -10,8 +10,8 @@ from src.modeling.evaluate import (
     seleccionar_umbral_f1,
 )
 from denguekay.model.train import (
-    columnas_variantes, predecir_fold, preparar_gold, separar_anio_calendario,
-    separar_temporada,
+    variant_columns, predict_fold, prepare_gold, split_calendar_year,
+    split_season,
 )
 from denguekay.data.calendar import mmwr_epi_week
 
@@ -43,7 +43,7 @@ def panel_sintetico(horizonte: int = 2, periods: int = 20) -> pd.DataFrame:
 
 class EntrenamientoTests(unittest.TestCase):
     def test_variantes_no_admiten_objetivos_ni_ubigeo(self):
-        variantes = columnas_variantes(4)
+        variantes = variant_columns(4)
         self.assertEqual({k: len(v) for k, v in variantes.items()},
                          {"historia_4": 4, "historia_4_mas_2": 6})
         for cols in variantes.values():
@@ -52,23 +52,23 @@ class EntrenamientoTests(unittest.TestCase):
     def test_preparacion_conserva_gold_y_excluye_solo_arranque(self):
         original = panel_sintetico()
         copia = original.copy(deep=True)
-        datos, excluidas = preparar_gold(original, 2)
+        datos, excluidas = prepare_gold(original, 2)
         pd.testing.assert_frame_equal(original, copia)
         self.assertEqual(excluidas, 10)  # 5 semanas iniciales x 2 distritos
         self.assertEqual(len(datos), 30)
-        self.assertFalse(datos[columnas_variantes(2)["historia_4_mas_2"]].isna().any().any())
+        self.assertFalse(datos[variant_columns(2)["historia_4_mas_2"]].isna().any().any())
 
     def test_split_separa_etiquetas_del_primer_origen(self):
-        datos, _ = preparar_gold(panel_sintetico(), 2)
-        train, test, corte = separar_temporada(datos, 2024)
+        datos, _ = prepare_gold(panel_sintetico(), 2)
+        train, test, corte = split_season(datos, 2024)
         self.assertEqual(corte, test.origen_cierre.min())
         self.assertTrue((train.semana_inicio + pd.Timedelta(days=6) <= corte).all())
         self.assertTrue((test.semana_inicio > train.semana_inicio.max()).all())
         self.assertEqual(test.ubigeo.nunique(), 2)
 
     def test_corte_calendario_no_entrena_con_etiquetas_futuras(self):
-        datos, _ = preparar_gold(panel_sintetico(periods=90), 2)
-        train, test, corte = separar_anio_calendario(datos, 2025)
+        datos, _ = prepare_gold(panel_sintetico(periods=90), 2)
+        train, test, corte = split_calendar_year(datos, 2025)
         self.assertTrue(test.anio.eq(2025).all())
         self.assertTrue((train.semana_inicio + pd.Timedelta(days=6) <= corte).all())
 
@@ -76,22 +76,22 @@ class EntrenamientoTests(unittest.TestCase):
         panel = panel_sintetico()
         panel.loc[panel.casos_Dengue.eq(2).idxmax(), "brote"] = 0
         with self.assertRaisesRegex(ValueError, "etiqueta brote"):
-            preparar_gold(panel, 2)
+            prepare_gold(panel, 2)
         panel = panel_sintetico()
         with self.assertRaisesRegex(ValueError, "duplicadas"):
-            preparar_gold(pd.concat([panel, panel.iloc[[0]]]), 2)
+            prepare_gold(pd.concat([panel, panel.iloc[[0]]]), 2)
 
     def test_nulo_fuera_del_arranque_no_se_elimina_silenciosamente(self):
         panel = panel_sintetico()
         panel.loc[panel.index[10], "casos_lag_2"] = np.nan
         with self.assertRaisesRegex(ValueError, "fuera del arranque"):
-            preparar_gold(panel, 2)
+            prepare_gold(panel, 2)
 
     def test_gold_con_semana_desplazada_se_rechaza_antes_de_entrenar(self):
         panel = panel_sintetico()
         panel["semana"] += 1
         with self.assertRaisesRegex(ValueError, "MMWR"):
-            preparar_gold(panel, 2)
+            prepare_gold(panel, 2)
 
     def test_regresion_y_clasificacion_tienen_salida_distinta(self):
         real = np.array([0, 4, 0, 3])
@@ -112,9 +112,9 @@ class EntrenamientoTests(unittest.TestCase):
             seleccionar_umbral_f1(np.zeros(3), np.array([0.1, 0.2, 0.3]))
 
     def test_fit_smoke_ambos_modelos(self):
-        datos, _ = preparar_gold(panel_sintetico(), 2)
-        train, test, _ = separar_temporada(datos, 2024)
-        pred, _, _ = predecir_fold(train, test, columnas_variantes(2)["historia_4"])
+        datos, _ = prepare_gold(panel_sintetico(), 2)
+        train, test, _ = split_season(datos, 2024)
+        pred, _, _ = predict_fold(train, test, variant_columns(2)["historia_4"])
         self.assertEqual(len(pred), len(test))
         self.assertTrue(np.isfinite(pred.casos_predichos).all())
         self.assertTrue(pred.probabilidad_brote.between(0, 1).all())

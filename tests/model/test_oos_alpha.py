@@ -34,17 +34,17 @@ class TestAlfasOOS(unittest.TestCase):
         rng = np.random.default_rng(0)
         mu = np.full(5000, 4.0)
         y = rng.negative_binomial(1 / 0.5, 1 / (1 + 0.5 * mu))
-        d = sp.dispersion_binomial_negativa_detalle(mu, y)
+        d = sp.negative_binomial_dispersion_detail(mu, y)
         self.assertTrue(d["convergio"])
         self.assertFalse(d["en_limite"])
         self.assertAlmostEqual(d["alpha"], 0.5, delta=0.08)
-        self.assertEqual(sp.dispersion_binomial_negativa(mu, y), d["alpha"])
+        self.assertEqual(sp.negative_binomial_dispersion(mu, y), d["alpha"])
         # Sin sobredispersión el óptimo se va al límite inferior.
-        self.assertTrue(sp.dispersion_binomial_negativa_detalle(np.full(50, 2.0), np.full(50, 2.0))["en_limite"])
+        self.assertTrue(sp.negative_binomial_dispersion_detail(np.full(50, 2.0), np.full(50, 2.0))["en_limite"])
 
     def test_primer_bloque_usa_solo_el_pseudo_bloque_y_previos_acumulados(self):
         pruebas, cortes, dentro = _sintetico()
-        a = sp.alfas_oos(pruebas, cortes, dentro).set_index(["bloque", "horizonte"])
+        a = sp.oos_alphas(pruebas, cortes, dentro).set_index(["bloque", "horizonte"])
         self.assertEqual(a.loc[("temporada_2021", 2), "bloques_previos"], "temporada_2020")
         self.assertEqual(a.loc[("temporada_2023", 2), "bloques_previos"],
                          "temporada_2020,temporada_2021,temporada_2022")
@@ -55,7 +55,7 @@ class TestAlfasOOS(unittest.TestCase):
     def test_sin_fuga_casos_posteriores_al_corte(self):
         """Perturbar casos con semana objetivo no cerrada en el corte no cambia la α OOS del bloque."""
         pruebas, cortes, dentro = _sintetico()
-        base = sp.alfas_oos(pruebas, cortes, dentro)
+        base = sp.oos_alphas(pruebas, cortes, dentro)
         corte = cortes["temporada_2022"]
         for h in H:
             t = pruebas["temporada_2021"][h]
@@ -64,13 +64,13 @@ class TestAlfasOOS(unittest.TestCase):
             t.loc[tarde, "casos_Dengue"] += 1000
             for b in ("temporada_2022", "temporada_2023", "temporada_2024"):
                 pruebas[b][h]["casos_Dengue"] += 1000
-        pert = sp.alfas_oos(pruebas, cortes, dentro)
+        pert = sp.oos_alphas(pruebas, cortes, dentro)
         fila = lambda df: df[df.bloque.eq("temporada_2022")].alpha_oos.to_numpy()
         np.testing.assert_array_equal(fila(base), fila(pert))
 
     def test_respaldo_fuera_de_rango(self):
         pruebas, cortes, dentro = _sintetico(alpha_dentro=0.05)
-        a = sp.alfas_oos(pruebas, cortes, dentro)
+        a = sp.oos_alphas(pruebas, cortes, dentro)
         self.assertTrue(a.respaldo.all())
         self.assertFalse(a.en_rango.any())
         np.testing.assert_array_equal(a.alpha_usada, a.alpha_dentro_muestra)
@@ -78,9 +78,9 @@ class TestAlfasOOS(unittest.TestCase):
 
     def test_oos_solo_en_s4(self):
         with self.assertRaises(ValueError):
-            sp.predecir_e3({}, 17, "S2_pois", dispersion="oos")
+            sp.predict_e3({}, 17, "S2_pois", dispersion="oos")
         with self.assertRaises(ValueError):
-            sp.predecir_e3({}, 17, "S4_s2", dispersion="otra")
+            sp.predict_e3({}, 17, "S4_s2", dispersion="otra")
 
 
 @unittest.skipUnless(HAY_DATOS, "requiere silver integrado, manifiesto y gold")
@@ -95,8 +95,8 @@ class TestConDatos(unittest.TestCase):
         cls.matrices = fh.insumos(panel, regla)["matrices"]
 
     def test_oos_cambia_solo_la_probabilidad(self):
-        dentro = sp.predecir_e3(self.matrices, 17, "S4_s2")
-        oos = sp.predecir_e3(self.matrices, 17, "S4_s2", dispersion="oos")
+        dentro = sp.predict_e3(self.matrices, 17, "S4_s2")
+        oos = sp.predict_e3(self.matrices, 17, "S4_s2", dispersion="oos")
         clave = ["ubigeo", "semana_inicio", "horizonte", "bloque"]
         a, b = dentro.sort_values(clave).reset_index(drop=True), oos.sort_values(clave).reset_index(drop=True)
         pd.testing.assert_frame_equal(a.drop(columns="probabilidad_brote"), b.drop(columns="probabilidad_brote"))

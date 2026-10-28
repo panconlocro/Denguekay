@@ -19,8 +19,8 @@ from xgboost import __version__ as XGBOOST_VERSION
 
 from src.db.modelos import Ejecucion, ahora_utc
 from src.db.sesion import crear_motor, transaccion
-from denguekay.model.tracking import registrar_reporte
-from denguekay.model.train import PARAMETROS_BASE
+from denguekay.model.tracking import log_report
+from denguekay.model.train import BASE_PARAMS
 from src.serving import parametros
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.artefactos import huella_json
@@ -91,7 +91,7 @@ def publicar(motor, horizontes=None, *, cfg=None, almacenamiento=None):
     protocolo = cargar_protocolo(horizontes, cfg.variantes)
     hashes = {**carga.hashes, **protocolo.hashes, **hashes_codigo()}
     huella = huella_json({"hashes": hashes, "configuracion": asdict(cfg), "horizontes": horizontes,
-                          "parametros": PARAMETROS_BASE, "xgboost": XGBOOST_VERSION,
+                          "parametros": BASE_PARAMS, "xgboost": XGBOOST_VERSION,
                           "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}"})
     with transaccion(motor) as sesion:
         persistir_carga(sesion, carga)
@@ -105,9 +105,9 @@ def publicar(motor, horizontes=None, *, cfg=None, almacenamiento=None):
         reporte = reporte_servicio(preparadas, protocolo, carga.fecha_corte_datos)
         reporte_path = directorio / "reporte_servicio.json"
         reporte_path.write_text(json.dumps(reporte, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        run_id = registrar_reporte("serving", reporte, metricas_path=reporte_path,
-            salida_dir=directorio, gold_dir=GOLD, calidad_datos=carga.validacion_gx,
-            descripcion="Ajuste de servicio. La evaluación temporal adjunta es importada del protocolo previo, no un entrenamiento OOS de esta corrida.")
+        run_id = log_report("serving", reporte, metrics_path=reporte_path,
+            output_dir=directorio, gold_dir=GOLD, data_quality=carga.validacion_gx,
+            description="Ajuste de servicio. La evaluación temporal adjunta es importada del protocolo previo, no un entrenamiento OOS de esta corrida.")
         if carga.hashes != hashes_fuentes() or hashes_codigo() != {k: v for k, v in hashes.items() if k.startswith("src/")}:
             raise ValueError("Las entradas o el código cambiaron durante la ejecución; publicación rechazada")
         resumen = publicar_en_bd(motor, carga, protocolo, preparadas, horizontes, cfg, run_id, huella,
