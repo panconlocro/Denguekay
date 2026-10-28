@@ -23,7 +23,7 @@ from src.modeling.evaluate import (
     seleccionar_umbral_f1,
 )
 from src.modeling.seguimiento_mlflow import registrar_o_avisar
-from src.utils.paths import DOCS, GOLD, MODELS, SILVER_INTEGRADO
+from src.utils.paths import GOLD, MODELS, RESEARCH_PRIMEROS_MODELOS, SILVER_INTEGRADO
 from src.utils.calendario import semana_epi_mmwr
 from src.validation.contrato_pronostico import CLAVE
 from src.validation.calidad_gx import validar_entradas_modelado
@@ -249,7 +249,7 @@ def evaluar_fold(
 
 def ejecutar_experimento(
     *, gold_dir: Path = GOLD, salida_dir: Path = MODELS / "experimentos",
-    metricas_path: Path = DOCS / "modeling" / "metricas" / "primer_xgboost.json",
+    metricas_path: Path = RESEARCH_PRIMEROS_MODELOS / "docs" / "metricas" / "primer_xgboost.json",
     auditar: bool = True, validar_datos: bool = True,
     registrar_mlflow: bool = True,
 ) -> dict:
@@ -365,7 +365,7 @@ def main() -> None:
     parser.add_argument("--gold-dir", type=Path, default=GOLD)
     parser.add_argument("--salida-dir", type=Path, default=MODELS / "experimentos")
     parser.add_argument("--metricas", type=Path,
-                        default=DOCS / "modeling" / "metricas" / "primer_xgboost.json")
+                        default=RESEARCH_PRIMEROS_MODELOS / "docs" / "metricas" / "primer_xgboost.json")
     parser.add_argument("--sin-validacion-datos", action="store_true",
                         help="No ejecutar las suites de Great Expectations")
     parser.add_argument("--sin-mlflow", action="store_true",
