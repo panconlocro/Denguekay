@@ -14,7 +14,7 @@ import pandas as pd
 from xgboost import __version__ as XGBOOST_VERSION
 
 from denguekay.features.model_input_contract import audit_handoff
-from src.modeling.evaluate import seleccionar_umbral_f1
+from denguekay.evaluation.metrics import seleccionar_umbral_f1
 from denguekay.features.gold import SOCIO_2017_DATE
 from denguekay.model.train import (
     SENSITIVITY_TEST_YEAR, MIN_OUTBREAK_CASES, BASE_PARAMS,
@@ -226,7 +226,7 @@ def ejecutar_validacion_temporal_compacta(
 
 
 def main() -> None:
-    """Ejecuta ``python -m src.modeling.validacion_temporal_compacta``."""
+    """Ejecuta ``python -m denguekay.evaluation.compact_validation``."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gold-dir", type=Path, default=GOLD)
     parser.add_argument("--salida-dir", type=Path,

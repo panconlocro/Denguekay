@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling import diagnostico_arquitectura as d
+from denguekay.evaluation import episodes as d
 
 
 def _etiquetas(brotes: list[int], ubigeo: str = "200101") -> pd.DataFrame:

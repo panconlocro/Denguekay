@@ -4,7 +4,7 @@ import unittest
 
 from denguekay.features import variant_registry as pr
 from denguekay.features.model_input_contract import predictor_families
-from src.modeling.diagnostico_inicios import ETIQUETAS
+from denguekay.evaluation.onsets import ETIQUETAS
 
 
 class TestPreregistro(unittest.TestCase):

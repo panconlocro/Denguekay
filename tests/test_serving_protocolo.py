@@ -11,7 +11,7 @@ import pandas as pd
 from serving_soporte import protocolo_muestra
 from src.db.modelos import VersionModelo
 from denguekay.model.train import fit_models, counts_from_log1p, evaluate_fold
-from src.modeling.validacion_temporal_compacta import variantes_compactas
+from denguekay.evaluation.compact_validation import variantes_compactas
 from src.serving.almacenamiento import AlmacenamientoLocal
 from src.serving.artefactos import predecir_con_version, serializar_booster, sha256_bytes
 from src.serving.protocolo import verificar_bloque

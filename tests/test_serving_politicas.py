@@ -17,7 +17,7 @@ from src.serving.almacenamiento import AlmacenamientoLocal, validar_ruta
 from src.serving.configuracion import configuracion_servicio
 from src.serving.protocolo import _comparar_metricas, metricas_de_variante
 from src.serving.riesgo import ETIQUETAS, cambio_alerta, nivel_riesgo
-from src.validation.validacion_modelo import evaluar_validacion_modelo
+from denguekay.evaluation.acceptance import evaluar_validacion_modelo
 
 CORTES = {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75}
 CRITERIOS = {"bloques": ["temporada_2024"], "recall_minimo": 0.8, "precision_minima": 0.6,

@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 
 from denguekay.features import variant_registry as pr
-from src.modeling.evaluate import metricas_alerta
-from src.modeling import protocolo_arquitectura as pa
+from denguekay.evaluation.metrics import metricas_alerta
+from denguekay.evaluation import protocol as pa
 
 COLUMNAS_A3 = next(list(v["columnas"]) for v in pr.VARIANTS if v["id"] == "A3")
 METRICAS_CONTEO = ("razon_mae", "razon_rmse")

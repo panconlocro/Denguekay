@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from src.modeling.validacion_temporal_compacta import (
+from denguekay.evaluation.compact_validation import (
     calibracion_disponible, elegir_en_validacion, validar_matriz,
     variantes_compactas,
 )

@@ -38,9 +38,9 @@ import numpy as np
 import pandas as pd
 
 from denguekay.data.seasons import assign_season
-from src.modeling import diagnostico_arquitectura as diag
+from denguekay.evaluation import episodes as diag
 from denguekay.features.climate import fit_climatology
-from src.modeling.protocolo_arquitectura import bootstrap_estratificado
+from denguekay.evaluation.protocol import bootstrap_estratificado
 from denguekay.model.train import SEASON_START_WEEK
 from denguekay.features.neighbors import geographic_catalog, neighborhood_matrix
 

@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 
 from denguekay.data.seasons import assign_season
-from src.modeling.evaluate import alertas_desde_conteos, metricas_alerta
+from denguekay.evaluation.metrics import alertas_desde_conteos, metricas_alerta
 from denguekay.model.train import MIN_OUTBREAK_CASES, SEASON_START_WEEK
 from denguekay.data.validation.forecast_contract import KEY
 

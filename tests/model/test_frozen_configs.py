@@ -8,7 +8,7 @@ import pandas as pd
 from denguekay.model import frozen_configs as cf
 from denguekay.model import variable_dictionary as dv
 from denguekay.model import horizon_strategies as eh
-from src.modeling import hiperparametros as hp
+from denguekay.evaluation import tuning as hp
 from denguekay.model import probabilistic_output as sp
 from denguekay.config.paths import FE_HYPERPARAMETERS_EXPERIMENTS, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
@@ -89,7 +89,7 @@ class TestReproduccion(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from denguekay.data.loading import load_integrated
-        from src.modeling import fe_hiperparametros as fh
+        from denguekay.evaluation import variants as fh
 
         cls.panel = load_integrated(SILVER_INTEGRATED)
         cls.rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]

@@ -25,7 +25,7 @@ def cortes_riesgo(sesion):
 
 
 def criterios_aceptacion(sesion):
-    """Traduce umbrales_aceptacion al formato de src.validation.validacion_modelo."""
+    """Traduce umbrales_aceptacion al formato de denguekay.evaluation.acceptance."""
     u = leer(sesion, "umbrales_aceptacion")
     return {"bloques": [u["bloque"]], "recall_minimo": u["recall"], "precision_minima": u["precision"],
             "f1_minimo": u["f1"], "proporcion_error_persistencia": u["razon_error_base"]}

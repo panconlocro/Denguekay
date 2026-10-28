@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from denguekay.model.train import evaluate_fold, prepare_gold, split_season, split_calendar_year
-from src.modeling.validacion_temporal_compacta import ejecutar_validacion_temporal_compacta, variantes_compactas
+from denguekay.evaluation.compact_validation import ejecutar_validacion_temporal_compacta, variantes_compactas
 from denguekay.config.paths import (GOLD, GOLD_MANIFEST, COMPACT_METRICS, COMPACT_PREDICTIONS,
                              SERVING_REGENERATED_PROTOCOL, SILVER_INTEGRATED)
 from denguekay.data.validation.gx_quality import read_gold

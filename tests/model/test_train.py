@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling.evaluate import (
+from denguekay.evaluation.metrics import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos,
     seleccionar_umbral_f1,
 )

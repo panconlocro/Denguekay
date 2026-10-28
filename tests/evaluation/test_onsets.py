@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling import diagnostico_inicios as di
+from denguekay.evaluation import onsets as di
 from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
@@ -67,7 +67,7 @@ class TestConDatos(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from denguekay.data.loading import load_integrated
-        from src.modeling import fe_hiperparametros as fh
+        from denguekay.evaluation import variants as fh
 
         cls.panel = load_integrated(SILVER_INTEGRATED)
         regla = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]

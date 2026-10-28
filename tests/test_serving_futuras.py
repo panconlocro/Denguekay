@@ -7,7 +7,7 @@ import pandas as pd
 
 from serving_soporte import leer_csv
 from denguekay.model.future_rows import build_future_rows
-from src.modeling.validacion_temporal_compacta import variantes_compactas
+from denguekay.evaluation.compact_validation import variantes_compactas
 
 
 class TestFilasFuturas(unittest.TestCase):

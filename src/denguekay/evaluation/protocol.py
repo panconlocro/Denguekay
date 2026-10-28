@@ -25,8 +25,8 @@ import pandas as pd
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression
 
-from src.modeling import diagnostico_arquitectura as diag
-from src.modeling.evaluate import (
+from denguekay.evaluation import episodes as diag
+from denguekay.evaluation.metrics import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos, seleccionar_umbral_f1,
 )
 from denguekay.model.train import MIN_OUTBREAK_CASES

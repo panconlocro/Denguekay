@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 from denguekay.model import horizon_strategies as eh
-from src.modeling import protocolo_arquitectura as pa
+from denguekay.evaluation import protocol as pa
 from denguekay.model import probabilistic_output as sp
 from denguekay.features.model_input_contract import NON_PREDICTORS, predictor_families
 from denguekay.model.train import BASE_PARAMS

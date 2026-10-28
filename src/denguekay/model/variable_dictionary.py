@@ -14,7 +14,7 @@ import json
 
 import pandas as pd
 
-from src.modeling import diagnostico_inicios as di
+from denguekay.evaluation import onsets as di
 from denguekay.model import horizon_strategies as eh
 
 # Text per generic variable. "ventana" is relative to the origin o = t - 2 of the h=2 row.
@@ -193,8 +193,8 @@ def to_markdown(table: pd.DataFrame, by_season: pd.DataFrame | None, configurati
 def main() -> None:
     from denguekay.data.loading import load_integrated
     from denguekay.model import frozen_configs as cf
-    from src.modeling import diagnostico_arquitectura as d
-    from src.modeling import fe_hiperparametros as fh
+    from denguekay.evaluation import episodes as d
+    from denguekay.evaluation import variants as fh
     from denguekay.config.paths import VARIABLE_DICTIONARY, GOLD_MANIFEST, FE_HYPERPARAMETERS_METRICS, SILVER_INTEGRATED
 
     panel = load_integrated(SILVER_INTEGRATED)

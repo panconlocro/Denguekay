@@ -18,7 +18,7 @@ from xgboost import XGBClassifier, XGBRegressor, __version__ as XGBOOST_VERSION
 from denguekay.data.seasons import assign_season
 from denguekay.features.model_input_contract import audit_handoff, predictor_families
 from denguekay.model.device import xgboost_settings
-from src.modeling.evaluate import (
+from denguekay.evaluation.metrics import (
     alertas_desde_conteos, metricas_alerta, metricas_conteos,
     seleccionar_umbral_f1,
 )

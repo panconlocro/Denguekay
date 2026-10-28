@@ -20,7 +20,7 @@ origin week (the one that closes at ``origen_cierre``), computed with weeks <=
 import numpy as np
 import pandas as pd
 
-from src.modeling import diagnostico_inicios as di
+from denguekay.evaluation import onsets as di
 from denguekay.model import horizon_strategies as eh
 from denguekay.features import variant_registry as pr
 from denguekay.features.outbreak_label import future_outbreak_threshold

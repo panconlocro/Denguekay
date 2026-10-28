@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from denguekay.model import horizon_strategies as eh
-from src.modeling import fe_hiperparametros as fh
+from denguekay.evaluation import variants as fh
 from denguekay.model import probabilistic_output as sp
 from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 

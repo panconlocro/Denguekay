@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from denguekay.model import horizon_strategies as eh
-from src.modeling import hiperparametros as hp
+from denguekay.evaluation import tuning as hp
 from denguekay.model import probabilistic_output as sp
 from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
@@ -135,7 +135,7 @@ class TestConDatos(unittest.TestCase):
     def test_base_explicita_reproduce_los_parametros_por_defecto(self):
         """BASE (con max_delta_step = 0,7, reg_alpha = gamma = 0 explícitos) da lo mismo que los fijos heredados."""
         from denguekay.data.loading import load_integrated
-        from src.modeling import fe_hiperparametros as fh
+        from denguekay.evaluation import variants as fh
         from denguekay.features import onset_features as fi
 
         panel = load_integrated(SILVER_INTEGRATED)

@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from src.modeling import protocolo_arquitectura as pa
+from denguekay.evaluation import protocol as pa
 
 
 def _bloques(semilla: int = 0) -> pd.DataFrame:

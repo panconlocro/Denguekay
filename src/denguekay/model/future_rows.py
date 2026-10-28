@@ -6,7 +6,7 @@ import pandas as pd
 from denguekay.features.gold import SOCIO_2017_DATE, HORIZONS
 from denguekay.features.history_calendar import build_history_calendar
 from denguekay.features.sociodemographics import reference_2017, build_sociodemography
-from src.modeling.validacion_temporal_compacta import variantes_compactas
+from denguekay.evaluation.compact_validation import variantes_compactas
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.validation.forecast_contract import KEY, audit_origin, available_observations
 

@@ -16,11 +16,11 @@ import json
 import numpy as np
 import pandas as pd
 
-from src.modeling import complemento_clima as cc
+from denguekay.evaluation import climate_complement as cc
 from denguekay.model import horizon_strategies as eh
 from denguekay.features import onset_features as fi
-from src.modeling import hiperparametros as hp
-from src.modeling import protocolo_arquitectura as pa
+from denguekay.evaluation import tuning as hp
+from denguekay.evaluation import protocol as pa
 from denguekay.model import probabilistic_output as sp
 
 FREEZE_DATE_V1 = "2026-10-27"

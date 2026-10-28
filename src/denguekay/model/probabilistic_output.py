@@ -558,7 +558,7 @@ def recall_by_week_type(data: pd.DataFrame, series: pd.DataFrame, alert: str = "
     ``brote`` weeks. It separates anticipating new outbreaks from doing better
     on outbreaks that already started.
     """
-    from src.modeling import diagnostico_arquitectura as diag
+    from denguekay.evaluation import episodes as diag
 
     eps = diag.episodios(series)
     clean = eps[eps.semanas_previas_sin_brote >= diag.SIN_BROTE_PREVIO]

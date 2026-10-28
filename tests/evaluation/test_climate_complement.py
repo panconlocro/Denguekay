@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from src.modeling import complemento_clima as cc
+from denguekay.evaluation import climate_complement as cc
 
 BLOQUES = ("temporada_2022", "temporada_2023")
 

@@ -15,10 +15,10 @@ from xgboost import __version__ as XGBOOST_VERSION
 from src.db.modelos import ImportanciaVariable, VersionModelo
 from denguekay.model.device import xgboost_settings
 from denguekay.model.train import BASE_PARAMS, fit_models
-from src.modeling.validacion_temporal_compacta import variantes_compactas
+from denguekay.evaluation.compact_validation import variantes_compactas
 from src.serving.artefactos import serializar_booster, sha256_bytes
 from src.serving.protocolo import metricas_de_variante
-from src.validation.validacion_modelo import evaluar_validacion_modelo
+from denguekay.evaluation.acceptance import evaluar_validacion_modelo
 
 PREFIJOS = {"clasificacion": "clf", "regresion": "reg"}
 

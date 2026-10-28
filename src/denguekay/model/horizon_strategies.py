@@ -26,7 +26,7 @@ from denguekay.model.train import (
     SENSITIVITY_TEST_YEAR, MIN_OUTBREAK_CASES, BASE_PARAMS, counts_from_log1p,
     prepare_gold, split_calendar_year, split_season,
 )
-from src.modeling.validacion_temporal_compacta import TEMPORADAS, variantes_compactas
+from denguekay.evaluation.compact_validation import TEMPORADAS, variantes_compactas
 from denguekay.data.validation.forecast_contract import KEY
 
 STRATEGY_HORIZONS = (2, 3, 4)
@@ -297,7 +297,7 @@ def decide_against_reference(evaluations: dict[str, dict[int, dict]], candidate:
     requires the difference of medians across seeds to have the same sign;
     otherwise the improvement or the worsening is cancelled.
     """
-    from src.modeling import protocolo_arquitectura as pa
+    from denguekay.evaluation import protocol as pa
 
     met = {e: [evaluations[e][s]["metricas"] for s in evaluations[e]] for e in (candidate, reference)}
     ranges = pa.umbral_empate(pa.rangos_semillas(met[candidate]), pa.rangos_semillas(met[reference]))
