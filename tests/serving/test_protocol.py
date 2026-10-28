@@ -12,9 +12,9 @@ from serving_soporte import protocolo_muestra
 from denguekay.db.models import ModelVersion
 from denguekay.model.train import fit_models, counts_from_log1p, evaluate_fold
 from denguekay.evaluation.compact_validation import compact_variants
-from src.serving.almacenamiento import AlmacenamientoLocal
-from src.serving.artefactos import predecir_con_version, serializar_booster, sha256_bytes
-from src.serving.protocolo import verificar_bloque
+from denguekay.serving.storage import AlmacenamientoLocal
+from denguekay.serving.artifacts import predecir_con_version, serializar_booster, sha256_bytes
+from denguekay.serving.protocol import verificar_bloque
 
 
 class TestContratoProtocolo(unittest.TestCase):

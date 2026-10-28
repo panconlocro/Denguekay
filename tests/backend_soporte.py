@@ -84,7 +84,7 @@ def datos_muestra(carpeta, seleccion_experimental=None):
     """Ejecuta GX sobre gold real y prepara el lote de carga OE2 desde las fixtures."""
     # Importación diferida: evita cargar GX al importar este módulo.
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
-    from src.serving.cargar_datos import preparar_desde_tablas
+    from denguekay.serving.load_data import preparar_desde_tablas
     from denguekay.data.validation.gx_quality import get_context, validate_dataframe
     from denguekay.data.validation.gold_expectations import expectations_for_gold
 

@@ -52,7 +52,7 @@ jobs:
       - name: Exigir cobertura de API
         run: python -m coverage report --include="src/api/*" --fail-under=80
       - name: Exigir cobertura de inferencia
-        run: python -m coverage report --include="src/serving/*" --fail-under=80
+        run: python -m coverage report --include="src/denguekay/serving/*" --fail-under=80
       - name: Exigir cobertura de base de datos
         run: python -m coverage report --include="src/denguekay/db/*" --fail-under=80
       - name: Exportar cobertura para revisión
@@ -121,7 +121,7 @@ jobs:
             echo "Las pruebas en PostgreSQL se omitieron" >&2
             exit 1
           fi
-          n=$(grep -cE "\((db\.test_oe2_schema\.TestEsquemaOE2PostgreSQL|test_serving_inferencia\.TestInferenciaPostgreSQL)\.[^)]*\) \.\.\. ok$" pruebas.log || true)
+          n=$(grep -cE "\((db\.test_oe2_schema\.TestEsquemaOE2PostgreSQL|serving\.test_inference\.TestInferenciaPostgreSQL)\.[^)]*\) \.\.\. ok$" pruebas.log || true)
           echo "Pruebas en PostgreSQL aprobadas: $n"
           test "$n" -gt 0
           # Guarda de la reestructuración: el esquema migrado en PostgreSQL es el de la línea base.

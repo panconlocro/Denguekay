@@ -21,22 +21,22 @@ from denguekay.db.models import Run, utc_now
 from denguekay.db.session import make_engine, transaction
 from denguekay.model.tracking import log_report
 from denguekay.model.train import BASE_PARAMS
-from src.serving import parametros
-from src.serving.almacenamiento import AlmacenamientoLocal
-from src.serving.artefactos import huella_json
-from src.serving.cargar_datos import (exigir_esquema, hashes_fuentes, persistir_carga, preparar_carga,
+from denguekay.serving import parameters as parametros
+from denguekay.serving.storage import AlmacenamientoLocal
+from denguekay.serving.artifacts import huella_json
+from denguekay.serving.load_data import (exigir_esquema, hashes_fuentes, persistir_carga, preparar_carga,
                                       registrar_fallo)
-from src.serving.configuracion import configuracion_servicio
-from src.serving.inferencia import importar_oos, inferir
-from src.serving.modelos import entrenar_versiones_servicio, guardar_versiones, reporte_servicio
-from src.serving.protocolo import cargar_protocolo
+from denguekay.serving.settings import configuracion_servicio
+from denguekay.serving.inference import importar_oos, inferir
+from denguekay.serving.models import entrenar_versiones_servicio, guardar_versiones, reporte_servicio
+from denguekay.serving.protocol import cargar_protocolo
 from denguekay.config.paths import GOLD, ROOT, SERVING_RUNS, SILVER_INTEGRATED, SRC
 
 
 def hashes_codigo():
     """Los cambios de lógica también forman parte de la identidad de la publicación."""
-    # Decision D6: the code identity covers the whole denguekay package (plus serving until it moves there).
-    archivos = [*sorted((SRC / "serving").rglob("*.py")), *sorted((SRC / "denguekay").rglob("*.py"))]
+    # Decision D6: the code identity covers the whole denguekay package.
+    archivos = sorted((SRC / "denguekay").rglob("*.py"))
     return {str(p.relative_to(ROOT)).replace("\\", "/"): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in archivos}
 
@@ -120,7 +120,7 @@ def publicar(motor, horizontes=None, *, cfg=None, almacenamiento=None):
 
 
 def main(argv=None):
-    """``python -m src.serving.publicar --horizontes 2 4``."""
+    """``python -m denguekay.serving.publish --horizontes 2 4``."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--horizontes", nargs="+", type=int, choices=(2, 3, 4), default=None,
                         help="Horizontes con gold y contrato disponibles (2 y 4)")

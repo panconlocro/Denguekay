@@ -12,8 +12,8 @@ from backend_soporte import datos_muestra, leer_muestra, motor_temporal
 from denguekay.db.models import (District, Run, WeeklyObservation, SystemParameter, Province,
                             EpiWeek)
 from denguekay.db.session import transaction
-from src.serving import cargar_datos as carga
-from src.serving.configuracion import configuracion_servicio
+from denguekay.serving import load_data as carga
+from denguekay.serving.settings import configuracion_servicio
 
 
 class TestCargaOE2(unittest.TestCase):

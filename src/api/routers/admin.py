@@ -8,9 +8,9 @@ from src.api.dependencias import Identificador, Sesion, exigir_clave
 from src.api.errores import ErrorAPI
 from src.api.esquemas import ActivacionRespuesta, InferenciaRespuesta, SolicitudInferencia
 from denguekay.db.models import Run, ModelVersion, utc_now
-from src.serving.artefactos import ArtefactoInvalido
-from src.serving.inferencia import InferenciaNoDisponible, inferir
-from src.serving.parametros import ParametroFaltante
+from denguekay.serving.artifacts import ArtefactoInvalido
+from denguekay.serving.inference import InferenciaNoDisponible, inferir
+from denguekay.serving.parameters import ParametroFaltante
 
 router = APIRouter(prefix="/admin", tags=["Administración"], dependencies=[Depends(exigir_clave)])
 

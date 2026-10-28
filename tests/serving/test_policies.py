@@ -12,11 +12,11 @@ from backend_soporte import motor_temporal
 from serving_soporte import protocolo_muestra
 from denguekay.db.models import SystemParameter
 from denguekay.db.session import transaction
-from src.serving import parametros
-from src.serving.almacenamiento import AlmacenamientoLocal, validar_ruta
-from src.serving.configuracion import configuracion_servicio
-from src.serving.protocolo import _comparar_metricas, metricas_de_variante
-from src.serving.riesgo import ETIQUETAS, cambio_alerta, nivel_riesgo
+from denguekay.serving import parameters as parametros
+from denguekay.serving.storage import AlmacenamientoLocal, validar_ruta
+from denguekay.serving.settings import configuracion_servicio
+from denguekay.serving.protocol import _comparar_metricas, metricas_de_variante
+from denguekay.serving.risk import ETIQUETAS, cambio_alerta, nivel_riesgo
 from denguekay.evaluation.acceptance import evaluate_model_validation
 
 CORTES = {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75}

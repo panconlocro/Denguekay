@@ -7,9 +7,9 @@ from sqlalchemy import func, select
 from src.api.errores import ErrorAPI
 from denguekay.db.models import (Alert, District, Run, VariableImportance, WeeklyObservation,
                             Prediction, EpiWeek, ModelVersion)
-from src.serving import parametros
-from src.serving.inferencia import MOTIVO_H3, TAREAS, seleccionar_versiones
-from src.serving.riesgo import ETIQUETAS, NIVELES
+from denguekay.serving import parameters as parametros
+from denguekay.serving.inference import MOTIVO_H3, TAREAS, seleccionar_versiones
+from denguekay.serving.risk import ETIQUETAS, NIVELES
 
 NOTA_EXPERIMENTAL = ("Demo experimental: ningún modelo cumple todavía los umbrales de aceptación; "
                      "las predicciones marcadas experimental: true no son un modelo validado.")

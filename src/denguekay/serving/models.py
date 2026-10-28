@@ -16,8 +16,8 @@ from denguekay.db.models import VariableImportance, ModelVersion
 from denguekay.model.device import xgboost_settings
 from denguekay.model.train import BASE_PARAMS, fit_models
 from denguekay.evaluation.compact_validation import compact_variants
-from src.serving.artefactos import serializar_booster, sha256_bytes
-from src.serving.protocolo import metricas_de_variante
+from denguekay.serving.artifacts import serializar_booster, sha256_bytes
+from denguekay.serving.protocol import metricas_de_variante
 from denguekay.evaluation.acceptance import evaluate_model_validation
 
 PREFIJOS = {"clasificacion": "clf", "regresion": "reg"}

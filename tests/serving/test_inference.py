@@ -20,13 +20,13 @@ from denguekay.db.models import (Alert, District, Run, WeeklyObservation, System
                             Prediction, EpiWeek, ModelVersion)
 from denguekay.db.session import make_engine, transaction
 from denguekay.model.future_rows import build_future_rows
-from src.serving import parametros
-from src.serving.almacenamiento import AlmacenamientoLocal
-from src.serving.artefactos import ArtefactoInvalido, predecir_con_version
-from src.serving.cargar_datos import persistir_carga
-from src.serving.inferencia import (InferenciaNoDisponible, actualizar_alertas, importar_oos, inferir,
+from denguekay.serving import parameters as parametros
+from denguekay.serving.storage import AlmacenamientoLocal
+from denguekay.serving.artifacts import ArtefactoInvalido, predecir_con_version
+from denguekay.serving.load_data import persistir_carga
+from denguekay.serving.inference import (InferenciaNoDisponible, actualizar_alertas, importar_oos, inferir,
                                     seleccionar_versiones, vectores_desde_bd)
-from src.serving.modelos import guardar_versiones
+from denguekay.serving.models import guardar_versiones
 
 UBIGEOS = ["200101", "200201", "200502"]
 TOLERANCIA = 1e-9

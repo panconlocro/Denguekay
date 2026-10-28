@@ -8,8 +8,7 @@ The fingerprint covers:
 - the input data (integrated silver, epidemiological history, gold h=2 and
   h=4 and its manifest);
 - the configuration (``configs/config.yaml``);
-- the code of the denguekay package (``src/denguekay/**/*.py``) and of the
-  serving modules it uses for the time contract and the calendar.
+- the code of the denguekay package (``src/denguekay/**/*.py``).
 
 Any change in those files invalidates the cache by itself. ``force=True``
 always recomputes. Project policy: the **closing** run of each stage starts from
@@ -29,8 +28,6 @@ from denguekay.config.paths import (
 )
 
 CACHE_DIR = ARCHITECTURE_EXPERIMENTS / "cache"
-EXTRA_CODE = ("src/denguekay/data/validation/forecast_contract.py", "src/denguekay/data/seasons.py", "src/denguekay/data/loading.py",
-                "src/denguekay/data/calendar.py", "src/serving/riesgo.py")
 FORCE_VARIABLE = "DENGUEKAY_FORZAR_REENTRENO"
 
 
@@ -53,7 +50,7 @@ def study_inputs() -> list[Path]:
     """Data, configuration and code that determine the results of the study."""
     data = [SILVER_INTEGRATED, SILVER_EPI_HISTORICAL, GOLD_MANIFEST,
              *sorted(GOLD.glob(f"{SILVER_INTEGRATED.stem}_h*_gold.csv"))]
-    code = [*sorted((ROOT / "src" / "denguekay").rglob("*.py")), *(ROOT / c for c in EXTRA_CODE)]
+    code = sorted((ROOT / "src" / "denguekay").rglob("*.py"))
     return [*data, CONFIG, *code]
 
 

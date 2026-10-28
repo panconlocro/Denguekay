@@ -193,7 +193,7 @@ def preparar_carga():
     """Valida archivos originales antes de preparar cualquier escritura."""
     from denguekay.features.model_input_contract import audit_handoff
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
-    from src.serving.configuracion import configuracion_servicio
+    from denguekay.serving.settings import configuracion_servicio
     from denguekay.data.validation.gx_quality import read_gold, validate_modeling_inputs
 
     hashes = hashes_fuentes()
@@ -226,7 +226,7 @@ def ingesta_existente(sesion, huella):
 
 def persistir_carga(sesion, datos):
     """Inserta/actualiza el lote en la transacción del llamador, sin duplicarlo."""
-    from src.serving.parametros import sembrar_seleccion_experimental
+    from denguekay.serving.parameters import sembrar_seleccion_experimental
 
     if not datos.validacion_gx.get("exito"):
         raise ValueError("No se permite cargar entradas que no aprobaron GX")

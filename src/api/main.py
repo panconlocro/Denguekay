@@ -14,8 +14,8 @@ from src.api.esquemas import ErrorRespuesta
 from src.api.routers import admin, datos, modelos, referencia, vigilancia
 from denguekay.db.settings import InvalidDatabaseSettings
 from denguekay.db.session import create_session_factory, make_engine
-from src.serving.almacenamiento import AlmacenamientoLocal
-from src.serving.configuracion import configuracion_servicio
+from denguekay.serving.storage import AlmacenamientoLocal
+from denguekay.serving.settings import configuracion_servicio
 from denguekay.config.paths import ENV_FILE
 
 

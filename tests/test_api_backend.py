@@ -18,10 +18,10 @@ from src.api.cache import CacheLecturas
 from src.api.main import crear_app
 from denguekay.db.models import Alert, Run, Prediction, ModelVersion
 from denguekay.db.session import make_engine, transaction
-from src.serving.almacenamiento import AlmacenamientoLocal
-from src.serving.cargar_datos import persistir_carga
-from src.serving.inferencia import actualizar_alertas
-from src.serving.publicar import publicar_en_bd
+from denguekay.serving.storage import AlmacenamientoLocal
+from denguekay.serving.load_data import persistir_carga
+from denguekay.serving.inference import actualizar_alertas
+from denguekay.serving.publish import publicar_en_bd
 from denguekay.config.paths import ROOT
 
 CLAVE = "clave-local-de-prueba"
@@ -400,7 +400,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 from src.api.main import crear_app
 from denguekay.db.session import make_engine
-from src.serving.almacenamiento import AlmacenamientoLocal
+from denguekay.serving.storage import AlmacenamientoLocal
 from denguekay.config.paths import DATA
 motor = make_engine(sys.argv[1])
 def auditar(evento, argumentos):

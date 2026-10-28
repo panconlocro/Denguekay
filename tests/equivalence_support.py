@@ -243,9 +243,9 @@ def build_smoke_database(folder):
     from backend_soporte import datos_muestra, motor_temporal
     from serving_soporte import preparar_muestra
     from denguekay.db.session import transaction
-    from src.serving.almacenamiento import AlmacenamientoLocal
-    from src.serving.cargar_datos import persistir_carga
-    from src.serving.publicar import publicar_en_bd
+    from denguekay.serving.storage import AlmacenamientoLocal
+    from denguekay.serving.load_data import persistir_carga
+    from denguekay.serving.publish import publicar_en_bd
 
     cfg, protocol, prepared = preparar_muestra()
     data = datos_muestra(folder, cfg.seleccion_experimental)
@@ -265,7 +265,7 @@ def build_smoke_database(folder):
 def create_smoke_app():
     """uvicorn ``--factory`` target: the real app with the smoke database's artifact storage."""
     from src.api.main import crear_app
-    from src.serving.almacenamiento import AlmacenamientoLocal
+    from denguekay.serving.storage import AlmacenamientoLocal
 
     return crear_app(almacenamiento=AlmacenamientoLocal(os.environ["DENGUEKAY_EQ_STORAGE"]))
 

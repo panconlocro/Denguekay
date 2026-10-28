@@ -12,12 +12,12 @@ from backend_soporte import datos_muestra, motor_temporal
 from serving_soporte import CORTE, preparar_muestra
 from denguekay.db.models import Run, VariableImportance, SystemParameter, Prediction, ModelVersion
 from denguekay.db.session import transaction
-from src.serving import parametros
-from src.serving.almacenamiento import AlmacenamientoLocal
-from src.serving.cargar_datos import persistir_carga
-from src.serving.modelos import (VersionPreparada, cumple_umbrales, guardar_versiones, reporte_servicio,
+from denguekay.serving import parameters as parametros
+from denguekay.serving.storage import AlmacenamientoLocal
+from denguekay.serving.load_data import persistir_carga
+from denguekay.serving.models import (VersionPreparada, cumple_umbrales, guardar_versiones, reporte_servicio,
                                  ruta_artefacto, siguiente_codigo)
-from src.serving.publicar import publicacion_existente, publicar, publicar_en_bd
+from denguekay.serving.publish import publicacion_existente, publicar, publicar_en_bd
 
 
 class TestPublicacion(unittest.TestCase):

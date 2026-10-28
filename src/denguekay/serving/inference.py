@@ -16,9 +16,9 @@ from denguekay.db.models import (Alert, District, Run, WeeklyObservation, Predic
 from denguekay.db.session import upsert
 from denguekay.model.future_rows import build_future_rows
 from denguekay.features.sociodemographics import DIRECT
-from src.serving import parametros
-from src.serving.artefactos import predecir_con_version
-from src.serving.riesgo import NIVELES_ALERTA, cambio_alerta, nivel_riesgo
+from denguekay.serving import parameters as parametros
+from denguekay.serving.artifacts import predecir_con_version
+from denguekay.serving.risk import NIVELES_ALERTA, cambio_alerta, nivel_riesgo
 
 TAREAS = ("clasificacion", "regresion")
 BLOQUES_OOS = ("temporada_2022", "temporada_2023", "temporada_2024", "calendario_2025")

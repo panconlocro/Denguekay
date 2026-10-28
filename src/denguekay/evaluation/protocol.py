@@ -30,7 +30,7 @@ from denguekay.evaluation.metrics import (
     alerts_from_counts, alert_metrics, count_metrics, select_f1_threshold,
 )
 from denguekay.model.train import MIN_OUTBREAK_CASES
-from src.serving.riesgo import NIVELES
+from denguekay.serving.risk import NIVELES
 from denguekay.data.validation.forecast_contract import KEY
 
 INITIAL_CALIBRATION_BLOCK = "temporada_2021"

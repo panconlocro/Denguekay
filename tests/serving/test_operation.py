@@ -13,16 +13,16 @@ from sqlalchemy.engine import URL
 from backend_soporte import datos_muestra, entorno_bd, motor_temporal
 from denguekay.db.models import District
 from denguekay.db.session import transaction
-from src.serving.artefactos import huella_json
-from src.serving.cargar_datos import main as cargar_cli, persistir_carga
-from src.serving.publicar import hashes_codigo, main as publicar_cli
+from denguekay.serving.artifacts import huella_json
+from denguekay.serving.load_data import main as cargar_cli, persistir_carga
+from denguekay.serving.publish import hashes_codigo, main as publicar_cli
 from denguekay.config.paths import ROOT
 
 
 class TestOperacionServing(unittest.TestCase):
     def test_huella_incluye_codigo_real_y_detecta_su_contenido(self):
         hashes = hashes_codigo()
-        self.assertIn("src/serving/publicar.py", hashes)
+        self.assertIn("src/denguekay/serving/publish.py", hashes)
         self.assertIn("src/denguekay/db/models.py", hashes)
         for ruta, huella in hashes.items():
             self.assertEqual(huella, hashlib.sha256((ROOT / ruta).read_bytes()).hexdigest())
