@@ -31,9 +31,18 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `features.py`/noteb
 - Ejecutar un notebook de punta a punta: `python -m jupyter nbconvert --to notebook --execute --inplace notebooks/<archivo>.ipynb`.
 
 ## Convenciones
-- Idioma: **español** en markdown de notebooks, comentarios, docstrings, títulos y etiquetas de gráficos (con unidades: °C, mm, casos por 100 000 hab.). Identificadores en snake_case como el resto del repo.
+- Idioma (desde el 27/10/2026, ver `CONTRIBUTING.md`):
+  - **Código en inglés:** identificadores (snake_case), comentarios y docstrings del código nuevo. No renombres código existente solo por el idioma.
+  - **Sin cambios hasta nuevo aviso:** el esquema de BD sigue el documento OE2 (nombres en español de `docs/backend/ddl_oe2.sql`) y las columnas de los datos conservan sus nombres actuales.
+  - **Documentación en español:** `docs/`, markdown de notebooks, informes, títulos y etiquetas de gráficos (con unidades: °C, mm, casos por 100 000 hab.).
 - Notebooks numerados según el paso del pipeline; los del EDA usan el rango `10_eda_*` en adelante (ver la skill `eda-dengue`).
 - Salidas del EDA: figuras en `docs/eda/figuras/<fase>/`, cifras clave en `docs/eda/metricas/<fase>.json`, conclusiones en `docs/eda/hallazgos.md`. Todo eso sí se versiona.
+
+## Control de versiones (detalle en `CONTRIBUTING.md`)
+- Solo `main` es permanente; no hagas commits directos en ella. Cada cambio va en una rama `feat/`, `fix/`, `refactor/`, `docs/`, `chore/` o `exp/`, con nombre en inglés y kebab-case, y entra a `main` por PR con el CI en verde.
+- Commits con Conventional Commits en inglés (`feat(api): add risk map endpoint`).
+- Merge siempre con «Create a merge commit». **Nunca reescribas historia publicada** (squash, rebase, `--amend`, `push --force`): los informes citan hashes.
+- Tags anotados: `model/vN` al congelar una versión de modelo, `study/<nombre>` al cerrar un estudio. Las ramas anteriores a la limpieza están en los tags `archive/*`.
 
 ## Cómo se trabaja con Rosa
 - Rosa trabaja **fase por fase y confirma cada una antes de seguir**. Al terminar una fase presentas el resumen y te detienes.
