@@ -18,10 +18,10 @@ from src.api.cache import CacheLecturas
 from src.api.main import crear_app
 from denguekay.db.models import Alert, Run, Prediction, ModelVersion
 from denguekay.db.session import make_engine, transaction
-from denguekay.serving.storage import AlmacenamientoLocal
-from denguekay.serving.load_data import persistir_carga
-from denguekay.serving.inference import actualizar_alertas
-from denguekay.serving.publish import publicar_en_bd
+from denguekay.serving.storage import LocalStorage
+from denguekay.serving.load_data import persist_load
+from denguekay.serving.inference import update_alerts
+from denguekay.serving.publish import publish_to_db
 from denguekay.config.paths import ROOT
 
 CLAVE = "clave-local-de-prueba"
@@ -42,13 +42,13 @@ class TestAPIReal(unittest.TestCase):
         cls.cfg, cls.protocolo, cls.preparadas = preparar_muestra()
         datos = datos_muestra(ruta, cls.cfg.seleccion_experimental)
         datos = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
-        cls.almacenamiento = AlmacenamientoLocal(ruta / "storage")
+        cls.almacenamiento = LocalStorage(ruta / "storage")
         plantilla = ruta / "plantilla"
         plantilla.mkdir()
         motor = motor_temporal(plantilla)
         with transaction(motor) as s:
-            persistir_carga(s, datos)
-        publicar_en_bd(motor, datos, cls.protocolo, cls.preparadas, (2, 4), cls.cfg, "run-prueba",
+            persist_load(s, datos)
+        publish_to_db(motor, datos, cls.protocolo, cls.preparadas, (2, 4), cls.cfg, "run-prueba",
                        "huella-api", cls.almacenamiento, 0)
         with transaction(motor) as s:
             # Una predicción real elevada a muy_alto para ejercitar alertas (los datos de fin de año dan riesgo bajo).
@@ -56,7 +56,7 @@ class TestAPIReal(unittest.TestCase):
                                                   Prediction.id_semana_corte == 202552))
             p.probabilidad_brote, p.nivel_riesgo = 0.8, "muy_alto"
             s.flush()
-            actualizar_alertas(s, 2, 202552)
+            update_alerts(s, 2, 202552)
             cls.oos_corte = s.scalar(select(func.min(Prediction.id_semana_corte)).where(Prediction.horizonte == 2))
         motor.dispose()
         cls.plantilla = plantilla / "pruebas.db"
@@ -400,7 +400,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 from src.api.main import crear_app
 from denguekay.db.session import make_engine
-from denguekay.serving.storage import AlmacenamientoLocal
+from denguekay.serving.storage import LocalStorage
 from denguekay.config.paths import DATA
 motor = make_engine(sys.argv[1])
 def auditar(evento, argumentos):
@@ -408,7 +408,7 @@ def auditar(evento, argumentos):
         if Path(argumentos[0]).resolve().is_relative_to(DATA):
             raise RuntimeError("La API intentó leer data/")
 sys.addaudithook(auditar)
-with TestClient(crear_app(motor, clave_api="verificacion", almacenamiento=AlmacenamientoLocal(sys.argv[2]))) as c:
+with TestClient(crear_app(motor, clave_api="verificacion", almacenamiento=LocalStorage(sys.argv[2]))) as c:
     assert c.get("/api/v1/mapa-riesgo?horizonte=2").status_code == 200
     assert c.get("/api/v1/series/200101?horizonte=2").status_code == 200
     r = c.post("/api/v1/admin/inferencias", json={"horizonte": 2}, headers={"X-API-Key": "verificacion"})
@@ -425,11 +425,11 @@ print("API sin lecturas de data/: OK")
 class TestCache(unittest.TestCase):
     def test_expiracion_capacidad_y_copia_independiente(self):
         cache = CacheLecturas(ttl=10, capacidad=1)
-        cache.guardar("uno", {"valor": [0]})
+        cache.save("uno", {"valor": [0]})
         copia = cache.obtener("uno")
         copia["valor"].append(1)
         self.assertEqual(cache.obtener("uno"), {"valor": [0]})
-        cache.guardar("dos", {"valor": None})
+        cache.save("dos", {"valor": None})
         self.assertIsNone(cache.obtener("uno"))
         cache.ttl = 0
         self.assertIsNone(cache.obtener("dos"))

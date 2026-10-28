@@ -1,31 +1,31 @@
-"""Nivel de riesgo y cambio de alerta según los parámetros del documento OE2."""
+"""Risk level and alert change according to the parameters of the OE2 document."""
 
 import math
 
-NIVELES = ("bajo", "medio", "alto", "muy_alto")
-NIVELES_ALERTA = ("alto", "muy_alto")
-ETIQUETAS = {"bajo": "Bajo", "medio": "Medio", "alto": "Alto", "muy_alto": "Muy alto"}
+LEVELS = ("bajo", "medio", "alto", "muy_alto")
+ALERT_LEVELS = ("alto", "muy_alto")
+LABELS = {"bajo": "Bajo", "medio": "Medio", "alto": "Alto", "muy_alto": "Muy alto"}
 
 
-def nivel_riesgo(probabilidad, cortes):
-    """Intervalos cerrados a la izquierda con los cortes de parametro_sistema."""
-    if probabilidad is None:
+def risk_level(probability, cutoffs):
+    """Left-closed intervals with the parametro_sistema cutoffs."""
+    if probability is None:
         return None
-    if not math.isfinite(probabilidad) or not 0 <= probabilidad <= 1:
+    if not math.isfinite(probability) or not 0 <= probability <= 1:
         raise ValueError("La probabilidad debe ser finita y estar entre cero y uno")
-    if probabilidad >= cortes["muy_alto"]:
+    if probability >= cutoffs["muy_alto"]:
         return "muy_alto"
-    if probabilidad >= cortes["alto"]:
+    if probability >= cutoffs["alto"]:
         return "alto"
-    if probabilidad >= cortes["medio"]:
+    if probability >= cutoffs["medio"]:
         return "medio"
     return "bajo"
 
 
-def cambio_alerta(nivel_anterior, nivel_actual):
-    """Compara con la alerta activa del corte anterior del mismo distrito y horizonte."""
-    if nivel_anterior is None:
+def alert_change(previous_level, current_level):
+    """Compare with the active alert of the previous cutoff of the same district and horizon."""
+    if previous_level is None:
         return "nueva"
-    if nivel_anterior == nivel_actual:
+    if previous_level == current_level:
         return "se_mantiene"
-    return "sube_nivel" if NIVELES.index(nivel_actual) > NIVELES.index(nivel_anterior) else "baja_nivel"
+    return "sube_nivel" if LEVELS.index(current_level) > LEVELS.index(previous_level) else "baja_nivel"

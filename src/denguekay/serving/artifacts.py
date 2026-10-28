@@ -1,4 +1,4 @@
-"""Boosters en Storage: serialización, verificación de hash e inferencia."""
+"""Boosters in Storage: serialisation, hash check and inference."""
 
 from functools import lru_cache
 import hashlib
@@ -11,67 +11,67 @@ import xgboost as xgb
 from denguekay.model.train import counts_from_log1p
 
 
-class ArtefactoInvalido(ValueError):
-    """El artefacto falta, no coincide con su hash o no corresponde a la versión (HTTP 409)."""
+class InvalidArtifact(ValueError):
+    """The artifact is missing, does not match its hash or does not belong to the version (HTTP 409)."""
 
 
-def huella_json(valor):
-    """Identidad reproducible de parámetros y entradas serializables."""
-    contenido = json.dumps(valor, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False, default=str)
-    return hashlib.sha256(contenido.encode("utf-8")).hexdigest()
+def json_fingerprint(value):
+    """Reproducible identity of serialisable parameters and inputs."""
+    content = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False, default=str)
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
-def sha256_bytes(contenido):
-    return hashlib.sha256(contenido).hexdigest()
+def sha256_bytes(content):
+    return hashlib.sha256(content).hexdigest()
 
 
-def serializar_booster(modelo):
-    """Bytes JSON del booster XGBoost real, tal como se guardan en Storage."""
-    return bytes(modelo.get_booster().save_raw(raw_format="json"))
+def serialize_booster(model):
+    """JSON bytes of the real XGBoost booster, as stored in Storage."""
+    return bytes(model.get_booster().save_raw(raw_format="json"))
 
 
 @lru_cache(maxsize=8)
-def _cargar_booster(sha256, contenido):
+def _load_booster(sha256, content):
     try:
         booster = xgb.Booster()
-        booster.load_model(bytearray(contenido))
+        booster.load_model(bytearray(content))
     except (ValueError, xgb.core.XGBoostError) as error:
-        raise ArtefactoInvalido("El artefacto XGBoost guardado no se puede cargar") from error
-    # La API puede correr en CPU aunque la versión haya sido entrenada en GPU.
+        raise InvalidArtifact("El artefacto XGBoost guardado no se puede cargar") from error
+    # The API may run on CPU even if the version was trained on GPU.
     booster.set_param({"device": "cpu", "nthread": 1})
     return booster
 
 
-def cargar_booster(version, almacenamiento):
-    """Lee el artefacto de Storage y verifica su SHA-256 contra la BD."""
+def load_booster(version, storage):
+    """Read the artifact from Storage and check its SHA-256 against the database."""
     try:
-        contenido = almacenamiento.leer(version.ruta_artefacto)
+        content = storage.read(version.ruta_artefacto)
     except (FileNotFoundError, ValueError) as error:
-        raise ArtefactoInvalido(f"No se encontró el artefacto de {version.codigo}") from error
-    if sha256_bytes(contenido) != version.sha256_artefacto:
-        raise ArtefactoInvalido(f"El artefacto de {version.codigo} no coincide con su SHA-256 registrado")
-    return _cargar_booster(version.sha256_artefacto, contenido)
+        raise InvalidArtifact(f"No se encontró el artefacto de {version.codigo}") from error
+    if sha256_bytes(content) != version.sha256_artefacto:
+        raise InvalidArtifact(f"El artefacto de {version.codigo} no coincide con su SHA-256 registrado")
+    return _load_booster(version.sha256_artefacto, content)
 
 
-def predecir_con_version(version, vectores, almacenamiento):
-    """Evalúa exactamente las columnas guardadas en la versión, en su orden."""
-    columnas = list(version.variables or [])
-    datos = pd.DataFrame(vectores)
-    if not columnas or len(columnas) != len(set(columnas)):
-        raise ArtefactoInvalido("La versión no contiene un esquema de variables válido")
-    if not set(columnas) <= set(datos):
+def predict_with_version(version, vectors, storage):
+    """Evaluate exactly the columns saved in the version, in their order."""
+    columns = list(version.variables or [])
+    data = pd.DataFrame(vectors)
+    if not columns or len(columns) != len(set(columns)):
+        raise InvalidArtifact("La versión no contiene un esquema de variables válido")
+    if not set(columns) <= set(data):
         raise ValueError("El vector no contiene todas las variables de la versión")
-    x = datos[columnas].astype(float)
+    x = data[columns].astype(float)
     if x.isna().any().any() or not np.isfinite(x.to_numpy()).all():
         raise ValueError("El vector contiene valores faltantes o no finitos")
-    booster = cargar_booster(version, almacenamiento)
-    if booster.feature_names != columnas:
-        raise ArtefactoInvalido("Las columnas del booster no coinciden con la versión")
-    salida = booster.predict(xgb.DMatrix(x))
-    if not np.isfinite(salida).all():
+    booster = load_booster(version, storage)
+    if booster.feature_names != columns:
+        raise InvalidArtifact("Las columnas del booster no coinciden con la versión")
+    output = booster.predict(xgb.DMatrix(x))
+    if not np.isfinite(output).all():
         raise ValueError("El modelo produjo una predicción no finita")
     if version.tarea == "regresion":
-        return counts_from_log1p(salida)
-    if ((salida < 0) | (salida > 1)).any():
+        return counts_from_log1p(output)
+    if ((output < 0) | (output > 1)).any():
         raise ValueError("El clasificador produjo probabilidades inválidas")
-    return salida
+    return output

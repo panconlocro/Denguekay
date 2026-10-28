@@ -60,5 +60,5 @@ def lectura(request: Request, response: Response, sesion, construir):
     response.headers["X-Cache"] = "HIT" if valor is not None else "MISS"
     if valor is None:
         valor = construir()
-        cache.guardar(clave, valor)
+        cache.save(clave, valor)
     return valor

@@ -1,1 +1,1 @@
-"""Carga de fuentes reales y, en la fase 2, publicación de inferencia."""
+"""Load of the real sources and publication of the inference."""

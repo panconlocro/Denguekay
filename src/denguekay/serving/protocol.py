@@ -1,4 +1,4 @@
-"""Importa y contrasta predicciones OOS con el protocolo progresivo original."""
+"""Import the OOS predictions and check them against the original progressive protocol."""
 
 from dataclasses import dataclass
 import hashlib
@@ -16,107 +16,107 @@ from denguekay.data.validation.forecast_contract import KEY
 
 
 @dataclass
-class Protocolo:
-    reporte: dict
-    predicciones: pd.DataFrame
-    datos: dict
-    particiones: dict
+class Protocol:
+    report: dict
+    predictions: pd.DataFrame
+    data: dict
+    partitions: dict
     hashes: dict
-    metricas_path: object
-    predicciones_path: object
+    metrics_path: object
+    predictions_path: object
 
 
-def cargar_protocolo(horizontes, variantes, *, metricas_path=COMPACT_METRICS,
-                    predicciones_path=COMPACT_PREDICTIONS):
-    """Si falta el CSV, regenera en models/serving sin sobrescribir a Rosa."""
-    if not predicciones_path.exists():
-        metricas_path = SERVING_REGENERATED_PROTOCOL / "metricas.json"
-        predicciones_path = SERVING_REGENERATED_PROTOCOL / "predicciones_por_bloque.csv"
-        if not predicciones_path.exists() or not metricas_path.exists():
+def load_protocol(horizons, variants, *, metrics_path=COMPACT_METRICS,
+                    predictions_path=COMPACT_PREDICTIONS):
+    """If the CSV is missing, regenerate it in models/serving without overwriting Rosa's."""
+    if not predictions_path.exists():
+        metrics_path = SERVING_REGENERATED_PROTOCOL / "metricas.json"
+        predictions_path = SERVING_REGENERATED_PROTOCOL / "predicciones_por_bloque.csv"
+        if not predictions_path.exists() or not metrics_path.exists():
             print("Falta el CSV OOS: se ejecutará el protocolo existente en models/serving")
             run_compact_validation(output_dir=SERVING_REGENERATED_PROTOCOL,
-                metrics_path=metricas_path)
-    reporte = json.loads(metricas_path.read_text(encoding="utf-8"))
-    pred = pd.read_csv(predicciones_path, dtype={"ubigeo": "string"},
+                metrics_path=metrics_path)
+    report = json.loads(metrics_path.read_text(encoding="utf-8"))
+    pred = pd.read_csv(predictions_path, dtype={"ubigeo": "string"},
                        parse_dates=["semana_inicio", "origen_cierre"])
-    requeridas = {*KEY, "semana_inicio", "origen_cierre", "horizonte", "variante", "bloque",
+    required = {*KEY, "semana_inicio", "origen_cierre", "horizonte", "variante", "bloque",
                   "casos_Dengue", "brote", "umbral_brote_casos", "probabilidad_brote", "casos_predichos"}
-    if not requeridas <= set(pred) or pred.duplicated([*KEY, "horizonte", "variante", "bloque"]).any():
+    if not required <= set(pred) or pred.duplicated([*KEY, "horizonte", "variante", "bloque"]).any():
         raise ValueError("El CSV OOS tiene columnas ausentes o llaves duplicadas")
-    if reporte["sha256_manifest_gold"] != hashlib.sha256(GOLD_MANIFEST.read_bytes()).hexdigest():
+    if report["sha256_manifest_gold"] != hashlib.sha256(GOLD_MANIFEST.read_bytes()).hexdigest():
         raise ValueError("El protocolo temporal no corresponde al manifiesto gold actual")
-    datos, particiones = {}, {}
-    for h in horizontes:
-        gold, archivo = read_gold(GOLD, h)
-        bloque_h = reporte["horizontes"].get(str(h))
-        if not bloque_h or bloque_h["sha256_gold"] != hashlib.sha256(archivo.read_bytes()).hexdigest():
+    data, partitions = {}, {}
+    for h in horizons:
+        gold, file = read_gold(GOLD, h)
+        block_h = report["horizontes"].get(str(h))
+        if not block_h or block_h["sha256_gold"] != hashlib.sha256(file.read_bytes()).hexdigest():
             raise ValueError(f"Las métricas h={h} no corresponden al gold actual")
-        datos[h], _ = prepare_gold(gold, h)
-        for nombre in set(variantes.values()):
-            cols = compact_variants(h).get(nombre)
-            resultado = bloque_h["variantes"].get(nombre)
-            if not resultado or cols != resultado["columnas"]:
+        data[h], _ = prepare_gold(gold, h)
+        for name in set(variants.values()):
+            cols = compact_variants(h).get(name)
+            result = block_h["variantes"].get(name)
+            if not result or cols != result["columnas"]:
                 raise ValueError("Las columnas del protocolo no coinciden con el contrato de variantes")
-            folds = [*resultado["folds"], resultado["sensibilidad_2025"]]
+            folds = [*result["folds"], result["sensibilidad_2025"]]
             for fold in folds:
-                bloque = fold["bloque"]
-                train, prueba, corte = (split_calendar_year(datos[h], 2025) if bloque == "calendario_2025"
-                                        else split_season(datos[h], int(bloque.split("_")[-1])))
-                if str(corte.date()) != fold["corte_ajuste"] or len(train) != fold["n_entrenamiento"]:
+                block = fold["bloque"]
+                train, test_set, cutoff = (split_calendar_year(data[h], 2025) if block == "calendario_2025"
+                                        else split_season(data[h], int(block.split("_")[-1])))
+                if str(cutoff.date()) != fold["corte_ajuste"] or len(train) != fold["n_entrenamiento"]:
                     raise ValueError("El corte de entrenamiento difiere del protocolo guardado")
-                seleccion = pred.loc[pred.horizonte.eq(h) & pred.variante.eq(nombre) & pred.bloque.eq(bloque)]
-                verificar_bloque(seleccion, prueba, fold, h, nombre)
-                particiones[h, nombre, bloque] = {"inicio_entrenamiento": train.semana_inicio.min().date(),
-                    "corte": corte.date(), "fold": fold}
-    hashes = {"protocolo_metricas": hashlib.sha256(metricas_path.read_bytes()).hexdigest(),
-              "protocolo_predicciones": hashlib.sha256(predicciones_path.read_bytes()).hexdigest()}
-    return Protocolo(reporte, pred, datos, particiones, hashes, metricas_path, predicciones_path)
+                selection = pred.loc[pred.horizonte.eq(h) & pred.variante.eq(name) & pred.bloque.eq(block)]
+                check_block(selection, test_set, fold, h, name)
+                partitions[h, name, block] = {"inicio_entrenamiento": train.semana_inicio.min().date(),
+                    "corte": cutoff.date(), "fold": fold}
+    hashes = {"protocolo_metricas": hashlib.sha256(metrics_path.read_bytes()).hexdigest(),
+              "protocolo_predicciones": hashlib.sha256(predictions_path.read_bytes()).hexdigest()}
+    return Protocol(report, pred, data, partitions, hashes, metrics_path, predictions_path)
 
 
-def verificar_bloque(pred, prueba, fold, horizonte, variante):
-    """Comprueba cobertura, objetivos, origen y métricas sin cambiar sus valores."""
-    if len(pred) != len(prueba) or set(map(tuple, pred[KEY].to_numpy())) != set(map(tuple, prueba[KEY].to_numpy())):
+def check_block(pred, test_set, fold, horizon, variant):
+    """Check coverage, targets, origin and metrics without changing their values."""
+    if len(pred) != len(test_set) or set(map(tuple, pred[KEY].to_numpy())) != set(map(tuple, test_set[KEY].to_numpy())):
         raise ValueError(f"Las predicciones OOS no cubren el bloque {fold['bloque']}")
-    columnas = ["semana_inicio", "origen_cierre", "casos_Dengue", "brote", "umbral_brote_casos"]
+    columns = ["semana_inicio", "origen_cierre", "casos_Dengue", "brote", "umbral_brote_casos"]
     p = pred.sort_values(KEY).reset_index(drop=True).copy()
-    real = prueba.sort_values(KEY).reset_index(drop=True)
-    for c in columnas[:2]:
+    real = test_set.sort_values(KEY).reset_index(drop=True)
+    for c in columns[:2]:
         if not p[c].equals(real[c]):
             raise ValueError("Las fechas de las predicciones no coinciden con el corte temporal")
-    for c in columnas[2:]:
+    for c in columns[2:]:
         if not np.allclose(p[c].to_numpy(float), real[c].to_numpy(float), rtol=1e-12, atol=1e-12):
             raise ValueError("El observado o etiqueta del CSV OOS difiere de gold")
-    lag = f"casos_lag_{horizonte}"
+    lag = f"casos_lag_{horizon}"
     if lag not in p or not np.array_equal(p[lag].to_numpy(float), real[lag].to_numpy(float)):
         raise ValueError("La persistencia del CSV OOS difiere del predictor de gold")
-    # XGBoost exportó float32. Recuperar ese tipo reproduce el JSON de
-    # evaluación; los valores originales del CSV se conservan para importar.
+    # XGBoost exported float32. Restoring that type reproduces the evaluation
+    # JSON; the original CSV values are kept for the import.
     for c in ("probabilidad_brote", "casos_predichos"):
         p[c] = p[c].astype("float32")
-    calculado = evaluate_fold(p, horizon=horizonte, variant=variante, block=fold["bloque"],
+    computed = evaluate_fold(p, horizon=horizon, variant=variant, block=fold["bloque"],
         kind=fold["tipo"], cutoff=pd.Timestamp(fold["corte_ajuste"]), n_training=fold["n_entrenamiento"],
         classification_threshold=fold["clasificacion"]["umbral_probabilidad"])
-    for tipo in ("clasificacion", "regresion", "persistencia"):
-        _comparar_metricas(calculado[tipo], fold[tipo])
+    for kind in ("clasificacion", "regresion", "persistencia"):
+        _compare_metrics(computed[kind], fold[kind])
 
 
-def _comparar_metricas(actual, guardado):
-    for clave, esperado in guardado.items():
-        if isinstance(esperado, dict):
-            _comparar_metricas(actual[clave], esperado)
-        elif esperado is None:
-            if actual[clave] is not None:
+def _compare_metrics(actual, saved):
+    for key, expected_value in saved.items():
+        if isinstance(expected_value, dict):
+            _compare_metrics(actual[key], expected_value)
+        elif expected_value is None:
+            if actual[key] is not None:
                 raise ValueError("Una métrica ausente no puede sustituirse por cero")
-        elif not np.isclose(actual[clave], esperado, rtol=1e-10, atol=1e-10):
-            raise ValueError(f"Las predicciones OOS no reproducen la métrica guardada: {clave}")
+        elif not np.isclose(actual[key], expected_value, rtol=1e-10, atol=1e-10):
+            raise ValueError(f"Las predicciones OOS no reproducen la métrica guardada: {key}")
 
 
-def metricas_de_variante(protocolo, horizonte, variante):
-    """Conserva selección, contraste y sensibilidad separados, sin promediarlos."""
-    resultado = protocolo.reporte["horizontes"][str(horizonte)]["variantes"][variante]
-    return {"bloques": {f["bloque"]: f for f in [*resultado["folds"], resultado["sensibilidad_2025"]]},
+def variant_metrics(protocol, horizon, variant):
+    """Keep selection, contrast and sensitivity apart, without averaging them."""
+    result = protocol.report["horizontes"][str(horizon)]["variantes"][variant]
+    return {"bloques": {f["bloque"]: f for f in [*result["folds"], result["sensibilidad_2025"]]},
             "procedencia": "Protocolo temporal progresivo; métricas de versiones por bloque, no del ajuste final",
-            "sha256_reporte": protocolo.hashes["protocolo_metricas"],
-            "sha256_predicciones": protocolo.hashes["protocolo_predicciones"],
-            "device_evaluacion": protocolo.reporte["parametros"]["device"],
-            "version_xgboost_evaluacion": protocolo.reporte["version_xgboost"]}
+            "sha256_reporte": protocol.hashes["protocolo_metricas"],
+            "sha256_predicciones": protocol.hashes["protocolo_predicciones"],
+            "device_evaluacion": protocol.report["parametros"]["device"],
+            "version_xgboost_evaluacion": protocol.report["version_xgboost"]}

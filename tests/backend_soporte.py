@@ -84,7 +84,7 @@ def datos_muestra(carpeta, seleccion_experimental=None):
     """Ejecuta GX sobre gold real y prepara el lote de carga OE2 desde las fixtures."""
     # Importación diferida: evita cargar GX al importar este módulo.
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
-    from denguekay.serving.load_data import preparar_desde_tablas
+    from denguekay.serving.load_data import prepare_from_tables
     from denguekay.data.validation.gx_quality import get_context, validate_dataframe
     from denguekay.data.validation.gold_expectations import expectations_for_gold
 
@@ -96,6 +96,6 @@ def datos_muestra(carpeta, seleccion_experimental=None):
     archivos = [BACKEND_FIXTURES / n for n in ("silver_muestra.csv", "cobertura_muestra.csv", "gold_h2_muestra.csv",
                                              "gold_temporal_h2_muestra.csv", "sala_muestra.csv")]
     hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in archivos + [UBIGEO_CATALOG, DISTRICT_COORDS]}
-    return preparar_desde_tablas(load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS),
+    return prepare_from_tables(load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS),
                                  muestra["silver"], muestra["cobertura"], muestra["gold"], muestra["sala"],
                                  hashes, {"exito": calidad["exito"], "suites": [calidad]}, seleccion_experimental)

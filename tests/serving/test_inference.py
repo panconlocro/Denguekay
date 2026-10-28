@@ -21,12 +21,12 @@ from denguekay.db.models import (Alert, District, Run, WeeklyObservation, System
 from denguekay.db.session import make_engine, transaction
 from denguekay.model.future_rows import build_future_rows
 from denguekay.serving import parameters as parametros
-from denguekay.serving.storage import AlmacenamientoLocal
-from denguekay.serving.artifacts import ArtefactoInvalido, predecir_con_version
-from denguekay.serving.load_data import persistir_carga
-from denguekay.serving.inference import (InferenciaNoDisponible, actualizar_alertas, importar_oos, inferir,
-                                    seleccionar_versiones, vectores_desde_bd)
-from denguekay.serving.models import guardar_versiones
+from denguekay.serving.storage import LocalStorage
+from denguekay.serving.artifacts import InvalidArtifact, predict_with_version
+from denguekay.serving.load_data import persist_load
+from denguekay.serving.inference import (InferenceUnavailable, update_alerts, import_oos, infer,
+                                    select_versions, vectors_from_db)
+from denguekay.serving.models import save_versions
 
 UBIGEOS = ["200101", "200201", "200502"]
 TOLERANCIA = 1e-9
@@ -46,13 +46,13 @@ class EntornoInferencia:
         cls.cfg, cls.protocolo, cls.preparadas = preparar_muestra()
         datos = datos_muestra(ruta, cls.cfg.seleccion_experimental)
         # Solo el tramo contiguo 2025 S30-S52: la historia de la fixture tiene un hueco 2017-2025.
-        cls.datos = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
+        cls.data = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
         cls.motor = cls.crear_motor(ruta)
-        cls.almacenamiento = AlmacenamientoLocal(ruta / "storage")
+        cls.almacenamiento = LocalStorage(ruta / "storage")
         with transaction(cls.motor) as s:
-            persistir_carga(s, cls.datos)
-            cls.versiones = {k: v.id_version for k, v in guardar_versiones(
-                s, cls.preparadas, "run-prueba", parametros.criterios_aceptacion(s), cls.almacenamiento).items()}
+            persist_load(s, cls.data)
+            cls.versiones = {k: v.id_version for k, v in save_versions(
+                s, cls.preparadas, "run-prueba", parametros.acceptance_criteria(s), cls.almacenamiento).items()}
 
     @classmethod
     def tearDownClass(cls):
@@ -68,9 +68,9 @@ class EntornoInferencia:
 
     def inferir(self, h=2, corte=None, servir=True):
         with transaction(self.motor) as s:
-            return inferir(s, h, corte, almacenamiento=self.almacenamiento, servir_no_validadas=servir)
+            return infer(s, h, corte, storage=self.almacenamiento, servir_no_validadas=servir)
 
-    def predicciones(self, h=2, corte=202552):
+    def predictions(self, h=2, corte=202552):
         with transaction(self.motor) as s:
             return {p.ubigeo: (p.estado, p.probabilidad_brote, p.nivel_riesgo, p.motivo_no_disponible, p.id_ejecucion)
                     for p in s.scalars(select(Prediction).where(Prediction.horizonte == h,
@@ -82,13 +82,13 @@ class EntornoInferencia:
         self.assertTrue(r["experimental"])
         self.assertEqual(r["seleccion"], "experimental")
         self.assertEqual((r["predicciones"], r["disponibles"]), (65, 3))
-        primera = self.predicciones()
+        primera = self.predictions()
         self.assertEqual({u for u, p in primera.items() if p[0] == "disponible"}, set(UBIGEOS))
         sin_datos = next(p for u, p in primera.items() if u not in UBIGEOS)
         self.assertEqual((sin_datos[0], sin_datos[1], sin_datos[2]), ("no_disponible", None, None))
         self.assertTrue(sin_datos[3])
         r2 = self.inferir(2)
-        segunda = self.predicciones()
+        segunda = self.predictions()
         self.assertEqual(len(segunda), 65)  # UPSERT: misma clave, sin duplicados
         self.assertTrue(all(p[4] == r2["id_ejecucion"] for p in segunda.values()))
         self.assertEqual({u: p[1] for u, p in primera.items()}, {u: p[1] for u, p in segunda.items()})
@@ -103,11 +103,11 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
 
     def test_vector_reconstruido_desde_bd_igual_a_gold(self):
         for h in (2, 4):
-            columnas = list(self.preparadas[h, "clasificacion"].datos["variables"])
+            columnas = list(self.preparadas[h, "clasificacion"].data["variables"])
             gold = leer_csv(f"gold_temporal_h{h}_muestra.csv").set_index(["ubigeo", "semana_inicio"])
             for corte in (202533, 202540, 202552 - h):
                 with self.subTest(h=h, corte=corte), transaction(self.motor) as s:
-                    filas, motivos = vectores_desde_bd(s, h, corte, columnas)
+                    filas, motivos = vectors_from_db(s, h, corte, columnas)
                     self.assertEqual(sorted(filas.ubigeo), UBIGEOS)
                     esperado = gold.loc[list(zip(filas.ubigeo, filas.semana_inicio)), columnas].to_numpy(float)
                     np.testing.assert_allclose(filas[columnas].to_numpy(float), esperado, rtol=0, atol=TOLERANCIA)
@@ -124,20 +124,20 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
                 for corte in (202540, 202552 - h):
                     fecha = pd.Timestamp(s.get(EpiWeek, corte).fecha_fin)
                     actual, _ = build_future_rows(panel, h, columns=columnas, cutoff_date=fecha, reference=referencia)
-                    desde_bd, _ = vectores_desde_bd(s, h, corte, columnas)
+                    desde_bd, _ = vectors_from_db(s, h, corte, columnas)
                     actual, desde_bd = actual.sort_values("ubigeo"), desde_bd.sort_values("ubigeo")
                     for version in (clf, reg):
                         with self.subTest(h=h, corte=corte, tarea=version.tarea):
                             np.testing.assert_array_equal(
-                                predecir_con_version(version, desde_bd, self.almacenamiento),
-                                predecir_con_version(version, actual, self.almacenamiento))
+                                predict_with_version(version, desde_bd, self.almacenamiento),
+                                predict_with_version(version, actual, self.almacenamiento))
         # La probabilidad guardada es la del modelo redondeada a numeric(5,4).
         self.inferir(4, 202548)
         with transaction(self.motor) as s:
             clf = s.get(ModelVersion, self.versiones[4, "clasificacion"])
-            filas, _ = vectores_desde_bd(s, 4, 202548, sorted(set(clf.variables)))
-            esperadas = dict(zip(filas.ubigeo, predecir_con_version(clf, filas, self.almacenamiento)))
-        guardadas = self.predicciones(4, 202548)
+            filas, _ = vectors_from_db(s, 4, 202548, sorted(set(clf.variables)))
+            esperadas = dict(zip(filas.ubigeo, predict_with_version(clf, filas, self.almacenamiento)))
+        guardadas = self.predictions(4, 202548)
         for ubigeo, p in esperadas.items():
             self.assertAlmostEqual(guardadas[ubigeo][1], round(float(p), 4), places=9)
 
@@ -145,8 +145,8 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
         r = self.inferir(2, servir=False)
         self.assertFalse(r["experimental"])
         self.assertEqual(r["disponibles"], 0)
-        estados = {p[0] for p in self.predicciones().values()}
-        motivos = {p[3] for p in self.predicciones().values()}
+        estados = {p[0] for p in self.predictions().values()}
+        motivos = {p[3] for p in self.predictions().values()}
         self.assertEqual(estados, {"no_disponible"})
         self.assertIn("umbrales", motivos.pop())
 
@@ -159,13 +159,13 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
         self.assertFalse(r["experimental"])
         self.assertEqual(r["seleccion"], "activa")
         with transaction(self.motor) as s:
-            versiones, motivo = seleccionar_versiones(s, 2, False)
+            versiones, motivo = select_versions(s, 2, False)
             self.assertIsNone(motivo)
             self.assertEqual(versiones["clasificacion"].estado, "activa")
 
     def test_errores_de_solicitud(self):
         for h, corte, mensaje in ((3, None, "h=3"), (2, 202601, "No hay observaciones"), (2, 209901, "calendario")):
-            with self.subTest(h=h, corte=corte), self.assertRaisesRegex(InferenciaNoDisponible, mensaje):
+            with self.subTest(h=h, corte=corte), self.assertRaisesRegex(InferenceUnavailable, mensaje):
                 self.inferir(h, corte)
         with self.assertRaises(ValueError):
             self.inferir(5)
@@ -175,10 +175,10 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
         original = ruta.read_bytes()
         try:
             ruta.write_bytes(original + b" ")
-            with self.assertRaisesRegex(ArtefactoInvalido, "SHA-256"):
+            with self.assertRaisesRegex(InvalidArtifact, "SHA-256"):
                 self.inferir(2)
             ruta.unlink()
-            with self.assertRaisesRegex(ArtefactoInvalido, "No se encontró"):
+            with self.assertRaisesRegex(InvalidArtifact, "No se encontró"):
                 self.inferir(2)
         finally:
             ruta.write_bytes(original)
@@ -199,7 +199,7 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
                     s.add(existente)
                 existente.probabilidad_brote, existente.nivel_riesgo = probabilidad, nivel
                 s.flush()
-                return actualizar_alertas(s, 2, corte)
+                return update_alerts(s, 2, corte)
 
             def alertas():
                 return [(a.prediccion.id_semana_corte, a.nivel, a.estado, a.cambio)
@@ -233,11 +233,11 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
     def test_importa_oos_como_cortes_pasados(self):
         with transaction(self.motor) as s:
             versiones = {k: s.get(ModelVersion, v) for k, v in self.versiones.items()}
-            resumen = importar_oos(s, self.protocolo, (2, 4), self.cfg, versiones)
+            resumen = import_oos(s, self.protocolo, (2, 4), self.cfg, versiones)
             self.assertTrue(resumen)
             total = s.scalar(select(func.count()).select_from(Prediction))
-            esperado = len(self.protocolo.predicciones.loc[
-                self.protocolo.predicciones.variante.eq(self.cfg.variantes["clasificacion"])])
+            esperado = len(self.protocolo.predictions.loc[
+                self.protocolo.predictions.variante.eq(self.cfg.variantes["clasificacion"])])
             self.assertEqual(total, esperado)
             p = s.scalar(select(Prediction).limit(1))
             self.assertIsNone(p.id_version_clasificador)
@@ -248,7 +248,7 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
             self.assertTrue(e.detalle["experimental"])
             self.assertEqual(s.scalar(select(func.count()).select_from(Alert)), 0)
             # Reimportar no duplica (UPSERT por la clave del documento).
-            importar_oos(s, self.protocolo, (2, 4), self.cfg, versiones)
+            import_oos(s, self.protocolo, (2, 4), self.cfg, versiones)
             self.assertEqual(s.scalar(select(func.count()).select_from(Prediction)), total)
 
     def test_seleccion_experimental_incompleta(self):

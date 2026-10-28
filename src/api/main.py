@@ -14,15 +14,15 @@ from src.api.esquemas import ErrorRespuesta
 from src.api.routers import admin, datos, modelos, referencia, vigilancia
 from denguekay.db.settings import InvalidDatabaseSettings
 from denguekay.db.session import create_session_factory, make_engine
-from denguekay.serving.storage import AlmacenamientoLocal
-from denguekay.serving.settings import configuracion_servicio
+from denguekay.serving.storage import LocalStorage
+from denguekay.serving.settings import service_settings
 from denguekay.config.paths import ENV_FILE
 
 
 def crear_app(motor=None, cfg=None, clave_api=None, ttl_cache=10, almacenamiento=None):
     """Inyecta motores reales para pruebas; sin URL no crea una BD alternativa."""
     load_dotenv(ENV_FILE, override=False)
-    cfg = cfg or configuracion_servicio()
+    cfg = cfg or service_settings()
 
     @asynccontextmanager
     async def vida(app):
@@ -51,7 +51,7 @@ def crear_app(motor=None, cfg=None, clave_api=None, ttl_cache=10, almacenamiento
     app.state.cfg = cfg
     app.state.clave_api = os.environ.get("API_KEY", "") if clave_api is None else clave_api
     app.state.cache = CacheLecturas(ttl=ttl_cache)
-    app.state.almacenamiento = almacenamiento or AlmacenamientoLocal()
+    app.state.almacenamiento = almacenamiento or LocalStorage()
     app.state.fabrica_sesiones = create_session_factory(motor) if motor is not None else None
     registrar_errores(app)
     app.add_middleware(CORSMiddleware, allow_origins=[cfg.cors_origen],

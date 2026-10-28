@@ -13,15 +13,15 @@ from sqlalchemy.engine import URL
 from backend_soporte import datos_muestra, entorno_bd, motor_temporal
 from denguekay.db.models import District
 from denguekay.db.session import transaction
-from denguekay.serving.artifacts import huella_json
-from denguekay.serving.load_data import main as cargar_cli, persistir_carga
-from denguekay.serving.publish import hashes_codigo, main as publicar_cli
+from denguekay.serving.artifacts import json_fingerprint
+from denguekay.serving.load_data import main as cargar_cli, persist_load
+from denguekay.serving.publish import code_hashes, main as publicar_cli
 from denguekay.config.paths import ROOT
 
 
 class TestOperacionServing(unittest.TestCase):
     def test_huella_incluye_codigo_real_y_detecta_su_contenido(self):
-        hashes = hashes_codigo()
+        hashes = code_hashes()
         self.assertIn("src/denguekay/serving/publish.py", hashes)
         self.assertIn("src/denguekay/db/models.py", hashes)
         for ruta, huella in hashes.items():
@@ -57,11 +57,11 @@ class TestOperacionServing(unittest.TestCase):
                 # Otra presentación del mismo nombre real permite comprobar actualización del catálogo.
                 distritos = [{**d, "nombre": d["nombre"].title()} for d in datos.distritos]
                 previa = replace(datos, distritos=distritos,
-                    hashes={**datos.hashes, "presentacion_catalogo": huella_json(distritos)})
+                    hashes={**datos.hashes, "presentacion_catalogo": json_fingerprint(distritos)})
                 with transaction(motor) as s:
-                    primera = persistir_carga(s, previa)
+                    primera = persist_load(s, previa)
                 with transaction(motor) as s:
-                    segunda = persistir_carga(s, datos)
+                    segunda = persist_load(s, datos)
                     self.assertNotEqual(primera["id_ejecucion"], segunda["id_ejecucion"])
                     for d in datos.distritos:
                         self.assertEqual(s.get(District, d["ubigeo"]).nombre, d["nombre"])

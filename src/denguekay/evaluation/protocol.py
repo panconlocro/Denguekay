@@ -30,7 +30,7 @@ from denguekay.evaluation.metrics import (
     alerts_from_counts, alert_metrics, count_metrics, select_f1_threshold,
 )
 from denguekay.model.train import MIN_OUTBREAK_CASES
-from denguekay.serving.risk import NIVELES
+from denguekay.serving.risk import LEVELS
 from denguekay.data.validation.forecast_contract import KEY
 
 INITIAL_CALIBRATION_BLOCK = "temporada_2021"
@@ -148,7 +148,7 @@ def calibrate_chronologically(pred: pd.DataFrame, method: str = CALIBRATION_METH
 def risk_levels(p: pd.Series, cutoffs: dict = RISK_CUTOFFS) -> pd.Categorical:
     """Levels bajo/medio/alto/muy_alto with left-closed intervals."""
     edges = [-np.inf, cutoffs["medio"], cutoffs["alto"], cutoffs["muy_alto"], np.inf]
-    return pd.cut(p, bins=edges, labels=list(NIVELES), right=False)
+    return pd.cut(p, bins=edges, labels=list(LEVELS), right=False)
 
 
 # ---------------------------------------------------------------------------
@@ -186,7 +186,7 @@ def metrics_by_block(data: pd.DataFrame) -> pd.DataFrame:
             row["prob_media_calibrada"] = float(pc.mean())
             row["prevalencia"] = float(y.mean())
             levels = risk_levels(g.probabilidad_calibrada)
-            for level in NIVELES:
+            for level in LEVELS:
                 in_level = levels == level
                 row[f"n_{level}"] = int(in_level.sum())
                 row[f"tasa_brote_{level}"] = float(y[in_level].mean()) if in_level.any() else None

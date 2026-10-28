@@ -24,7 +24,7 @@ class CacheLecturas:
             self.entradas.move_to_end(clave)
             return deepcopy(valor)
 
-    def guardar(self, clave, valor):
+    def save(self, clave, valor):
         with self.cerrojo:
             self.entradas[clave] = (monotonic(), deepcopy(valor))
             self.entradas.move_to_end(clave)

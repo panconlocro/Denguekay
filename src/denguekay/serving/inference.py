@@ -1,8 +1,8 @@
-"""Inferencia por semana de corte desde la BD, alertas e importación de predicciones OOS.
+"""Inference per cutoff week from the database, alerts and import of OOS predictions.
 
-El vector de características se reconstruye en memoria desde
-``observacion_semanal`` y ``distrito.poblacion_censo_2017`` con las mismas
-funciones del modelado (``construir_filas_futuras``); no se persiste.
+The feature vector is rebuilt in memory from ``observacion_semanal`` and
+``distrito.poblacion_censo_2017`` with the same modelling functions
+(``build_future_rows``); it is not persisted.
 """
 
 from time import perf_counter
@@ -17,302 +17,302 @@ from denguekay.db.session import upsert
 from denguekay.model.future_rows import build_future_rows
 from denguekay.features.sociodemographics import DIRECT
 from denguekay.serving import parameters as parametros
-from denguekay.serving.artifacts import predecir_con_version
-from denguekay.serving.risk import NIVELES_ALERTA, cambio_alerta, nivel_riesgo
+from denguekay.serving.artifacts import predict_with_version
+from denguekay.serving.risk import ALERT_LEVELS, alert_change, risk_level
 
-TAREAS = ("clasificacion", "regresion")
-BLOQUES_OOS = ("temporada_2022", "temporada_2023", "temporada_2024", "calendario_2025")
-MOTIVO_H3 = "sin modelo para h=3"
-
-
-class InferenciaNoDisponible(ValueError):
-    """La solicitud no se puede atender con los datos o modelos de la BD (HTTP 409)."""
+TASKS = ("clasificacion", "regresion")
+OOS_BLOCKS = ("temporada_2022", "temporada_2023", "temporada_2024", "calendario_2025")
+H3_REASON = "sin modelo para h=3"
 
 
-# --- calendario y datos ------------------------------------------------------
-
-def semana(sesion, id_semana):
-    fila = sesion.get(EpiWeek, id_semana)
-    if fila is None:
-        raise InferenciaNoDisponible(f"La semana {id_semana} no está en el calendario epidemiológico")
-    return fila
+class InferenceUnavailable(ValueError):
+    """The request cannot be served with the data or models in the database (HTTP 409)."""
 
 
-def semana_objetivo(sesion, corte, horizonte):
-    inicio = corte.fecha_inicio + pd.Timedelta(weeks=horizonte).to_pytimedelta()
-    fila = sesion.scalar(select(EpiWeek).where(EpiWeek.fecha_inicio == inicio))
-    if fila is None:
-        raise InferenciaNoDisponible("La semana objetivo no está en el calendario; recargue los datos")
-    return fila
+# --- calendar and data ------------------------------------------------------
+
+def week(sesion, id_semana):
+    row = sesion.get(EpiWeek, id_semana)
+    if row is None:
+        raise InferenceUnavailable(f"La semana {id_semana} no está en el calendario epidemiológico")
+    return row
 
 
-def ultima_semana_observada(sesion):
-    valor = sesion.scalar(select(WeeklyObservation.id_semana).order_by(WeeklyObservation.id_semana.desc()).limit(1))
-    if valor is None:
-        raise InferenciaNoDisponible("No hay observaciones cargadas")
-    return valor
+def target_week(sesion, cutoff, horizon):
+    start = cutoff.fecha_inicio + pd.Timedelta(weeks=horizon).to_pytimedelta()
+    row = sesion.scalar(select(EpiWeek).where(EpiWeek.fecha_inicio == start))
+    if row is None:
+        raise InferenceUnavailable("La semana objetivo no está en el calendario; recargue los datos")
+    return row
 
 
-def panel_desde_bd(sesion, hasta):
-    """Panel mínimo (casos por distrito y semana) cerrado a la fecha ``hasta``."""
-    filas = sesion.execute(select(
+def last_observed_week(sesion):
+    value = sesion.scalar(select(WeeklyObservation.id_semana).order_by(WeeklyObservation.id_semana.desc()).limit(1))
+    if value is None:
+        raise InferenceUnavailable("No hay observaciones cargadas")
+    return value
+
+
+def panel_from_db(sesion, end):
+    """Minimal panel (cases per district and week) closed at date ``end``."""
+    rows = sesion.execute(select(
         WeeklyObservation.ubigeo, EpiWeek.anio, EpiWeek.semana,
         EpiWeek.fecha_inicio, WeeklyObservation.casos_dengue
     ).join(EpiWeek, EpiWeek.id_semana == WeeklyObservation.id_semana
-    ).where(EpiWeek.fecha_fin <= hasta)).all()
-    panel = pd.DataFrame(filas, columns=["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"])
+    ).where(EpiWeek.fecha_fin <= end)).all()
+    panel = pd.DataFrame(rows, columns=["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"])
     panel["ubigeo"] = panel.ubigeo.astype("string")
     panel["semana_inicio"] = pd.to_datetime(panel.semana_inicio)
     panel["casos_Dengue"] = panel.casos_Dengue.astype(float)
     return panel.sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True)
 
 
-def referencia_desde_bd(sesion):
-    """Referencia censal 2017 desde ``distrito``.
+def reference_from_db(sesion):
+    """2017 census reference from ``distrito``.
 
-    ``construir_sociodemografia`` exige además tres fracciones de 2017; los
-    modelos de servicio solo usan ``log_poblacion_censo_2017``, así que esas
-    fracciones se completan con 0 y no entran al vector (se descartan).
+    ``build_sociodemography`` also requires three 2017 fractions; the serving
+    models only use ``log_poblacion_censo_2017``, so those fractions are filled
+    with 0 and do not enter the vector (they are dropped).
     """
-    filas = sesion.execute(select(District.ubigeo, District.poblacion_censo_2017).where(
+    rows = sesion.execute(select(District.ubigeo, District.poblacion_censo_2017).where(
         District.poblacion_censo_2017.is_not(None))).all()
-    referencia = pd.DataFrame(filas, columns=["ubigeo", "poblacion"])
-    referencia["ubigeo"] = referencia.ubigeo.astype("string")
-    for columna in DIRECT:
-        referencia[columna] = 0.0
-    return referencia
+    reference = pd.DataFrame(rows, columns=["ubigeo", "poblacion"])
+    reference["ubigeo"] = reference.ubigeo.astype("string")
+    for column in DIRECT:
+        reference[column] = 0.0
+    return reference
 
 
-def vectores_desde_bd(sesion, horizonte, id_semana_corte, columnas):
-    """Vectores del objetivo corte+h, sin escribir nada. Devuelve (filas, motivos)."""
-    corte = semana(sesion, id_semana_corte)
-    panel = panel_desde_bd(sesion, corte.fecha_fin)
+def vectors_from_db(sesion, horizon, id_semana_corte, columns):
+    """Vectors of the target cutoff+h, writing nothing. Returns (rows, reasons)."""
+    cutoff = week(sesion, id_semana_corte)
+    panel = panel_from_db(sesion, cutoff.fecha_fin)
     if panel.empty:
-        raise InferenciaNoDisponible("No hay observaciones cerradas al corte solicitado")
+        raise InferenceUnavailable("No hay observaciones cerradas al corte solicitado")
     try:
-        filas, motivos = build_future_rows(panel, horizonte, columns=columnas,
-                                                 cutoff_date=pd.Timestamp(corte.fecha_fin),
-                                                 reference=referencia_desde_bd(sesion))
+        rows, reasons = build_future_rows(panel, horizon, columns=columns,
+                                                 cutoff_date=pd.Timestamp(cutoff.fecha_fin),
+                                                 reference=reference_from_db(sesion))
     except ValueError as error:
-        raise InferenciaNoDisponible(str(error)) from error
-    return filas, {m["ubigeo"]: m["motivo"] for m in motivos}
+        raise InferenceUnavailable(str(error)) from error
+    return rows, {m["ubigeo"]: m["motivo"] for m in reasons}
 
 
-# --- selección de versiones ----------------------------------------------------
+# --- version selection ----------------------------------------------------
 
-def seleccionar_versiones(sesion, horizonte, servir_no_validadas):
-    """Versión activa por tarea; si no hay, la selección experimental (desviación temporal).
+def select_versions(sesion, horizon, servir_no_validadas):
+    """Active version per task; if there is none, the experimental selection (temporary deviation).
 
-    Devuelve ({tarea: VersionModelo}, motivo); el diccionario está incompleto
-    cuando no hay versión utilizable para alguna tarea.
+    Returns ({task: ModelVersion}, reason); the dict is incomplete when some task
+    has no usable version.
     """
-    versiones = {v.tarea: v for v in sesion.scalars(select(ModelVersion).where(
-        ModelVersion.horizonte == horizonte, ModelVersion.estado == "activa"))}
-    faltan = [t for t in TAREAS if t not in versiones]
-    if faltan and servir_no_validadas:
-        codigos = parametros.seleccion_experimental(sesion).get(horizonte, {})
-        for tarea in faltan:
-            codigo = codigos.get(tarea)
-            version = codigo and sesion.scalar(select(ModelVersion).where(ModelVersion.codigo == codigo))
-            if version is not None and version.tarea == tarea and version.horizonte == horizonte:
-                versiones[tarea] = version
-    if all(t in versiones for t in TAREAS):
-        return versiones, None
+    versions = {v.tarea: v for v in sesion.scalars(select(ModelVersion).where(
+        ModelVersion.horizonte == horizon, ModelVersion.estado == "activa"))}
+    missing = [t for t in TASKS if t not in versions]
+    if missing and servir_no_validadas:
+        codes = parametros.experimental_selection(sesion).get(horizon, {})
+        for task in missing:
+            code = codes.get(task)
+            version = code and sesion.scalar(select(ModelVersion).where(ModelVersion.codigo == code))
+            if version is not None and version.tarea == task and version.horizonte == horizon:
+                versions[task] = version
+    if all(t in versions for t in TASKS):
+        return versions, None
     if not servir_no_validadas:
-        return versiones, "Predicción no disponible: no hay un modelo activo que cumpla los umbrales"
-    return versiones, f"Predicción no disponible: no hay versiones utilizables para h={horizonte}"
+        return versions, "Predicción no disponible: no hay un modelo activo que cumpla los umbrales"
+    return versions, f"Predicción no disponible: no hay versiones utilizables para h={horizon}"
 
 
-def es_experimental(versiones):
-    return any(not v.cumple_umbrales for v in versiones.values())
+def is_experimental(versions):
+    return any(not v.cumple_umbrales for v in versions.values())
 
 
-# --- inferencia -----------------------------------------------------------------
+# --- inference -----------------------------------------------------------------
 
-def _registro(ubigeo, corte, objetivo, horizonte, ejecucion, versiones, probabilidad, casos, motivo, cortes):
-    disponible = probabilidad is not None
-    probabilidad = round(float(probabilidad), 4) if disponible else None  # numeric(5,4) del DDL
-    return {"ubigeo": ubigeo, "id_semana_corte": corte, "id_semana_objetivo": objetivo,
-            "horizonte": horizonte, "probabilidad_brote": probabilidad,
-            "nivel_riesgo": nivel_riesgo(probabilidad, cortes) if disponible else None,
-            "casos_estimados": round(float(casos), 2) if disponible and casos is not None else None,
-            "estado": "disponible" if disponible else "no_disponible",
-            "motivo_no_disponible": None if disponible else motivo,
-            "id_version_clasificador": versiones["clasificacion"].id_version if "clasificacion" in versiones else None,
-            "id_version_regresor": versiones["regresion"].id_version if "regresion" in versiones else None,
-            "id_ejecucion": ejecucion, "fecha_generacion": utc_now()}
+def _record(ubigeo, cutoff, target, horizon, run, versions, probability, cases, reason, cutoffs):
+    available = probability is not None
+    probability = round(float(probability), 4) if available else None  # numeric(5,4) of the DDL
+    return {"ubigeo": ubigeo, "id_semana_corte": cutoff, "id_semana_objetivo": target,
+            "horizonte": horizon, "probabilidad_brote": probability,
+            "nivel_riesgo": risk_level(probability, cutoffs) if available else None,
+            "casos_estimados": round(float(cases), 2) if available and cases is not None else None,
+            "estado": "disponible" if available else "no_disponible",
+            "motivo_no_disponible": None if available else reason,
+            "id_version_clasificador": versions["clasificacion"].id_version if "clasificacion" in versions else None,
+            "id_version_regresor": versions["regresion"].id_version if "regresion" in versions else None,
+            "id_ejecucion": run, "fecha_generacion": utc_now()}
 
 
-def inferir(sesion, horizonte, id_semana_corte=None, *, almacenamiento, servir_no_validadas, origen="api"):
-    """Genera (UPSERT) la predicción de cada distrito para un corte y horizonte.
+def infer(sesion, horizon, id_semana_corte=None, *, storage, servir_no_validadas, origin="api"):
+    """Generate (UPSERT) each district's prediction for a cutoff and horizon.
 
-    Crea una ``ejecucion`` de tipo ``inferencia``; el llamador confirma la
-    transacción. Sin versión utilizable, las filas quedan ``no_disponible``.
+    It creates an ``ejecucion`` of type ``inferencia``; the caller commits the
+    transaction. Without a usable version, the rows stay ``no_disponible``.
     """
-    inicio = perf_counter()
-    if horizonte == 3:
-        raise InferenciaNoDisponible(MOTIVO_H3)
-    if horizonte not in (2, 4):
+    start = perf_counter()
+    if horizon == 3:
+        raise InferenceUnavailable(H3_REASON)
+    if horizon not in (2, 4):
         raise ValueError("horizonte debe ser 2, 3 o 4")
-    id_semana_corte = id_semana_corte or ultima_semana_observada(sesion)
-    corte = semana(sesion, id_semana_corte)
+    id_semana_corte = id_semana_corte or last_observed_week(sesion)
+    cutoff = week(sesion, id_semana_corte)
     if sesion.scalar(select(WeeklyObservation.id_semana).where(
             WeeklyObservation.id_semana == id_semana_corte).limit(1)) is None:
-        raise InferenciaNoDisponible(f"No hay observaciones para la semana de corte {id_semana_corte}")
-    objetivo = semana_objetivo(sesion, corte, horizonte)
-    cortes = parametros.cortes_riesgo(sesion)
-    versiones, motivo = seleccionar_versiones(sesion, horizonte, servir_no_validadas)
-    ejecucion = Run(tipo="inferencia", estado="en_curso", id_semana_corte=id_semana_corte,
-                          detalle={"origen": origen, "horizonte": horizonte})
-    sesion.add(ejecucion)
+        raise InferenceUnavailable(f"No hay observaciones para la semana de corte {id_semana_corte}")
+    target = target_week(sesion, cutoff, horizon)
+    cutoffs = parametros.risk_cutoffs(sesion)
+    versions, reason = select_versions(sesion, horizon, servir_no_validadas)
+    run = Run(tipo="inferencia", estado="en_curso", id_semana_corte=id_semana_corte,
+                          detalle={"origen": origin, "horizonte": horizon})
+    sesion.add(run)
     sesion.flush()
-    distritos = list(sesion.scalars(select(District.ubigeo).where(District.activo.is_(True)).order_by(District.ubigeo)))
-    probabilidades, casos, motivos = {}, {}, {}
-    if motivo is None:
-        columnas = sorted({c for v in versiones.values() for c in v.variables})
-        filas, motivos = vectores_desde_bd(sesion, horizonte, id_semana_corte, columnas)
-        if not filas.empty:
-            p = predecir_con_version(versiones["clasificacion"], filas, almacenamiento)
-            c = predecir_con_version(versiones["regresion"], filas, almacenamiento)
-            probabilidades = dict(zip(filas.ubigeo, map(float, p)))
-            casos = dict(zip(filas.ubigeo, map(float, c)))
-    registros = [_registro(u, id_semana_corte, objetivo.id_semana, horizonte, ejecucion.id_ejecucion, versiones,
-                           probabilidades.get(u), casos.get(u),
-                           motivo or motivos.get(u, "No hay vector de características para el distrito"), cortes)
-                 for u in distritos]
-    upsert(sesion, Prediction.__table__, registros, ["ubigeo", "id_semana_corte", "horizonte"])
+    districts = list(sesion.scalars(select(District.ubigeo).where(District.activo.is_(True)).order_by(District.ubigeo)))
+    probabilities, cases, reasons = {}, {}, {}
+    if reason is None:
+        columns = sorted({c for v in versions.values() for c in v.variables})
+        rows, reasons = vectors_from_db(sesion, horizon, id_semana_corte, columns)
+        if not rows.empty:
+            p = predict_with_version(versions["clasificacion"], rows, storage)
+            c = predict_with_version(versions["regresion"], rows, storage)
+            probabilities = dict(zip(rows.ubigeo, map(float, p)))
+            cases = dict(zip(rows.ubigeo, map(float, c)))
+    records = [_record(u, id_semana_corte, target.id_semana, horizon, run.id_ejecucion, versions,
+                           probabilities.get(u), cases.get(u),
+                           reason or reasons.get(u, "No hay vector de características para el distrito"), cutoffs)
+                 for u in districts]
+    upsert(sesion, Prediction.__table__, records, ["ubigeo", "id_semana_corte", "horizonte"])
     sesion.flush()
-    alertas = actualizar_alertas(sesion, horizonte, id_semana_corte)
-    experimental = motivo is None and es_experimental(versiones)
-    disponibles = sum(r["estado"] == "disponible" for r in registros)
-    ejecucion.estado = "exitosa"
-    ejecucion.fin = utc_now()
-    ejecucion.detalle = {
-        "origen": origen, "horizonte": horizonte, "id_semana_corte": id_semana_corte,
-        "id_semana_objetivo": objetivo.id_semana, "experimental": experimental,
-        "seleccion": "experimental" if experimental else ("activa" if motivo is None else None),
-        "versiones": {t: v.codigo for t, v in versiones.items()}, "motivo": motivo,
-        "predicciones": len(registros), "disponibles": disponibles,
-        "no_disponibles": len(registros) - disponibles, "alertas": alertas,
-        "duracion_segundos": round(perf_counter() - inicio, 3)}
+    alerts = update_alerts(sesion, horizon, id_semana_corte)
+    experimental = reason is None and is_experimental(versions)
+    available = sum(r["estado"] == "disponible" for r in records)
+    run.estado = "exitosa"
+    run.fin = utc_now()
+    run.detalle = {
+        "origen": origin, "horizonte": horizon, "id_semana_corte": id_semana_corte,
+        "id_semana_objetivo": target.id_semana, "experimental": experimental,
+        "seleccion": "experimental" if experimental else ("activa" if reason is None else None),
+        "versiones": {t: v.codigo for t, v in versions.items()}, "motivo": reason,
+        "predicciones": len(records), "disponibles": available,
+        "no_disponibles": len(records) - available, "alertas": alerts,
+        "duracion_segundos": round(perf_counter() - start, 3)}
     sesion.flush()
-    return {"id_ejecucion": ejecucion.id_ejecucion, **ejecucion.detalle}
+    return {"id_ejecucion": run.id_ejecucion, **run.detalle}
 
 
-def actualizar_alertas(sesion, horizonte, id_semana_corte):
-    """Alertas del corte para alto/muy_alto; como máximo una activa por distrito y horizonte.
+def update_alerts(sesion, horizon, id_semana_corte):
+    """Alerts of the cutoff for alto/muy_alto; at most one active per district and horizon.
 
-    ``cambio`` compara con el nivel de la predicción de la semana de corte
-    anterior (corte - 1 semana); sin ella, ``nueva``. Es idempotente:
-    recalcular el mismo corte da el mismo resultado.
-    La alerta activa es siempre la del corte más reciente; inferir un corte
-    pasado no reactiva alertas viejas ni deja dos activas.
+    ``cambio`` compares with the level of the prediction of the previous cutoff
+    week (cutoff - 1 week); without it, ``nueva``. It is idempotent: recomputing the
+    same cutoff gives the same result. The active alert is always the one of the
+    most recent cutoff; inferring a past cutoff neither reactivates old alerts nor
+    leaves two active ones.
     """
-    ahora = utc_now()
-    actuales = list(sesion.scalars(select(Prediction).where(
-        Prediction.horizonte == horizonte, Prediction.id_semana_corte == id_semana_corte)))
-    if not actuales:
+    now = utc_now()
+    current = list(sesion.scalars(select(Prediction).where(
+        Prediction.horizonte == horizon, Prediction.id_semana_corte == id_semana_corte)))
+    if not current:
         return {"nuevas_o_actualizadas": 0, "retiradas": 0}
-    corte = semana(sesion, id_semana_corte)
-    previa = sesion.scalar(select(EpiWeek.id_semana).where(
-        EpiWeek.fecha_inicio == corte.fecha_inicio - pd.Timedelta(weeks=1).to_pytimedelta()))
-    niveles_previos = dict(sesion.execute(select(Prediction.ubigeo, Prediction.nivel_riesgo).where(
-        Prediction.horizonte == horizonte, Prediction.id_semana_corte == previa)).all()) if previa else {}
-    activas = {}
-    for alerta, corte in sesion.execute(select(Alert, Prediction.id_semana_corte).join(
+    cutoff = week(sesion, id_semana_corte)
+    previous = sesion.scalar(select(EpiWeek.id_semana).where(
+        EpiWeek.fecha_inicio == cutoff.fecha_inicio - pd.Timedelta(weeks=1).to_pytimedelta()))
+    previous_levels = dict(sesion.execute(select(Prediction.ubigeo, Prediction.nivel_riesgo).where(
+        Prediction.horizonte == horizon, Prediction.id_semana_corte == previous)).all()) if previous else {}
+    active = {}
+    for alert, cutoff in sesion.execute(select(Alert, Prediction.id_semana_corte).join(
             Prediction, Prediction.id_prediccion == Alert.id_prediccion).where(
-            Prediction.horizonte == horizonte, Prediction.id_semana_corte != id_semana_corte,
+            Prediction.horizonte == horizon, Prediction.id_semana_corte != id_semana_corte,
             Alert.estado == "activa")):
-        activas.setdefault(alerta.ubigeo, []).append((corte, alerta))
-    propias = {a.id_prediccion: a for a in sesion.scalars(select(Alert).where(
-        Alert.id_prediccion.in_([p.id_prediccion for p in actuales])))}
-    conteo = {"nuevas_o_actualizadas": 0, "retiradas": 0}
+        active.setdefault(alert.ubigeo, []).append((cutoff, alert))
+    own_rows = {a.id_prediccion: a for a in sesion.scalars(select(Alert).where(
+        Alert.id_prediccion.in_([p.id_prediccion for p in current])))}
+    count = {"nuevas_o_actualizadas": 0, "retiradas": 0}
 
-    def retirar(alerta, motivo):
-        if alerta.estado == "activa":
-            alerta.estado, alerta.fecha_retiro, alerta.motivo = "retirada", ahora, motivo
-            conteo["retiradas"] += 1
+    def withdraw(alert, reason):
+        if alert.estado == "activa":
+            alert.estado, alert.fecha_retiro, alert.motivo = "retirada", now, reason
+            count["retiradas"] += 1
 
-    for p in actuales:
-        otras = activas.get(p.ubigeo, [])
-        posterior = any(corte > id_semana_corte for corte, _ in otras)
-        propia = propias.get(p.id_prediccion)
-        if p.estado == "disponible" and p.nivel_riesgo in NIVELES_ALERTA:
-            previo = niveles_previos.get(p.ubigeo)
-            cambio = cambio_alerta(previo if previo in NIVELES_ALERTA else None, p.nivel_riesgo)
-            if propia is None:
-                propia = Alert(id_prediccion=p.id_prediccion, ubigeo=p.ubigeo, nivel=p.nivel_riesgo,
-                                estado="activa", cambio=cambio, fecha_generacion=ahora)
-                sesion.add(propia)
+    for p in current:
+        others = active.get(p.ubigeo, [])
+        later = any(cutoff > id_semana_corte for cutoff, _ in others)
+        own = own_rows.get(p.id_prediccion)
+        if p.estado == "disponible" and p.nivel_riesgo in ALERT_LEVELS:
+            previous_value = previous_levels.get(p.ubigeo)
+            change = alert_change(previous_value if previous_value in ALERT_LEVELS else None, p.nivel_riesgo)
+            if own is None:
+                own = Alert(id_prediccion=p.id_prediccion, ubigeo=p.ubigeo, nivel=p.nivel_riesgo,
+                                estado="activa", cambio=change, fecha_generacion=now)
+                sesion.add(own)
             else:
-                propia.nivel, propia.cambio, propia.estado = p.nivel_riesgo, cambio, "activa"
-                propia.fecha_generacion, propia.fecha_retiro, propia.motivo = ahora, None, None
-            conteo["nuevas_o_actualizadas"] += 1
-            if posterior:  # corte pasado: queda como historia, no compite con la vigente
-                propia.estado, propia.fecha_retiro = "retirada", ahora
-                propia.motivo = "Corte anterior a una alerta activa más reciente"
-        elif propia is not None:
-            retirar(propia, "La predicción recalculada ya no alcanza nivel alto")
-        motivo = (f"Sustituida por la alerta del corte {id_semana_corte}" if propia is not None and propia.estado == "activa"
+                own.nivel, own.cambio, own.estado = p.nivel_riesgo, change, "activa"
+                own.fecha_generacion, own.fecha_retiro, own.motivo = now, None, None
+            count["nuevas_o_actualizadas"] += 1
+            if later:  # past cutoff: it stays as history and does not compete with the current one
+                own.estado, own.fecha_retiro = "retirada", now
+                own.motivo = "Corte anterior a una alerta activa más reciente"
+        elif own is not None:
+            withdraw(own, "La predicción recalculada ya no alcanza nivel alto")
+        reason = (f"Sustituida por la alerta del corte {id_semana_corte}" if own is not None and own.estado == "activa"
                   else f"El riesgo del corte {id_semana_corte} ya no alcanza nivel alto")
-        for corte, alerta in otras:
-            if corte < id_semana_corte:
-                retirar(alerta, motivo)
+        for cutoff, alert in others:
+            if cutoff < id_semana_corte:
+                withdraw(alert, reason)
     sesion.flush()
-    return conteo
+    return count
 
 
-# --- predicciones OOS (cortes pasados) --------------------------------------
+# --- OOS predictions (past cutoffs) --------------------------------------
 
-def importar_oos(sesion, protocolo, horizontes, cfg, versiones_servicio):
-    """Guarda las predicciones fuera de muestra del protocolo como cortes pasados.
+def import_oos(sesion, protocol, horizons, cfg, service_versions):
+    """Save the protocol's out-of-sample predictions as past cutoffs.
 
-    Una ``ejecucion`` de tipo ``inferencia`` por horizonte y bloque, con el
-    bloque y su origen en ``detalle``; ``id_version_*`` en NULL porque esos
-    boosters no se conservaron. No generan alertas: son históricas.
+    One ``ejecucion`` of type ``inferencia`` per horizon and block, with the block
+    and its origin in ``detalle``; ``id_version_*`` NULL because those boosters
+    were not kept. They generate no alerts: they are history.
     """
-    cortes = parametros.cortes_riesgo(sesion)
-    calendario = pd.DataFrame(sesion.execute(select(
+    cutoffs = parametros.risk_cutoffs(sesion)
+    calendar = pd.DataFrame(sesion.execute(select(
         EpiWeek.id_semana, EpiWeek.fecha_fin)).all(), columns=["id_semana", "fecha_fin"])
-    corte_por_fecha = dict(zip(pd.to_datetime(calendario.fecha_fin), calendario.id_semana))
-    fin_por_id = dict(zip(calendario.id_semana, pd.to_datetime(calendario.fecha_fin)))
-    resumen = []
-    for h in horizontes:
-        experimental = not all(versiones_servicio[h, t].cumple_umbrales for t in TAREAS)
-        # cargar_protocolo ya verificó la cobertura de cada bloque contra gold.
-        presentes = set(protocolo.predicciones.loc[protocolo.predicciones.horizonte.eq(h), "bloque"])
-        for bloque in [b for b in BLOQUES_OOS if b in presentes]:
-            base = protocolo.predicciones.loc[protocolo.predicciones.horizonte.eq(h) & protocolo.predicciones.bloque.eq(bloque)]
+    cutoff_by_date = dict(zip(pd.to_datetime(calendar.fecha_fin), calendar.id_semana))
+    end_by_id = dict(zip(calendar.id_semana, pd.to_datetime(calendar.fecha_fin)))
+    summary = []
+    for h in horizons:
+        experimental = not all(service_versions[h, t].cumple_umbrales for t in TASKS)
+        # load_protocol already checked each block's coverage against gold.
+        present = set(protocol.predictions.loc[protocol.predictions.horizonte.eq(h), "bloque"])
+        for block in [b for b in OOS_BLOCKS if b in present]:
+            base = protocol.predictions.loc[protocol.predictions.horizonte.eq(h) & protocol.predictions.bloque.eq(block)]
             cls = base.loc[base.variante.eq(cfg.variantes["clasificacion"])].set_index(["ubigeo", "anio", "semana"]).sort_index()
             reg = base.loc[base.variante.eq(cfg.variantes["regresion"])].set_index(["ubigeo", "anio", "semana"]).sort_index()
             if cls.empty or not cls.index.equals(reg.index):
-                raise ValueError(f"Clasificación y regresión OOS no comparten semanas en {bloque} h={h}")
-            ejecucion = Run(tipo="inferencia", estado="en_curso", detalle={"origen": "oos_protocolo"})
-            sesion.add(ejecucion)
+                raise ValueError(f"Clasificación y regresión OOS no comparten semanas en {block} h={h}")
+            run = Run(tipo="inferencia", estado="en_curso", detalle={"origen": "oos_protocolo"})
+            sesion.add(run)
             sesion.flush()
-            registros = []
-            for (ubigeo, anio, semana_obj), fila in cls.iterrows():
-                corte = corte_por_fecha.get(pd.Timestamp(fila.origen_cierre))
-                if corte is None:
+            records = []
+            for (ubigeo, year, target_wk), row in cls.iterrows():
+                cutoff = cutoff_by_date.get(pd.Timestamp(row.origen_cierre))
+                if cutoff is None:
                     raise ValueError("El origen OOS no corresponde a un cierre del calendario")
-                probabilidad = float(fila.probabilidad_brote)
-                casos = float(reg.loc[(ubigeo, anio, semana_obj), "casos_predichos"])
-                if not np.isfinite([probabilidad, casos]).all() or casos < 0:
+                probability = float(row.probabilidad_brote)
+                cases = float(reg.loc[(ubigeo, year, target_wk), "casos_predichos"])
+                if not np.isfinite([probability, cases]).all() or cases < 0:
                     raise ValueError("No se importan predicciones OOS no finitas o negativas")
-                objetivo = int(anio) * 100 + int(semana_obj)
-                if fin_por_id.get(objetivo) != pd.Timestamp(fila.origen_cierre) + pd.Timedelta(weeks=h):
+                target = int(year) * 100 + int(target_wk)
+                if end_by_id.get(target) != pd.Timestamp(row.origen_cierre) + pd.Timedelta(weeks=h):
                     raise ValueError("La predicción OOS no respeta la distancia corte-objetivo h")
-                registros.append(_registro(ubigeo, int(corte), objetivo, h,
-                                           ejecucion.id_ejecucion, {}, probabilidad, casos, None, cortes))
-            upsert(sesion, Prediction.__table__, registros, ["ubigeo", "id_semana_corte", "horizonte"])
-            ejecucion.estado, ejecucion.fin = "exitosa", utc_now()
-            ejecucion.id_semana_corte = max(r["id_semana_corte"] for r in registros)
-            ejecucion.detalle = {"origen": "oos_protocolo", "horizonte": h, "bloque": bloque,
-                                 "experimental": experimental, "predicciones": len(registros),
+                records.append(_record(ubigeo, int(cutoff), target, h,
+                                           run.id_ejecucion, {}, probability, cases, None, cutoffs))
+            upsert(sesion, Prediction.__table__, records, ["ubigeo", "id_semana_corte", "horizonte"])
+            run.estado, run.fin = "exitosa", utc_now()
+            run.id_semana_corte = max(r["id_semana_corte"] for r in records)
+            run.detalle = {"origen": "oos_protocolo", "horizonte": h, "bloque": block,
+                                 "experimental": experimental, "predicciones": len(records),
                                  "variantes": dict(cfg.variantes),
-                                 "sha256_protocolo": protocolo.hashes,
+                                 "sha256_protocolo": protocol.hashes,
                                  "nota": "Predicciones fuera de muestra del protocolo temporal; sin booster conservado"}
-            resumen.append({"horizonte": h, "bloque": bloque, "predicciones": len(registros),
-                            "id_ejecucion": ejecucion.id_ejecucion})
+            summary.append({"horizonte": h, "bloque": block, "predicciones": len(records),
+                            "id_ejecucion": run.id_ejecucion})
     sesion.flush()
-    return resumen
+    return summary

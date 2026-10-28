@@ -8,9 +8,9 @@ from src.api.dependencias import Identificador, Sesion, exigir_clave
 from src.api.errores import ErrorAPI
 from src.api.esquemas import ActivacionRespuesta, InferenciaRespuesta, SolicitudInferencia
 from denguekay.db.models import Run, ModelVersion, utc_now
-from denguekay.serving.artifacts import ArtefactoInvalido
-from denguekay.serving.inference import InferenciaNoDisponible, inferir
-from denguekay.serving.parameters import ParametroFaltante
+from denguekay.serving.artifacts import InvalidArtifact
+from denguekay.serving.inference import InferenceUnavailable, infer
+from denguekay.serving.parameters import MissingParameter
 
 router = APIRouter(prefix="/admin", tags=["Administración"], dependencies=[Depends(exigir_clave)])
 
@@ -29,10 +29,10 @@ def inferencias(solicitud: SolicitudInferencia, request: Request, sesion: Sesion
     No entrena. h=3, un corte sin observaciones o un artefacto alterado responden 409.
     """
     try:
-        resultado = inferir(sesion, solicitud.horizonte, solicitud.id_semana_corte,
-                            almacenamiento=request.app.state.almacenamiento,
-                            servir_no_validadas=request.app.state.cfg.servir_no_validadas, origen="api")
-    except (InferenciaNoDisponible, ArtefactoInvalido, ParametroFaltante) as error:
+        resultado = infer(sesion, solicitud.horizonte, solicitud.id_semana_corte,
+                            storage=request.app.state.almacenamiento,
+                            servir_no_validadas=request.app.state.cfg.servir_no_validadas, origin="api")
+    except (InferenceUnavailable, InvalidArtifact, MissingParameter) as error:
         sesion.rollback()
         # Se audita el intento fallido, como en la carga y la publicación.
         sesion.add(Run(tipo="inferencia", estado="fallida", fin=utc_now(),
@@ -41,9 +41,9 @@ def inferencias(solicitud: SolicitudInferencia, request: Request, sesion: Sesion
                              mensaje_error=f"{type(error).__name__}: {error}"[:2000]))
         sesion.commit()
         request.app.state.cache.limpiar()
-        if isinstance(error, ParametroFaltante):
+        if isinstance(error, MissingParameter):
             raise ErrorAPI(503, "parametros_no_configurados", str(error)) from error
-        codigo = "artefacto_invalido" if isinstance(error, ArtefactoInvalido) else "inferencia_no_disponible"
+        codigo = "artefacto_invalido" if isinstance(error, InvalidArtifact) else "inferencia_no_disponible"
         raise ErrorAPI(409, codigo, str(error)) from error
     confirmar(request, sesion)
     return {k: resultado[k] for k in InferenciaRespuesta.model_fields}

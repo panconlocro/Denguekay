@@ -8,8 +8,8 @@ from src.api.errores import ErrorAPI
 from denguekay.db.models import (Alert, District, Run, VariableImportance, WeeklyObservation,
                             Prediction, EpiWeek, ModelVersion)
 from denguekay.serving import parameters as parametros
-from denguekay.serving.inference import MOTIVO_H3, TAREAS, seleccionar_versiones
-from denguekay.serving.risk import ETIQUETAS, NIVELES
+from denguekay.serving.inference import H3_REASON, TASKS, select_versions
+from denguekay.serving.risk import LABELS, LEVELS
 
 NOTA_EXPERIMENTAL = ("Demo experimental: ningún modelo cumple todavía los umbrales de aceptación; "
                      "las predicciones marcadas experimental: true no son un modelo validado.")
@@ -130,7 +130,7 @@ def prediccion_dtos(sesion, filas):
             "semana_objetivo": semana_dto(cal[p.id_semana_objetivo]),
             "tipo": "vigente" if p.id_semana_corte == vigentes[p.horizonte] else "retrospectiva",
             "estado": p.estado, "probabilidad_brote": p.probabilidad_brote, "nivel_riesgo": p.nivel_riesgo,
-            "nivel_riesgo_etiqueta": ETIQUETAS.get(p.nivel_riesgo), "casos_estimados": p.casos_estimados,
+            "nivel_riesgo_etiqueta": LABELS.get(p.nivel_riesgo), "casos_estimados": p.casos_estimados,
             "casos_persistencia": persistencia.get((p.ubigeo, p.id_semana_corte)),
             "alerta_modelo": (p.probabilidad_brote >= clf.umbral_probabilidad
                               if disponible and clf is not None and clf.umbral_probabilidad is not None else None),
@@ -150,7 +150,7 @@ def consulta_predicciones(horizonte, corte, ubigeo=None):
 def sin_prediccion(sesion, horizonte):
     """Motivo cuando no hay predicciones del horizonte (h=3 o aún sin publicar)."""
     if horizonte == 3:
-        return MOTIVO_H3
+        return H3_REASON
     return "Aún no hay predicciones publicadas para este horizonte"
 
 
@@ -180,7 +180,7 @@ def series(sesion, ubigeo, horizonte, desde, hasta):
     preds = list(sesion.scalars(select(Prediction).where(
         Prediction.ubigeo == ubigeo, Prediction.horizonte == horizonte, Prediction.id_semana_objetivo.in_(ids)))) if ids else []
     dtos = {dto["semana_objetivo"]["id_semana"]: dto for dto in prediccion_dtos(sesion, preds)}
-    motivo = MOTIVO_H3 if horizonte == 3 else None
+    motivo = H3_REASON if horizonte == 3 else None
     return {**metadatos(sesion, motivo is None, motivo), "ubigeo": ubigeo, "distrito": d.nombre,
             "horizonte": horizonte, "desde": desde, "hasta": hasta,
             "elementos": [{"semana": semana_dto(s), "observado": s.id_semana in obs,
@@ -199,7 +199,7 @@ def predicciones_vigentes(sesion, horizonte):
 def tablero(sesion, horizonte):
     corte, dtos = predicciones_vigentes(sesion, horizonte)
     disponibles = [p for p in dtos if p["disponible"]]
-    niveles = {n: sum(p["nivel_riesgo"] == n for p in disponibles) for n in NIVELES}
+    niveles = {n: sum(p["nivel_riesgo"] == n for p in disponibles) for n in LEVELS}
     total_distritos = sesion.scalar(select(func.count()).select_from(District).where(District.activo.is_(True)))
     activas = sesion.scalar(select(func.count()).select_from(Alert).join(
         Prediction, Prediction.id_prediccion == Alert.id_prediccion).where(
@@ -229,7 +229,7 @@ def mapa_riesgo(sesion, horizonte):
     corte, dtos = predicciones_vigentes(sesion, horizonte)
     por_ubigeo = {p["ubigeo"]: p for p in dtos}
     motivo_general = sin_prediccion(sesion, horizonte) if not dtos else None
-    cortes = parametros.cortes_riesgo(sesion)
+    cortes = parametros.risk_cutoffs(sesion)
     features = []
     for d in sesion.scalars(select(District).where(District.activo.is_(True)).order_by(District.ubigeo)):
         p = por_ubigeo.get(d.ubigeo)
@@ -274,7 +274,7 @@ def alerta_dtos(sesion, filas):
     preds = {p["id_prediccion"]: p for p in prediccion_dtos(sesion, predicciones)}
     return [{"id_alerta": a.id_alerta, "ubigeo": a.ubigeo, "distrito": preds[a.id_prediccion]["distrito"],
              "horizonte": preds[a.id_prediccion]["horizonte"], "nivel": a.nivel,
-             "nivel_etiqueta": ETIQUETAS[a.nivel], "estado": a.estado, "cambio": a.cambio,
+             "nivel_etiqueta": LABELS[a.nivel], "estado": a.estado, "cambio": a.cambio,
              "fecha_generacion": a.fecha_generacion, "fecha_retiro": a.fecha_retiro, "motivo": a.motivo,
              "experimental": preds[a.id_prediccion]["experimental"], "prediccion": preds[a.id_prediccion]}
             for a in filas]
@@ -306,12 +306,12 @@ def modelos_en_uso(sesion, horizonte, servir_no_validadas):
     horizontes = [horizonte] if horizonte else sorted(set(sesion.scalars(select(ModelVersion.horizonte))))
     elementos = []
     for h in horizontes:
-        versiones, _ = seleccionar_versiones(sesion, h, servir_no_validadas)
-        for tarea in TAREAS:
+        versiones, _ = select_versions(sesion, h, servir_no_validadas)
+        for tarea in TASKS:
             if tarea in versiones:
                 v = versiones[tarea]
                 elementos.append({**modelo_dto(v), "seleccion": "activa" if v.estado == "activa" else "experimental"})
-    motivo = None if elementos else (MOTIVO_H3 if horizonte == 3 else "No hay versiones activas ni selección experimental utilizable")
+    motivo = None if elementos else (H3_REASON if horizonte == 3 else "No hay versiones activas ni selección experimental utilizable")
     experimental = any(e["experimental"] for e in elementos)
     return {**metadatos(sesion, bool(elementos), motivo), "elementos": elementos,
             "nota": NOTA_EXPERIMENTAL if experimental else "Versiones activas que cumplen los umbrales de aceptación"}

@@ -1,4 +1,4 @@
-"""Lectura de ``parametro_sistema``: la BD es la autoridad de umbrales y cortes."""
+"""Reading of ``parametro_sistema``: the database is the authority for thresholds and cutoffs."""
 
 from sqlalchemy import select
 
@@ -6,41 +6,41 @@ from denguekay.db.models import SystemParameter, utc_now
 from denguekay.db.session import upsert
 
 
-class ParametroFaltante(ValueError):
-    """La BD no tiene un parámetro obligatorio (¿falta alembic upgrade head?)."""
+class MissingParameter(ValueError):
+    """The database lacks a mandatory parameter (missing alembic upgrade head?)."""
 
 
-def leer(sesion, clave):
-    valor = sesion.scalar(select(SystemParameter.valor).where(SystemParameter.clave == clave))
-    if valor is None:
-        raise ParametroFaltante(f"Falta el parámetro {clave} en parametro_sistema")
-    return valor
+def read(sesion, key):
+    value = sesion.scalar(select(SystemParameter.valor).where(SystemParameter.clave == key))
+    if value is None:
+        raise MissingParameter(f"Falta el parámetro {key} en parametro_sistema")
+    return value
 
 
-def cortes_riesgo(sesion):
-    cortes = leer(sesion, "cortes_riesgo")
-    if not 0 < cortes["medio"] < cortes["alto"] < cortes["muy_alto"] < 1:
+def risk_cutoffs(sesion):
+    cutoffs = read(sesion, "cortes_riesgo")
+    if not 0 < cutoffs["medio"] < cutoffs["alto"] < cutoffs["muy_alto"] < 1:
         raise ValueError("cortes_riesgo debe ser creciente y estar entre 0 y 1")
-    return cortes
+    return cutoffs
 
 
-def criterios_aceptacion(sesion):
-    """Traduce umbrales_aceptacion al formato de denguekay.evaluation.acceptance."""
-    u = leer(sesion, "umbrales_aceptacion")
+def acceptance_criteria(sesion):
+    """Translate umbrales_aceptacion to the format of denguekay.evaluation.acceptance."""
+    u = read(sesion, "umbrales_aceptacion")
     return {"bloques": [u["bloque"]], "recall_minimo": u["recall"], "precision_minima": u["precision"],
             "f1_minimo": u["f1"], "proporcion_error_persistencia": u["razon_error_base"]}
 
 
-def seleccion_experimental(sesion):
-    """{horizonte: {tarea: codigo}}; vacío si no se sembró."""
-    valor = sesion.scalar(select(SystemParameter.valor).where(SystemParameter.clave == "seleccion_experimental"))
-    return {int(h): v for h, v in (valor or {}).items()}
+def experimental_selection(sesion):
+    """{horizon: {task: code}}; empty if it was not seeded."""
+    value = sesion.scalar(select(SystemParameter.valor).where(SystemParameter.clave == "seleccion_experimental"))
+    return {int(h): v for h, v in (value or {}).items()}
 
 
-def sembrar_seleccion_experimental(sesion, seleccion):
-    """Siembra desde config.yaml sin pisar un valor ya existente (ON CONFLICT DO NOTHING)."""
+def seed_experimental_selection(sesion, selection):
+    """Seed from config.yaml without overwriting an existing value (ON CONFLICT DO NOTHING)."""
     upsert(sesion, SystemParameter.__table__, [{
-        "clave": "seleccion_experimental", "valor": {str(h): v for h, v in seleccion.items()},
+        "clave": "seleccion_experimental", "valor": {str(h): v for h, v in selection.items()},
         "descripcion": "Desviación temporal: versiones candidatas que se sirven como experimentales "
                        "mientras no haya una versión activa que cumpla los umbrales",
         "fecha_actualizacion": utc_now()}], ["clave"], update=())

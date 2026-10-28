@@ -94,7 +94,7 @@ class TestBenchmarkReal(unittest.TestCase):
         SERVING_MODELS.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=SERVING_MODELS) as carpeta:
             ruta = Path(carpeta) / "medicion.json"
-            with entorno_bd(str(self.motor.url)), redirect_stdout(StringIO()),                     mock.patch("src.api.main.AlmacenamientoLocal", return_value=self.almacenamiento):
+            with entorno_bd(str(self.motor.url)), redirect_stdout(StringIO()),                     mock.patch("src.api.main.LocalStorage", return_value=self.almacenamiento):
                 salida = main(["--horizontes", "2", "--repeticiones", "2", "--calentamiento", "0",
                                "--salida", str(ruta.relative_to(ROOT))])
             self.assertEqual(salida, 0)

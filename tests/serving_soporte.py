@@ -5,9 +5,9 @@ import hashlib
 import json
 
 from backend_soporte import leer_csv
-from denguekay.serving.settings import configuracion_servicio
-from denguekay.serving.models import entrenar_versiones_servicio
-from denguekay.serving.protocol import Protocolo
+from denguekay.serving.settings import service_settings
+from denguekay.serving.models import train_service_versions
+from denguekay.serving.protocol import Protocol
 from denguekay.config.paths import BACKEND_FIXTURES
 
 CORTE = date(2025, 12, 27)
@@ -26,7 +26,7 @@ def protocolo_muestra():
                     "corte": date.fromisoformat(f["corte_ajuste"]), "fold": f}
     hashes = {"protocolo_metricas": hashlib.sha256((BACKEND_FIXTURES / "protocolo_muestra.json").read_bytes()).hexdigest(),
               "protocolo_predicciones": hashlib.sha256((BACKEND_FIXTURES / "retrospectivas_muestra.csv").read_bytes()).hexdigest()}
-    return Protocolo(reporte, leer_csv("retrospectivas_muestra.csv"), datos, particiones,
+    return Protocol(reporte, leer_csv("retrospectivas_muestra.csv"), datos, particiones,
                      hashes, BACKEND_FIXTURES / "protocolo_muestra.json",
                      BACKEND_FIXTURES / "retrospectivas_muestra.csv")
 
@@ -34,10 +34,10 @@ def protocolo_muestra():
 def preparar_muestra():
     """Entrena XGBoost real sobre filas reales de gold; no usa dobles ni probabilidades fijas."""
     protocolo = protocolo_muestra()
-    cfg = configuracion_servicio()
-    preparadas = entrenar_versiones_servicio(protocolo, (2, 4), cfg, CORTE)
+    cfg = service_settings()
+    preparadas = train_service_versions(protocolo, (2, 4), cfg, CORTE)
     # El booster de prueba se ajustó sobre estos archivos, no sobre gold completo.
     for (h, _), preparada in preparadas.items():
-        preparada.datos["sha256_dataset"] = hashlib.sha256(
+        preparada.data["sha256_dataset"] = hashlib.sha256(
             (BACKEND_FIXTURES / f"entrenamiento_h{h}_muestra.csv").read_bytes()).hexdigest()
     return cfg, protocolo, preparadas
