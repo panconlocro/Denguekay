@@ -7,6 +7,8 @@ Esta guía explica cómo está organizado el repo y **dónde va cada archivo nue
 ```
 tesis-dengue-piura/
 ├── README.md
+├── CONTRIBUTING.md            # ramas, commits, PR, tags e idioma del código
+├── .mailmap                   # unifica las identidades de autor en git log/shortlog
 ├── CLAUDE.md                  # contexto y reglas para Claude Code
 ├── _claude_setup/             # configuración versionada para Claude Code
 ├── .claude/agents/            # subagentes auditores versionados (revisor-backend, revisor-modelado)
@@ -16,7 +18,7 @@ tesis-dengue-piura/
 ├── .env.example               # conexión y secretos sin valores reales
 ├── alembic.ini                # migraciones del backend, sin credenciales
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
-├── .github/workflows/         # tests y cobertura en push/PR; sin despliegue
+├── .github/workflows/         # tests (SQLite y PostgreSQL) y cobertura en push/PR; sin despliegue
 ├── environment.yml            # o requirements.txt
 ├── config/
 │   └── config.yaml
@@ -285,7 +287,9 @@ Fase 4: `docs/backend/arquitectura.md`, `decisiones_tecnicas.md`,
 la implementación y mediciones reales. La copia de benchmark SQLite vive en
 `models/serving/fase4.sqlite`; las mediciones locales por defecto van en
 `models/serving/benchmark.json`. `.github/workflows/backend.yml` ejecuta la
-suite completa con fixtures versionadas, sin descargar gold/silver ni desplegar.
+suite completa con fixtures versionadas, sin descargar gold/silver ni desplegar:
+en Linux, Windows y macOS sobre SQLite, y en Linux contra un servicio PostgreSQL 18
+desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten.
 
 ---
 
@@ -413,6 +417,7 @@ great_expectations/gx/
 | Documento de tesis / explicación de arquitectura | `docs/` |
 | Plan y hallazgos de feature engineering | `docs/feature_engineering/` |
 | Instrucciones de Codex y skill local | `AGENTS.md` y `.codex/skills/` |
+| Convenciones de ramas, commits, PR y tags | `CONTRIBUTING.md` |
 
 ---
 
