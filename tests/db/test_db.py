@@ -4,7 +4,7 @@ import unittest
 
 from sqlalchemy import text
 
-from backend_soporte import entorno_bd
+from backend_support import entorno_bd
 from denguekay.db.settings import InvalidDatabaseSettings, get_url
 from denguekay.db.session import make_engine
 

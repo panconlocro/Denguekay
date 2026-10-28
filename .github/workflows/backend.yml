@@ -50,7 +50,7 @@ jobs:
       - name: Exigir cobertura mínima del backend
         run: python -m coverage report --fail-under=80
       - name: Exigir cobertura de API
-        run: python -m coverage report --include="src/api/*" --fail-under=80
+        run: python -m coverage report --include="apps/api/*" --fail-under=80
       - name: Exigir cobertura de inferencia
         run: python -m coverage report --include="src/denguekay/serving/*" --fail-under=80
       - name: Exigir cobertura de base de datos
@@ -92,7 +92,7 @@ jobs:
       MPLBACKEND: Agg
       DATABASE_URL: ""
       API_KEY: ""
-      # BD desechable del contenedor; el nombre contiene «prueba» como exige tests/backend_soporte.py.
+      # BD desechable del contenedor; el nombre contiene «prueba» como exige tests/backend_support.py.
       DENGUEKAY_PG_PRUEBAS_URL: postgresql+psycopg://postgres:postgres@localhost:5432/denguekay_pruebas
     steps:
       - uses: actions/checkout@v7

@@ -1,6 +1,6 @@
 """Prueba de humo TB1: una llamada HTTP real a cada endpoint de la Tabla 2 y evidencia en Markdown.
 
-Uso (con uvicorn levantado): ``python -m src.api.prueba_humo --url http://127.0.0.1:8000``.
+Uso (con uvicorn levantado): ``python -m apps.api.tools.smoke_test --url http://127.0.0.1:8000``.
 La clave de escritura se lee de API_KEY (entorno o .env) y nunca se escribe en la evidencia.
 """
 
@@ -90,7 +90,7 @@ def markdown(resultados, url, motor_bd):
                       f"{r['http']} | {r['ms']} | {r['resumen'].replace('|', '/')} |" for r in resultados)
     return f"""# Evidencia TB1: prueba de humo local
 
-Generado por `python -m src.api.prueba_humo` el {datetime.now(timezone.utc).isoformat(timespec='seconds')}.
+Generado por `python -m apps.api.tools.smoke_test` el {datetime.now(timezone.utc).isoformat(timespec='seconds')}.
 Servidor: uvicorn en `{url}`; BD: {motor_bd}. Sin credenciales: la clave X-API-Key no se registra.
 
 Entorno: Python {platform.python_version()}, {platform.platform()}; fastapi {version('fastapi')},

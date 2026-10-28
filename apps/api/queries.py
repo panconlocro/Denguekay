@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from sqlalchemy import func, select
 
-from src.api.errores import ErrorAPI
+from apps.api.errors import ErrorAPI
 from denguekay.db.models import (Alert, District, Run, VariableImportance, WeeklyObservation,
                             Prediction, EpiWeek, ModelVersion)
 from denguekay.serving import parameters as parametros

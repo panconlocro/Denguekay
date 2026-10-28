@@ -117,8 +117,8 @@ def strip_examples(value):
 
 def openapi_contract():
     """Schema of the app built without a database, as the API serves it."""
-    from src.api.main import crear_app
-    from src.api.openapi import especificacion
+    from apps.api.main import crear_app
+    from apps.api.openapi import especificacion
 
     return strip_examples(especificacion(crear_app()))
 
@@ -150,7 +150,7 @@ def sqlite_schema():
     from sqlalchemy import text
     from sqlalchemy.engine import URL
 
-    from backend_soporte import migrar
+    from backend_support import migrar
     from denguekay.db.session import make_engine
 
     with tempfile.TemporaryDirectory() as folder:
@@ -212,7 +212,7 @@ def postgresql_schema(url):
     """Catalog of the disposable PostgreSQL database migrated from base to head; leaves it at base."""
     from sqlalchemy import text
 
-    from backend_soporte import migrar
+    from backend_support import migrar
     from denguekay.db.session import make_engine
 
     engine = make_engine(url)
@@ -240,8 +240,8 @@ def build_smoke_database(folder):
     """SQLite migrated to head with the backend fixtures published (versions, OOS, current inference)."""
     from sqlalchemy.engine import URL
 
-    from backend_soporte import datos_muestra, motor_temporal
-    from serving_soporte import preparar_muestra
+    from backend_support import datos_muestra, motor_temporal
+    from serving_support import preparar_muestra
     from denguekay.db.session import transaction
     from denguekay.serving.storage import LocalStorage
     from denguekay.serving.load_data import persist_load
@@ -264,7 +264,7 @@ def build_smoke_database(folder):
 
 def create_smoke_app():
     """uvicorn ``--factory`` target: the real app with the smoke database's artifact storage."""
-    from src.api.main import crear_app
+    from apps.api.main import crear_app
     from denguekay.serving.storage import LocalStorage
 
     return crear_app(almacenamiento=LocalStorage(os.environ["DENGUEKAY_EQ_STORAGE"]))
@@ -307,10 +307,10 @@ def uvicorn_server(target, env, factory=False):
 
 
 def smoke_results():
-    """Status codes of ``prueba_humo`` against uvicorn, plus the module entry point ``src.api.main:app``."""
+    """Status codes of ``prueba_humo`` against uvicorn, plus the module entry point ``apps.api.main:app``."""
     import httpx
 
-    from src.api.prueba_humo import ejecutar
+    from apps.api.tools.smoke_test import ejecutar
 
     with tempfile.TemporaryDirectory() as name:
         folder = Path(name)
@@ -319,7 +319,7 @@ def smoke_results():
         with uvicorn_server("equivalence_support:create_smoke_app", env, factory=True) as base:
             with httpx.Client(base_url=base, timeout=120) as client:
                 calls = [[r["metodo"], r["ruta"], r["http"]] for r in ejecutar(client, SMOKE_API_KEY)]
-        with uvicorn_server("src.api.main:app", env) as base:
+        with uvicorn_server("apps.api.main:app", env) as base:
             entry_point = {"salud": httpx.get(base + "/api/v1/salud", timeout=30).status_code,
                            "rutas_openapi": len(httpx.get(base + "/openapi.json", timeout=30).json()["paths"])}
     return {"prueba_humo": calls, "entrada_modulo": entry_point}
@@ -338,7 +338,7 @@ def write_new(path, text):
 def record():
     """Writes the baseline once, from the code as it is before the restructure."""
     sys.path[:0] = [str(ROOT), str(TESTS)]
-    from backend_soporte import url_pg_pruebas
+    from backend_support import url_pg_pruebas
 
     predictions = {}
     setups = [CPU_SETUP] + ([CUDA_SETUP] if cuda_available() else [])

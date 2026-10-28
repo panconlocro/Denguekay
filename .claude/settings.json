@@ -5,7 +5,7 @@
                                       "Bash(.venv/Scripts/python -m coverage:*)",
                                       "Bash(.venv/Scripts/python -m alembic:*)",
                                       "Bash(.venv/Scripts/python -m denguekay.serving.load_data:*)",
-                                      "Bash(.venv/Scripts/python -m src.api.exportar_openapi:*)",
+                                      "Bash(.venv/Scripts/python -m apps.api.tools.export_openapi:*)",
                                       "Bash(.venv/Scripts/python -m pip check:*)",
                                       "Bash(.\\.venv\\Scripts\\python -m unittest:*)",
                                       "Bash(.\\.venv\\Scripts\\python -m coverage:*)",

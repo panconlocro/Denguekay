@@ -8,8 +8,8 @@ import unittest
 
 from sqlalchemy import func, select
 
-from backend_soporte import datos_muestra, motor_temporal
-from serving_soporte import CORTE, preparar_muestra
+from backend_support import datos_muestra, motor_temporal
+from serving_support import CORTE, preparar_muestra
 from denguekay.db.models import Run, VariableImportance, SystemParameter, Prediction, ModelVersion
 from denguekay.db.session import transaction
 from denguekay.serving import parameters as parametros

@@ -9,7 +9,7 @@ from fastapi.security import APIKeyHeader
 from pydantic import Field, StringConstraints
 from sqlalchemy import func, select
 
-from src.api.errores import ErrorAPI
+from apps.api.errors import ErrorAPI
 from denguekay.db.models import Run
 
 Ubigeo = Annotated[str, StringConstraints(pattern=r"^[0-9]{6}$"),

@@ -5,10 +5,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query, Request, Response
 
-from src.api import consultas as q
-from src.api.dependencias import (Horizonte, PaginaNumero, Sesion, TamanoPagina, Ubigeo,
+from apps.api import queries as q
+from apps.api.dependencies import (Horizonte, PaginaNumero, Sesion, TamanoPagina, Ubigeo,
                                   lectura, validar_rango)
-from src.api.esquemas import ObservacionRespuesta, Pagina, PrediccionRespuesta, SeriesRespuesta
+from apps.api.schemas import ObservacionRespuesta, Pagina, PrediccionRespuesta, SeriesRespuesta
 
 router = APIRouter(tags=["Datos semanales"])
 Desde = Annotated[date | None, Query(description="Inicio inclusivo (fecha de inicio de semana), AAAA-MM-DD")]

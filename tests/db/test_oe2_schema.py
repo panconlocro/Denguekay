@@ -20,7 +20,7 @@ from sqlalchemy.dialects.sqlite import insert as insert_sqlite
 from sqlalchemy.exc import DBAPIError, IntegrityError, StatementError
 from sqlalchemy.schema import CreateTable
 
-from backend_soporte import migrar, url_pg_pruebas
+from backend_support import migrar, url_pg_pruebas
 from denguekay.db.models import (Alert, Base, District, Run, VariableImportance,
                             WeeklyObservation, SystemParameter, Prediction, Province,
                             EpiWeek, ModelVersion)

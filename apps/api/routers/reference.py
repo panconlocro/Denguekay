@@ -3,9 +3,9 @@
 from fastapi import APIRouter, Request, Response
 from sqlalchemy import select
 
-from src.api import consultas as q
-from src.api.dependencias import PaginaNumero, Sesion, TamanoPagina, Ubigeo, lectura
-from src.api.esquemas import DistritoRespuesta, Pagina, SaludRespuesta
+from apps.api import queries as q
+from apps.api.dependencies import PaginaNumero, Sesion, TamanoPagina, Ubigeo, lectura
+from apps.api.schemas import DistritoRespuesta, Pagina, SaludRespuesta
 from denguekay.db.models import District
 
 router = APIRouter(tags=["Salud y distritos"])

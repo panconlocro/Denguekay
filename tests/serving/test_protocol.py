@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from serving_soporte import protocolo_muestra
+from serving_support import protocolo_muestra
 from denguekay.db.models import ModelVersion
 from denguekay.model.train import fit_models, counts_from_log1p, evaluate_fold
 from denguekay.evaluation.compact_validation import compact_variants

@@ -11,7 +11,7 @@ import tempfile
 import unittest
 
 import equivalence_support as eq
-from backend_soporte import url_pg_pruebas
+from backend_support import url_pg_pruebas
 
 
 def read_json(path):
@@ -47,7 +47,7 @@ class TestOpenAPIContract(unittest.TestCase):
                          "exportación completa solo con DENGUEKAY_EQ_OPENAPI_BD=1 y DATABASE_URL de la BD local")
     def test_full_export_from_local_database_is_identical(self):
         """Read-only: exports with the examples of the configured DB to a temporary file."""
-        from src.api import exportar_openapi
+        from apps.api.tools import export_openapi as exportar_openapi
 
         original = exportar_openapi.OPENAPI_JSON
         with tempfile.TemporaryDirectory() as folder:

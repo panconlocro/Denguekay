@@ -12,10 +12,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy import func, select, text
 from sqlalchemy.engine import URL
 
-from backend_soporte import datos_muestra, entorno_bd, motor_temporal
-from serving_soporte import preparar_muestra
-from src.api.cache import CacheLecturas
-from src.api.main import crear_app
+from backend_support import datos_muestra, entorno_bd, motor_temporal
+from serving_support import preparar_muestra
+from apps.api.cache import CacheLecturas
+from apps.api.main import crear_app
 from denguekay.db.models import Alert, Run, Prediction, ModelVersion
 from denguekay.db.session import make_engine, transaction
 from denguekay.serving.storage import LocalStorage
@@ -353,7 +353,7 @@ class TestAPIReal(unittest.TestCase):
             self.assertEqual(c.get("/api/v1/salud").status_code, 200)
 
     def test_exportar_openapi(self):
-        from src.api import exportar_openapi
+        from apps.api.tools import export_openapi as exportar_openapi
         destino = Path(self.carpeta.name) / "openapi.json"
         original = exportar_openapi.OPENAPI_JSON
         exportar_openapi.OPENAPI_JSON = destino
@@ -382,7 +382,7 @@ class TestAPIReal(unittest.TestCase):
                 motor.dispose()
 
     def test_prueba_humo_tabla_2(self):
-        from src.api.prueba_humo import ejecutar, markdown
+        from apps.api.tools.smoke_test import ejecutar, markdown
         resultados = ejecutar(self.cliente, CLAVE)
         estados = {(r["metodo"], r["ruta"]): r["http"] for r in resultados}
         self.assertEqual(estados["GET", "/mapa-riesgo?horizonte=4"], 200)
@@ -398,7 +398,7 @@ class TestAPIReal(unittest.TestCase):
 import sys
 from pathlib import Path
 from fastapi.testclient import TestClient
-from src.api.main import crear_app
+from apps.api.main import crear_app
 from denguekay.db.session import make_engine
 from denguekay.serving.storage import LocalStorage
 from denguekay.config.paths import DATA

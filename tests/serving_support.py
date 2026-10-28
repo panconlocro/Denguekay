@@ -4,7 +4,7 @@ from datetime import date
 import hashlib
 import json
 
-from backend_soporte import leer_csv
+from backend_support import leer_csv
 from denguekay.serving.settings import service_settings
 from denguekay.serving.models import train_service_versions
 from denguekay.serving.protocol import Protocol

@@ -14,8 +14,8 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import delete, func, select
 
-from backend_soporte import datos_muestra, leer_csv, migrar, motor_temporal, url_pg_pruebas
-from serving_soporte import preparar_muestra
+from backend_support import datos_muestra, leer_csv, migrar, motor_temporal, url_pg_pruebas
+from serving_support import preparar_muestra
 from denguekay.db.models import (Alert, District, Run, WeeklyObservation, SystemParameter,
                             Prediction, EpiWeek, ModelVersion)
 from denguekay.db.session import make_engine, transaction

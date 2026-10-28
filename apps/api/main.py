@@ -8,10 +8,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api.cache import CacheLecturas
-from src.api.errores import registrar_errores
-from src.api.esquemas import ErrorRespuesta
-from src.api.routers import admin, datos, modelos, referencia, vigilancia
+from apps.api.cache import CacheLecturas
+from apps.api.errors import registrar_errores
+from apps.api.schemas import ErrorRespuesta
+from apps.api.routers import admin, data as datos, models as modelos, reference as referencia, surveillance as vigilancia
 from denguekay.db.settings import InvalidDatabaseSettings
 from denguekay.db.session import create_session_factory, make_engine
 from denguekay.serving.storage import LocalStorage
@@ -67,7 +67,7 @@ def crear_app(motor=None, cfg=None, clave_api=None, ttl_cache=10, almacenamiento
 
     for router in (referencia.router, datos.router, vigilancia.router, modelos.router, admin.router):
         app.include_router(router, prefix="/api/v1")
-    from src.api.openapi import especificacion
+    from apps.api.openapi import especificacion
     app.openapi = lambda: especificacion(app)
     return app
 

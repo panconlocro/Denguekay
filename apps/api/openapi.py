@@ -5,8 +5,8 @@ from fastapi.openapi.utils import get_openapi
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.api import consultas as q
-from src.api.esquemas import (AlertaRespuesta, DistritoRespuesta, MapaRiesgoRespuesta, ModeloDetalle,
+from apps.api import queries as q
+from apps.api.schemas import (AlertaRespuesta, DistritoRespuesta, MapaRiesgoRespuesta, ModeloDetalle,
                               ModelosActivosRespuesta, ObservacionRespuesta, Pagina, PrediccionRespuesta,
                               SaludRespuesta, SeriesRespuesta, TableroRespuesta, VariablesRespuesta)
 from denguekay.db.models import Alert, District, Prediction, ModelVersion

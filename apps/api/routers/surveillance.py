@@ -4,10 +4,10 @@ from typing import Literal
 
 from fastapi import APIRouter, Request, Response
 
-from src.api import consultas as q
-from src.api.dependencias import Horizonte, Identificador, PaginaNumero, Sesion, TamanoPagina, Ubigeo, lectura
-from src.api.errores import ErrorAPI
-from src.api.esquemas import AlertaRespuesta, MapaRiesgoRespuesta, Pagina, TableroRespuesta
+from apps.api import queries as q
+from apps.api.dependencies import Horizonte, Identificador, PaginaNumero, Sesion, TamanoPagina, Ubigeo, lectura
+from apps.api.errors import ErrorAPI
+from apps.api.schemas import AlertaRespuesta, MapaRiesgoRespuesta, Pagina, TableroRespuesta
 from denguekay.db.models import Alert
 
 router = APIRouter(tags=["Vigilancia"])

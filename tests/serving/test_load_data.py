@@ -8,7 +8,7 @@ import unittest
 
 from sqlalchemy import func, select
 
-from backend_soporte import datos_muestra, leer_muestra, motor_temporal
+from backend_support import datos_muestra, leer_muestra, motor_temporal
 from denguekay.db.models import (District, Run, WeeklyObservation, SystemParameter, Province,
                             EpiWeek)
 from denguekay.db.session import transaction

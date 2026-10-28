@@ -11,9 +11,9 @@ from unittest import mock
 import numpy as np
 from sqlalchemy import func, select
 
-import test_api_backend as soporte_api
-from backend_soporte import entorno_bd
-from src.api.benchmark import ejecutar_benchmark, main, medir_caso, percentil
+from api import test_api as soporte_api
+from backend_support import entorno_bd
+from apps.api.tools.benchmark import ejecutar_benchmark, main, medir_caso, percentil
 from denguekay.db.models import Run, WeeklyObservation, Prediction, ModelVersion
 from denguekay.db.session import transaction
 from denguekay.config.paths import ROOT, SERVING_MODELS
@@ -94,7 +94,7 @@ class TestBenchmarkReal(unittest.TestCase):
         SERVING_MODELS.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=SERVING_MODELS) as carpeta:
             ruta = Path(carpeta) / "medicion.json"
-            with entorno_bd(str(self.motor.url)), redirect_stdout(StringIO()),                     mock.patch("src.api.main.LocalStorage", return_value=self.almacenamiento):
+            with entorno_bd(str(self.motor.url)), redirect_stdout(StringIO()),                     mock.patch("apps.api.main.LocalStorage", return_value=self.almacenamiento):
                 salida = main(["--horizontes", "2", "--repeticiones", "2", "--calentamiento", "0",
                                "--salida", str(ruta.relative_to(ROOT))])
             self.assertEqual(salida, 0)

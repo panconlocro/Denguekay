@@ -8,8 +8,8 @@ import unittest
 
 import yaml
 
-from backend_soporte import motor_temporal
-from serving_soporte import protocolo_muestra
+from backend_support import motor_temporal
+from serving_support import protocolo_muestra
 from denguekay.db.models import SystemParameter
 from denguekay.db.session import transaction
 from denguekay.serving import parameters as parametros

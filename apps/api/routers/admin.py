@@ -3,10 +3,10 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 
-from src.api import consultas as q
-from src.api.dependencias import Identificador, Sesion, exigir_clave
-from src.api.errores import ErrorAPI
-from src.api.esquemas import ActivacionRespuesta, InferenciaRespuesta, SolicitudInferencia
+from apps.api import queries as q
+from apps.api.dependencies import Identificador, Sesion, exigir_clave
+from apps.api.errors import ErrorAPI
+from apps.api.schemas import ActivacionRespuesta, InferenciaRespuesta, SolicitudInferencia
 from denguekay.db.models import Run, ModelVersion, utc_now
 from denguekay.serving.artifacts import InvalidArtifact
 from denguekay.serving.inference import InferenceUnavailable, infer

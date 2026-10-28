@@ -10,7 +10,7 @@ import unittest
 
 from sqlalchemy.engine import URL
 
-from backend_soporte import datos_muestra, entorno_bd, motor_temporal
+from backend_support import datos_muestra, entorno_bd, motor_temporal
 from denguekay.db.models import District
 from denguekay.db.session import transaction
 from denguekay.serving.artifacts import json_fingerprint

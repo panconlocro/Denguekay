@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, Request, Response
 
-from src.api import consultas as q
-from src.api.dependencias import Horizonte, Identificador, Sesion, lectura
-from src.api.esquemas import ModeloDetalle, ModelosActivosRespuesta, VariablesRespuesta
+from apps.api import queries as q
+from apps.api.dependencies import Horizonte, Identificador, Sesion, lectura
+from apps.api.schemas import ModeloDetalle, ModelosActivosRespuesta, VariablesRespuesta
 
 router = APIRouter(tags=["Modelos"])
 

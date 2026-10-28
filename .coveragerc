@@ -1,6 +1,6 @@
 [run]
 source =
-    src/api
+    apps/api
     src/denguekay/serving
     src/denguekay/db
 relative_files = True

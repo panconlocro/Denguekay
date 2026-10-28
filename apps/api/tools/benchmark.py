@@ -167,7 +167,7 @@ def main(argv=None):
             reporte["transporte"] = "HTTP real"
         else:
             from fastapi.testclient import TestClient
-            from src.api.main import crear_app  # usa DATABASE_URL y models/storage
+            from apps.api.main import crear_app  # usa DATABASE_URL y models/storage
             with TestClient(crear_app()) as cliente:
                 reporte = ejecutar_benchmark(cliente, **argumentos)
             reporte["transporte"] = "ASGI TestClient contra BD real; sin red HTTP"

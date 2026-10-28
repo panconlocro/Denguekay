@@ -2,8 +2,8 @@
 
 import json
 
-from src.api.main import crear_app
-from src.api.openapi import especificacion
+from apps.api.main import crear_app
+from apps.api.openapi import especificacion
 from denguekay.db.session import create_session_factory, make_engine
 from denguekay.config.paths import OPENAPI_JSON
 
@@ -16,7 +16,7 @@ def exportar(motor=None):
         app = crear_app(motor=motor)
         app.state.fabrica_sesiones = create_session_factory(motor)
         # Fuerza una consulta antes de exportar; no acepta una exportación vacía por BD caída.
-        from src.api.consultas import salud
+        from apps.api.queries import salud
         with app.state.fabrica_sesiones() as sesion:
             salud(sesion, app.version)
         schema = especificacion(app)
