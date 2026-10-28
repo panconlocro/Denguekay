@@ -1,4 +1,4 @@
-"""Aplicación FastAPI desplegable: lee modelos y datos exclusivamente desde la BD."""
+"""Deployable FastAPI application: it reads models and data only from the database."""
 
 from contextlib import asynccontextmanager
 import os
@@ -8,10 +8,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from apps.api.cache import CacheLecturas
-from apps.api.errors import registrar_errores
+from apps.api.cache import ReadCache
+from apps.api.errors import register_error_handlers
 from apps.api.schemas import ErrorRespuesta
-from apps.api.routers import admin, data as datos, models as modelos, reference as referencia, surveillance as vigilancia
+from apps.api.routers import admin, data, models, reference, surveillance
 from denguekay.db.settings import InvalidDatabaseSettings
 from denguekay.db.session import create_session_factory, make_engine
 from denguekay.serving.storage import LocalStorage
@@ -19,57 +19,57 @@ from denguekay.serving.settings import service_settings
 from denguekay.config.paths import ENV_FILE
 
 
-def crear_app(motor=None, cfg=None, clave_api=None, ttl_cache=10, almacenamiento=None):
-    """Inyecta motores reales para pruebas; sin URL no crea una BD alternativa."""
+def create_app(engine=None, cfg=None, api_key=None, cache_ttl=10, storage=None):
+    """Inject real engines for tests; without a URL it does not create an alternative database."""
     load_dotenv(ENV_FILE, override=False)
     cfg = cfg or service_settings()
 
     @asynccontextmanager
-    async def vida(app):
-        propio = motor is None
-        elegido = motor
-        if propio:
+    async def lifespan(app):
+        owned = engine is None
+        chosen = engine
+        if owned:
             try:
-                elegido = make_engine()
+                chosen = make_engine()
             except InvalidDatabaseSettings:
-                elegido = None
-        app.state.fabrica_sesiones = create_session_factory(elegido) if elegido is not None else None
+                chosen = None
+        app.state.session_factory = create_session_factory(chosen) if chosen is not None else None
         try:
             yield
         finally:
-            if propio and elegido is not None:
-                elegido.dispose()
-            app.state.cache.limpiar()
+            if owned and chosen is not None:
+                chosen.dispose()
+            app.state.cache.clear()
 
     app = FastAPI(title="Denguekay: pronóstico distrital de dengue", version="2.0.0",
         description="API del documento OE2 (Tabla 2) sobre datos agregados de Piura. Las predicciones de versiones "
                     "que no cumplen los umbrales se marcan experimental: true (demo; desviación temporal documentada).",
-        lifespan=vida, responses={estado: {"model": ErrorRespuesta, "description": texto} for estado, texto in (
+        lifespan=lifespan, responses={estado: {"model": ErrorRespuesta, "description": text} for estado, text in (
             (401, "Clave de escritura ausente o inválida"), (404, "Recurso inexistente"),
             (409, "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)"), (422, "Parámetro inválido"),
             (503, "Base de datos o escritura no disponible"), (500, "Error interno controlado"))})
     app.state.cfg = cfg
-    app.state.clave_api = os.environ.get("API_KEY", "") if clave_api is None else clave_api
-    app.state.cache = CacheLecturas(ttl=ttl_cache)
-    app.state.almacenamiento = almacenamiento or LocalStorage()
-    app.state.fabrica_sesiones = create_session_factory(motor) if motor is not None else None
-    registrar_errores(app)
+    app.state.api_key = os.environ.get("API_KEY", "") if api_key is None else api_key
+    app.state.cache = ReadCache(ttl=cache_ttl)
+    app.state.storage = storage or LocalStorage()
+    app.state.session_factory = create_session_factory(engine) if engine is not None else None
+    register_error_handlers(app)
     app.add_middleware(CORSMiddleware, allow_origins=[cfg.cors_origen],
         allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-API-Key", "Cache-Control"],
         expose_headers=["X-Tiempo-Respuesta-ms", "X-Cache"])
 
     @app.middleware("http")
-    async def medir_respuesta(request, siguiente):
-        inicio = perf_counter()
-        respuesta = await siguiente(request)
-        respuesta.headers["X-Tiempo-Respuesta-ms"] = f"{(perf_counter() - inicio) * 1000:.3f}"
-        return respuesta
+    async def time_response(request, call_next):
+        start = perf_counter()
+        response = await call_next(request)
+        response.headers["X-Tiempo-Respuesta-ms"] = f"{(perf_counter() - start) * 1000:.3f}"
+        return response
 
-    for router in (referencia.router, datos.router, vigilancia.router, modelos.router, admin.router):
+    for router in (reference.router, data.router, surveillance.router, models.router, admin.router):
         app.include_router(router, prefix="/api/v1")
-    from apps.api.openapi import especificacion
-    app.openapi = lambda: especificacion(app)
+    from apps.api.openapi import specification
+    app.openapi = lambda: specification(app)
     return app
 
 
-app = crear_app()
+app = create_app()

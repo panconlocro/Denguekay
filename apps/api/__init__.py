@@ -1,1 +1,1 @@
-"""API de consulta e inferencia sobre datos agregados de Denguekay."""
+"""Query and inference API over Denguekay's aggregated data."""

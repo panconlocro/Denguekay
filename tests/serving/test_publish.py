@@ -35,7 +35,7 @@ class TestPublicacion(unittest.TestCase):
     def setUp(self):
         self.carpeta = tempfile.TemporaryDirectory()
         self.motor = motor_temporal(Path(self.carpeta.name))
-        self.almacenamiento = LocalStorage(Path(self.carpeta.name) / "storage")
+        self.storage = LocalStorage(Path(self.carpeta.name) / "storage")
         with transaction(self.motor) as s:
             persist_load(s, self.data)
 
@@ -46,7 +46,7 @@ class TestPublicacion(unittest.TestCase):
     def save(self, preparadas=None):
         with transaction(self.motor) as s:
             versiones = save_versions(s, preparadas or self.preparadas, "run-prueba",
-                                          parametros.acceptance_criteria(s), self.almacenamiento)
+                                          parametros.acceptance_criteria(s), self.storage)
             return {k: (v.codigo, v.id_version) for k, v in versiones.items()}
 
     def test_versiones_candidatas_con_artefacto_y_hash(self):
@@ -59,7 +59,7 @@ class TestPublicacion(unittest.TestCase):
                     self.assertEqual(v.estado, "candidata")
                     self.assertFalse(v.cumple_umbrales)  # métricas reales de 2024 no cumplen
                     self.assertEqual(v.ruta_artefacto, f"modelos/{v.codigo}.json")
-                    contenido = self.almacenamiento.read(v.ruta_artefacto)
+                    contenido = self.storage.read(v.ruta_artefacto)
                     self.assertEqual(hashlib.sha256(contenido).hexdigest(), v.sha256_artefacto)
                     self.assertEqual(v.mlflow_run_id, "run-prueba")
                     self.assertIn("temporada_2024", v.metricas["bloques"])
@@ -79,14 +79,14 @@ class TestPublicacion(unittest.TestCase):
 
     def test_storage_compartido_no_sobrescribe_artefactos_ajenos(self):
         ajeno = b'{"booster": "de otra BD"}'
-        self.almacenamiento.save("modelos/clf-h2-v1.json", ajeno)
+        self.storage.save("modelos/clf-h2-v1.json", ajeno)
         codigos = self.save()
         with transaction(self.motor) as s:
             v = s.get(ModelVersion, codigos[2, "clasificacion"][1])
             self.assertTrue(v.ruta_artefacto.startswith("modelos/clf-h2-v1-"))
-            self.assertEqual(hashlib.sha256(self.almacenamiento.read(v.ruta_artefacto)).hexdigest(), v.sha256_artefacto)
-        self.assertEqual(self.almacenamiento.read("modelos/clf-h2-v1.json"), ajeno)
-        self.assertEqual(artifact_path(self.almacenamiento, "clf-h2-v1", ajeno), "modelos/clf-h2-v1.json")
+            self.assertEqual(hashlib.sha256(self.storage.read(v.ruta_artefacto)).hexdigest(), v.sha256_artefacto)
+        self.assertEqual(self.storage.read("modelos/clf-h2-v1.json"), ajeno)
+        self.assertEqual(artifact_path(self.storage, "clf-h2-v1", ajeno), "modelos/clf-h2-v1.json")
 
     def test_cumple_umbrales_lee_la_bd(self):
         metricas = self.preparadas[2, "clasificacion"].data["metricas"]
@@ -102,7 +102,7 @@ class TestPublicacion(unittest.TestCase):
 
     def test_publicacion_en_bd_completa(self):
         r = publish_to_db(self.motor, self.data, self.protocolo, self.preparadas, (2, 4), self.cfg,
-                           "run-prueba", "huella-prueba", self.almacenamiento, 0)
+                           "run-prueba", "huella-prueba", self.storage, 0)
         self.assertEqual(len(r["versiones"]), 4)
         self.assertTrue(all(v["estado"] == "candidata" for v in r["versiones"]))
         self.assertTrue(r["oos"])
@@ -126,7 +126,7 @@ class TestPublicacion(unittest.TestCase):
     def test_publicar_valida_horizontes_antes_de_leer_fuentes(self):
         for horizontes, mensaje in (((3,), "horizonte 3"), ((2, 2), "no repetidos"), ((), "no repetidos")):
             with self.subTest(horizontes=horizontes), self.assertRaisesRegex(ValueError, mensaje):
-                publish(self.motor, horizontes, cfg=self.cfg, storage=self.almacenamiento)
+                publish(self.motor, horizontes, cfg=self.cfg, storage=self.storage)
 
 
 if __name__ == "__main__":

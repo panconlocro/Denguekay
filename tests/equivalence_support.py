@@ -117,10 +117,10 @@ def strip_examples(value):
 
 def openapi_contract():
     """Schema of the app built without a database, as the API serves it."""
-    from apps.api.main import crear_app
-    from apps.api.openapi import especificacion
+    from apps.api.main import create_app
+    from apps.api.openapi import specification
 
-    return strip_examples(especificacion(crear_app()))
+    return strip_examples(specification(create_app()))
 
 
 def committed_openapi():
@@ -264,10 +264,10 @@ def build_smoke_database(folder):
 
 def create_smoke_app():
     """uvicorn ``--factory`` target: the real app with the smoke database's artifact storage."""
-    from apps.api.main import crear_app
+    from apps.api.main import create_app
     from denguekay.serving.storage import LocalStorage
 
-    return crear_app(almacenamiento=LocalStorage(os.environ["DENGUEKAY_EQ_STORAGE"]))
+    return create_app(storage=LocalStorage(os.environ["DENGUEKAY_EQ_STORAGE"]))
 
 
 @contextmanager
@@ -307,10 +307,10 @@ def uvicorn_server(target, env, factory=False):
 
 
 def smoke_results():
-    """Status codes of ``prueba_humo`` against uvicorn, plus the module entry point ``apps.api.main:app``."""
+    """Status codes of the smoke test (``apps.api.tools.smoke_test``) against uvicorn, plus the module entry point ``apps.api.main:app``."""
     import httpx
 
-    from apps.api.tools.smoke_test import ejecutar
+    from apps.api.tools.smoke_test import run
 
     with tempfile.TemporaryDirectory() as name:
         folder = Path(name)
@@ -318,7 +318,7 @@ def smoke_results():
         env = subprocess_env(DATABASE_URL=url, API_KEY=SMOKE_API_KEY, DENGUEKAY_EQ_STORAGE=str(storage), **CPU_SETUP)
         with uvicorn_server("equivalence_support:create_smoke_app", env, factory=True) as base:
             with httpx.Client(base_url=base, timeout=120) as client:
-                calls = [[r["metodo"], r["ruta"], r["http"]] for r in ejecutar(client, SMOKE_API_KEY)]
+                calls = [[r["metodo"], r["ruta"], r["http"]] for r in run(client, SMOKE_API_KEY)]
         with uvicorn_server("apps.api.main:app", env) as base:
             entry_point = {"salud": httpx.get(base + "/api/v1/salud", timeout=30).status_code,
                            "rutas_openapi": len(httpx.get(base + "/openapi.json", timeout=30).json()["paths"])}

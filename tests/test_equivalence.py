@@ -53,7 +53,7 @@ class TestOpenAPIContract(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             exportar_openapi.OPENAPI_JSON = Path(folder) / "docs" / "backend" / "openapi.json"
             try:
-                exportar_openapi.exportar()
+                exportar_openapi.export()
                 exported = exportar_openapi.OPENAPI_JSON.read_text(encoding="utf-8")
             finally:
                 exportar_openapi.OPENAPI_JSON = original

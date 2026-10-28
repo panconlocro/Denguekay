@@ -13,7 +13,7 @@ from sqlalchemy import func, select
 
 from api import test_api as soporte_api
 from backend_support import entorno_bd
-from apps.api.tools.benchmark import ejecutar_benchmark, main, medir_caso, percentil
+from apps.api.tools.benchmark import run_benchmark, main, measure_case, percentile
 from denguekay.db.models import Run, WeeklyObservation, Prediction, ModelVersion
 from denguekay.db.session import transaction
 from denguekay.config.paths import ROOT, SERVING_MODELS
@@ -39,8 +39,8 @@ class TestBenchmarkReal(unittest.TestCase):
 
     def test_todas_las_operaciones_cache_y_escrituras_preservan_historia(self):
         antes = self.conteos()
-        reporte = ejecutar_benchmark(self.cliente, repeticiones=2, calentamiento=1,
-            incluir_escrituras=True, clave_api="clave-local-de-prueba")
+        reporte = run_benchmark(self.cliente, repetitions=2, warmup=1,
+            include_writes=True, api_key="clave-local-de-prueba")
         # La activación no se mide (exige cumple_umbrales): la cobertura se declara incompleta.
         self.assertEqual([o["ruta"] for o in reporte["no_medidos"]], ["/admin/modelos/{version}/activar"])
         self.assertFalse(reporte["cobertura_completa"])
@@ -64,7 +64,7 @@ class TestBenchmarkReal(unittest.TestCase):
 
     def test_solo_lecturas_declara_cobertura_parcial_y_no_modifica_bd(self):
         antes = self.conteos()
-        r = ejecutar_benchmark(self.cliente, horizontes=(2,), repeticiones=2, calentamiento=0)
+        r = run_benchmark(self.cliente, horizons=(2,), repetitions=2, warmup=0)
         self.assertFalse(r["cobertura_completa"])
         self.assertFalse(r["cumple_sla_completo"])
         self.assertTrue(r["cumple_sla_medido"])
@@ -72,29 +72,29 @@ class TestBenchmarkReal(unittest.TestCase):
         self.assertEqual(antes, self.conteos())
 
     def test_errores_http_y_limite_incumplido_no_se_ocultan(self):
-        r = medir_caso(self.cliente, "POST", "/admin/inferencias",
+        r = measure_case(self.cliente, "POST", "/admin/inferencias",
             "escritura", 2, 0, "clave-incorrecta", 5, {"horizonte": 2})
         self.assertEqual(r["errores"], 2)
         self.assertEqual(r["http"], {"401": 2})
         self.assertFalse(r["cumple_sla"])
-        lento = ejecutar_benchmark(self.cliente, horizontes=(2,), repeticiones=2,
-            calentamiento=0, limite=1e-12)
+        lento = run_benchmark(self.cliente, horizons=(2,), repetitions=2,
+            warmup=0, limit=1e-12)
         self.assertFalse(lento["cumple_sla_medido"])
 
     def test_parametros_invalidos_y_percentil_sin_mediciones(self):
-        for kwargs in ({"repeticiones": 1}, {"calentamiento": -1}, {"limite": float("nan")},
-                       {"horizontes": (3,)}, {"horizontes": (2, 2)}, {"horizontes": ()},
-                       {"incluir_escrituras": True}):
+        for kwargs in ({"repetitions": 1}, {"warmup": -1}, {"limit": float("nan")},
+                       {"horizons": (3,)}, {"horizons": (2, 2)}, {"horizons": ()},
+                       {"include_writes": True}):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
-                ejecutar_benchmark(self.cliente, **kwargs)
+                run_benchmark(self.cliente, **kwargs)
         with self.assertRaises(ValueError):
-            percentil([], .95)
+            percentile([], .95)
 
     def test_cli_real_exporta_y_bd_no_configurada_falla(self):
         SERVING_MODELS.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=SERVING_MODELS) as carpeta:
             ruta = Path(carpeta) / "medicion.json"
-            with entorno_bd(str(self.motor.url)), redirect_stdout(StringIO()),                     mock.patch("apps.api.main.LocalStorage", return_value=self.almacenamiento):
+            with entorno_bd(str(self.motor.url)), redirect_stdout(StringIO()),                     mock.patch("apps.api.main.LocalStorage", return_value=self.storage):
                 salida = main(["--horizontes", "2", "--repeticiones", "2", "--calentamiento", "0",
                                "--salida", str(ruta.relative_to(ROOT))])
             self.assertEqual(salida, 0)

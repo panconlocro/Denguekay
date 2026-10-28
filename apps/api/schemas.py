@@ -1,4 +1,6 @@
-"""Contrato público en español (Tabla 2 del documento OE2); los faltantes son null con motivo."""
+"""Public contract in Spanish (Table 2 of the OE2 document); missing values are null with a reason.
+
+Schema names and docstrings are part of the OpenAPI contract (decision D2): they stay in Spanish."""
 
 from datetime import date, datetime, timezone
 from typing import Generic, Literal, TypeVar
@@ -14,9 +16,9 @@ class Esquema(BaseModel):
 
     @field_validator("*", mode="after")
     @classmethod
-    def preservar_utc(cls, valor):
-        """SQLite omite la zona al leer instantes que el backend guardó en UTC."""
-        return valor.replace(tzinfo=timezone.utc) if isinstance(valor, datetime) and valor.tzinfo is None else valor
+    def preservar_utc(cls, value):
+        """SQLite drops the zone when reading instants that the backend saved in UTC."""
+        return value.replace(tzinfo=timezone.utc) if isinstance(value, datetime) and value.tzinfo is None else value
 
 
 class ErrorRespuesta(Esquema):

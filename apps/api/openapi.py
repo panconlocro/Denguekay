@@ -1,4 +1,4 @@
-"""Especificación OpenAPI con ejemplos obtenidos de la BD configurada."""
+"""OpenAPI specification with examples taken from the configured database."""
 
 from fastapi.encoders import jsonable_encoder
 from fastapi.openapi.utils import get_openapi
@@ -11,7 +11,7 @@ from apps.api.schemas import (AlertaRespuesta, DistritoRespuesta, MapaRiesgoResp
                               SaludRespuesta, SeriesRespuesta, TableroRespuesta, VariablesRespuesta)
 from denguekay.db.models import Alert, District, Prediction, ModelVersion
 
-DESCRIPCIONES = {
+DESCRIPTIONS = {
     "Disponibilidad": "Distingue valores existentes, incluidos ceros, de valores ausentes con motivo",
     "Metadatos": "Disponibilidad, corte de las fuentes y fin de la última ejecución exitosa",
     "DistritoRespuesta": "Catálogo distrital real con provincia, centroide y población censal 2017",
@@ -30,69 +30,69 @@ DESCRIPCIONES = {
 }
 
 
-def ejemplos_reales(sesion, cfg, version_api):
-    """Devuelve ejemplos verificables; si falta un recurso, omite su ejemplo."""
-    ejemplos = {}
+def real_examples(session, cfg, api_version):
+    """Return verifiable examples; if a resource is missing, its example is omitted."""
+    examples = {}
 
-    def agregar(ruta, datos, esquema):
-        ejemplos[ruta] = jsonable_encoder(esquema.model_validate(datos))
+    def add(path, data, schema_model):
+        examples[path] = jsonable_encoder(schema_model.model_validate(data))
 
-    agregar("/salud", q.salud(sesion, version_api), SaludRespuesta)
-    d = sesion.scalar(select(District).order_by(District.ubigeo).limit(1))
+    add("/salud", q.health(session, api_version), SaludRespuesta)
+    d = session.scalar(select(District).order_by(District.ubigeo).limit(1))
     if d is None:
-        return ejemplos
-    agregar("/distritos", q.paginar(sesion, select(District).order_by(District.ubigeo), 1, 1,
-                                    lambda filas: [q.distrito_dto(x) for x in filas]), Pagina[DistritoRespuesta])
-    agregar("/distritos/{ubigeo}", q.distrito_dto(d), DistritoRespuesta)
-    agregar("/observaciones", q.paginar(sesion, q.consulta_observaciones(), 1, 1,
-                                        lambda filas: q.observacion_dtos(sesion, filas)), Pagina[ObservacionRespuesta])
-    h = sesion.scalar(select(Prediction.horizonte).order_by(Prediction.horizonte).limit(1))
+        return examples
+    add("/distritos", q.paginate(session, select(District).order_by(District.ubigeo), 1, 1,
+                                    lambda rows: [q.district_dto(x) for x in rows]), Pagina[DistritoRespuesta])
+    add("/distritos/{ubigeo}", q.district_dto(d), DistritoRespuesta)
+    add("/observaciones", q.paginate(session, q.observations_query(), 1, 1,
+                                        lambda rows: q.observation_dtos(session, rows)), Pagina[ObservacionRespuesta])
+    h = session.scalar(select(Prediction.horizonte).order_by(Prediction.horizonte).limit(1))
     if h is not None:
-        corte = q.corte_vigente(sesion, h)
-        if corte is not None:
-            agregar("/predicciones", q.paginar(sesion, q.consulta_predicciones(h, corte), 1, 1,
-                                               lambda filas: q.prediccion_dtos(sesion, filas)), Pagina[PrediccionRespuesta])
-            agregar("/series/{ubigeo}", q.series(sesion, d.ubigeo, h, None, None), SeriesRespuesta)
-            agregar("/tablero/resumen", q.tablero(sesion, h), TableroRespuesta)
-            mapa = q.mapa_riesgo(sesion, h)
-            agregar("/mapa-riesgo", {**mapa, "features": mapa["features"][:1]}, MapaRiesgoRespuesta)
-    agregar("/modelos/activo", q.modelos_en_uso(sesion, None, cfg.servir_no_validadas), ModelosActivosRespuesta)
-    v = sesion.scalar(select(ModelVersion).order_by(ModelVersion.id_version).limit(1))
+        cutoff = q.current_cutoff(session, h)
+        if cutoff is not None:
+            add("/predicciones", q.paginate(session, q.predictions_query(h, cutoff), 1, 1,
+                                               lambda rows: q.prediction_dtos(session, rows)), Pagina[PrediccionRespuesta])
+            add("/series/{ubigeo}", q.series(session, d.ubigeo, h, None, None), SeriesRespuesta)
+            add("/tablero/resumen", q.dashboard(session, h), TableroRespuesta)
+            risk_map_dto = q.risk_map(session, h)
+            add("/mapa-riesgo", {**risk_map_dto, "features": risk_map_dto["features"][:1]}, MapaRiesgoRespuesta)
+    add("/modelos/activo", q.models_in_use(session, None, cfg.servir_no_validadas), ModelosActivosRespuesta)
+    v = session.scalar(select(ModelVersion).order_by(ModelVersion.id_version).limit(1))
     if v is not None:
-        agregar("/modelos/{identificador}", q.modelo_dto(v, True), ModeloDetalle)
-        agregar("/modelos/{identificador}/variables", q.variables(sesion, v.id_version), VariablesRespuesta)
-    a = sesion.scalar(select(Alert).order_by(Alert.id_alerta).limit(1))
+        add("/modelos/{identificador}", q.model_dto(v, True), ModeloDetalle)
+        add("/modelos/{identificador}/variables", q.variables(session, v.id_version), VariablesRespuesta)
+    a = session.scalar(select(Alert).order_by(Alert.id_alerta).limit(1))
     if a is not None:
-        agregar("/alertas", q.paginar(sesion, q.consulta_alertas(), 1, 1,
-                                      lambda filas: q.alerta_dtos(sesion, filas)), Pagina[AlertaRespuesta])
-        agregar("/alertas/{identificador}", q.alerta_dtos(sesion, [a])[0], AlertaRespuesta)
-    return ejemplos
+        add("/alertas", q.paginate(session, q.alerts_query(), 1, 1,
+                                      lambda rows: q.alert_dtos(session, rows)), Pagina[AlertaRespuesta])
+        add("/alertas/{identificador}", q.alert_dtos(session, [a])[0], AlertaRespuesta)
+    return examples
 
 
-def especificacion(app):
-    """La documentación sigue disponible si la BD cae; no inventa ejemplos de respaldo."""
+def specification(app):
+    """The documentation stays available if the database is down; it does not invent fallback examples."""
     if app.openapi_schema is not None:
         return app.openapi_schema
     schema = get_openapi(title=app.title, version=app.version, description=app.description, routes=app.routes)
-    descripciones = {"ubigeo": "Código distrital de seis dígitos como texto",
+    descriptions = {"ubigeo": "Código distrital de seis dígitos como texto",
                      "estado": "Estado de alerta: activa o retirada"}
-    for nombre, esquema in schema["components"]["schemas"].items():
-        if nombre.startswith("Pagina_"):
-            esquema.setdefault("description", "Listado paginado con disponibilidad, total y corte de datos")
-        elif nombre in DESCRIPCIONES:
-            esquema.setdefault("description", DESCRIPCIONES[nombre])
-    for metodos in schema["paths"].values():
-        for operacion in metodos.values():
-            for parametro in operacion.get("parameters", []):
-                if parametro["name"] in descripciones:
-                    parametro.setdefault("description", descripciones[parametro["name"]])
-    fabrica = app.state.fabrica_sesiones
-    if fabrica is not None:
+    for name, schema_model in schema["components"]["schemas"].items():
+        if name.startswith("Pagina_"):
+            schema_model.setdefault("description", "Listado paginado con disponibilidad, total y corte de datos")
+        elif name in DESCRIPTIONS:
+            schema_model.setdefault("description", DESCRIPTIONS[name])
+    for methods in schema["paths"].values():
+        for operation in methods.values():
+            for parameter in operation.get("parameters", []):
+                if parameter["name"] in descriptions:
+                    parameter.setdefault("description", descriptions[parameter["name"]])
+    factory = app.state.session_factory
+    if factory is not None:
         try:
-            with fabrica() as sesion:
-                for ruta, ejemplo in ejemplos_reales(sesion, app.state.cfg, app.version).items():
-                    schema["paths"]["/api/v1" + ruta]["get"]["responses"]["200"]["content"]["application/json"]["examples"] = {
-                        "bd_real": {"summary": "Ejemplo obtenido de la base de datos configurada", "value": ejemplo}}
+            with factory() as session:
+                for path, example in real_examples(session, app.state.cfg, app.version).items():
+                    schema["paths"]["/api/v1" + path]["get"]["responses"]["200"]["content"]["application/json"]["examples"] = {
+                        "bd_real": {"summary": "Ejemplo obtenido de la base de datos configurada", "value": example}}
         except SQLAlchemyError:
             pass
     app.openapi_schema = schema

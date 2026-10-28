@@ -1,4 +1,4 @@
-"""Errores públicos homogéneos, sin SQL ni secretos de conexión."""
+"""Uniform public errors, without SQL or connection secrets."""
 
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
@@ -7,38 +7,38 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 
-class ErrorAPI(Exception):
+class APIError(Exception):
     def __init__(self, estado, codigo, mensaje, detalle=None):
         self.estado, self.codigo = estado, codigo
         self.mensaje, self.detalle = mensaje, detalle
 
 
-def respuesta_error(estado, codigo, mensaje, detalle=None):
+def error_response(estado, codigo, mensaje, detalle=None):
     return JSONResponse(status_code=estado, content={
         "codigo": codigo, "mensaje": mensaje, "detalle": detalle})
 
 
-def registrar_errores(app):
-    """Evita revelar credenciales, entradas sensibles o consultas internas."""
-    @app.exception_handler(ErrorAPI)
-    async def error_controlado(request: Request, error: ErrorAPI):
-        return respuesta_error(error.estado, error.codigo, error.mensaje, error.detalle)
+def register_error_handlers(app):
+    """Avoid revealing credentials, sensitive inputs or internal queries."""
+    @app.exception_handler(APIError)
+    async def handled_error(request: Request, error: APIError):
+        return error_response(error.estado, error.codigo, error.mensaje, error.detalle)
 
     @app.exception_handler(RequestValidationError)
-    async def parametro_invalido(request: Request, error: RequestValidationError):
-        campos = [{"campo": ".".join(map(str, e["loc"])), "tipo": e["type"]}
+    async def invalid_parameter(request: Request, error: RequestValidationError):
+        fields = [{"campo": ".".join(map(str, e["loc"])), "tipo": e["type"]}
                   for e in error.errors()]
-        return respuesta_error(422, "parametro_invalido", "Parámetro inválido; revisa el contrato de la API", campos)
+        return error_response(422, "parametro_invalido", "Parámetro inválido; revisa el contrato de la API", fields)
 
     @app.exception_handler(SQLAlchemyError)
-    async def base_no_disponible(request: Request, error: SQLAlchemyError):
-        return respuesta_error(503, "bd_no_disponible", "La base de datos no está disponible")
+    async def database_unavailable(request: Request, error: SQLAlchemyError):
+        return error_response(503, "bd_no_disponible", "La base de datos no está disponible")
 
     @app.exception_handler(HTTPException)
-    async def ruta_invalida(request: Request, error: HTTPException):
-        return respuesta_error(error.status_code, "solicitud_invalida",
+    async def invalid_route(request: Request, error: HTTPException):
+        return error_response(error.status_code, "solicitud_invalida",
                                "Ruta o método no disponible")
 
     @app.exception_handler(Exception)
-    async def error_interno(request: Request, error: Exception):
-        return respuesta_error(500, "error_interno", "No se pudo completar la solicitud")
+    async def internal_error(request: Request, error: Exception):
+        return error_response(500, "error_interno", "No se pudo completar la solicitud")

@@ -14,8 +14,8 @@ from sqlalchemy.engine import URL
 
 from backend_support import datos_muestra, entorno_bd, motor_temporal
 from serving_support import preparar_muestra
-from apps.api.cache import CacheLecturas
-from apps.api.main import crear_app
+from apps.api.cache import ReadCache
+from apps.api.main import create_app
 from denguekay.db.models import Alert, Run, Prediction, ModelVersion
 from denguekay.db.session import make_engine, transaction
 from denguekay.serving.storage import LocalStorage
@@ -42,14 +42,14 @@ class TestAPIReal(unittest.TestCase):
         cls.cfg, cls.protocolo, cls.preparadas = preparar_muestra()
         datos = datos_muestra(ruta, cls.cfg.seleccion_experimental)
         datos = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
-        cls.almacenamiento = LocalStorage(ruta / "storage")
+        cls.storage = LocalStorage(ruta / "storage")
         plantilla = ruta / "plantilla"
         plantilla.mkdir()
         motor = motor_temporal(plantilla)
         with transaction(motor) as s:
             persist_load(s, datos)
         publish_to_db(motor, datos, cls.protocolo, cls.preparadas, (2, 4), cls.cfg, "run-prueba",
-                       "huella-api", cls.almacenamiento, 0)
+                       "huella-api", cls.storage, 0)
         with transaction(motor) as s:
             # Una predicción real elevada a muy_alto para ejercitar alertas (los datos de fin de año dan riesgo bajo).
             p = s.scalar(select(Prediction).where(Prediction.ubigeo == "200101", Prediction.horizonte == 2,
@@ -70,7 +70,7 @@ class TestAPIReal(unittest.TestCase):
         destino = Path(self.carpeta.name) / "api.db"
         shutil.copyfile(self.plantilla, destino)
         self.motor = make_engine(URL.create("sqlite", database=str(destino)))
-        self.app = crear_app(self.motor, self.cfg, clave_api=CLAVE, almacenamiento=self.almacenamiento)
+        self.app = create_app(self.motor, self.cfg, api_key=CLAVE, storage=self.storage)
         self.cliente = TestClient(self.app)
         self.cliente.__enter__()
 
@@ -295,7 +295,7 @@ class TestAPIReal(unittest.TestCase):
             r = self.post("/admin/inferencias", {"horizonte": 2}, clave=clave)
             self.assertEqual(r.status_code, 401)
             self.assertEqual(set(r.json()), {"codigo", "mensaje", "detalle"})
-        with TestClient(crear_app(self.motor, self.cfg, clave_api="", almacenamiento=self.almacenamiento)) as c:
+        with TestClient(create_app(self.motor, self.cfg, api_key="", storage=self.storage)) as c:
             self.assertEqual(c.post("/api/v1/admin/inferencias", json={"horizonte": 2}).status_code, 503)
         for origen, permitido in ((self.cfg.cors_origen, True), ("https://origen-no-autorizado.invalid", False)):
             r = self.cliente.get("/api/v1/distritos", headers={"Origin": origen})
@@ -345,11 +345,11 @@ class TestAPIReal(unittest.TestCase):
         self.assertIn("examples", schema["paths"]["/api/v1/alertas"]["get"]["responses"]["200"]["content"]["application/json"])
 
     def test_sin_url_503_y_url_del_entorno(self):
-        with entorno_bd(""), TestClient(crear_app()) as c:
+        with entorno_bd(""), TestClient(create_app()) as c:
             r = c.get("/api/v1/salud")
             self.assertEqual((r.status_code, r.json()["codigo"]), (503, "bd_no_disponible"))
             self.assertEqual(c.get("/openapi.json").status_code, 200)
-        with entorno_bd(str(self.motor.url)), TestClient(crear_app(almacenamiento=self.almacenamiento)) as c:
+        with entorno_bd(str(self.motor.url)), TestClient(create_app(storage=self.storage)) as c:
             self.assertEqual(c.get("/api/v1/salud").status_code, 200)
 
     def test_exportar_openapi(self):
@@ -358,7 +358,7 @@ class TestAPIReal(unittest.TestCase):
         original = exportar_openapi.OPENAPI_JSON
         exportar_openapi.OPENAPI_JSON = destino
         try:
-            r = exportar_openapi.exportar(self.motor)
+            r = exportar_openapi.export(self.motor)
         finally:
             exportar_openapi.OPENAPI_JSON = original
         self.assertEqual(r["rutas"], 15)
@@ -368,7 +368,7 @@ class TestAPIReal(unittest.TestCase):
         with tempfile.TemporaryDirectory() as carpeta:
             motor = motor_temporal(Path(carpeta))
             try:
-                with TestClient(crear_app(motor, self.cfg, almacenamiento=self.almacenamiento)) as c:
+                with TestClient(create_app(motor, self.cfg, storage=self.storage)) as c:
                     salud = c.get("/api/v1/salud").json()
                     self.assertIsNone(salud["fecha_corte_datos"])
                     self.assertIsNone(salud["ultima_ejecucion"])
@@ -382,8 +382,8 @@ class TestAPIReal(unittest.TestCase):
                 motor.dispose()
 
     def test_prueba_humo_tabla_2(self):
-        from apps.api.tools.smoke_test import ejecutar, markdown
-        resultados = ejecutar(self.cliente, CLAVE)
+        from apps.api.tools.smoke_test import run, markdown
+        resultados = run(self.cliente, CLAVE)
         estados = {(r["metodo"], r["ruta"]): r["http"] for r in resultados}
         self.assertEqual(estados["GET", "/mapa-riesgo?horizonte=4"], 200)
         self.assertEqual(estados["POST", "/admin/inferencias (sin X-API-Key)"], 401)
@@ -398,7 +398,7 @@ class TestAPIReal(unittest.TestCase):
 import sys
 from pathlib import Path
 from fastapi.testclient import TestClient
-from apps.api.main import crear_app
+from apps.api.main import create_app
 from denguekay.db.session import make_engine
 from denguekay.serving.storage import LocalStorage
 from denguekay.config.paths import DATA
@@ -408,7 +408,7 @@ def auditar(evento, argumentos):
         if Path(argumentos[0]).resolve().is_relative_to(DATA):
             raise RuntimeError("La API intentó leer data/")
 sys.addaudithook(auditar)
-with TestClient(crear_app(motor, clave_api="verificacion", almacenamiento=LocalStorage(sys.argv[2]))) as c:
+with TestClient(create_app(motor, api_key="verificacion", storage=LocalStorage(sys.argv[2]))) as c:
     assert c.get("/api/v1/mapa-riesgo?horizonte=2").status_code == 200
     assert c.get("/api/v1/series/200101?horizonte=2").status_code == 200
     r = c.post("/api/v1/admin/inferencias", json={"horizonte": 2}, headers={"X-API-Key": "verificacion"})
@@ -424,15 +424,15 @@ print("API sin lecturas de data/: OK")
 
 class TestCache(unittest.TestCase):
     def test_expiracion_capacidad_y_copia_independiente(self):
-        cache = CacheLecturas(ttl=10, capacidad=1)
+        cache = ReadCache(ttl=10, capacity=1)
         cache.save("uno", {"valor": [0]})
-        copia = cache.obtener("uno")
+        copia = cache.get("uno")
         copia["valor"].append(1)
-        self.assertEqual(cache.obtener("uno"), {"valor": [0]})
+        self.assertEqual(cache.get("uno"), {"valor": [0]})
         cache.save("dos", {"valor": None})
-        self.assertIsNone(cache.obtener("uno"))
+        self.assertIsNone(cache.get("uno"))
         cache.ttl = 0
-        self.assertIsNone(cache.obtener("dos"))
+        self.assertIsNone(cache.get("dos"))
 
 
 if __name__ == "__main__":

@@ -1,1 +1,1 @@
-"""Rutas organizadas por recurso, sin lógica de entrenamiento."""
+"""Routes organised by resource, without training logic."""

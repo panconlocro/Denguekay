@@ -48,11 +48,11 @@ class EntornoInferencia:
         # Solo el tramo contiguo 2025 S30-S52: la historia de la fixture tiene un hueco 2017-2025.
         cls.data = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
         cls.motor = cls.crear_motor(ruta)
-        cls.almacenamiento = LocalStorage(ruta / "storage")
+        cls.storage = LocalStorage(ruta / "storage")
         with transaction(cls.motor) as s:
             persist_load(s, cls.data)
             cls.versiones = {k: v.id_version for k, v in save_versions(
-                s, cls.preparadas, "run-prueba", parametros.acceptance_criteria(s), cls.almacenamiento).items()}
+                s, cls.preparadas, "run-prueba", parametros.acceptance_criteria(s), cls.storage).items()}
 
     @classmethod
     def tearDownClass(cls):
@@ -68,7 +68,7 @@ class EntornoInferencia:
 
     def inferir(self, h=2, corte=None, servir=True):
         with transaction(self.motor) as s:
-            return infer(s, h, corte, storage=self.almacenamiento, servir_no_validadas=servir)
+            return infer(s, h, corte, storage=self.storage, servir_no_validadas=servir)
 
     def predictions(self, h=2, corte=202552):
         with transaction(self.motor) as s:
@@ -129,14 +129,14 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
                     for version in (clf, reg):
                         with self.subTest(h=h, corte=corte, tarea=version.tarea):
                             np.testing.assert_array_equal(
-                                predict_with_version(version, desde_bd, self.almacenamiento),
-                                predict_with_version(version, actual, self.almacenamiento))
+                                predict_with_version(version, desde_bd, self.storage),
+                                predict_with_version(version, actual, self.storage))
         # La probabilidad guardada es la del modelo redondeada a numeric(5,4).
         self.inferir(4, 202548)
         with transaction(self.motor) as s:
             clf = s.get(ModelVersion, self.versiones[4, "clasificacion"])
             filas, _ = vectors_from_db(s, 4, 202548, sorted(set(clf.variables)))
-            esperadas = dict(zip(filas.ubigeo, predict_with_version(clf, filas, self.almacenamiento)))
+            esperadas = dict(zip(filas.ubigeo, predict_with_version(clf, filas, self.storage)))
         guardadas = self.predictions(4, 202548)
         for ubigeo, p in esperadas.items():
             self.assertAlmostEqual(guardadas[ubigeo][1], round(float(p), 4), places=9)
