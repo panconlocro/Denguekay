@@ -22,7 +22,7 @@ from denguekay.model.train import (
     prepare_gold, split_calendar_year, split_season,
 )
 from denguekay.model.tracking import log_or_warn
-from denguekay.config.paths import DOCS, GOLD, MODELS, SILVER_INTEGRATED
+from denguekay.config.paths import COMPACT_METRICS, GOLD, MODELS, SILVER_INTEGRATED
 from denguekay.data.validation.forecast_contract import KEY
 from denguekay.data.validation.gx_quality import validate_modeling_inputs
 
@@ -100,7 +100,7 @@ def choose_in_validation(
 def run_compact_validation(
     *, gold_dir: Path = GOLD,
     output_dir: Path = MODELS / "experimentos" / "validacion_temporal_compacta",
-    metrics_path: Path = DOCS / "modeling" / "metricas" / "validacion_temporal_compacta.json",
+    metrics_path: Path = COMPACT_METRICS,
     audit: bool = True, validate_data: bool = True,
     log_mlflow: bool = True,
 ) -> dict:
@@ -232,7 +232,7 @@ def main() -> None:
     parser.add_argument("--salida-dir", type=Path,
                         default=MODELS / "experimentos" / "validacion_temporal_compacta")
     parser.add_argument("--metricas", type=Path,
-                        default=DOCS / "modeling" / "metricas" / "validacion_temporal_compacta.json")
+                        default=COMPACT_METRICS)
     parser.add_argument("--sin-validacion-datos", action="store_true",
                         help="No ejecutar las suites de Great Expectations")
     parser.add_argument("--sin-mlflow", action="store_true",

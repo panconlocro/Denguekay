@@ -1,0 +1,62 @@
+# V2 · C3+A3·E3·S4_s3 (vigente)
+
+| Campo | Valor |
+|---|---|
+| Estado | **Vigente**: configuración congelada para la evaluación prospectiva de 2026. Todavía no se sirve (integrarla en serving es un encargo aparte) |
+| Tag | `model/v2` (`424a148`), congelada el 2026-10-27 |
+| Configuración | `denguekay.model.frozen_configs.CONFIG_2026` (antes `CONFIGURACION_2026`); se carga con `denguekay.model.registry.configuration("v2")` |
+| Reemplaza a | [V1](../v1/ficha.md) |
+| Estudio | [`research/05_fe_hyperparameters`](../../../research/05_fe_hyperparameters/README.md), informe [fe_hiperparametros.md](../../../research/05_fe_hyperparameters/docs/fe_hiperparametros.md), «Encargo complementario · clima para el conteo»; tag `study/fe-hyperparameters` (`e4bc7b7`) |
+| Métricas de selección | `research/05_fe_hyperparameters/docs/metricas/fe_hiperparametros.json → complemento_clima`; MLflow `fe_hiperparametros_complemento_clima` (`6afc4549fd214a1497636319b3e6844c`) |
+
+## Configuración
+
+La V1 más A3: `hum_rel_media_media5_h2` y `precip_total_mm_media5_h2` (clima de gold, media de 5 semanas hasta
+el origen), 11 columnas. Se excluyen los 65 orígenes con nulos de arranque de A3 (semana del 2017-02-05). Todo
+lo demás queda idéntico a la V1: E3 · S4_s3 · α dentro de la muestra · hiperparámetros heredados · Platt ·
+p ≥ 0,50 · semilla 17.
+
+## Huellas
+
+- **Histórica** (definición original): `c36d7a80d1896a203874bf271bd78f1078850e1faa381e2b17e9ba04b07d5569`
+  (`424a148`).
+- **De comportamiento** (decisión D1), un valor por entorno:
+
+  | Entorno | Huella |
+  |---|---|
+  | `device=cpu,n_jobs=2` (CI) | `0fe5d10712d4127e9e2728d7de230b8db6bfbae364b018f2b449ccd10818e2b3` |
+  | `device=cuda` | `b302d838aa402017dbcf70320cd8c061ef854e0eda50460b801d557cd709a936` |
+
+La definición de la huella cambió en la reestructuración (28/10/2026, commit `3d54055`). La equivalencia se
+demuestra con predicciones idénticas bit a bit. El modelo no cambió, ni la fecha de congelamiento, ni la
+ventana del test de 2026.
+
+## Gold
+
+Matrices en memoria desde gold h=2 (`meteo_socio_epi_piura_2017_2025_h2_gold.csv`,
+`0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3`), incluidas las columnas A3, y B3 desde el
+silver epidemiológico histórico.
+
+## Métricas de selección
+
+Comparación 20, preregistrada: se adopta F+A3 si el conteo mejora en algún horizonte sin empeorar en ninguno
+(2022 y 2023) y la alerta no pierde. Se cumplió en h=2, 3 y 4. Mediana de 5 semillas, F∩A3 → F+A3:
+
+| Temporada | h | F1 | Razón MAE | Razón RMSE |
+|---|---|---|---|---|
+| 2022 | 2 | 0,702 → 0,709 | 1,000 → 0,919 | 1,099 → 0,938 |
+| 2022 | 3 | 0,642 → 0,594 | 1,017 → 0,883 | 1,221 → 0,922 |
+| 2022 | 4 | 0,525 → 0,333 | 1,036 → 0,838 | 1,369 → 0,905 |
+| 2023 | 2 | 0,852 → 0,858 | 0,884 → 0,818 | 0,991 → 0,869 |
+| 2023 | 3 | 0,826 → 0,828 | 0,811 → 0,747 | 0,912 → 0,818 |
+| 2023 | 4 | 0,802 → 0,811 | 0,765 → 0,708 | 0,851 → 0,779 |
+| 2024 (contraste) | 4 | 0,744 → 0,749 | 1,617 → 0,951 | 2,007 → 1,011 |
+
+El F1 de 2022 · h4 cae (0,525 → 0,333): la regla del complemento no mide ese costo en la alerta, y el informe lo
+discute en «El costo en la alerta, que la regla no mide».
+
+## HU0007-4
+
+**No cumple.** Clasificación: las mismas 4 de 9 celdas que la V1 (2023 h2 y 2024 h2/h3/h4). Regresión: 2 de 9
+(2023 h3: 0,747 / 0,818; 2023 h4: 0,708 / 0,779). El test independiente será la parte de la temporada
+2025-2026 publicada después del congelamiento (`EVALUATION_2026` en `frozen_configs`).

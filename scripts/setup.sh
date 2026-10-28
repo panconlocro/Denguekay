@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "$(dirname "${BASH_SOURCE[0]}")"
+# Creates .venv (Python 3.12+) and installs the dependencies and the denguekay package (macOS/Linux).
+# Usage, from any folder: ./scripts/setup.sh
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 # Use an installed Python 3.12+ interpreter.
 python_cmd=""

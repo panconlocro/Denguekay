@@ -15,7 +15,7 @@ gold    -> dataset con feature engineering: h2 y h4 (+ manifest_fase6.json). Lo 
 Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/features/gold.py` y el notebook 10 (`pipelines/notebooks/10_silver_to_gold.ipynb`); Claude propone los cambios. **Dataset de trabajo para el EDA:** `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar siempre con `denguekay.data.loading.load_integrated()`).
 
 ## Reglas duras
-1. **Estructura:** antes de crear cualquier archivo lee `docs/estructuraRepo.md` y respétalo. Si algo nuevo no cabe en esa estructura, propón el cambio a Rosa y actualiza ese documento en el mismo cambio; no inventes carpetas por tu cuenta.
+1. **Estructura:** antes de crear cualquier archivo lee `docs/architecture.md` y respétalo. Si algo nuevo no cabe en esa estructura, propón el cambio a Rosa y actualiza ese documento en el mismo cambio; no inventes carpetas por tu cuenta.
 2. **Los datos son de solo lectura.** Nunca escribas, borres ni modifiques nada dentro de `data/` (ni bronze, ni silver, ni reference, ni gold). Si el análisis exige corregir datos, lo **reportas y propones** el cambio en el pipeline (notebooks 03–09 de `pipelines/notebooks/` / `src/denguekay/data/processing`); no lo haces tú.
 3. **Variables derivadas: solo en memoria.** En el EDA no se construyen features. En el modelado sí se calculan variables nuevas, pero solo en memoria, con funciones de `src/denguekay/features/` y un test de no fuga por perturbación. Nunca se guardan en `data/`. Si una variable entra a la configuración final, se **propone** el cambio en `src/denguekay/features/gold.py` y el equipo regenera gold.
 4. **`ubigeo` es string de 6 dígitos** (con ceros a la izquierda) en todo el pipeline. Nunca lo castees a int.
@@ -51,9 +51,10 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/feat
 - Ante una ambigüedad que cambie el análisis (definición de brote, tratamiento del 2025, qué variables descartar) **pregunta**; no decidas en silencio.
 
 ## Herramientas del proyecto
-- Skill `eda-dengue` y subagente `revisor-eda`: método del EDA y auditor que recalcula cada cifra citada. Están versionados en `_claude_setup/` (no instalados en `.claude/`; se instalan con `instalar_claude_setup.ps1`) y apuntan al EDA congelado en `research/01_eda/`. Úsalos para cualquier análisis exploratorio nuevo.
+- Skill `eda-dengue` y subagente `revisor-eda`: método del EDA y auditor que recalcula cada cifra citada. Están versionados en `_claude_setup/` (no instalados en `.claude/`; se instalan con `scripts/install_claude_setup.ps1`) y apuntan al EDA congelado en `research/01_eda/`. Úsalos para cualquier análisis exploratorio nuevo.
 - Subagentes versionados en `.claude/agents/`: `revisor-backend` y `revisor-modelado`.
 - Decisiones de arquitectura del repo: `docs/decisions/` (ADR 0001: reestructuración en monorepo, con las decisiones D1–D6).
+- Registro de modelos: `models/registry/` (ficha de v0, v1 y v2 y `CHANGELOG.md`). La v2 es la configuración vigente y la v0 la que se sirve; las configuraciones se cargan desde el paquete con `denguekay.model.registry`. Una versión nueva lleva su ficha y su entrada en el CHANGELOG.
 
 
 <!-- inicio: backend OE2 -->

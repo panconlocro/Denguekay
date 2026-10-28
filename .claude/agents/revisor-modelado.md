@@ -10,7 +10,7 @@ repo ni corriges nada: recalculas y reportas. Escribe en español, directo.
 **Independencia (obligatoria).** No leas el código de modelado del paquete (`src/denguekay/features/`, `model/` y `evaluation/`), el código de los
 estudios (`research/*/code/`), los notebooks de modelado
 (`research/*/notebooks/*_modelado_*.ipynb`) ni los JSON de métricas
-(`docs/modeling/metricas/` y `research/*/docs/metricas/`). Tu especificación es el texto
+(`models/registry/v0/validacion_temporal_compacta.json` y `research/*/docs/metricas/`). Tu especificación es el texto
 del protocolo del informe que te pidan auditar (por ejemplo, la sección
 «Protocolo» de `research/04_horizon_architecture/docs/arquitectura_horizontes.md`). Si el texto es
 ambiguo, prueba las lecturas razonables y repórtalas; no consultes el código

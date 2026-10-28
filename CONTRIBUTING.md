@@ -1,7 +1,7 @@
 # Cómo contribuir a Denguekay
 
 Reglas de control de versiones del equipo. Rigen desde la limpieza del 27/10/2026
-(tag `pre-restructure`). La estructura de carpetas está en `docs/estructuraRepo.md`.
+(tag `pre-restructure`). La estructura de carpetas está en `docs/architecture.md`.
 
 ## Ramas
 

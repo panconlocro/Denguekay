@@ -60,12 +60,14 @@ CONFIG_2026 = {
                    "complemento_clima": "F+A3 mejora el conteo en h=2, 3 y 4 y la alerta no pierde en ninguno"},
 }
 
-# Status of each version (outside the constants so their fingerprints do not change).
+# Status of each version (outside the constants so their fingerprints do not change). ``ficha`` is the
+# version card in the model registry (models/registry/, read with denguekay.model.registry).
 HISTORY = {
     "V1": {"constante": "CONFIGURACION_2026_V1", "commit": "d6bd0be", "fecha": FREEZE_DATE_V1,
-           "estado": "reemplazada por la V2 (complemento de clima, comparación 20)"},
+           "estado": "reemplazada por la V2 (complemento de clima, comparación 20)",
+           "ficha": "models/registry/v1/ficha.md"},
     "V2": {"constante": "CONFIGURACION_2026", "commit": "el que introduce esta constante", "fecha": FREEZE_DATE,
-           "estado": "vigente"},
+           "estado": "vigente", "ficha": "models/registry/v2/ficha.md"},
 }
 
 # 2026 prospective evaluation (fixed before seeing data; not applied to anything yet).

@@ -7,6 +7,14 @@ models/*.joblib
 models/experimentos/
 models/serving/
 models/storage/
+# Registro de modelos: se versionan las fichas (ficha.md, ficha.json), el CHANGELOG y las métricas de
+# selección; nunca los artefactos (boosters, predicciones, cachés), que viven en storage/ y experimentos/.
+models/registry/**/*.ubj
+models/registry/**/*.pkl
+models/registry/**/*.joblib
+models/registry/**/*.csv
+models/registry/**/*.parquet
+models/registry/**/artefactos/
 .coverage
 htmlcov/
 coverage.xml

@@ -100,10 +100,14 @@ Denguekay/
 | 0 | — | Inventario sin cambios en el repo |
 | 1 | `refactor/package-layout` | `pyproject.toml`, guardas automatizadas y línea base (mergeada en `3f19431`) |
 | 2 | `refactor/research-archive` | Investigación a `research/` con README por estudio; sus tests salen del CI |
-| 3 | por definir | Producto a `src/denguekay/` y `apps/api/`, en inglés, un subpaquete por commit; test de dependencias en un solo sentido |
-| 4 | por definir | `models/registry/v0`–`v2` con ficha y `CHANGELOG.md`; la configuración V2 se carga desde el paquete |
-| 5 | por definir | Higiene de la raíz, `docs/architecture.md`, README nuevo y `apps/web/README.md` |
+| 3 | `refactor/product-package` | Producto a `src/denguekay/` y `apps/api/`, en inglés, un subpaquete por commit; test de dependencias en un solo sentido (mergeada en `83f0e83`) |
+| 4 | `refactor/registry-and-docs` | `models/registry/v0`–`v2` con ficha y `CHANGELOG.md`; la configuración V2 se carga desde el paquete |
+| 5 | `refactor/registry-and-docs` | Higiene de la raíz, `docs/architecture.md`, README nuevo y `apps/web/README.md` |
 | Cierre | — | Guardas completas, `revisor-backend` y tag `restructure-done` tras el último merge |
+
+**Desviación (28/10/2026, aprobada por Rosa):** las fases 4 y 5 van juntas en una sola rama y un solo PR
+(`refactor/registry-and-docs`), en lugar de una rama por fase como pide la regla 7, para ahorrar un ciclo de
+revisión. Siguen en commits separados (registro; higiene y documentación) y el cierre se hace sobre ese PR.
 
 ### Tags que reproducen cada estudio (verificados en la fase 0)
 
