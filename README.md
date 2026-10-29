@@ -132,4 +132,6 @@ Las instrucciones de Codex están en `AGENTS.md` y `.codex/skills/`; las de Clau
 
 ## Contribuir
 
-Ramas, commits, PR, tags e idioma del código: [CONTRIBUTING.md](CONTRIBUTING.md).
+`main` es producción y `develop` integración: todo cambio sale de `develop` y vuelve a `develop` por PR
+([ADR 0002](docs/decisions/0002-develop-branch.md)). Ramas, commits, PR, tags e idioma del código:
+[CONTRIBUTING.md](CONTRIBUTING.md).

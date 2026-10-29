@@ -51,7 +51,7 @@ Denguekay/
 ├── alembic.ini                # migraciones del backend, sin credenciales
 ├── pyproject.toml             # paquete instalable denguekay (pip install -e .); dependencias = requirements.txt
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
-├── .github/workflows/         # tests (SQLite y PostgreSQL) y cobertura en push/PR; sin despliegue
+├── .github/workflows/         # tests (SQLite y PostgreSQL) y cobertura en PR y push a main/develop; sin despliegue
 ├── requirements.txt
 ├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan) e install_claude_setup.ps1
 ├── configs/
@@ -95,7 +95,7 @@ Denguekay/
 ├── mlartifacts/               # artefactos de MLflow (generado, no se versiona)
 └── docs/
     ├── modeling/              # guía de MLflow/GX, diccionario de variables y métricas que lee serving (V0)
-    ├── decisions/             # ADR numerados (0001: reestructuración en monorepo)
+    ├── decisions/             # ADR numerados (0001: monorepo; 0002: ramas develop y main)
     └── backend/               # operación y evidencia del backend por fase
 ```
 
@@ -359,7 +359,7 @@ numeración original:
 | 32–35 | `research/05_fe_hyperparameters/` |
 
 Cada estudio tiene un README con su pregunta, su decisión, la versión de modelo resultante y el tag
-desde el que se reproduce. No se vuelven a correr en `main` ni en el CI.
+desde el que se reproduce. No se vuelven a correr en `develop`, en `main` ni en el CI.
 
 **Va acá:** un notebook nuevo del pipeline, con un número que refleje en qué paso entra (un notebook de análisis va en el estudio de `research/` al que pertenece). Si agregas un paso intermedio, usa notación tipo `04b_` en vez de renumerar todo lo que sigue.
 
@@ -382,7 +382,7 @@ módulo.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
 - **`docs/pipeline.md`**: cómo se corre el pipeline de datos, el actualizador selectivo y la procedencia de los datos de 2025.
 - **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
-- **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR).
+- **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR): 0001, reestructuración en monorepo; 0002, ramas `develop` (integración) y `main` (producción).
 - **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`. La skill local `.codex/skills/feature-engineering-dengue/` y `AGENTS.md` describen el flujo de Codex.
 ---
 

@@ -36,11 +36,11 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/feat
   - **Código en inglés:** identificadores (snake_case), comentarios y docstrings. El producto ya está traducido (fase 3 de la reestructuración); por la decisión D2, los handlers de la API, sus parámetros y los esquemas Pydantic conservan sus nombres en español porque forman el contrato OpenAPI.
   - **Sin cambios hasta nuevo aviso:** el esquema de BD sigue el documento OE2 (nombres en español de `docs/backend/ddl_oe2.sql`) y las columnas de los datos conservan sus nombres actuales.
   - **Documentación en español:** `docs/`, markdown de notebooks, informes, títulos y etiquetas de gráficos (con unidades: °C, mm, casos por 100 000 hab.).
-- `pipelines/notebooks/` contiene solo el pipeline (01–09 y `10_silver_to_gold`, que regenera gold), numerado según el paso. La investigación (EDA, feature engineering y estudios de modelado: los antiguos notebooks 10–21 y 23–35, su código, tests, informes, métricas y figuras) está congelada en `research/<estudio>/`, con un README por estudio que dice cómo reproducirlo desde su tag. No se vuelve a correr en `main`, no corre en el CI y el producto nunca la importa. Un estudio nuevo va en `research/06_<nombre>/`.
+- `pipelines/notebooks/` contiene solo el pipeline (01–09 y `10_silver_to_gold`, que regenera gold), numerado según el paso. La investigación (EDA, feature engineering y estudios de modelado: los antiguos notebooks 10–21 y 23–35, su código, tests, informes, métricas y figuras) está congelada en `research/<estudio>/`, con un README por estudio que dice cómo reproducirlo desde su tag. No se vuelve a correr en `develop` ni en `main`, no corre en el CI y el producto nunca la importa. Un estudio nuevo va en `research/06_<nombre>/`.
 - Salidas del EDA (cerrado): figuras en `research/01_eda/docs/figuras/<fase>/`, cifras clave en `research/01_eda/docs/metricas/<fase>.json`, conclusiones en `research/01_eda/docs/hallazgos.md`.
 
 ## Control de versiones (detalle en `CONTRIBUTING.md`)
-- Solo `main` es permanente; no hagas commits directos en ella. Cada cambio va en una rama `feat/`, `fix/`, `refactor/`, `docs/`, `chore/` o `exp/`, con nombre en inglés y kebab-case, y entra a `main` por PR con el CI en verde.
+- Dos ramas permanentes (ADR 0002): `main` = producción (solo recibe PR desde `develop` en un release o desde `fix/` en un hotfix) y `develop` = integración. No hagas commits directos en ninguna de las dos. Cada cambio va en una rama `feat/`, `fix/`, `refactor/`, `docs/`, `chore/` o `exp/` que **sale de `develop`**, con nombre en inglés y kebab-case, y vuelve a `develop` por PR con el CI en verde. El release `develop → main` lo decide Rosa.
 - Commits con Conventional Commits en inglés (`feat(api): add risk map endpoint`).
 - Merge siempre con «Create a merge commit». **Nunca reescribas historia publicada** (squash, rebase, `--amend`, `push --force`): los informes citan hashes.
 - Tags anotados: `model/vN` al congelar una versión de modelo, `study/<nombre>` al cerrar un estudio. Las ramas anteriores a la limpieza están en los tags `archive/*`.
@@ -53,7 +53,7 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/feat
 ## Herramientas del proyecto
 - Skill `eda-dengue` y subagente `revisor-eda`: método del EDA y auditor que recalcula cada cifra citada. Están versionados en `_claude_setup/` (no instalados en `.claude/`; se instalan con `scripts/install_claude_setup.ps1`) y apuntan al EDA congelado en `research/01_eda/`. Úsalos para cualquier análisis exploratorio nuevo.
 - Subagentes versionados en `.claude/agents/`: `revisor-backend` y `revisor-modelado`.
-- Decisiones de arquitectura del repo: `docs/decisions/` (ADR 0001: reestructuración en monorepo, con las decisiones D1–D6).
+- Decisiones de arquitectura del repo: `docs/decisions/` (ADR 0001: reestructuración en monorepo, con las decisiones D1–D6; ADR 0002: ramas `develop` y `main`).
 - Registro de modelos: `models/registry/` (ficha de v0, v1 y v2 y `CHANGELOG.md`). La v2 es la configuración vigente y la v0 la que se sirve; las configuraciones se cargan desde el paquete con `denguekay.model.registry`. Una versión nueva lleva su ficha y su entrada en el CHANGELOG.
 
 
