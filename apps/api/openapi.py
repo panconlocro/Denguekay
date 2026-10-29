@@ -6,10 +6,13 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from apps.api import queries as q
-from apps.api.schemas import (AlertaRespuesta, DistritoRespuesta, MapaRiesgoRespuesta, ModeloDetalle,
-                              ModelosActivosRespuesta, ObservacionRespuesta, Pagina, PrediccionRespuesta,
-                              SaludRespuesta, SeriesRespuesta, TableroRespuesta, VariablesRespuesta)
+from apps.api.contract import APP_VERSION
+from apps.api.schemas import (AlertaRespuesta, ConfiguracionRespuesta, DistritoRespuesta, MapaRiesgoRespuesta,
+                              ModeloDetalle, ModelosActivosRespuesta, ObservacionRespuesta, Pagina,
+                              PrediccionRespuesta, SaludRespuesta, SeriesRespuesta, TableroRespuesta,
+                              VariablesRespuesta)
 from denguekay.db.models import Alert, District, Prediction, ModelVersion
+from denguekay.serving.parameters import MissingParameter
 
 DESCRIPTIONS = {
     "Disponibilidad": "Distingue valores existentes, incluidos ceros, de valores ausentes con motivo",
@@ -20,7 +23,12 @@ DESCRIPTIONS = {
     "PrediccionRespuesta": "Probabilidad, nivel de riesgo, magnitud, línea base y trazabilidad del modelo",
     "SeriesRespuesta": "Semanas continuas con observado y predicción anulables",
     "TableroRespuesta": "Indicadores del corte vigente; la suma regional es null si falta un distrito",
-    "MapaRiesgoRespuesta": "GeoJSON FeatureCollection de centroides con nivel de riesgo o Sin datos",
+    "MapaRiesgoRespuesta": "GeoJSON FeatureCollection (hoy centroides) con nivel de riesgo o Sin datos",
+    "FeatureDistrito": "Feature GeoJSON de un distrito: geometría Point, Polygon o MultiPolygon y su riesgo",
+    "PropiedadesDistrito": "Riesgo, magnitud, intervalo y motivo de ausencia de un distrito en el mapa",
+    "ElementoLeyenda": "Nivel de riesgo con su rango de probabilidad, o «Sin datos»",
+    "ConfiguracionRespuesta": "Horizontes disponibles y por defecto, cortes, niveles y leyenda; versión del contrato",
+    "HorizonteConfiguracion": "Disponibilidad de un horizonte según los modelos en uso de la BD",
     "AlertaRespuesta": "Alerta alto/muy_alto con cambio respecto del corte anterior y su predicción",
     "ModeloEnUso": "Versión en uso (activa o selección experimental) por tarea y horizonte",
     "ModeloDetalle": "Métricas por bloque, variables, hashes y reproducibilidad de una versión",
@@ -33,11 +41,16 @@ DESCRIPTIONS = {
 def real_examples(session, cfg, api_version):
     """Return verifiable examples; if a resource is missing, its example is omitted."""
     examples = {}
+    served = cfg.servir_no_validadas
 
     def add(path, data, schema_model):
         examples[path] = jsonable_encoder(schema_model.model_validate(data))
 
     add("/salud", q.health(session, api_version), SaludRespuesta)
+    try:
+        add("/configuracion", q.configuration(session, served), ConfiguracionRespuesta)
+    except MissingParameter:
+        pass  # database not migrated to 0004_v1: no example rather than an invented one
     d = session.scalar(select(District).order_by(District.ubigeo).limit(1))
     if d is None:
         return examples
@@ -52,11 +65,11 @@ def real_examples(session, cfg, api_version):
         if cutoff is not None:
             add("/predicciones", q.paginate(session, q.predictions_query(h, cutoff), 1, 1,
                                                lambda rows: q.prediction_dtos(session, rows)), Pagina[PrediccionRespuesta])
-            add("/series/{ubigeo}", q.series(session, d.ubigeo, h, None, None), SeriesRespuesta)
-            add("/tablero/resumen", q.dashboard(session, h), TableroRespuesta)
-            risk_map_dto = q.risk_map(session, h)
+            add("/series/{ubigeo}", q.series(session, d.ubigeo, h, None, None, served), SeriesRespuesta)
+            add("/tablero/resumen", q.dashboard(session, h, served), TableroRespuesta)
+            risk_map_dto = q.risk_map(session, h, served)
             add("/mapa-riesgo", {**risk_map_dto, "features": risk_map_dto["features"][:1]}, MapaRiesgoRespuesta)
-    add("/modelos/activo", q.models_in_use(session, None, cfg.servir_no_validadas), ModelosActivosRespuesta)
+    add("/modelos/activo", q.models_in_use(session, None, served), ModelosActivosRespuesta)
     v = session.scalar(select(ModelVersion).order_by(ModelVersion.id_version).limit(1))
     if v is not None:
         add("/modelos/{identificador}", q.model_dto(v, True), ModeloDetalle)
@@ -92,7 +105,7 @@ def specification(app):
     if factory is not None:
         try:
             with factory() as session:
-                for path, example in real_examples(session, app.state.cfg, app.version).items():
+                for path, example in real_examples(session, app.state.cfg, APP_VERSION).items():
                     schema["paths"]["/api/v1" + path]["get"]["responses"]["200"]["content"]["application/json"]["examples"] = {
                         "bd_real": {"summary": "Ejemplo obtenido de la base de datos configurada", "value": example}}
         except SQLAlchemyError:

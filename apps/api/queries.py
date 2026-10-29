@@ -4,15 +4,21 @@ from datetime import timedelta
 
 from sqlalchemy import func, select
 
+from apps.api.contract import CONTRACT_VERSION, HORIZONS, no_model_reason
 from apps.api.errors import APIError
 from denguekay.db.models import (Alert, District, Run, VariableImportance, WeeklyObservation,
                             Prediction, EpiWeek, ModelVersion)
 from denguekay.serving import parameters
-from denguekay.serving.inference import H3_REASON, TASKS, select_versions
+from denguekay.serving.inference import select_versions
 from denguekay.serving.risk import LABELS, LEVELS
 
 EXPERIMENTAL_NOTE = ("Demo experimental: ningún modelo cumple todavía los umbrales de aceptación; "
                      "las predicciones marcadas experimental: true no son un modelo validado.")
+VALIDATED_NOTE = "Predicciones de una versión activa que cumple los umbrales"
+# Interval columns arrive with the pluggable predictor (decision C3); until then every interval is null.
+NO_INTERVAL_REASON = "La versión del modelo no estima intervalos de casos"
+UNAVAILABLE_INTERVAL_REASON = "Predicción no disponible"
+INTERVAL_LEVEL = None
 
 
 # --- general utilities -------------------------------------------------------
@@ -131,6 +137,8 @@ def prediction_dtos(session, rows):
             "tipo": "vigente" if p.id_semana_corte == current[p.horizonte] else "retrospectiva",
             "estado": p.estado, "probabilidad_brote": p.probabilidad_brote, "nivel_riesgo": p.nivel_riesgo,
             "nivel_riesgo_etiqueta": LABELS.get(p.nivel_riesgo), "casos_estimados": p.casos_estimados,
+            "casos_intervalo_inferior": None, "casos_intervalo_superior": None, "nivel_intervalo": INTERVAL_LEVEL,
+            "motivo_intervalo": NO_INTERVAL_REASON if available else UNAVAILABLE_INTERVAL_REASON,
             "casos_persistencia": persistence.get((p.ubigeo, p.id_semana_corte)),
             "alerta_modelo": (p.probabilidad_brote >= clf.umbral_probabilidad
                               if available and clf is not None and clf.umbral_probabilidad is not None else None),
@@ -147,16 +155,25 @@ def predictions_query(horizon, cutoff, ubigeo=None):
     return query.order_by(Prediction.ubigeo)
 
 
-def no_prediction_reason(session, horizon):
-    """Reason when there are no predictions for the horizon (h=3 or not published yet)."""
-    if horizon == 3:
-        return H3_REASON
-    return "Aún no hay predicciones publicadas para este horizonte"
+def served_horizons(session, servir_no_validadas):
+    """Horizons with a usable version (active or experimental selection) in the database."""
+    return [h for h in HORIZONS if select_versions(session, h, servir_no_validadas)[1] is None]
+
+
+def no_model(session, horizon, servir_no_validadas):
+    """Generic reason if the database has no usable model for the horizon; None otherwise."""
+    return None if horizon in served_horizons(session, servir_no_validadas) else no_model_reason(horizon)
+
+
+def no_prediction_reason(session, horizon, servir_no_validadas):
+    """Reason when there are no predictions for the horizon (no model, or not published yet)."""
+    return (no_model(session, horizon, servir_no_validadas)
+            or "Aún no hay predicciones publicadas para este horizonte")
 
 
 # --- series, dashboard and map ---------------------------------------------------
 
-def series(session, ubigeo, horizon, start, end):
+def series(session, ubigeo, horizon, start, end, servir_no_validadas):
     """Continuous calendar weeks with observed values and predictions (null when missing)."""
     d = existing_district(session, ubigeo)
     if end is None:
@@ -180,7 +197,7 @@ def series(session, ubigeo, horizon, start, end):
     preds = list(session.scalars(select(Prediction).where(
         Prediction.ubigeo == ubigeo, Prediction.horizonte == horizon, Prediction.id_semana_objetivo.in_(ids)))) if ids else []
     dtos = {dto["semana_objetivo"]["id_semana"]: dto for dto in prediction_dtos(session, preds)}
-    reason = H3_REASON if horizon == 3 else None
+    reason = no_model(session, horizon, servir_no_validadas)
     return {**metadata(session, reason is None, reason), "ubigeo": ubigeo, "distrito": d.nombre,
             "horizonte": horizon, "desde": start, "hasta": end,
             "elementos": [{"semana": week_dto(s), "observado": s.id_semana in obs,
@@ -190,13 +207,13 @@ def series(session, ubigeo, horizon, start, end):
 
 
 def current_predictions(session, horizon):
-    cutoff = current_cutoff(session, horizon) if horizon != 3 else None
+    cutoff = current_cutoff(session, horizon)
     if cutoff is None:
         return None, []
     return cutoff, prediction_dtos(session, list(session.scalars(predictions_query(horizon, cutoff))))
 
 
-def dashboard(session, horizon):
+def dashboard(session, horizon, servir_no_validadas):
     cutoff, dtos = current_predictions(session, horizon)
     available_rows = [p for p in dtos if p["disponible"]]
     levels = {n: sum(p["nivel_riesgo"] == n for p in available_rows) for n in LEVELS}
@@ -208,7 +225,7 @@ def dashboard(session, horizon):
     observed_cases = session.scalar(select(func.sum(WeeklyObservation.casos_dengue)).where(
         WeeklyObservation.id_semana == last_obs)) if last_obs else None
     complete = bool(dtos) and len(available_rows) == len(dtos)
-    reason = None if dtos else no_prediction_reason(session, horizon)
+    reason = None if dtos else no_prediction_reason(session, horizon, servir_no_validadas)
     return {**metadata(session, bool(dtos), reason), "horizonte": horizon,
             "semana_corte": dtos[0]["semana_corte"] if dtos else None,
             "semana_objetivo": dtos[0]["semana_objetivo"] if dtos else None,
@@ -220,15 +237,22 @@ def dashboard(session, horizon):
                 "motivo": None if complete else "Falta la magnitud de algún distrito; no se suma una región parcial"},
             "casos_observados_ultima_semana": {"disponible": observed_cases is not None, "valor": observed_cases,
                                                "motivo": None if observed_cases is not None else "No hay observaciones"},
-            "nota": EXPERIMENTAL_NOTE if any(p["experimental"] for p in dtos) else
-                    "Predicciones de una versión activa que cumple los umbrales"}
+            "nota": EXPERIMENTAL_NOTE if any(p["experimental"] for p in dtos) else VALIDATED_NOTE}
 
 
-def risk_map(session, horizon):
-    """GeoJSON of centroids (Point): the project reference has no polygons."""
+def legend(cutoffs):
+    """Map legend from the parametro_sistema cutoffs, plus «Sin datos»."""
+    bounds = [0.0, cutoffs["medio"], cutoffs["alto"], cutoffs["muy_alto"], 1.0]
+    return [*({"nivel": n, "etiqueta": LABELS[n], "desde": bounds[i], "hasta": bounds[i + 1]}
+              for i, n in enumerate(LEVELS)),
+            {"nivel": None, "etiqueta": "Sin datos", "desde": None, "hasta": None}]
+
+
+def risk_map(session, horizon, servir_no_validadas):
+    """GeoJSON of centroids (Point): the project reference has no polygons yet (decision C4)."""
     cutoff, dtos = current_predictions(session, horizon)
     by_ubigeo = {p["ubigeo"]: p for p in dtos}
-    general_reason = no_prediction_reason(session, horizon) if not dtos else None
+    general_reason = no_prediction_reason(session, horizon, servir_no_validadas) if not dtos else None
     cutoffs = parameters.risk_cutoffs(session)
     features = []
     for d in session.scalars(select(District).where(District.activo.is_(True)).order_by(District.ubigeo)):
@@ -241,17 +265,38 @@ def risk_map(session, horizon):
                            "nivel_riesgo_etiqueta": (p["nivel_riesgo_etiqueta"] if p else None) or "Sin datos",
                            "probabilidad_brote": p["probabilidad_brote"] if p else None,
                            "casos_estimados": p["casos_estimados"] if p else None,
+                           **{k: p[k] if p else None for k in (
+                               "casos_intervalo_inferior", "casos_intervalo_superior", "nivel_intervalo")},
                            "experimental": p["experimental"] if p else False,
                            "motivo": (p["motivo"] if p else general_reason) or None}})
-    legend = [{"nivel": "bajo", "etiqueta": "Bajo", "desde": 0.0, "hasta": cutoffs["medio"]},
-               {"nivel": "medio", "etiqueta": "Medio", "desde": cutoffs["medio"], "hasta": cutoffs["alto"]},
-               {"nivel": "alto", "etiqueta": "Alto", "desde": cutoffs["alto"], "hasta": cutoffs["muy_alto"]},
-               {"nivel": "muy_alto", "etiqueta": "Muy alto", "desde": cutoffs["muy_alto"], "hasta": 1.0},
-               {"nivel": None, "etiqueta": "Sin datos", "desde": None, "hasta": None}]
     return {**metadata(session, bool(dtos), general_reason), "type": "FeatureCollection", "horizonte": horizon,
             "semana_corte": dtos[0]["semana_corte"] if dtos else None,
             "semana_objetivo": dtos[0]["semana_objetivo"] if dtos else None,
-            "experimental": any(p["experimental"] for p in dtos), "leyenda": legend, "features": features}
+            "experimental": any(p["experimental"] for p in dtos), "leyenda": legend(cutoffs), "features": features}
+
+
+# --- configuration ---------------------------------------------------------------
+
+def configuration(session, servir_no_validadas):
+    """Served horizons, default horizon, risk cutoffs and legend (decision C2)."""
+    cutoffs = parameters.risk_cutoffs(session)
+    default = parameters.default_horizon(session)
+    horizons = []
+    for h in HORIZONS:
+        versions, reason = select_versions(session, h, servir_no_validadas)
+        served = reason is None
+        cutoff = current_cutoff(session, h)
+        horizons.append({"horizonte": h, "disponible": served, "motivo": None if served else no_model_reason(h),
+                         "semana_corte_vigente": week_dto(session.get(EpiWeek, cutoff)) if cutoff else None,
+                         "experimental": served and any(not v.cumple_umbrales for v in versions.values())})
+    available = [x["horizonte"] for x in horizons if x["disponible"]]
+    experimental = any(x["experimental"] for x in horizons)
+    return {**metadata(session, bool(available), None if available else "No hay modelos en uso para ningún horizonte"),
+            "version_contrato": CONTRACT_VERSION, "horizontes_disponibles": available,
+            "horizonte_por_defecto": default, "horizontes": horizons,
+            "cortes_riesgo": {k: cutoffs[k] for k in ("medio", "alto", "muy_alto")},
+            "niveles": [{"nivel": n, "etiqueta": LABELS[n]} for n in LEVELS], "leyenda": legend(cutoffs),
+            "experimental": experimental, "nota": EXPERIMENTAL_NOTE if experimental else VALIDATED_NOTE}
 
 
 # --- alerts ----------------------------------------------------------------------
@@ -307,11 +352,11 @@ def models_in_use(session, horizon, servir_no_validadas):
     items = []
     for h in horizontes:
         versions, _ = select_versions(session, h, servir_no_validadas)
-        for task in TASKS:
-            if task in versions:
-                v = versions[task]
-                items.append({**model_dto(v), "seleccion": "activa" if v.estado == "activa" else "experimental"})
-    reason = None if items else (H3_REASON if horizon == 3 else "No hay versiones activas ni selección experimental utilizable")
+        for task in sorted(versions):
+            v = versions[task]
+            items.append({**model_dto(v), "seleccion": "activa" if v.estado == "activa" else "experimental"})
+    reason = None if items else (no_model_reason(horizon) if horizon
+                                 else "No hay versiones activas ni selección experimental utilizable")
     experimental = any(e["experimental"] for e in items)
     return {**metadata(session, bool(items), reason), "elementos": items,
             "nota": EXPERIMENTAL_NOTE if experimental else "Versiones activas que cumplen los umbrales de aceptación"}

@@ -26,7 +26,7 @@ def commit_and_invalidate(request, session):
 def inferencias(solicitud: SolicitudInferencia, request: Request, sesion: DbSession):
     """Reconstruye los vectores desde la BD, aplica la versión en uso y hace UPSERT de predicciones y alertas.
 
-    No entrena. h=3, un corte sin observaciones o un artefacto alterado responden 409.
+    No entrena. Un horizonte sin modelo, un corte sin observaciones o un artefacto alterado responden 409.
     """
     try:
         result = infer(sesion, solicitud.horizonte, solicitud.id_semana_corte,

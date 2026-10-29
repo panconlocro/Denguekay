@@ -28,9 +28,13 @@ Tipos de desviación:
 | — | Persistencia | No es una `version_modelo` (el DDL solo admite `clasificacion` y `regresion`). La línea base se calcula al vuelo: casos de la semana de corte en `observacion_semanal` | Conforme al documento |
 | — | Idempotencia de cargas | La huella va en `ejecucion.detalle->>'huella'`. En PostgreSQL, índice por expresión sobre ese campo para `tipo = 'ingesta'` | Extensión |
 | — | Bloque de validación | La semilla `umbrales_aceptacion` incluye `"bloque": "temporada_2024"`; `cumple_umbrales` se calcula leyendo umbrales y bloque de la BD, no de `config.yaml` | Corrección del documento |
-| — | Horizonte 3 | La API responde `no_disponible` con motivo «sin modelo para h=3»; las escrituras con h=3 devuelven 409 | Conforme al documento |
+| — | Horizonte 3 | La API responde `no_disponible` con motivo «sin modelo para h=3»; las escrituras con h=3 devuelven 409. Desde el contrato v1 (decisión C1 de `api_v1_decisiones.md`) la regla es genérica: los horizontes servidos salen de las versiones en uso de la BD y cualquier horizonte sin modelo responde «sin modelo para h=N» | Conforme al documento |
 | — | `alerta.motivo` | Se mantiene como columna opcional (nullable) que explica el retiro | Extensión |
 | — | Reproducibilidad del modelo | Una sola columna opcional `version_modelo.reproducibilidad` jsonb con `device`, `version_xgboost`, `plataforma`, `particion_temporal` y fechas de entrenamiento | Extensión |
+| — | `GET /configuracion` (contrato v1, C2; aprobada por Rosa el 29/10/2026) | Extensión de lectura con horizontes disponibles y por defecto, cortes, niveles, leyenda, corte vigente y nota experimental. Nueva clave `parametro_sistema.horizonte_por_defecto` = `{"horizonte": 4}`, sembrada por la migración de solo datos `0004_v1`; si falta, 503 `parametros_no_configurados` | Extensión |
+| — | Intervalo de casos (contrato v1, C3; aprobada por Rosa el 29/10/2026) | Campos anulables `casos_intervalo_inferior`, `casos_intervalo_superior`, `nivel_intervalo` (0,80) y `motivo_intervalo` en las predicciones y el mapa. En la fase 2 valen `null` con motivo; la fase 3 agrega dos columnas anulables a `prediccion`, y las escribe el predictor que los estime | Extensión |
+| — | Versión del contrato (C5) | `info.version` del OpenAPI = versión del contrato (`1.0.0`, semver), cabecera `X-Version-Contrato` en todas las respuestas; `version_api` de `/salud` sigue siendo la versión de la aplicación | Extensión |
+| — | Geometría del mapa (C4) | El contrato admite `Point`, `Polygon` y `MultiPolygon`; hoy se sirven centroides (`Point`) | Conforme al documento |
 
 ## 2. Observaciones de datos (no son desviaciones de diseño)
 

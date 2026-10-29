@@ -14,6 +14,7 @@ from urllib.parse import urlsplit
 import httpx
 from dotenv import load_dotenv
 
+from apps.api.contract import HORIZONS
 from denguekay.config.paths import API_BENCHMARK_JSON, BACKEND_DOCS, ENV_FILE, MODELS, ROOT
 
 
@@ -102,13 +103,19 @@ def measure_case(client, method, path, mode, repetitions, warmup, api_key, limit
         "cumple_sla": errors == 0 and p95 < limit * 1000}
 
 
-def run_benchmark(client, *, horizons=(2, 4), repetitions=20,
+def run_benchmark(client, *, horizons=None, repetitions=20,
                       warmup=2, include_writes=False, api_key="", limit=5):
-    """Every successful write keeps a run; use a scratch database."""
+    """Every successful write keeps a run; use a scratch database.
+
+    Without ``horizons`` it measures the served ones (``/configuracion``); the database, not the code,
+    says which horizons have a model.
+    """
     if repetitions < 2 or warmup < 0 or limit <= 0 or not math.isfinite(limit):
         raise ValueError("Se requieren al menos dos repeticiones, calentamiento no negativo y límite positivo")
-    if not horizons or len(set(horizons)) != len(horizons) or any(h not in (2, 4) for h in horizons):
-        raise ValueError("El benchmark exige horizontes únicos con modelos reales: 2 y/o 4")
+    horizons = (tuple(read_json(client, "/configuracion")["horizontes_disponibles"]) if horizons is None
+                else tuple(horizons))
+    if not horizons or len(set(horizons)) != len(horizons) or any(h not in HORIZONS for h in horizons):
+        raise ValueError("El benchmark exige horizontes únicos del contrato (2, 3 o 4) con modelos en uso")
     if include_writes and not api_key:
         raise ValueError("Configura API_KEY para medir los endpoints de escritura")
     cases, skipped, health, in_use = discover_cases(client, horizons)
@@ -143,7 +150,8 @@ def main(argv=None):
     """CLI without secrets in its output; by default it measures reads on DATABASE_URL."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", help="URL del servidor, sin /api/v1; al omitirla usa TestClient y DATABASE_URL reales")
-    parser.add_argument("--horizontes", nargs="+", type=int, default=[2, 4])
+    parser.add_argument("--horizontes", nargs="+", type=int, default=None,
+                        help="Por defecto, los horizontes disponibles de /configuracion")
     parser.add_argument("--repeticiones", type=int, default=20)
     parser.add_argument("--calentamiento", type=int, default=2)
     parser.add_argument("--incluir-escrituras", action="store_true", help="Agrega ejecuciones reales; usar una copia de la BD")
@@ -154,8 +162,8 @@ def main(argv=None):
     if salida.is_absolute() and (not salida.resolve().is_relative_to(MODELS)
                                and not salida.resolve().is_relative_to(BACKEND_DOCS)):
         parser.error("La salida debe estar en models/ o docs/backend/; nunca en data/")
-    arguments = dict(horizons=tuple(options.horizontes), repetitions=options.repeticiones,
-        warmup=options.calentamiento, include_writes=options.incluir_escrituras,
+    arguments = dict(horizons=None if options.horizontes is None else tuple(options.horizontes),
+        repetitions=options.repeticiones, warmup=options.calentamiento, include_writes=options.incluir_escrituras,
         api_key=os.environ.get("API_KEY", ""))
     try:
         if options.url:

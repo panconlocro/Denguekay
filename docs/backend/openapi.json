@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Denguekay: pronóstico distrital de dengue",
-    "description": "API del documento OE2 (Tabla 2) sobre datos agregados de Piura. Las predicciones de versiones que no cumplen los umbrales se marcan experimental: true (demo; desviación temporal documentada).",
-    "version": "2.0.0"
+    "description": "API del documento OE2 (Tabla 2) sobre datos agregados de Piura. Contrato v1, independiente del modelo: los horizontes disponibles salen de la BD (GET /configuracion). Las predicciones de versiones que no cumplen los umbrales se marcan experimental: true (demo; desviación temporal documentada). Cada respuesta lleva la versión del contrato en X-Version-Contrato.",
+    "version": "1.0.0"
   },
   "paths": {
     "/api/v1/salud": {
@@ -29,7 +29,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T04:59:55.927919Z",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
                       "estado": "ok",
                       "conexion_bd": true,
                       "version_api": "2.0.0",
@@ -38,7 +38,7 @@
                         "tipo": "inferencia",
                         "estado": "exitosa",
                         "id_semana_corte": 202552,
-                        "fin": "2026-10-02T04:59:55.926918"
+                        "fin": "2026-10-29T18:43:43.716172"
                       }
                     }
                   }
@@ -67,7 +67,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -87,7 +87,199 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/configuracion": {
+      "get": {
+        "tags": [
+          "Salud y distritos",
+          "Configuración"
+        ],
+        "summary": "Horizontes disponibles, horizonte por defecto, cortes y leyenda (extensión)",
+        "description": "Los horizontes disponibles salen de las versiones en uso de la BD; nada queda en código duro en el frontend.",
+        "operationId": "configuracion_api_v1_configuracion_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracionRespuesta"
+                },
+                "examples": {
+                  "bd_real": {
+                    "summary": "Ejemplo obtenido de la base de datos configurada",
+                    "value": {
+                      "disponible": true,
+                      "motivo": null,
+                      "fecha_corte_datos": "2025-12-27",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "version_contrato": "1.0.0",
+                      "horizontes_disponibles": [
+                        2,
+                        4
+                      ],
+                      "horizonte_por_defecto": 4,
+                      "horizontes": [
+                        {
+                          "disponible": true,
+                          "motivo": null,
+                          "horizonte": 2,
+                          "semana_corte_vigente": {
+                            "id_semana": 202552,
+                            "anio": 2025,
+                            "semana": 52,
+                            "fecha_inicio": "2025-12-21",
+                            "fecha_fin": "2025-12-27"
+                          },
+                          "experimental": true
+                        },
+                        {
+                          "disponible": false,
+                          "motivo": "sin modelo para h=3",
+                          "horizonte": 3,
+                          "semana_corte_vigente": null,
+                          "experimental": false
+                        },
+                        {
+                          "disponible": true,
+                          "motivo": null,
+                          "horizonte": 4,
+                          "semana_corte_vigente": {
+                            "id_semana": 202552,
+                            "anio": 2025,
+                            "semana": 52,
+                            "fecha_inicio": "2025-12-21",
+                            "fecha_fin": "2025-12-27"
+                          },
+                          "experimental": true
+                        }
+                      ],
+                      "cortes_riesgo": {
+                        "medio": 0.25,
+                        "alto": 0.5,
+                        "muy_alto": 0.75
+                      },
+                      "niveles": [
+                        {
+                          "nivel": "bajo",
+                          "etiqueta": "Bajo"
+                        },
+                        {
+                          "nivel": "medio",
+                          "etiqueta": "Medio"
+                        },
+                        {
+                          "nivel": "alto",
+                          "etiqueta": "Alto"
+                        },
+                        {
+                          "nivel": "muy_alto",
+                          "etiqueta": "Muy alto"
+                        }
+                      ],
+                      "leyenda": [
+                        {
+                          "nivel": "bajo",
+                          "etiqueta": "Bajo",
+                          "desde": 0.0,
+                          "hasta": 0.25
+                        },
+                        {
+                          "nivel": "medio",
+                          "etiqueta": "Medio",
+                          "desde": 0.25,
+                          "hasta": 0.5
+                        },
+                        {
+                          "nivel": "alto",
+                          "etiqueta": "Alto",
+                          "desde": 0.5,
+                          "hasta": 0.75
+                        },
+                        {
+                          "nivel": "muy_alto",
+                          "etiqueta": "Muy alto",
+                          "desde": 0.75,
+                          "hasta": 1.0
+                        },
+                        {
+                          "nivel": null,
+                          "etiqueta": "Sin datos",
+                          "desde": null,
+                          "hasta": null
+                        }
+                      ],
+                      "experimental": true,
+                      "nota": "Demo experimental: ningún modelo cumple todavía los umbrales de aceptación; las predicciones marcadas experimental: true no son un modelo validado."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -161,7 +353,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T04:59:55.927919Z",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
                       "elementos": [
                         {
                           "ubigeo": "200101",
@@ -204,7 +396,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -224,7 +416,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -315,7 +507,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -335,7 +527,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -466,7 +658,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T04:59:55.927919Z",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
                       "elementos": [
                         {
                           "ubigeo": "200101",
@@ -520,7 +712,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -540,7 +732,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -568,7 +760,7 @@
           "Datos semanales"
         ],
         "summary": "Predicciones por distrito para un horizonte y semana de corte (HU0010, HU0011)",
-        "description": "Sin ``corte`` devuelve el corte vigente. h=3 responde disponible=false (sin modelo para h=3).",
+        "description": "Sin ``corte`` devuelve el corte vigente. Un horizonte sin modelo responde disponible=false («sin modelo para h=N»).",
         "operationId": "predicciones_api_v1_predicciones_get",
         "parameters": [
           {
@@ -579,10 +771,10 @@
               "type": "integer",
               "maximum": 4,
               "minimum": 2,
-              "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible",
+              "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false",
               "title": "Horizonte"
             },
-            "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible"
+            "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
           },
           {
             "name": "ubigeo",
@@ -666,7 +858,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T04:59:55.927919Z",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
                       "elementos": [
                         {
                           "disponible": true,
@@ -695,13 +887,17 @@
                           "nivel_riesgo": "bajo",
                           "nivel_riesgo_etiqueta": "Bajo",
                           "casos_estimados": 0.16,
+                          "casos_intervalo_inferior": null,
+                          "casos_intervalo_superior": null,
+                          "nivel_intervalo": null,
+                          "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                           "casos_persistencia": 0,
                           "alerta_modelo": false,
                           "experimental": true,
                           "id_version_clasificador": 1,
                           "id_version_regresor": 2,
                           "id_ejecucion": 11,
-                          "fecha_generacion": "2026-10-02T04:59:52.558170Z"
+                          "fecha_generacion": "2026-10-29T18:43:40.553047Z"
                         }
                       ],
                       "total": 65,
@@ -734,7 +930,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -754,7 +950,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -805,10 +1001,10 @@
               "type": "integer",
               "maximum": 4,
               "minimum": 2,
-              "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible",
+              "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false",
               "title": "Horizonte"
             },
-            "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible"
+            "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
           },
           {
             "name": "desde",
@@ -864,7 +1060,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T04:59:55.927919Z",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
                       "ubigeo": "200101",
                       "distrito": "Piura",
                       "horizonte": 2,
@@ -909,13 +1105,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 1.18,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 2,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.276861Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.588173Z"
                           }
                         },
                         {
@@ -956,13 +1156,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.87,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 1,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.276861Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.588173Z"
                           }
                         },
                         {
@@ -1003,13 +1207,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.71,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 2,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.276861Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.588173Z"
                           }
                         },
                         {
@@ -1050,13 +1258,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.6,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 1,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.277865Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.589178Z"
                           }
                         },
                         {
@@ -1097,13 +1309,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.45,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.277865Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.589178Z"
                           }
                         },
                         {
@@ -1144,13 +1360,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.91,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 2,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.277865Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.589178Z"
                           }
                         },
                         {
@@ -1191,13 +1411,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.4,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.278867Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.590178Z"
                           }
                         },
                         {
@@ -1238,13 +1462,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.41,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 1,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.278867Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.590178Z"
                           }
                         },
                         {
@@ -1285,13 +1513,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.35,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.278867Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.590178Z"
                           }
                         },
                         {
@@ -1332,13 +1564,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.13,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.278867Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.591177Z"
                           }
                         },
                         {
@@ -1379,13 +1615,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.14,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.279894Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.591177Z"
                           }
                         },
                         {
@@ -1426,13 +1666,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.01,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.279894Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.591177Z"
                           }
                         },
                         {
@@ -1473,13 +1717,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.22,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 1,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.279894Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.592183Z"
                           }
                         },
                         {
@@ -1520,13 +1768,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.17,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.280896Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.592183Z"
                           }
                         },
                         {
@@ -1567,13 +1819,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.38,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 1,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.280896Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.592183Z"
                           }
                         },
                         {
@@ -1614,13 +1870,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.31,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.280896Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.593178Z"
                           }
                         },
                         {
@@ -1661,13 +1921,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.84,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 2,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.280896Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.593178Z"
                           }
                         },
                         {
@@ -1708,13 +1972,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.62,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.280896Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.593178Z"
                           }
                         },
                         {
@@ -1755,13 +2023,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.59,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 1,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.280896Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.594182Z"
                           }
                         },
                         {
@@ -1802,13 +2074,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.51,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.282400Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.594182Z"
                           }
                         },
                         {
@@ -1849,13 +2125,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.42,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 1,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.282400Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.594182Z"
                           }
                         },
                         {
@@ -1896,13 +2176,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.63,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 1,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.282400Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.595183Z"
                           }
                         },
                         {
@@ -1943,13 +2227,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.63,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 1,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.283415Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.595183Z"
                           }
                         },
                         {
@@ -1990,13 +2278,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.54,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": null,
                             "experimental": true,
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-02T04:59:41.283415Z"
+                            "fecha_generacion": "2026-10-29T18:43:28.595183Z"
                           }
                         },
                         {
@@ -2050,13 +2342,17 @@
                             "nivel_riesgo": "bajo",
                             "nivel_riesgo_etiqueta": "Bajo",
                             "casos_estimados": 0.16,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
+                            "motivo_intervalo": "La versión del modelo no estima intervalos de casos",
                             "casos_persistencia": 0,
                             "alerta_modelo": false,
                             "experimental": true,
                             "id_version_clasificador": 1,
                             "id_version_regresor": 2,
                             "id_ejecucion": 11,
-                            "fecha_generacion": "2026-10-02T04:59:52.558170Z"
+                            "fecha_generacion": "2026-10-29T18:43:40.553047Z"
                           }
                         }
                       ]
@@ -2087,7 +2383,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2107,7 +2403,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -2146,10 +2442,10 @@
               "type": "integer",
               "maximum": 4,
               "minimum": 2,
-              "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible",
+              "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false",
               "title": "Horizonte"
             },
-            "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible"
+            "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
           }
         ],
         "responses": {
@@ -2167,7 +2463,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T04:59:55.927919Z",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
                       "horizonte": 2,
                       "semana_corte": {
                         "id_semana": 202552,
@@ -2231,7 +2527,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2251,7 +2547,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -2279,7 +2575,7 @@
           "Vigilancia"
         ],
         "summary": "Mapa de riesgo GeoJSON (HU0014)",
-        "description": "FeatureCollection con un Point (centroide) por distrito y su nivel de riesgo o Sin datos.",
+        "description": "FeatureCollection con una geometría por distrito (hoy Point, el centroide) y su nivel de riesgo o Sin datos.",
         "operationId": "mapa_riesgo_api_v1_mapa_riesgo_get",
         "parameters": [
           {
@@ -2290,10 +2586,10 @@
               "type": "integer",
               "maximum": 4,
               "minimum": 2,
-              "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible",
+              "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false",
               "title": "Horizonte"
             },
-            "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible"
+            "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
           }
         ],
         "responses": {
@@ -2311,7 +2607,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T04:59:55.927919Z",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
                       "type": "FeatureCollection",
                       "horizonte": 2,
                       "semana_corte": {
@@ -2381,6 +2677,9 @@
                             "nivel_riesgo_etiqueta": "Bajo",
                             "probabilidad_brote": 0.0297,
                             "casos_estimados": 0.16,
+                            "casos_intervalo_inferior": null,
+                            "casos_intervalo_superior": null,
+                            "nivel_intervalo": null,
                             "experimental": true,
                             "motivo": null
                           }
@@ -2413,7 +2712,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2433,7 +2732,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -2474,7 +2773,7 @@
                   "type": "integer",
                   "maximum": 4,
                   "minimum": 2,
-                  "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible"
+                  "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
                 },
                 {
                   "type": "null"
@@ -2603,7 +2902,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2623,7 +2922,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -2699,7 +2998,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2719,7 +3018,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -2760,7 +3059,7 @@
                   "type": "integer",
                   "maximum": 4,
                   "minimum": 2,
-                  "description": "Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible"
+                  "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
                 },
                 {
                   "type": "null"
@@ -2785,7 +3084,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T04:59:55.927919Z",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
                       "elementos": [
                         {
                           "id_version": 1,
@@ -2797,8 +3096,8 @@
                           "cumple_umbrales": false,
                           "experimental": true,
                           "umbral_probabilidad": 0.2750000000000001,
-                          "mlflow_run_id": "a3cc943abf4241bb82774d13b2792853",
-                          "fecha_registro": "2026-10-02T04:59:36.364915Z",
+                          "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
+                          "fecha_registro": "2026-10-29T18:43:23.208843Z",
                           "fecha_activacion": null,
                           "seleccion": "experimental"
                         },
@@ -2812,8 +3111,8 @@
                           "cumple_umbrales": false,
                           "experimental": true,
                           "umbral_probabilidad": null,
-                          "mlflow_run_id": "a3cc943abf4241bb82774d13b2792853",
-                          "fecha_registro": "2026-10-02T04:59:36.369988Z",
+                          "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
+                          "fecha_registro": "2026-10-29T18:43:23.212842Z",
                           "fecha_activacion": null,
                           "seleccion": "experimental"
                         },
@@ -2827,8 +3126,8 @@
                           "cumple_umbrales": false,
                           "experimental": true,
                           "umbral_probabilidad": 0.22500000000000003,
-                          "mlflow_run_id": "a3cc943abf4241bb82774d13b2792853",
-                          "fecha_registro": "2026-10-02T04:59:36.372499Z",
+                          "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
+                          "fecha_registro": "2026-10-29T18:43:23.215842Z",
                           "fecha_activacion": null,
                           "seleccion": "experimental"
                         },
@@ -2842,8 +3141,8 @@
                           "cumple_umbrales": false,
                           "experimental": true,
                           "umbral_probabilidad": null,
-                          "mlflow_run_id": "a3cc943abf4241bb82774d13b2792853",
-                          "fecha_registro": "2026-10-02T04:59:36.375840Z",
+                          "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
+                          "fecha_registro": "2026-10-29T18:43:23.218842Z",
                           "fecha_activacion": null,
                           "seleccion": "experimental"
                         }
@@ -2876,7 +3175,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2896,7 +3195,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -2961,8 +3260,8 @@
                       "cumple_umbrales": false,
                       "experimental": true,
                       "umbral_probabilidad": 0.2750000000000001,
-                      "mlflow_run_id": "a3cc943abf4241bb82774d13b2792853",
-                      "fecha_registro": "2026-10-02T04:59:36.364915Z",
+                      "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
+                      "fecha_registro": "2026-10-29T18:43:23.208843Z",
                       "fecha_activacion": null,
                       "variables": [
                         "casos_lag_2",
@@ -3429,7 +3728,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3449,7 +3748,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -3508,7 +3807,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-02T04:59:55.927919Z",
+                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
                       "id_version": 1,
                       "elementos": [
                         {
@@ -3575,7 +3874,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3595,7 +3894,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -3623,7 +3922,7 @@
           "Administración"
         ],
         "summary": "Ejecutar la inferencia de una semana de corte (HU0009)",
-        "description": "Reconstruye los vectores desde la BD, aplica la versión en uso y hace UPSERT de predicciones y alertas.\n\nNo entrena. h=3, un corte sin observaciones o un artefacto alterado responden 409.",
+        "description": "Reconstruye los vectores desde la BD, aplica la versión en uso y hace UPSERT de predicciones y alertas.\n\nNo entrena. Un horizonte sin modelo, un corte sin observaciones o un artefacto alterado responden 409.",
         "operationId": "inferencias_api_v1_admin_inferencias_post",
         "requestBody": {
           "content": {
@@ -3667,7 +3966,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3687,7 +3986,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -3773,7 +4072,7 @@
             }
           },
           "409": {
-            "description": "Solicitud no atendible con los datos o modelos (h=3, artefacto, umbrales)",
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3793,7 +4092,7 @@
             }
           },
           "503": {
-            "description": "Base de datos o escritura no disponible",
+            "description": "Base de datos, parámetros o escritura no disponibles",
             "content": {
               "application/json": {
                 "schema": {
@@ -3958,6 +4257,152 @@
         "title": "AlertaRespuesta",
         "description": "Alerta alto/muy_alto con cambio respecto del corte anterior y su predicción"
       },
+      "ConfiguracionRespuesta": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "version_contrato": {
+            "type": "string",
+            "title": "Version Contrato"
+          },
+          "horizontes_disponibles": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Horizontes Disponibles",
+            "description": "Horizontes con un modelo en uso"
+          },
+          "horizonte_por_defecto": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 2.0,
+            "title": "Horizonte Por Defecto",
+            "description": "parametro_sistema.horizonte_por_defecto"
+          },
+          "horizontes": {
+            "items": {
+              "$ref": "#/components/schemas/HorizonteConfiguracion"
+            },
+            "type": "array",
+            "title": "Horizontes"
+          },
+          "cortes_riesgo": {
+            "$ref": "#/components/schemas/CortesRiesgo"
+          },
+          "niveles": {
+            "items": {
+              "$ref": "#/components/schemas/NivelRiesgo"
+            },
+            "type": "array",
+            "title": "Niveles"
+          },
+          "leyenda": {
+            "items": {
+              "$ref": "#/components/schemas/ElementoLeyenda"
+            },
+            "type": "array",
+            "title": "Leyenda"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "nota": {
+            "type": "string",
+            "title": "Nota"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "version_contrato",
+          "horizontes_disponibles",
+          "horizonte_por_defecto",
+          "horizontes",
+          "cortes_riesgo",
+          "niveles",
+          "leyenda",
+          "experimental",
+          "nota"
+        ],
+        "title": "ConfiguracionRespuesta",
+        "description": "Todo lo que el frontend necesita para no tener valores en código duro."
+      },
+      "CortesRiesgo": {
+        "properties": {
+          "medio": {
+            "type": "number",
+            "exclusiveMaximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Medio"
+          },
+          "alto": {
+            "type": "number",
+            "exclusiveMaximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Alto"
+          },
+          "muy_alto": {
+            "type": "number",
+            "exclusiveMaximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Muy Alto"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "medio",
+          "alto",
+          "muy_alto"
+        ],
+        "title": "CortesRiesgo"
+      },
       "DistritoRespuesta": {
         "properties": {
           "ubigeo": {
@@ -4018,6 +4463,66 @@
         "title": "DistritoRespuesta",
         "description": "Catálogo distrital real con provincia, centroide y población censal 2017"
       },
+      "ElementoLeyenda": {
+        "properties": {
+          "nivel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "bajo",
+                  "medio",
+                  "alto",
+                  "muy_alto"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel",
+            "description": "null = Sin datos"
+          },
+          "etiqueta": {
+            "type": "string",
+            "title": "Etiqueta"
+          },
+          "desde": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Desde",
+            "description": "Probabilidad mínima del nivel (incluida)"
+          },
+          "hasta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hasta",
+            "description": "Probabilidad máxima del nivel (excluida, salvo 1)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nivel",
+          "etiqueta",
+          "desde",
+          "hasta"
+        ],
+        "title": "ElementoLeyenda",
+        "description": "Nivel de riesgo con su rango de probabilidad, o «Sin datos»"
+      },
       "ErrorRespuesta": {
         "properties": {
           "codigo": {
@@ -4059,6 +4564,203 @@
         ],
         "title": "ErrorRespuesta",
         "description": "Error homogéneo, sin credenciales ni SQL interno."
+      },
+      "FeatureDistrito": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Feature",
+            "title": "Type",
+            "default": "Feature"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Id",
+            "description": "ubigeo del distrito"
+          },
+          "geometry": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GeometriaPunto"
+              },
+              {
+                "$ref": "#/components/schemas/GeometriaPoligono"
+              },
+              {
+                "$ref": "#/components/schemas/GeometriaMultiPoligono"
+              }
+            ],
+            "title": "Geometry",
+            "description": "Hoy Point (centroide); Polygon o MultiPolygon cuando haya límites con licencia",
+            "discriminator": {
+              "propertyName": "type",
+              "mapping": {
+                "MultiPolygon": "#/components/schemas/GeometriaMultiPoligono",
+                "Point": "#/components/schemas/GeometriaPunto",
+                "Polygon": "#/components/schemas/GeometriaPoligono"
+              }
+            }
+          },
+          "properties": {
+            "$ref": "#/components/schemas/PropiedadesDistrito"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "geometry",
+          "properties"
+        ],
+        "title": "FeatureDistrito",
+        "description": "Feature GeoJSON de un distrito: geometría Point, Polygon o MultiPolygon y su riesgo"
+      },
+      "GeometriaMultiPoligono": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "MultiPolygon",
+            "title": "Type"
+          },
+          "coordinates": {
+            "items": {
+              "items": {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array",
+                  "maxItems": 3,
+                  "minItems": 2,
+                  "description": "[longitud, latitud] en grados (WGS 84)"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "GeometriaMultiPoligono"
+      },
+      "GeometriaPoligono": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Polygon",
+            "title": "Type"
+          },
+          "coordinates": {
+            "items": {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array",
+                "maxItems": 3,
+                "minItems": 2,
+                "description": "[longitud, latitud] en grados (WGS 84)"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "GeometriaPoligono"
+      },
+      "GeometriaPunto": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Point",
+            "title": "Type"
+          },
+          "coordinates": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 2,
+            "title": "Coordinates",
+            "description": "[longitud, latitud] en grados (WGS 84)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "GeometriaPunto"
+      },
+      "HorizonteConfiguracion": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "horizonte": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 2.0,
+            "title": "Horizonte"
+          },
+          "semana_corte_vigente": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SemanaRespuesta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Último corte publicado; null si no hay"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental",
+            "description": "El modelo en uso para el horizonte no cumple los umbrales"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "horizonte",
+          "semana_corte_vigente",
+          "experimental"
+        ],
+        "title": "HorizonteConfiguracion",
+        "description": "Disponibilidad de un horizonte según los modelos en uso de la BD"
       },
       "Indicador": {
         "properties": {
@@ -4278,16 +4980,14 @@
           },
           "leyenda": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/ElementoLeyenda"
             },
             "type": "array",
             "title": "Leyenda"
           },
           "features": {
             "items": {
-              "additionalProperties": true,
-              "type": "object"
+              "$ref": "#/components/schemas/FeatureDistrito"
             },
             "type": "array",
             "title": "Features"
@@ -4721,6 +5421,31 @@
           "nota"
         ],
         "title": "ModelosActivosRespuesta"
+      },
+      "NivelRiesgo": {
+        "properties": {
+          "nivel": {
+            "type": "string",
+            "enum": [
+              "bajo",
+              "medio",
+              "alto",
+              "muy_alto"
+            ],
+            "title": "Nivel"
+          },
+          "etiqueta": {
+            "type": "string",
+            "title": "Etiqueta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nivel",
+          "etiqueta"
+        ],
+        "title": "NivelRiesgo"
       },
       "ObservacionRespuesta": {
         "properties": {
@@ -5309,6 +6034,58 @@
             ],
             "title": "Casos Estimados"
           },
+          "casos_intervalo_inferior": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Intervalo Inferior",
+            "description": "Límite inferior del intervalo de casos; null si el modelo no lo estima"
+          },
+          "casos_intervalo_superior": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Intervalo Superior",
+            "description": "Límite superior del intervalo de casos; null si el modelo no lo estima"
+          },
+          "nivel_intervalo": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMaximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel Intervalo",
+            "description": "Probabilidad nominal del intervalo (0,80)"
+          },
+          "motivo_intervalo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo Intervalo",
+            "description": "Por qué el intervalo es null"
+          },
           "casos_persistencia": {
             "anyOf": [
               {
@@ -5386,6 +6163,10 @@
           "nivel_riesgo",
           "nivel_riesgo_etiqueta",
           "casos_estimados",
+          "casos_intervalo_inferior",
+          "casos_intervalo_superior",
+          "nivel_intervalo",
+          "motivo_intervalo",
           "casos_persistencia",
           "alerta_modelo",
           "experimental",
@@ -5396,6 +6177,149 @@
         ],
         "title": "PrediccionRespuesta",
         "description": "Probabilidad, nivel de riesgo, magnitud, línea base y trazabilidad del modelo"
+      },
+      "PropiedadesDistrito": {
+        "properties": {
+          "ubigeo": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Ubigeo"
+          },
+          "distrito": {
+            "type": "string",
+            "title": "Distrito"
+          },
+          "provincia": {
+            "type": "string",
+            "title": "Provincia"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "disponible",
+              "no_disponible"
+            ],
+            "title": "Estado"
+          },
+          "nivel_riesgo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "bajo",
+                  "medio",
+                  "alto",
+                  "muy_alto"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel Riesgo"
+          },
+          "nivel_riesgo_etiqueta": {
+            "type": "string",
+            "title": "Nivel Riesgo Etiqueta",
+            "description": "Etiqueta del nivel o «Sin datos»"
+          },
+          "probabilidad_brote": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Probabilidad Brote"
+          },
+          "casos_estimados": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Estimados"
+          },
+          "casos_intervalo_inferior": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Intervalo Inferior"
+          },
+          "casos_intervalo_superior": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Intervalo Superior"
+          },
+          "nivel_intervalo": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMaximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel Intervalo"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ubigeo",
+          "distrito",
+          "provincia",
+          "estado",
+          "nivel_riesgo",
+          "nivel_riesgo_etiqueta",
+          "probabilidad_brote",
+          "casos_estimados",
+          "casos_intervalo_inferior",
+          "casos_intervalo_superior",
+          "nivel_intervalo",
+          "experimental",
+          "motivo"
+        ],
+        "title": "PropiedadesDistrito",
+        "description": "Riesgo, magnitud, intervalo y motivo de ausencia de un distrito en el mapa"
       },
       "SaludRespuesta": {
         "properties": {
@@ -5452,7 +6376,8 @@
           },
           "version_api": {
             "type": "string",
-            "title": "Version Api"
+            "title": "Version Api",
+            "description": "Versión de la aplicación; la del contrato va en X-Version-Contrato"
           },
           "ultima_ejecucion": {
             "anyOf": [
@@ -5672,7 +6597,7 @@
             "maximum": 4.0,
             "minimum": 2.0,
             "title": "Horizonte",
-            "description": "2 o 4; 3 responde 409 (sin modelo)"
+            "description": "2, 3 o 4; un horizonte sin modelo responde 409"
           },
           "id_semana_corte": {
             "anyOf": [
