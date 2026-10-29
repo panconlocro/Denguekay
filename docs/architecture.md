@@ -308,7 +308,7 @@ tests/
     ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
     ├── equivalence/          # línea base del ADR 0001 (no se regenera; smoke.json es historia)
     ├── contract_v1/          # línea base v1: esquema de cada migración nueva y smoke v1 (no se regenera)
-    └── pluggable_predictor/  # línea base de las predicciones de la v0 antes del motor enchufable (no se regenera)
+    └── pluggable_predictor/  # línea base de la v0 antes del motor enchufable, sus boosters congelados y su entorno (no se regenera)
 docs/backend/                 # especificación OE2, desviaciones, operación y contrato (openapi_v1.json congelado)
 └── evidencia/                # SQL de la migración, prueba de humo TB1 (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona

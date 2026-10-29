@@ -458,6 +458,22 @@ implementa.
   independientes del modelo servido. Los fixtures del smoke quedan congelados (solo h=2 y h=4). Datos de
   prueba de otro modelo van en fixtures nuevos y aparte. Si una guarda falla por un cambio de modelo, se
   detiene el trabajo y se explica; no se regenera.
+- **Paridad entre sistemas operativos (29/10/2026, pedido por Rosa tras el CI de la fase 3).** XGBoost no
+  entrena bit a bit igual en todos los sistemas operativos, aunque sea en CPU con `n_jobs=2`: con la misma
+  semilla, Linux daba en un distrito una probabilidad de 0,1215 frente a 0,1187 en Windows. Es el mismo
+  límite que la decisión D1 del ADR 0001 resuelve con huellas por entorno. Por eso hay dos paridades:
+  - **paridad del serving** (`test_serving_with_frozen_boosters`): carga los cuatro boosters de la v0
+    entrenados con el código anterior al refactor, que quedan congelados en
+    `tests/fixtures/pluggable_predictor/v0_boosters/` (grabados una vez desde `2d1c1a6`, en Windows, CPU,
+    `n_jobs=2`, con `python tests/pluggable_support.py record-boosters <worktree>`). Con ellos construye el
+    paquete, las entradas y las filas de `prediccion` y `alerta`, sin reentrenar, y corre en los 4 jobs del CI;
+  - **paridad completa con reentrenamiento** (`test_full_parity_with_refit`): queda clavada al entorno de
+    grabación (`v0_predictions_entorno.json`: sistema, máquina, versión de XGBoost y CPU con 2 hilos). En
+    otro entorno se omite y el motivo explícito lo dice.
+
+  Ninguna de las dos usa tolerancias, y la línea base `v0_predictions.json` no se regeneró. La fase 4 aplica
+  lo mismo a la paridad de la v2: modelos congelados para la paridad del serving y reentrenamiento clavado
+  al entorno de grabación.
 
 ## 4. Pendiente fuera de este encargo
 

@@ -191,40 +191,67 @@ def train_service_versions(protocol, horizons, variants, cutoff):
     """
     versions = {}
     for h in horizons:
-        source = protocol.data[h]
-        train = source.loc[(source.semana_inicio + pd.Timedelta(days=6)).le(pd.Timestamp(cutoff))].copy()
-        if train.empty or train.brote.nunique() != 2:
-            raise ValueError("El ajuste final requiere etiquetas cerradas y ambas clases")
+        train = closed_training(protocol, h, cutoff)
         pairs = {name: fit_models(train, compact_variants(h)[name]) for name in set(variants.values())}
-        evaluation = protocol.report
         for task, name in variants.items():
-            model = pairs[name][1 if task == "clasificacion" else 0]
-            metrics = variant_metrics(protocol, h, name)
-            artifact = bytes(model.get_booster().save_raw(raw_format="json"))
-            data = {
-                "algoritmo": "xgboost",
-                "variables": compact_variants(h)[name], "hiperparametros": dict(BASE_PARAMS),
-                "metricas": metrics,
-                "umbral_probabilidad": (metrics["bloques"]["calendario_2025"]["clasificacion"]["umbral_probabilidad"]
-                                        if task == "clasificacion" else None),
-                "sha256_dataset": evaluation["horizontes"][str(h)]["sha256_gold"],
-                "reproducibilidad": {
-                    "variante": name, "device": xgboost_settings()["device"],
-                    "version_xgboost": XGBOOST_VERSION,
-                    "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}",
-                    "entrenamiento_inicio": str(train.semana_inicio.min().date()),
-                    "entrenamiento_corte": str(cutoff),
-                    "sha256_manifiesto_gold": evaluation["sha256_manifest_gold"],
-                    "sha256_booster": sha256_bytes(artifact),
-                    "particion_temporal": {"bloques": _partition(metrics),
-                                           "criterio_seleccion": evaluation["criterio_seleccion"],
-                                           "nota_2024": evaluation["nota_2024"],
-                                           "alcance": "Servicio: ajuste con etiquetas cerradas al corte"}},
-            }
-            gains = model.get_booster().get_score(importance_type="gain")
-            importances = [{"variable": c, "importancia": float(g), "rango": span}
-                           for span, (c, g) in enumerate(sorted(gains.items(), key=lambda x: (-x[1], x[0])), 1)]
-            versions[h, task] = PreparedVersion(data, artifact, importances)
+            booster = pairs[name][1 if task == "clasificacion" else 0].get_booster()
+            versions[h, task] = service_version(protocol, h, task, name, cutoff, train,
+                                                bytes(booster.save_raw(raw_format="json")), booster)
+    return versions
+
+
+def closed_training(protocol, horizon, cutoff):
+    """Rows of the serving fit: every label closed at the cutoff."""
+    source = protocol.data[horizon]
+    train = source.loc[(source.semana_inicio + pd.Timedelta(days=6)).le(pd.Timestamp(cutoff))].copy()
+    if train.empty or train.brote.nunique() != 2:
+        raise ValueError("El ajuste final requiere etiquetas cerradas y ambas clases")
+    return train
+
+
+def service_version(protocol, horizon, task, name, cutoff, train, artifact, booster):
+    """``PreparedVersion`` of one task: protocol metadata, the booster bytes and its gain importances."""
+    evaluation = protocol.report
+    metrics = variant_metrics(protocol, horizon, name)
+    data = {
+        "algoritmo": "xgboost",
+        "variables": compact_variants(horizon)[name], "hiperparametros": dict(BASE_PARAMS),
+        "metricas": metrics,
+        "umbral_probabilidad": (metrics["bloques"]["calendario_2025"]["clasificacion"]["umbral_probabilidad"]
+                                if task == "clasificacion" else None),
+        "sha256_dataset": evaluation["horizontes"][str(horizon)]["sha256_gold"],
+        "reproducibilidad": {
+            "variante": name, "device": xgboost_settings()["device"],
+            "version_xgboost": XGBOOST_VERSION,
+            "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}",
+            "entrenamiento_inicio": str(train.semana_inicio.min().date()),
+            "entrenamiento_corte": str(cutoff),
+            "sha256_manifiesto_gold": evaluation["sha256_manifest_gold"],
+            "sha256_booster": sha256_bytes(artifact),
+            "particion_temporal": {"bloques": _partition(metrics),
+                                   "criterio_seleccion": evaluation["criterio_seleccion"],
+                                   "nota_2024": evaluation["nota_2024"],
+                                   "alcance": "Servicio: ajuste con etiquetas cerradas al corte"}},
+    }
+    gains = booster.get_score(importance_type="gain")
+    importances = [{"variable": c, "importancia": float(g), "rango": span}
+                   for span, (c, g) in enumerate(sorted(gains.items(), key=lambda x: (-x[1], x[0])), 1)]
+    return PreparedVersion(data, artifact, importances)
+
+
+def versions_from_boosters(protocol, horizons, variants, cutoff, artifacts):
+    """Same versions as ``train_service_versions`` from already trained boosters, without fitting.
+
+    ``artifacts`` = {(horizon, task): booster JSON bytes}. XGBoost does not train bit for bit the same
+    on every operating system, so the parity of the serving freezes the boosters instead of refitting.
+    """
+    versions = {}
+    for h in horizons:
+        train = closed_training(protocol, h, cutoff)
+        for task, name in variants.items():
+            artifact = artifacts[h, task]
+            versions[h, task] = service_version(protocol, h, task, name, cutoff, train, artifact,
+                                                load_booster(artifact))
     return versions
 
 
