@@ -24,6 +24,15 @@ def risk_cutoffs(sesion):
     return cutoffs
 
 
+def default_horizon(sesion):
+    """Horizon the frontend shows first (seeded by migration 0004_v1)."""
+    value = read(sesion, "horizonte_por_defecto")
+    horizon = value.get("horizonte") if isinstance(value, dict) else None
+    if not isinstance(horizon, int) or isinstance(horizon, bool) or horizon not in (2, 3, 4):
+        raise ValueError("horizonte_por_defecto debe indicar un horizonte entre 2 y 4")
+    return horizon
+
+
 def acceptance_criteria(sesion):
     """Translate umbrales_aceptacion to the format of denguekay.evaluation.acceptance."""
     u = read(sesion, "umbrales_aceptacion")

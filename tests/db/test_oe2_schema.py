@@ -6,6 +6,7 @@ en PostgreSQL; al terminar, esa BD vuelve a la revisión base.
 """
 
 from datetime import date, datetime, timezone
+import json
 from pathlib import Path
 import re
 import tempfile
@@ -40,14 +41,14 @@ FK = r"foreign key"
 UNICA = r"unique|duplicate key"
 
 
-def bajar_una_revision(motor):
-    """alembic downgrade -1 sobre el motor de la prueba."""
+def bajar_una_revision(motor, destino="0002_serving"):
+    """alembic downgrade hasta ``destino`` (por defecto, la revisión anterior a 0003_oe2)."""
     from alembic import command
     from alembic.config import Config
     from denguekay.config.paths import ALEMBIC_CONFIG
     config = Config(str(ALEMBIC_CONFIG))
     config.attributes["motor"] = motor
-    command.downgrade(config, "-1")
+    command.downgrade(config, destino)
 
 
 def fila_version(**cambios):
@@ -152,7 +153,9 @@ class EsquemaOE2:
     def test_semillas_de_parametros(self):
         with transaction(self.motor) as s:
             valores = {p.clave: p.valor for p in s.scalars(select(SystemParameter))}
-        self.assertEqual(set(valores), {"regla_brote", "cortes_riesgo", "umbrales_aceptacion"})
+        # Semillas del DDL (0003_oe2) y el horizonte por defecto del contrato v1 (0004_v1).
+        self.assertEqual(set(valores), {"regla_brote", "cortes_riesgo", "umbrales_aceptacion", "horizonte_por_defecto"})
+        self.assertEqual(valores["horizonte_por_defecto"], {"horizonte": 4})
         self.assertEqual(valores["regla_brote"], {"anios_previos": 5, "k_desviaciones": 1.5, "minimo_casos": 2})
         self.assertEqual(valores["cortes_riesgo"], {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75})
         self.assertEqual(valores["umbrales_aceptacion"]["bloque"], "temporada_2024")
@@ -320,6 +323,18 @@ class TestEsquemaOE2SQLite(EsquemaOE2, unittest.TestCase):
         migrar(self.motor)
         self.assertLessEqual(TABLAS_OE2, set(inspect(self.motor).get_table_names()))
         self.setUp()  # el downgrade borró los datos de apoyo
+
+    def test_migracion_0004_solo_datos_y_reversible(self):
+        """0004_v1 siembra horizonte_por_defecto y su downgrade lo quita sin tocar el esquema."""
+        consulta = text("SELECT valor FROM parametro_sistema WHERE clave = 'horizonte_por_defecto'")
+        tablas = set(inspect(self.motor).get_table_names())
+        bajar_una_revision(self.motor, "0003_oe2")
+        with self.motor.connect() as conexion:
+            self.assertIsNone(conexion.execute(consulta).first())
+        self.assertEqual(set(inspect(self.motor).get_table_names()), tablas)
+        migrar(self.motor)
+        with self.motor.connect() as conexion:
+            self.assertEqual(json.loads(conexion.execute(consulta).scalar_one()), {"horizonte": 4})
 
 
 @unittest.skipUnless(url_pg_pruebas(), "Sin DENGUEKAY_PG_PRUEBAS_URL: se omiten las pruebas en PostgreSQL")
