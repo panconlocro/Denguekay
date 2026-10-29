@@ -322,7 +322,8 @@ Fase 4: `docs/backend/arquitectura.md`, `decisiones_tecnicas.md`,
 `trazabilidad_hu.md`, `fase4_calidad.md`, `fase4_verificacion.json` y los reportes `benchmark_*.json` documentan
 la implementación y mediciones reales. La copia de benchmark SQLite vive en
 `models/serving/fase4.sqlite`; las mediciones locales por defecto van en
-`models/serving/benchmark.json`. `.github/workflows/backend.yml` ejecuta la
+`models/serving/benchmark.json`. El encargo de la API v1 independiente del modelo está en
+`docs/backend/prompt_api_v1.md`, y su inventario y decisiones en `docs/backend/api_v1_decisiones.md`. `.github/workflows/backend.yml` ejecuta la
 suite completa con fixtures versionadas, sin descargar gold/silver ni desplegar:
 en Linux, Windows y macOS sobre SQLite, y en Linux contra un servicio PostgreSQL 18
 desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten.

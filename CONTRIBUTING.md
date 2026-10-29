@@ -67,7 +67,8 @@ hash al llegar a `develop` y a `main`.
 
 Tags vigentes: `model/v0` (backend TB1, `3d59090`), `model/v1` (`d6bd0be`),
 `model/v2` (`424a148`, vigente), `study/horizon-architecture` (`808c340`),
-`study/fe-hyperparameters` (`e4bc7b7`) y `pre-restructure` (`3ad8312`).
+`study/fe-hyperparameters` (`e4bc7b7`), `pre-restructure` (`3ad8312`) y `restructure-done`
+(`8dc1735`, cierre del ADR 0001).
 Las ramas anteriores a la limpieza viven como `archive/*`, con `/` cambiado por `-` en el
 nombre. Para recuperar una: `git switch -c experiment/model-architecture archive/experiment-model-architecture`.
 
