@@ -153,9 +153,11 @@ class EsquemaOE2:
     def test_semillas_de_parametros(self):
         with transaction(self.motor) as s:
             valores = {p.clave: p.valor for p in s.scalars(select(SystemParameter))}
-        # Semillas del DDL (0003_oe2) y el horizonte por defecto del contrato v1 (0004_v1).
-        self.assertEqual(set(valores), {"regla_brote", "cortes_riesgo", "umbrales_aceptacion", "horizonte_por_defecto"})
+        # Semillas del DDL (0003_oe2), el horizonte por defecto (0004_v1) y el nivel del intervalo (0005_v1).
+        self.assertEqual(set(valores), {"regla_brote", "cortes_riesgo", "umbrales_aceptacion", "horizonte_por_defecto",
+                                        "nivel_intervalo_casos"})
         self.assertEqual(valores["horizonte_por_defecto"], {"horizonte": 4})
+        self.assertEqual(valores["nivel_intervalo_casos"], {"nivel": 0.80})
         self.assertEqual(valores["regla_brote"], {"anios_previos": 5, "k_desviaciones": 1.5, "minimo_casos": 2})
         self.assertEqual(valores["cortes_riesgo"], {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75})
         self.assertEqual(valores["umbrales_aceptacion"]["bloque"], "temporada_2024")
@@ -335,6 +337,22 @@ class TestEsquemaOE2SQLite(EsquemaOE2, unittest.TestCase):
         migrar(self.motor)
         with self.motor.connect() as conexion:
             self.assertEqual(json.loads(conexion.execute(consulta).scalar_one()), {"horizonte": 4})
+
+    def test_migracion_0005_intervalo_y_reversible(self):
+        """0005_v1 agrega el intervalo con su CHECK y el nivel; el downgrade los quita."""
+        columnas = lambda: {c["name"] for c in inspect(self.motor).get_columns("prediccion")}
+        intervalo = {"casos_intervalo_inferior", "casos_intervalo_superior"}
+        self.assertLessEqual(intervalo, columnas())
+        with self.motor.connect() as conexion:
+            sql = conexion.execute(text("SELECT sql FROM sqlite_master WHERE name = 'prediccion'")).scalar_one()
+        self.assertIn("ck_prediccion_intervalo_coherente", sql)
+        bajar_una_revision(self.motor, "0004_v1")
+        self.assertFalse(intervalo & columnas())
+        with self.motor.connect() as conexion:
+            self.assertIsNone(conexion.execute(text(
+                "SELECT valor FROM parametro_sistema WHERE clave = 'nivel_intervalo_casos'")).first())
+        migrar(self.motor)
+        self.assertLessEqual(intervalo, columnas())
 
 
 @unittest.skipUnless(url_pg_pruebas(), "Sin DENGUEKAY_PG_PRUEBAS_URL: se omiten las pruebas en PostgreSQL")

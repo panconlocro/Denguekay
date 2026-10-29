@@ -441,6 +441,40 @@ implementa.
   `parametro_sistema`, valor 4), como las semillas de la 0003. Si falta el parámetro, la API responde 503
   `parametros_no_configurados`. Su línea base de esquema está en `tests/fixtures/contract_v1/`.
 
+### Precisiones de la fase 3 (29/10/2026, aprobadas por Rosa)
+
+- **P1. Versiones v0 viejas de la BD local.** Sin cargador de compatibilidad: las versiones con un
+  booster suelto se descartan y se republica con el código nuevo (D6 ya crea versiones nuevas). Pasos en
+  `docs/backend/operacion.md` («Dejar la BD local al día después de la migración 0005»). La demo se
+  regenera al cerrar la fase.
+- **P2. Nivel del intervalo.** `parametro_sistema.nivel_intervalo_casos` = 0,80, sembrado por la 0005.
+  El manifiesto de cada paquete registra el nivel con que calcula sus intervalos, y la inferencia rechaza
+  (409) un paquete con un nivel distinto. Cambiar el parámetro obliga a volver a inferir.
+- **P3. Publicación (D2).** `publish` solo registra el paquete, las versiones y las OOS; `--inferir`
+  corre la inferencia vigente para uso local, y la demo lo usa.
+- **P4. `seleccion_experimental`.** Se siembra como hasta ahora (desde `config.yaml` al cargar datos); se
+  revisa en la fase 4.
+- **Guardas (regla de Rosa para las fases 3 y 4).** El smoke v1 y las demás guardas del contrato son
+  independientes del modelo servido. Los fixtures del smoke quedan congelados (solo h=2 y h=4). Datos de
+  prueba de otro modelo van en fixtures nuevos y aparte. Si una guarda falla por un cambio de modelo, se
+  detiene el trabajo y se explica; no se regenera.
+- **Paridad entre sistemas operativos (29/10/2026, pedido por Rosa tras el CI de la fase 3).** XGBoost no
+  entrena bit a bit igual en todos los sistemas operativos, aunque sea en CPU con `n_jobs=2`: con la misma
+  semilla, Linux daba en un distrito una probabilidad de 0,1215 frente a 0,1187 en Windows. Es el mismo
+  límite que la decisión D1 del ADR 0001 resuelve con huellas por entorno. Por eso hay dos paridades:
+  - **paridad del serving** (`test_serving_with_frozen_boosters`): carga los cuatro boosters de la v0
+    entrenados con el código anterior al refactor, que quedan congelados en
+    `tests/fixtures/pluggable_predictor/v0_boosters/` (grabados una vez desde `2d1c1a6`, en Windows, CPU,
+    `n_jobs=2`, con `python tests/pluggable_support.py record-boosters <worktree>`). Con ellos construye el
+    paquete, las entradas y las filas de `prediccion` y `alerta`, sin reentrenar, y corre en los 4 jobs del CI;
+  - **paridad completa con reentrenamiento** (`test_full_parity_with_refit`): queda clavada al entorno de
+    grabación (`v0_predictions_entorno.json`: sistema, máquina, versión de XGBoost y CPU con 2 hilos). En
+    otro entorno se omite y el motivo explícito lo dice.
+
+  Ninguna de las dos usa tolerancias, y la línea base `v0_predictions.json` no se regeneró. La fase 4 aplica
+  lo mismo a la paridad de la v2: modelos congelados para la paridad del serving y reentrenamiento clavado
+  al entorno de grabación.
+
 ## 4. Pendiente fuera de este encargo
 
 - **Los 8 distritos sin historia antes de 2017 (§1.9.3)** (`200206`, `200208`, `200303`, `200305`, `200307`,

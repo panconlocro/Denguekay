@@ -15,10 +15,9 @@ from denguekay.serving.risk import LABELS, LEVELS
 EXPERIMENTAL_NOTE = ("Demo experimental: ningún modelo cumple todavía los umbrales de aceptación; "
                      "las predicciones marcadas experimental: true no son un modelo validado.")
 VALIDATED_NOTE = "Predicciones de una versión activa que cumple los umbrales"
-# Interval columns arrive with the pluggable predictor (decision C3); until then every interval is null.
+# Case intervals (decision C3): written by the predictors that estimate them, at parametro_sistema.nivel_intervalo_casos.
 NO_INTERVAL_REASON = "La versión del modelo no estima intervalos de casos"
 UNAVAILABLE_INTERVAL_REASON = "Predicción no disponible"
-INTERVAL_LEVEL = None
 
 
 # --- general utilities -------------------------------------------------------
@@ -122,6 +121,9 @@ def prediction_dtos(session, rows):
         WeeklyObservation.id_semana.in_({p.id_semana_corte for p in rows}),
         WeeklyObservation.ubigeo.in_({p.ubigeo for p in rows}))))
     current = {h: current_cutoff(session, h) for h in {p.horizonte for p in rows}}
+    # Read only when some row has an interval: a database without intervals does not need the parameter.
+    level = (parameters.interval_level(session)
+             if any(p.casos_intervalo_inferior is not None for p in rows) else None)
     result = []
     for p in rows:
         clf, reg = versions.get(p.id_version_clasificador), versions.get(p.id_version_regresor)
@@ -137,8 +139,10 @@ def prediction_dtos(session, rows):
             "tipo": "vigente" if p.id_semana_corte == current[p.horizonte] else "retrospectiva",
             "estado": p.estado, "probabilidad_brote": p.probabilidad_brote, "nivel_riesgo": p.nivel_riesgo,
             "nivel_riesgo_etiqueta": LABELS.get(p.nivel_riesgo), "casos_estimados": p.casos_estimados,
-            "casos_intervalo_inferior": None, "casos_intervalo_superior": None, "nivel_intervalo": INTERVAL_LEVEL,
-            "motivo_intervalo": NO_INTERVAL_REASON if available else UNAVAILABLE_INTERVAL_REASON,
+            "casos_intervalo_inferior": p.casos_intervalo_inferior, "casos_intervalo_superior": p.casos_intervalo_superior,
+            "nivel_intervalo": level if p.casos_intervalo_inferior is not None else None,
+            "motivo_intervalo": (None if p.casos_intervalo_inferior is not None
+                                 else NO_INTERVAL_REASON if available else UNAVAILABLE_INTERVAL_REASON),
             "casos_persistencia": persistence.get((p.ubigeo, p.id_semana_corte)),
             "alerta_modelo": (p.probabilidad_brote >= clf.umbral_probabilidad
                               if available and clf is not None and clf.umbral_probabilidad is not None else None),

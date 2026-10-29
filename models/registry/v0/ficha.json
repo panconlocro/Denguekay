@@ -1,19 +1,20 @@
 {
   "version": "v0",
   "estado": "servida",
-  "estado_detalle": "Es la que sirve hoy el backend TB1 (versiones clf-h2-v1, reg-h2-v1, clf-h4-v1 y reg-h4-v1), marcadas experimental: true porque no cumplen los umbrales de aceptación.",
+  "estado_detalle": "Es la que sirve hoy el backend (versiones clf-h2-v1, reg-h2-v1, clf-h4-v1 y reg-h4-v1), marcadas experimental: true porque no cumplen los umbrales de aceptación. Desde la fase 3 de la API v1 la ejecuta el predictor v0_compact_xgb (denguekay.serving.predictors) a partir de un paquete con los cuatro boosters.",
+  "predictor": "v0_compact_xgb",
   "tag": "model/v0",
   "commit": "3d59090",
   "modelo": "E1·S1: un XGBoost directo por horizonte y tarea (clasificación de brote y regresión de casos), h=2 y h=4; h=3 responde 409",
   "configuracion": {
     "modulo": "configs/config.yaml",
-    "clave": "serving.variantes",
+    "clave": "serving.paquete.opciones.variantes",
     "constante": null,
     "variantes": {"clasificacion": "base_6_poblacion_2017", "regresion": "base_6"},
     "hiperparametros": "denguekay.model.train.BASE_PARAMS"
   },
   "huellas": {
-    "nota": "V0 no es una configuración congelada de frozen_configs: su identidad es el SHA-256 de cada booster en version_modelo.sha256_artefacto y, en cada publicación, el de las métricas de selección entra en la huella de la publicación (clave protocolo_metricas)."
+    "nota": "V0 no es una configuración congelada de frozen_configs: su identidad es su paquete (version_modelo.sha256_artefacto = SHA-256 del manifiesto, que trae el de cada booster) y, en cada publicación, el de las métricas de selección entra en la huella de la publicación (clave protocolo_metricas)."
   },
   "gold": {
     "2": {"archivo": "meteo_socio_epi_piura_2017_2025_h2_gold.csv", "sha256": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3"},

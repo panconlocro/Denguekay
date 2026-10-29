@@ -31,7 +31,7 @@ def configuration(version: str) -> dict:
     """Frozen configuration of a version, loaded from the package constant its card names.
 
     V0 has no frozen configuration constant: its variants live in ``configs/config.yaml``
-    (``serving.variantes``), so this raises for it.
+    (``serving.paquete.opciones.variantes``), so this raises for it.
     """
     source = card(version)["configuracion"]
     if source.get("constante") is None:

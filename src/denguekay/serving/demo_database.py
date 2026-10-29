@@ -4,7 +4,8 @@
 
 - ``denguekay_demo.sqlite``: SQLite migrated to head (Alembic) with the real aggregated data of Piura
   (cases and climate per district and week, no personal data), loaded and published with the same
-  ``publish`` as the local backend (model versions, OOS predictions and the current inference);
+  ``publish`` as the local backend (package, model versions and OOS predictions) plus the current
+  inference (``publish --inferir``);
 - ``storage/``: the model artifacts that the published versions point to;
 - ``mlflow.db`` and ``mlartifacts/``: the MLflow run of the publication, kept apart from the project's.
 
@@ -68,7 +69,7 @@ def build(destination=DEMO_DIR, replace=False):
         config.attributes["motor"] = engine
         command.upgrade(config, "head")
         with tracking_store(folder):
-            summary = publish(engine, storage=LocalStorage(folder / "storage"))
+            summary = publish(engine, storage=LocalStorage(folder / "storage"), run_inference=True)
     finally:
         engine.dispose()
     return {"bd": str(database), "storage": str(folder / "storage"),

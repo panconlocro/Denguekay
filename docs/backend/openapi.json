@@ -29,7 +29,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "estado": "ok",
                       "conexion_bd": true,
                       "version_api": "2.0.0",
@@ -38,7 +38,7 @@
                         "tipo": "inferencia",
                         "estado": "exitosa",
                         "id_semana_corte": 202552,
-                        "fin": "2026-10-29T18:43:43.716172"
+                        "fin": "2026-10-29T20:05:22.214834"
                       }
                     }
                   }
@@ -133,7 +133,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "version_contrato": "1.0.0",
                       "horizontes_disponibles": [
                         2,
@@ -353,7 +353,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "elementos": [
                         {
                           "ubigeo": "200101",
@@ -658,7 +658,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "elementos": [
                         {
                           "ubigeo": "200101",
@@ -677,7 +677,7 @@
                           "temp_min_c": 21.2,
                           "temp_max_c": 34.3,
                           "precip_total_mm": 8.7,
-                          "hum_rel_media_pct": 64.29,
+                          "hum_rel_media_pct": 64.28571428571429,
                           "fuente_casos": "excel_historico",
                           "estado_cobertura": "verificado"
                         }
@@ -858,7 +858,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "elementos": [
                         {
                           "disponible": true,
@@ -897,7 +897,7 @@
                           "id_version_clasificador": 1,
                           "id_version_regresor": 2,
                           "id_ejecucion": 11,
-                          "fecha_generacion": "2026-10-29T18:43:40.553047Z"
+                          "fecha_generacion": "2026-10-29T20:05:18.951480Z"
                         }
                       ],
                       "total": 65,
@@ -1060,7 +1060,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "ubigeo": "200101",
                       "distrito": "Piura",
                       "horizonte": 2,
@@ -1115,7 +1115,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.588173Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1166,7 +1166,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.588173Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1217,7 +1217,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.588173Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1268,7 +1268,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.589178Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1319,7 +1319,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.589178Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1370,7 +1370,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.589178Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1421,7 +1421,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.590178Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1472,7 +1472,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.590178Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1523,7 +1523,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.590178Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1574,7 +1574,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.591177Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1625,7 +1625,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.591177Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1676,7 +1676,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.591177Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1727,7 +1727,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.592183Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1778,7 +1778,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.592183Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1829,7 +1829,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.592183Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1880,7 +1880,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.593178Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1931,7 +1931,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.593178Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -1982,7 +1982,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.593178Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -2033,7 +2033,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.594182Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -2084,7 +2084,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.594182Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -2135,7 +2135,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.594182Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -2186,7 +2186,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.595183Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -2237,7 +2237,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.595183Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -2288,7 +2288,7 @@
                             "id_version_clasificador": null,
                             "id_version_regresor": null,
                             "id_ejecucion": 6,
-                            "fecha_generacion": "2026-10-29T18:43:28.595183Z"
+                            "fecha_generacion": "2026-10-29T20:05:12.181277Z"
                           }
                         },
                         {
@@ -2352,7 +2352,7 @@
                             "id_version_clasificador": 1,
                             "id_version_regresor": 2,
                             "id_ejecucion": 11,
-                            "fecha_generacion": "2026-10-29T18:43:40.553047Z"
+                            "fecha_generacion": "2026-10-29T20:05:18.951480Z"
                           }
                         }
                       ]
@@ -2463,7 +2463,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "horizonte": 2,
                       "semana_corte": {
                         "id_semana": 202552,
@@ -2607,7 +2607,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "type": "FeatureCollection",
                       "horizonte": 2,
                       "semana_corte": {
@@ -3084,7 +3084,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "elementos": [
                         {
                           "id_version": 1,
@@ -3096,8 +3096,8 @@
                           "cumple_umbrales": false,
                           "experimental": true,
                           "umbral_probabilidad": 0.2750000000000001,
-                          "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
-                          "fecha_registro": "2026-10-29T18:43:23.208843Z",
+                          "mlflow_run_id": "97e85ad3e9a44edb8021342acaebb970",
+                          "fecha_registro": "2026-10-29T20:05:10.104477Z",
                           "fecha_activacion": null,
                           "seleccion": "experimental"
                         },
@@ -3111,8 +3111,8 @@
                           "cumple_umbrales": false,
                           "experimental": true,
                           "umbral_probabilidad": null,
-                          "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
-                          "fecha_registro": "2026-10-29T18:43:23.212842Z",
+                          "mlflow_run_id": "97e85ad3e9a44edb8021342acaebb970",
+                          "fecha_registro": "2026-10-29T20:05:10.106477Z",
                           "fecha_activacion": null,
                           "seleccion": "experimental"
                         },
@@ -3126,8 +3126,8 @@
                           "cumple_umbrales": false,
                           "experimental": true,
                           "umbral_probabilidad": 0.22500000000000003,
-                          "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
-                          "fecha_registro": "2026-10-29T18:43:23.215842Z",
+                          "mlflow_run_id": "97e85ad3e9a44edb8021342acaebb970",
+                          "fecha_registro": "2026-10-29T20:05:10.107477Z",
                           "fecha_activacion": null,
                           "seleccion": "experimental"
                         },
@@ -3141,8 +3141,8 @@
                           "cumple_umbrales": false,
                           "experimental": true,
                           "umbral_probabilidad": null,
-                          "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
-                          "fecha_registro": "2026-10-29T18:43:23.218842Z",
+                          "mlflow_run_id": "97e85ad3e9a44edb8021342acaebb970",
+                          "fecha_registro": "2026-10-29T20:05:10.108707Z",
                           "fecha_activacion": null,
                           "seleccion": "experimental"
                         }
@@ -3260,8 +3260,8 @@
                       "cumple_umbrales": false,
                       "experimental": true,
                       "umbral_probabilidad": 0.2750000000000001,
-                      "mlflow_run_id": "5ebabcd22ea34c9dbb9dee5ee13bedc7",
-                      "fecha_registro": "2026-10-29T18:43:23.208843Z",
+                      "mlflow_run_id": "97e85ad3e9a44edb8021342acaebb970",
+                      "fecha_registro": "2026-10-29T20:05:10.104477Z",
                       "fecha_activacion": null,
                       "variables": [
                         "casos_lag_2",
@@ -3606,8 +3606,8 @@
                         "device_evaluacion": "cuda",
                         "version_xgboost_evaluacion": "3.4.1"
                       },
-                      "ruta_artefacto": "modelos/clf-h2-v1.json",
-                      "sha256_artefacto": "481110d317c77da5a72d9205b562ce1c88f87951252d887bcf4d8c8a469e039c",
+                      "ruta_artefacto": "modelos/v0-e9e92d8b8b3c/manifest.json",
+                      "sha256_artefacto": "9a4c71367dd1ba796be25d1d3c7f68b5ab5bf8ab3c2ea6abd7f51a40ed4865ba",
                       "sha256_dataset": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3",
                       "reproducibilidad": {
                         "variante": "base_6_poblacion_2017",
@@ -3617,6 +3617,7 @@
                         "entrenamiento_inicio": "2017-02-05",
                         "entrenamiento_corte": "2025-12-27",
                         "sha256_manifiesto_gold": "33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57",
+                        "sha256_booster": "481110d317c77da5a72d9205b562ce1c88f87951252d887bcf4d8c8a469e039c",
                         "particion_temporal": {
                           "bloques": {
                             "temporada_2022": {
@@ -3807,7 +3808,7 @@
                       "disponible": true,
                       "motivo": null,
                       "fecha_corte_datos": "2025-12-27",
-                      "fecha_actualizacion": "2026-10-29T18:43:43.716172Z",
+                      "fecha_actualizacion": "2026-10-29T20:05:22.215833Z",
                       "id_version": 1,
                       "elementos": [
                         {

@@ -1,8 +1,8 @@
 """Inference per cutoff week from the database, alerts and import of OOS predictions.
 
-The feature vector is rebuilt in memory from ``observacion_semanal`` and
-``distrito.poblacion_censo_2017`` with the same modelling functions
-(``build_future_rows``); it is not persisted.
+``infer`` knows no model: it loads the package of the versions in use, asks its predictor (the port in
+``denguekay.serving.predictors``) for one row per district with the inputs it declares, rebuilt in memory
+from the database (``denguekay.serving.inputs``), and writes ``prediccion`` and ``alerta``.
 """
 
 from time import perf_counter
@@ -11,25 +11,27 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import select
 
-from denguekay.db.models import (Alert, District, Run, WeeklyObservation, Prediction,
-                            EpiWeek, ModelVersion, utc_now)
+from denguekay.db.models import (HORIZONS, TASK, Alert, District, Run, WeeklyObservation, Prediction,
+                                 EpiWeek, ModelVersion, utc_now)
 from denguekay.db.session import upsert
-from denguekay.model.future_rows import build_future_rows
-from denguekay.features.sociodemographics import DIRECT
 from denguekay.serving import parameters as parametros
-from denguekay.serving.artifacts import predict_with_version
+from denguekay.serving.artifacts import InvalidArtifact
+from denguekay.serving.inputs import build_inputs
+from denguekay.serving.package import load_package
+from denguekay.serving.predictors import load_predictor
+from denguekay.serving.predictors.base import InferenceUnavailable, validate_output
 from denguekay.serving.risk import ALERT_LEVELS, alert_change, risk_level
 
-TASKS = ("clasificacion", "regresion")
-OOS_BLOCKS = ("temporada_2022", "temporada_2023", "temporada_2024", "calendario_2025")
-H3_REASON = "sin modelo para h=3"
+NO_VECTOR_REASON = "No hay vector de características para el distrito"
+
+__all__ = ["InferenceUnavailable", "infer", "import_oos", "select_versions", "update_alerts"]
 
 
-class InferenceUnavailable(ValueError):
-    """The request cannot be served with the data or models in the database (HTTP 409)."""
+def no_model_reason(horizon):
+    return f"sin modelo para h={horizon}"
 
 
-# --- calendar and data ------------------------------------------------------
+# --- calendar --------------------------------------------------------------------
 
 def week(sesion, id_semana):
     row = sesion.get(EpiWeek, id_semana)
@@ -53,62 +55,17 @@ def last_observed_week(sesion):
     return value
 
 
-def panel_from_db(sesion, end):
-    """Minimal panel (cases per district and week) closed at date ``end``."""
-    rows = sesion.execute(select(
-        WeeklyObservation.ubigeo, EpiWeek.anio, EpiWeek.semana,
-        EpiWeek.fecha_inicio, WeeklyObservation.casos_dengue
-    ).join(EpiWeek, EpiWeek.id_semana == WeeklyObservation.id_semana
-    ).where(EpiWeek.fecha_fin <= end)).all()
-    panel = pd.DataFrame(rows, columns=["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"])
-    panel["ubigeo"] = panel.ubigeo.astype("string")
-    panel["semana_inicio"] = pd.to_datetime(panel.semana_inicio)
-    panel["casos_Dengue"] = panel.casos_Dengue.astype(float)
-    return panel.sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True)
-
-
-def reference_from_db(sesion):
-    """2017 census reference from ``distrito``.
-
-    ``build_sociodemography`` also requires three 2017 fractions; the serving
-    models only use ``log_poblacion_censo_2017``, so those fractions are filled
-    with 0 and do not enter the vector (they are dropped).
-    """
-    rows = sesion.execute(select(District.ubigeo, District.poblacion_censo_2017).where(
-        District.poblacion_censo_2017.is_not(None))).all()
-    reference = pd.DataFrame(rows, columns=["ubigeo", "poblacion"])
-    reference["ubigeo"] = reference.ubigeo.astype("string")
-    for column in DIRECT:
-        reference[column] = 0.0
-    return reference
-
-
-def vectors_from_db(sesion, horizon, id_semana_corte, columns):
-    """Vectors of the target cutoff+h, writing nothing. Returns (rows, reasons)."""
-    cutoff = week(sesion, id_semana_corte)
-    panel = panel_from_db(sesion, cutoff.fecha_fin)
-    if panel.empty:
-        raise InferenceUnavailable("No hay observaciones cerradas al corte solicitado")
-    try:
-        rows, reasons = build_future_rows(panel, horizon, columns=columns,
-                                                 cutoff_date=pd.Timestamp(cutoff.fecha_fin),
-                                                 reference=reference_from_db(sesion))
-    except ValueError as error:
-        raise InferenceUnavailable(str(error)) from error
-    return rows, {m["ubigeo"]: m["motivo"] for m in reasons}
-
-
 # --- version selection ----------------------------------------------------
 
 def select_versions(sesion, horizon, servir_no_validadas):
     """Active version per task; if there is none, the experimental selection (temporary deviation).
 
-    Returns ({task: ModelVersion}, reason); the dict is incomplete when some task
-    has no usable version.
+    Returns ({task: ModelVersion}, reason); the dict is incomplete when some task (of the DDL
+    ENUM) has no usable version.
     """
     versions = {v.tarea: v for v in sesion.scalars(select(ModelVersion).where(
         ModelVersion.horizonte == horizon, ModelVersion.estado == "activa"))}
-    missing = [t for t in TASKS if t not in versions]
+    missing = [t for t in TASK if t not in versions]
     if missing and servir_no_validadas:
         codes = parametros.experimental_selection(sesion).get(horizon, {})
         for task in missing:
@@ -116,7 +73,7 @@ def select_versions(sesion, horizon, servir_no_validadas):
             version = code and sesion.scalar(select(ModelVersion).where(ModelVersion.codigo == code))
             if version is not None and version.tarea == task and version.horizonte == horizon:
                 versions[task] = version
-    if all(t in versions for t in TASKS):
+    if all(t in versions for t in TASK):
         return versions, None
     if not servir_no_validadas:
         return versions, "Predicción no disponible: no hay un modelo activo que cumpla los umbrales"
@@ -127,15 +84,27 @@ def is_experimental(versions):
     return any(not v.cumple_umbrales for v in versions.values())
 
 
+def package_of(versions, storage):
+    """The package shared by the versions of one horizon (decision M3: both tasks come from one package)."""
+    paths = {(v.ruta_artefacto, v.sha256_artefacto) for v in versions.values()}
+    if len(paths) != 1:
+        raise InvalidArtifact("Las versiones de clasificación y regresión en uso no pertenecen al mismo paquete")
+    path, sha256 = paths.pop()
+    return load_package(storage, path, sha256)
+
+
 # --- inference -----------------------------------------------------------------
 
-def _record(ubigeo, cutoff, target, horizon, run, versions, probability, cases, reason, cutoffs):
+def _record(ubigeo, cutoff, target, horizon, run, versions, probability, cases, interval, reason, cutoffs):
     available = probability is not None
     probability = round(float(probability), 4) if available else None  # numeric(5,4) of the DDL
+    low, high = interval if available and interval is not None else (None, None)
     return {"ubigeo": ubigeo, "id_semana_corte": cutoff, "id_semana_objetivo": target,
             "horizonte": horizon, "probabilidad_brote": probability,
             "nivel_riesgo": risk_level(probability, cutoffs) if available else None,
             "casos_estimados": round(float(cases), 2) if available and cases is not None else None,
+            "casos_intervalo_inferior": None if low is None else round(float(low), 2),
+            "casos_intervalo_superior": None if high is None else round(float(high), 2),
             "estado": "disponible" if available else "no_disponible",
             "motivo_no_disponible": None if available else reason,
             "id_version_clasificador": versions["clasificacion"].id_version if "clasificacion" in versions else None,
@@ -143,17 +112,32 @@ def _record(ubigeo, cutoff, target, horizon, run, versions, probability, cases, 
             "id_ejecucion": run, "fecha_generacion": utc_now()}
 
 
+def predict_cutoff(sesion, versions, horizon, cutoff, storage):
+    """Run the package's predictor for one horizon. Returns (package, {ubigeo: output row})."""
+    package = package_of(versions, storage)
+    if package.interval_level is not None:
+        level = parametros.interval_level(sesion)
+        if abs(float(package.interval_level) - level) > 1e-12:
+            raise InferenceUnavailable(
+                f"El paquete {package.code} calcula intervalos al nivel {package.interval_level} y "
+                f"parametro_sistema.nivel_intervalo_casos es {level}: publique un paquete con ese nivel")
+    predictor = load_predictor(package)
+    output = predictor.predict(build_inputs(sesion, cutoff, predictor.required_inputs), cutoff, (horizon,))
+    validate_output(output, (horizon,), package.interval_level)
+    return package, {r.ubigeo: r for r in output.itertuples(index=False)}
+
+
 def infer(sesion, horizon, id_semana_corte=None, *, storage, servir_no_validadas, origin="api"):
     """Generate (UPSERT) each district's prediction for a cutoff and horizon.
 
-    It creates an ``ejecucion`` of type ``inferencia``; the caller commits the
-    transaction. Without a usable version, the rows stay ``no_disponible``.
+    It creates an ``ejecucion`` of type ``inferencia``; the caller commits the transaction. A horizon
+    with no version at all answers 409; without a usable version the rows stay ``no_disponible``.
     """
     start = perf_counter()
-    if horizon == 3:
-        raise InferenceUnavailable(H3_REASON)
-    if horizon not in (2, 4):
+    if horizon not in HORIZONS or isinstance(horizon, bool):
         raise ValueError("horizonte debe ser 2, 3 o 4")
+    if sesion.scalar(select(ModelVersion.id_version).where(ModelVersion.horizonte == horizon).limit(1)) is None:
+        raise InferenceUnavailable(no_model_reason(horizon))
     id_semana_corte = id_semana_corte or last_observed_week(sesion)
     cutoff = week(sesion, id_semana_corte)
     if sesion.scalar(select(WeeklyObservation.id_semana).where(
@@ -163,23 +147,26 @@ def infer(sesion, horizon, id_semana_corte=None, *, storage, servir_no_validadas
     cutoffs = parametros.risk_cutoffs(sesion)
     versions, reason = select_versions(sesion, horizon, servir_no_validadas)
     run = Run(tipo="inferencia", estado="en_curso", id_semana_corte=id_semana_corte,
-                          detalle={"origen": origin, "horizonte": horizon})
+              detalle={"origen": origin, "horizonte": horizon})
     sesion.add(run)
     sesion.flush()
     districts = list(sesion.scalars(select(District.ubigeo).where(District.activo.is_(True)).order_by(District.ubigeo)))
-    probabilities, cases, reasons = {}, {}, {}
+    package, rows = None, {}
     if reason is None:
-        columns = sorted({c for v in versions.values() for c in v.variables})
-        rows, reasons = vectors_from_db(sesion, horizon, id_semana_corte, columns)
-        if not rows.empty:
-            p = predict_with_version(versions["clasificacion"], rows, storage)
-            c = predict_with_version(versions["regresion"], rows, storage)
-            probabilities = dict(zip(rows.ubigeo, map(float, p)))
-            cases = dict(zip(rows.ubigeo, map(float, c)))
-    records = [_record(u, id_semana_corte, target.id_semana, horizon, run.id_ejecucion, versions,
-                           probabilities.get(u), cases.get(u),
-                           reason or reasons.get(u, "No hay vector de características para el distrito"), cutoffs)
-                 for u in districts]
+        package, rows = predict_cutoff(sesion, versions, horizon, cutoff, storage)
+
+    def record(ubigeo):
+        row = rows.get(ubigeo)
+        if row is None or not pd.isna(row.motivo_no_disponible):
+            why = reason or (row.motivo_no_disponible if row is not None else NO_VECTOR_REASON)
+            return _record(ubigeo, id_semana_corte, target.id_semana, horizon, run.id_ejecucion, versions,
+                           None, None, None, why, cutoffs)
+        interval = (None if pd.isna(row.casos_intervalo_inferior)
+                    else (row.casos_intervalo_inferior, row.casos_intervalo_superior))
+        return _record(ubigeo, id_semana_corte, target.id_semana, horizon, run.id_ejecucion, versions,
+                       row.probabilidad_brote, row.casos_estimados, interval, None, cutoffs)
+
+    records = [record(u) for u in districts]
     upsert(sesion, Prediction.__table__, records, ["ubigeo", "id_semana_corte", "horizonte"])
     sesion.flush()
     alerts = update_alerts(sesion, horizon, id_semana_corte)
@@ -192,6 +179,7 @@ def infer(sesion, horizon, id_semana_corte=None, *, storage, servir_no_validadas
         "id_semana_objetivo": target.id_semana, "experimental": experimental,
         "seleccion": "experimental" if experimental else ("activa" if reason is None else None),
         "versiones": {t: v.codigo for t, v in versions.items()}, "motivo": reason,
+        "paquete": package.code if package else None,
         "predicciones": len(records), "disponibles": available,
         "no_disponibles": len(records) - available, "alertas": alerts,
         "duracion_segundos": round(perf_counter() - start, 3)}
@@ -264,12 +252,13 @@ def update_alerts(sesion, horizon, id_semana_corte):
 
 # --- OOS predictions (past cutoffs) --------------------------------------
 
-def import_oos(sesion, protocol, horizons, cfg, service_versions):
-    """Save the protocol's out-of-sample predictions as past cutoffs.
+def import_oos(sesion, oos, detail, versions):
+    """Save a package's out-of-sample predictions as past cutoffs.
 
-    One ``ejecucion`` of type ``inferencia`` per horizon and block, with the block
-    and its origin in ``detalle``; ``id_version_*`` NULL because those boosters
-    were not kept. They generate no alerts: they are history.
+    ``oos`` has the columns of ``predictors.base.OOS_COLUMNS``; ``versions`` = {(horizon, task):
+    ModelVersion} of the package. One ``ejecucion`` of type ``inferencia`` per horizon and block, with
+    the block and ``detail`` in ``detalle``; ``id_version_*`` NULL because those boosters were not kept.
+    They generate no alerts: they are history.
     """
     cutoffs = parametros.risk_cutoffs(sesion)
     calendar = pd.DataFrame(sesion.execute(select(
@@ -277,42 +266,31 @@ def import_oos(sesion, protocol, horizons, cfg, service_versions):
     cutoff_by_date = dict(zip(pd.to_datetime(calendar.fecha_fin), calendar.id_semana))
     end_by_id = dict(zip(calendar.id_semana, pd.to_datetime(calendar.fecha_fin)))
     summary = []
-    for h in horizons:
-        experimental = not all(service_versions[h, t].cumple_umbrales for t in TASKS)
-        # load_protocol already checked each block's coverage against gold.
-        present = set(protocol.predictions.loc[protocol.predictions.horizonte.eq(h), "bloque"])
-        for block in [b for b in OOS_BLOCKS if b in present]:
-            base = protocol.predictions.loc[protocol.predictions.horizonte.eq(h) & protocol.predictions.bloque.eq(block)]
-            cls = base.loc[base.variante.eq(cfg.variantes["clasificacion"])].set_index(["ubigeo", "anio", "semana"]).sort_index()
-            reg = base.loc[base.variante.eq(cfg.variantes["regresion"])].set_index(["ubigeo", "anio", "semana"]).sort_index()
-            if cls.empty or not cls.index.equals(reg.index):
-                raise ValueError(f"Clasificación y regresión OOS no comparten semanas en {block} h={h}")
-            run = Run(tipo="inferencia", estado="en_curso", detalle={"origen": "oos_protocolo"})
-            sesion.add(run)
-            sesion.flush()
-            records = []
-            for (ubigeo, year, target_wk), row in cls.iterrows():
-                cutoff = cutoff_by_date.get(pd.Timestamp(row.origen_cierre))
-                if cutoff is None:
-                    raise ValueError("El origen OOS no corresponde a un cierre del calendario")
-                probability = float(row.probabilidad_brote)
-                cases = float(reg.loc[(ubigeo, year, target_wk), "casos_predichos"])
-                if not np.isfinite([probability, cases]).all() or cases < 0:
-                    raise ValueError("No se importan predicciones OOS no finitas o negativas")
-                target = int(year) * 100 + int(target_wk)
-                if end_by_id.get(target) != pd.Timestamp(row.origen_cierre) + pd.Timedelta(weeks=h):
-                    raise ValueError("La predicción OOS no respeta la distancia corte-objetivo h")
-                records.append(_record(ubigeo, int(cutoff), target, h,
-                                           run.id_ejecucion, {}, probability, cases, None, cutoffs))
-            upsert(sesion, Prediction.__table__, records, ["ubigeo", "id_semana_corte", "horizonte"])
-            run.estado, run.fin = "exitosa", utc_now()
-            run.id_semana_corte = max(r["id_semana_corte"] for r in records)
-            run.detalle = {"origen": "oos_protocolo", "horizonte": h, "bloque": block,
-                                 "experimental": experimental, "predicciones": len(records),
-                                 "variantes": dict(cfg.variantes),
-                                 "sha256_protocolo": protocol.hashes,
-                                 "nota": "Predicciones fuera de muestra del protocolo temporal; sin booster conservado"}
-            summary.append({"horizonte": h, "bloque": block, "predicciones": len(records),
-                            "id_ejecucion": run.id_ejecucion})
+    for (h, block), part in oos.groupby(["horizonte", "bloque"], sort=False):
+        h = int(h)
+        experimental = not all(v.cumple_umbrales for (vh, _), v in versions.items() if vh == h)
+        run = Run(tipo="inferencia", estado="en_curso", detalle={"origen": "oos_protocolo"})
+        sesion.add(run)
+        sesion.flush()
+        records = []
+        for row in part.itertuples(index=False):
+            cutoff = cutoff_by_date.get(pd.Timestamp(row.origen_cierre))
+            if cutoff is None:
+                raise ValueError("El origen OOS no corresponde a un cierre del calendario")
+            probability, cases = float(row.probabilidad_brote), float(row.casos_estimados)
+            if not np.isfinite([probability, cases]).all() or cases < 0:
+                raise ValueError("No se importan predicciones OOS no finitas o negativas")
+            target = int(row.anio) * 100 + int(row.semana)
+            if end_by_id.get(target) != pd.Timestamp(row.origen_cierre) + pd.Timedelta(weeks=h):
+                raise ValueError("La predicción OOS no respeta la distancia corte-objetivo h")
+            records.append(_record(row.ubigeo, int(cutoff), target, h, run.id_ejecucion, {},
+                                   probability, cases, None, None, cutoffs))
+        upsert(sesion, Prediction.__table__, records, ["ubigeo", "id_semana_corte", "horizonte"])
+        run.estado, run.fin = "exitosa", utc_now()
+        run.id_semana_corte = max(r["id_semana_corte"] for r in records)
+        run.detalle = {"origen": "oos_protocolo", "horizonte": h, "bloque": block,
+                       "experimental": experimental, "predicciones": len(records), **detail}
+        summary.append({"horizonte": h, "bloque": block, "predicciones": len(records),
+                        "id_ejecucion": run.id_ejecucion})
     sesion.flush()
     return summary

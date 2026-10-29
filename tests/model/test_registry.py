@@ -54,15 +54,16 @@ class TestRegistry(unittest.TestCase):
 
     def test_v0_matches_serving(self):
         card = registry.card("v0")
-        serving = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))["serving"]
-        self.assertEqual(card["configuracion"]["variantes"], serving["variantes"])
+        package = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))["serving"]["paquete"]
+        self.assertEqual((card["predictor"], package["tipo"]), ("v0_compact_xgb", "v0_compact_xgb"))
+        self.assertEqual(card["configuracion"]["variantes"], package["opciones"]["variantes"])
         self.assertEqual(ROOT / card["metricas_seleccion"]["archivo"], COMPACT_METRICS)
         metrics = json.loads(COMPACT_METRICS.read_text(encoding="utf-8"))
         self.assertEqual(card["gold"]["sha256_manifest"], metrics["sha256_manifest_gold"])
         for h in ("2", "4"):
             self.assertEqual(card["gold"][h]["sha256"], metrics["horizontes"][h]["sha256_gold"])
             self.assertEqual(card["gold"][h]["archivo"], metrics["horizontes"][h]["archivo_gold"])
-            self.assertEqual(metrics["horizontes"][h]["seleccion_2022_2023"], serving["variantes"])
+            self.assertEqual(metrics["horizontes"][h]["seleccion_2022_2023"], package["opciones"]["variantes"])
 
 
 if __name__ == "__main__":

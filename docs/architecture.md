@@ -266,18 +266,23 @@ src/denguekay/db/
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # revisiones Alembic; 0003_oe2 = esquema OE2; 0004_v1 siembra horizonte_por_defecto
+└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
-├── settings.py               # horizontes, variantes y selección experimental (config.yaml)
-├── parameters.py             # lectura de parametro_sistema (autoridad de umbrales y cortes)
+├── settings.py               # paquete a publicar (tipo, horizontes, opciones) y selección experimental (config.yaml)
+├── parameters.py             # lectura de parametro_sistema (umbrales, cortes, horizonte por defecto, nivel del intervalo)
 ├── storage.py                # puerto Storage + adaptador local models/storage/
-├── protocol.py               # importa y verifica los resultados temporales de Rosa
-├── models.py                 # ajuste final con train.py y registro de versiones
-├── artifacts.py              # booster en Storage, verificación SHA-256 e inferencia
+├── protocol.py               # importa y verifica los resultados temporales de Rosa (protocolo compacto de la v0)
+├── package.py                # paquete de modelo: manifiesto + archivos con SHA-256 (decisión M2)
+├── inputs.py                 # ServingInputs: casos, clima, población, calendario y regla, desde la BD
+├── predictors/               # motor enchufable (decisión M1): puerto Predictor y registro de tipos
+│   ├── base.py               #   puerto, columnas de salida, BuiltPackage y validación de la salida
+│   └── v0_compact_xgb.py     #   predictor y constructor del paquete de la v0 (4 boosters XGBoost)
+├── models.py                 # registro genérico de las versiones de un paquete (una por tarea y horizonte)
+├── artifacts.py              # hashes y error de artefacto inválido
 ├── risk.py                   # nivel de riesgo y cambio de alerta
-├── inference.py              # vector desde la BD, UPSERT de predicciones, alertas, OOS
-├── publish.py                # CLI: carga, ajuste, MLflow, versiones, OOS e inferencia
+├── inference.py              # paquete -> predictor -> UPSERT de predicciones y alertas; OOS
+├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
 └── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
@@ -294,18 +299,19 @@ apps/api/                     # FastAPI: rutas de la Tabla 2 del documento OE2
 ├── routers/                  # reference (salud, configuración, distritos), data, surveillance, models y admin
 └── tools/                    # benchmark.py, export_openapi.py (--contrato), smoke_test.py
 tests/
-├── backend_support.py, serving_support.py, equivalence_support.py, contract_v1_support.py
-├── db/, serving/, api/       # tests del backend (api/test_contract_v1.py: contrato con datos)
+├── backend_support.py, serving_support.py, equivalence_support.py, contract_v1_support.py, pluggable_support.py
+├── db/, serving/, api/       # tests del backend (api/test_contract_v1.py: contrato con datos; serving/test_v0_parity.py)
 ├── test_equivalence.py       # guardas de la reestructuración (V1/V2 bit a bit, esquema en 0003_oe2)
 ├── test_contract_v1_guards.py # guardas del contrato v1: OpenAPI, esquema por migración y smoke v1
 ├── test_layout.py            # sin restos del paquete src y dependencias en un solo sentido
 └── fixtures/
     ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
     ├── equivalence/          # línea base del ADR 0001 (no se regenera; smoke.json es historia)
-    └── contract_v1/          # línea base v1: esquema de cada migración nueva y smoke v1 (no se regenera)
+    ├── contract_v1/          # línea base v1: esquema de cada migración nueva y smoke v1 (no se regenera)
+    └── pluggable_predictor/  # línea base de la v0 antes del motor enchufable, sus boosters congelados y su entorno (no se regenera)
 docs/backend/                 # especificación OE2, desviaciones, operación y contrato (openapi_v1.json congelado)
 └── evidencia/                # SQL de la migración, prueba de humo TB1 (versionado)
-models/storage/               # artefactos (buckets modelos/geodatos/reportes); no se versiona
+models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
 models/serving/               # BD SQLite y ejecuciones locales; no se versionan
 └── demo/                     # BD de demostración (D1), su storage y su MLflow; se comparte fuera de Git
 ```
@@ -436,6 +442,7 @@ great_expectations/gx/
 | Métrica o protocolo de evaluación | `src/denguekay/evaluation/` |
 | ORM, conexión o migración de la BD | `src/denguekay/db/` |
 | Carga/predicción/publicación del backend | `src/denguekay/serving/` |
+| Tipo de modelo nuevo para servir (predictor y su paquete) | `src/denguekay/serving/predictors/<tipo>.py` y su entrada en `predictors.PREDICTORS` (pasos en `docs/backend/operacion.md`) |
 | Router o esquema de la API | `apps/api/` (herramientas de línea de comandos en `apps/api/tools/`) |
 | Paso del pipeline como módulo (no notebook) | `src/denguekay/pipelines/` |
 | Ruta nueva del proyecto | `src/denguekay/config/paths.py` |

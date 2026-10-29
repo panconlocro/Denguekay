@@ -22,10 +22,15 @@ xgboost:
   n_jobs: auto
 
 serving:
-  horizontes: [2, 4]
-  variantes:
-    clasificacion: base_6_poblacion_2017
-    regresion: base_6
+  # Paquete de modelo que construye la publicación (denguekay.serving.predictors): tipo de predictor,
+  # horizontes y opciones propias del tipo. v0_compact_xgb = modelo v0 (protocolo compacto).
+  paquete:
+    tipo: v0_compact_xgb
+    horizontes: [2, 4]
+    opciones:
+      variantes:
+        clasificacion: base_6_poblacion_2017
+        regresion: base_6
   # Demo experimental (desviación temporal OE2): si no hay versión activa, se usa
   # esta selección. Solo siembra parametro_sistema.seleccion_experimental.
   servir_no_validadas: true

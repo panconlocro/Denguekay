@@ -1,0 +1,8 @@
+{
+ "sistema": "Windows",
+ "maquina": "AMD64",
+ "xgboost": "3.4.1",
+ "configuracion": "device=cpu,n_jobs=2",
+ "commit": "2d1c1a6",
+ "nota": "Entorno en que se grabaron v0_predictions.json y v0_boosters/; un reentrenamiento solo reproduce la línea base bit a bit con esta misma clave"
+}

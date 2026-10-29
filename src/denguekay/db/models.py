@@ -2,13 +2,13 @@
 
 Portable: on PostgreSQL it uses native ENUMs, jsonb, identity and CHECK with regex;
 on SQLite (tests only) the ENUMs are CHECKs and the format is validated in the ORM.
-The authority of the schema is migration ``0003_oe2``; this module mirrors it.
+The authority of the schema is the Alembic migrations (``0003_oe2`` and later); this module mirrors them.
 """
 
 from datetime import date, datetime, timezone
 import re
 
-from sqlalchemy import (BigInteger, Boolean, CHAR, CheckConstraint, Date, DateTime,
+from sqlalchemy import (BigInteger, Boolean, CHAR, CheckConstraint, Date, DateTime, Double,
                         Enum, ForeignKey, Identity, Index, Integer, JSON, MetaData,
                         Numeric, SmallInteger, String, Text, UniqueConstraint, func, text)
 from sqlalchemy.dialects.postgresql import JSONB
@@ -180,7 +180,9 @@ class WeeklyObservation(WithUbigeo, Base):
     temp_min_c: Mapped[float | None] = mapped_column(Numeric(5, 2, asdecimal=False))
     temp_max_c: Mapped[float | None] = mapped_column(Numeric(5, 2, asdecimal=False))
     precip_total_mm: Mapped[float | None] = mapped_column(Numeric(7, 2, asdecimal=False))
-    hum_rel_media_pct: Mapped[float | None] = mapped_column(Numeric(5, 2, asdecimal=False))
+    # double precision since 0005_v1 (decision M5); SQLite keeps its declared NUMERIC, which stores the full REAL.
+    hum_rel_media_pct: Mapped[float | None] = mapped_column(
+        Double().with_variant(Numeric(5, 2, asdecimal=False), "sqlite"))
     fuente_casos: Mapped[str] = mapped_column(enum(CASE_SOURCE, "fuente_casos_t"))
     estado_cobertura: Mapped[str] = mapped_column(enum(COVERAGE, "cobertura_t"))
     fecha_extraccion: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -248,6 +250,11 @@ class Prediction(WithUbigeo, Base):
             "(estado = 'disponible' AND probabilidad_brote IS NOT NULL AND nivel_riesgo IS NOT NULL)"
             " OR (estado = 'no_disponible' AND probabilidad_brote IS NULL AND nivel_riesgo IS NULL"
             " AND motivo_no_disponible IS NOT NULL)", name="estado_coherente"),
+        CheckConstraint(
+            "(casos_intervalo_inferior IS NULL AND casos_intervalo_superior IS NULL)"
+            " OR (estado = 'disponible' AND casos_intervalo_inferior IS NOT NULL AND casos_intervalo_superior IS NOT NULL"
+            " AND casos_intervalo_inferior >= 0 AND casos_intervalo_inferior <= casos_intervalo_superior)",
+            name="intervalo_coherente"),
         Index("ix_pred_objetivo", "id_semana_objetivo", "horizonte"),
     )
     id_prediccion: Mapped[int] = mapped_column(BIGINT_ID, Identity(always=True), primary_key=True)
@@ -258,6 +265,9 @@ class Prediction(WithUbigeo, Base):
     probabilidad_brote: Mapped[float | None] = mapped_column(Numeric(5, 4, asdecimal=False))
     nivel_riesgo: Mapped[str | None] = mapped_column(enum(RISK_LEVEL, "nivel_riesgo_t"))
     casos_estimados: Mapped[float | None] = mapped_column(Numeric(10, 2, asdecimal=False))
+    # Extension (decision C3, migration 0005_v1): case interval at parametro_sistema.nivel_intervalo_casos.
+    casos_intervalo_inferior: Mapped[float | None] = mapped_column(Numeric(10, 2, asdecimal=False))
+    casos_intervalo_superior: Mapped[float | None] = mapped_column(Numeric(10, 2, asdecimal=False))
     estado: Mapped[str] = mapped_column(enum(PREDICTION_STATUS, "estado_prediccion_t"))
     motivo_no_disponible: Mapped[str | None] = mapped_column(Text)
     id_version_clasificador: Mapped[int | None] = mapped_column(ForeignKey("version_modelo.id_version"))

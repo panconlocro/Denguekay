@@ -248,11 +248,10 @@ def build_smoke_database(folder):
     from sqlalchemy.engine import URL
 
     from backend_support import datos_muestra, motor_temporal
-    from serving_support import preparar_muestra
+    from serving_support import preparar_muestra, publish_sample
     from denguekay.db.session import transaction
     from denguekay.serving.storage import LocalStorage
     from denguekay.serving.load_data import persist_load
-    from denguekay.serving.publish import publish_to_db
 
     cfg, protocol, prepared = preparar_muestra()
     data = datos_muestra(folder, cfg.seleccion_experimental)
@@ -262,8 +261,8 @@ def build_smoke_database(folder):
     try:
         with transaction(engine) as session:
             persist_load(session, data)
-        publish_to_db(engine, data, protocol, prepared, (2, 4), cfg, "run-equivalencia", "huella-equivalencia",
-                       LocalStorage(storage), 0)
+        publish_sample(engine, data, cfg, protocol, prepared, LocalStorage(storage),
+                         "run-equivalencia", "huella-equivalencia")
     finally:
         engine.dispose()
     return str(URL.create("sqlite", database=str(folder / "pruebas.db"))), storage
