@@ -29,11 +29,16 @@ from denguekay.data.keys import normalize
 from denguekay.config.paths import (DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL,
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
-TRANSFORMATION = 2  # version of this transformation; part of the ingestion fingerprint
+# Version of this transformation; part of the ingestion fingerprint. 3: humidity is no longer rounded (M5).
+TRANSFORMATION = 3
 SEASON_START_WEEK = 35  # same rule as the modelling (src/denguekay/model/train.py)
 COVERAGE = {"verified": "verificado", "missing": "sin_registro", "no_record": "sin_registro"}
 CLIMATE = {"temp_media": "temp_media_c", "temp_min": "temp_min_c", "temp_max": "temp_max_c",
          "precip_total_mm": "precip_total_mm", "hum_rel_media": "hum_rel_media_pct"}
+# Decimals kept per climate column (numeric(5,2) / numeric(7,2) of the DDL); None = full value
+# (hum_rel_media_pct is double precision since 0005_v1, so A3 matches gold, decision M5).
+CLIMATE_DECIMALS = {"temp_media_c": 2, "temp_min_c": 2, "temp_max_c": 2, "precip_total_mm": 2,
+                    "hum_rel_media_pct": None}
 
 
 @dataclass(frozen=True)
@@ -119,7 +124,9 @@ def prepare_weeks(start, end):
 
 
 def _optional(value, decimals=2):
-    return None if pd.isna(value) else round(float(value), decimals)
+    if pd.isna(value):
+        return None
+    return float(value) if decimals is None else round(float(value), decimals)
 
 
 def prepare_observations(silver, coverage, gold, sala):
@@ -166,7 +173,8 @@ def prepare_observations(silver, coverage, gold, sala):
                     "umbral_brote_casos": round(float(row.umbral_brote_casos), 2),
                     "fuente_casos": "sala_situacional" if row.anio == 2025 else "excel_historico",
                     "estado_cobertura": COVERAGE.get(row.source, "pendiente")}
-        record.update({destination: _optional(getattr(row, origin)) for origin, destination in CLIMATE.items()})
+        record.update({destination: _optional(getattr(row, origin), CLIMATE_DECIMALS[destination])
+                       for origin, destination in CLIMATE.items()})
         result.append(record)
     return result, cutoff
 

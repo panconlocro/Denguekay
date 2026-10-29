@@ -33,6 +33,15 @@ def default_horizon(sesion):
     return horizon
 
 
+def interval_level(sesion):
+    """Nominal probability of the case intervals (seeded by migration 0005_v1)."""
+    value = read(sesion, "nivel_intervalo_casos")
+    level = value.get("nivel") if isinstance(value, dict) else None
+    if not isinstance(level, (int, float)) or isinstance(level, bool) or not 0 < level < 1:
+        raise ValueError("nivel_intervalo_casos debe ser una probabilidad entre 0 y 1")
+    return float(level)
+
+
 def acceptance_criteria(sesion):
     """Translate umbrales_aceptacion to the format of denguekay.evaluation.acceptance."""
     u = read(sesion, "umbrales_aceptacion")
