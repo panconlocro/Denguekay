@@ -3,8 +3,8 @@
 - **Encargo:** `docs/backend/prompt_api_v1.md`, fase 1 (diagnóstico, sin tocar código).
 - **Rama:** `docs/api-v1-decisions`, desde `develop` en `57e4df0`.
 - **Fecha:** 29/10/2026.
-- **Estado:** **pendiente de las respuestas de Rosa.** Cada decisión tiene una recomendación; ninguna se
-  aplica hasta que Rosa la confirme. Las respuestas se anotan en la columna «Respuesta» de la tabla final.
+- **Estado:** **respondido por Rosa el 29/10/2026** (§3). Las respuestas mandan sobre las recomendaciones de
+  la §2 cuando difieren.
 
 Convenciones: *observación* = comprobado en el código o en los datos (con el comando o la línea);
 *hipótesis* = no verificado todavía; *recomendación* = lo que propongo.
@@ -402,23 +402,36 @@ proceder: si es aditivo, subir la minor y regenerar; si rompe, no se permite en 
 
 ---
 
-## 3. Respuestas de Rosa
+## 3. Respuestas de Rosa (29/10/2026)
 
-| # | Pregunta | Recomendación | Respuesta |
-|---|---|---|---|
-| C1 | ¿Horizontes 2, 3 y 4, con los disponibles leídos de la BD? | Sí | |
-| C2 | ¿`GET /configuracion`? ¿Horizonte por defecto 4 o 2? | Sí; 4, en `parametro_sistema` | |
-| C3 | ¿Intervalos de casos en v1, guardados en dos columnas nuevas de `prediccion`? ¿Nivel 0,80 o 0,90? | Sí, en columnas; 0,80 | |
-| C4 | ¿Tipar el GeoJSON y admitir `Point`, `Polygon` y `MultiPolygon`? | Sí | |
-| C5 | ¿`info.version = 1.0.0` como versión del contrato (hoy es 2.0.0) y `X-Version-Contrato`? | Sí, separando contrato y aplicación | |
-| C6 | ¿Fuera de v1: explicación por distrito, autenticación de usuarios y escrituras desde el navegador? | Sí | |
-| M1 | ¿Puerto `Predictor` con `required_inputs` y registro de tipos? | Sí | |
-| M2 | ¿Paquete con manifiesto y SHA-256 por archivo, y Platt guardado como coeficientes? | Sí | |
-| M3 | ¿Opción (a) de la §8 de desviaciones, adaptada a S4_s3, con activación por horizonte en pareja? ¿La clasificación de la v2 = NB2 + Platt? ¿`umbral_probabilidad` 0,50? ¿Importancias SHAP por horizonte? ¿Códigos `v2-clf-h2-1`? | (a); sí; sí; sí; sí | |
-| M4 | ¿Sin cargar la historia previa a 2017 en la BD (opción c), con paridad desde la temporada 2022? | (c) | |
-| M5 | ¿Humedad: (a) entrenar con el clima redondeado, (b) `double precision` o (c) tolerancia? | (b) | |
-| M6 | ¿v2 experimental y v0 como predictor registrado? ¿La v2 publica sus propias OOS? | Sí; sí | |
-| M7 | ¿La fase 4 entrena con gold + B3 en memoria, sin esperar un gold nuevo? | Sí | |
-| D1 | ¿BD de demostración SQLite en la fase 2? ¿Puede llevar los datos agregados reales? | Sí; sí | |
-| D2 | ¿Usuarios LOGIN que heredan `rol_api` y `rol_pipeline`, con la inferencia vigente hecha por la API? | Sí | |
-| G1 | ¿Reemplazar en la fase 2 la guarda `TestOpenAPIContract` por la del contrato v1 (`openapi_v1.json`)? | Sí | |
+Todas las decisiones están respondidas. Las que cambian el esquema (C3, M5) o los permisos (D2) se
+documentan en `desviaciones_oe2.md` y en la lista de cambios al documento OE2 (fase 6) en la fase que las
+implementa.
+
+| # | Pregunta | Recomendación | Respuesta | Fase |
+|---|---|---|---|---|
+| C1 | ¿Horizontes 2, 3 y 4, con los disponibles leídos de la BD? | Sí | **Sí** | 2 |
+| C2 | ¿`GET /configuracion`? ¿Horizonte por defecto 4 o 2? | Sí; 4, en `parametro_sistema` | **Sí; horizonte por defecto 4, guardado en `parametro_sistema`** | 2 |
+| C3 | ¿Intervalos de casos en v1, guardados en dos columnas nuevas de `prediccion`? ¿Nivel 0,80 o 0,90? | Sí, en columnas; 0,80 | **Sí, intervalos en v1 con nivel 0,80; desviación documentada** | 2 (contrato), 3 (columnas) |
+| C4 | ¿Tipar el GeoJSON y admitir `Point`, `Polygon` y `MultiPolygon`? | Sí | **Sí** | 2 |
+| C5 | ¿`info.version = 1.0.0` como versión del contrato (hoy es 2.0.0) y `X-Version-Contrato`? | Sí, separando contrato y aplicación | **Sí: versión del contrato 1.0.0 con cabecera `X-Version-Contrato`, separada de la versión de la aplicación** | 2 |
+| C6 | ¿Fuera de v1: explicación por distrito, autenticación de usuarios y escrituras desde el navegador? | Sí | **Sí, quedan fuera de v1** | — |
+| M1 | ¿Puerto `Predictor` con `required_inputs` y registro de tipos? | Sí | **Sí** | 3 |
+| M2 | ¿Paquete con manifiesto y SHA-256 por archivo, y Platt guardado como coeficientes? | Sí | **Sí, Platt como coeficientes** | 3 |
+| M3 | ¿Opción (a) de la §8 de desviaciones, adaptada a S4_s3, con activación por horizonte en pareja? ¿La clasificación de la v2 = NB2 + Platt? ¿`umbral_probabilidad` 0,50? ¿Importancias SHAP por horizonte? ¿Códigos `v2-clf-h2-1`? | (a); sí; sí; sí; sí | **Sí a todo:** 6 filas; activación por horizonte en pareja; la clasificación de la v2 es NB2 + Platt, sin clasificador; `umbral_probabilidad` 0,50; SHAP por horizonte **calculado al publicar, no en la API**; códigos `v2-clf-h2-1`. La §8 de `desviaciones_oe2.md` pasa a aprobada en la fase 3 | 3, 4 |
+| M4 | ¿Sin cargar la historia previa a 2017 en la BD (opción c), con paridad desde la temporada 2022? | (c) | **Sí, opción (c): no se carga historia previa a 2017; paridad desde la temporada 2022** | 4 |
+| M5 | ¿Humedad: (a) entrenar con el clima redondeado, (b) `double precision` o (c) tolerancia? | (b) | **(b): `hum_rel_media_pct` pasa a `double precision` con su migración; se documenta en `desviaciones_oe2.md` y en la lista de cambios al documento OE2** | 3 |
+| M6 | ¿v2 experimental y v0 como predictor registrado? ¿La v2 publica sus propias OOS? | Sí; sí | **Sí; la v2 publica sus propias OOS 2022–2025, que reemplazan a las de la v0 en la serie** | 4 |
+| M7 | ¿La fase 4 entrena con gold + B3 en memoria, sin esperar un gold nuevo? | Sí | **Sí; el cambio en `gold.py` queda como propuesta aparte** | 4 |
+| D1 | ¿BD de demostración SQLite en la fase 2? ¿Puede llevar los datos agregados reales? | Sí; sí | **Sí: SQLite con los datos agregados reales de Piura, generada con un comando en la PC de Rosa. El archivo no se versiona en Git: se comparte fuera del repo (Drive o un Release)** | 2 |
+| D2 | ¿Usuarios LOGIN que heredan `rol_api` y `rol_pipeline`, con la inferencia vigente hecha por la API? | Sí | **Sí** | 3 (permisos), 5 (diseño de despliegue) |
+| G1 | ¿Reemplazar en la fase 2 la guarda `TestOpenAPIContract` por la del contrato v1 (`openapi_v1.json`)? | Sí | **Sí; la línea base de equivalencia no se toca** | 2 |
+
+## 4. Pendiente fuera de este encargo
+
+- **Los 8 distritos sin historia antes de 2017 (§1.9.3)** (`200206`, `200208`, `200303`, `200305`, `200307`,
+  `200308`, `200403`, `200502`): **pendiente de verificar por Rosa.** No cambia nada en este encargo (con M4,
+  opción c, la API no usa historia previa a 2017). Sí afecta a la etiqueta de brote de 2017–2021 y a B3 del
+  modelo, que hoy tratan esos años como cero.
+- **B3 en gold (M7):** propuesta de cambio en `src/denguekay/features/gold.py`, que se decide aparte junto con
+  el protocolo de la v0.
