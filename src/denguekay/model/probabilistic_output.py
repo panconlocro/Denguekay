@@ -38,6 +38,8 @@ in-sample alphas of 2021-2024 (same horizon and seed), that block uses the
 in-sample alpha and is flagged.
 """
 
+from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
 from scipy import optimize, special, stats
@@ -229,6 +231,60 @@ def predict_e1(matrices: dict[int, pd.DataFrame], seed: int, formulation: str,
 # E3 with formulation
 # ---------------------------------------------------------------------------
 
+@dataclass
+class E3Fit:
+    """One E3 fit: the count regressor, the classifier (formulations S1-S3, S5) or the NB2 alphas (S4)."""
+    regressor: XGBRegressor
+    classifier: XGBClassifier | None
+    alphas: list[float] | None
+    train: pd.DataFrame
+
+
+def e3_parameters(hyperparameters: dict | None = None) -> dict:
+    """Extra XGBoost parameters of E3: multi-output trees and the hyperparameters that override the fixed ones."""
+    return {"multi_strategy": "multi_output_tree", **(hyperparameters or {})}
+
+
+def e3_margin(origins: pd.DataFrame, formulation: str) -> np.ndarray | None:
+    """``base_margin`` of every origin (one column per output) for S3/S4_s3; ``None`` otherwise.
+
+    It is indexed by position, so ``origins`` must have a ``RangeIndex`` (as ``eh.origin_table``).
+    """
+    if FORMULATIONS[formulation]["conteo"] != "poisson_margen":
+        return None
+    return np.repeat(persistence_margin(origins.hist_lag_a)[:, None], len(eh.STRATEGY_HORIZONS), axis=1)
+
+
+def fit_e3(origins: pd.DataFrame, cutoff: pd.Timestamp, seed: int, formulation: str,
+           col_reg: list[str], col_cls: list[str], extra: dict, margin_all: np.ndarray | None) -> E3Fit:
+    """Fit E3 with the origins whose three targets closed at ``cutoff``.
+
+    The fit of one protocol block in ``predict_e3`` and of a service package at any cutoff
+    (``serving.predictors.v2_e3_s4``). ``margin_all`` = ``e3_margin(origins, formulation)``.
+    """
+    f = FORMULATIONS[formulation]
+    H = eh.STRATEGY_HORIZONS
+    targets = [f"semana_inicio_h{h}" for h in H]
+    complete = origins.dropna(subset=targets)
+    last = complete[f"semana_inicio_h{H[-1]}"]
+    sel = (last + pd.Timedelta(days=6)).le(cutoff)
+    train = complete[sel]
+    if train.empty or not train.origen_cierre.lt(train.semana_inicio).all():
+        raise ValueError("Entrenamiento multi-salida vacío o con fuga")
+    m_tr = margin_all[complete.index[sel]] if margin_all is not None else None
+    y_cases = np.column_stack([train[f"casos_Dengue_h{h}"] for h in H])
+    y_outbreak = np.column_stack([train[f"brote_h{h}"] for h in H]).astype(int)
+    reg = fit_count(train[col_reg], y_cases, f["conteo"], seed, m_tr, **extra)
+    cls, alphas = None, None
+    if f["probabilidad"] == "binomial_negativa":
+        fit = predict_count(reg, train[col_reg], f["conteo"], m_tr)
+        alphas = [negative_binomial_dispersion(fit[:, i], y_cases[:, i]) for i in range(len(H))]
+    else:
+        spw = _spw(y_outbreak) if f["probabilidad"] == "clasificador_spw" else None
+        cls = _classifier(seed, spw, **extra).fit(train[col_cls], y_outbreak)
+    return E3Fit(reg, cls, alphas, train)
+
+
 def predict_e3(matrices: dict[int, pd.DataFrame], seed: int, formulation: str,
                 return_models: bool = False, columns: list[str] | None = None,
                 origins: pd.DataFrame | None = None, hyperparameters: dict | None = None,
@@ -265,10 +321,8 @@ def predict_e3(matrices: dict[int, pd.DataFrame], seed: int, formulation: str,
         missing = [c for c in col_reg if c not in base_origins]
         if missing:
             raise ValueError(f"Columnas ausentes en la tabla de orígenes: {missing}")
-    targets = [f"semana_inicio_h{h}" for h in H]
-    extra = {"multi_strategy": "multi_output_tree", **(hyperparameters or {})}
-    margin_all = (np.repeat(persistence_margin(base_origins.hist_lag_a)[:, None], len(H), axis=1)
-                   if f["conteo"] == "poisson_margen" else None)
+    extra = e3_parameters(hyperparameters)
+    margin_all = e3_margin(base_origins, formulation)
     parts, models = [], {}
     oos_tests, cutoffs, in_sample_alphas, pending = {}, {}, {}, []
     items = [INITIAL_ALPHA_BLOCK, *eh.blocks()] if oos else eh.blocks()
@@ -280,26 +334,13 @@ def predict_e3(matrices: dict[int, pd.DataFrame], seed: int, formulation: str,
         if prepare_block is not None and (len(origins) != len(base_origins)
                                             or not origins.index.equals(base_origins.index)):
             raise ValueError("preparar_bloque no puede quitar ni reordenar orígenes")
-        complete = origins.dropna(subset=targets)
-        last = complete[f"semana_inicio_h{H[-1]}"]
-        sel = (last + pd.Timedelta(days=6)).le(cutoff)
-        train = complete[sel]
-        if train.empty or not train.origen_cierre.lt(train.semana_inicio).all():
-            raise ValueError("Entrenamiento multi-salida vacío o con fuga")
-        m_tr = margin_all[complete.index[sel]] if margin_all is not None else None
-        y_cases = np.column_stack([train[f"casos_Dengue_h{h}"] for h in H])
-        y_outbreak = np.column_stack([train[f"brote_h{h}"] for h in H]).astype(int)
-        reg = fit_count(train[col_reg], y_cases, f["conteo"], seed, m_tr, **extra)
+        fitted = fit_e3(origins, cutoff, seed, formulation, col_reg, col_cls, extra, margin_all)
+        reg, cls, alphas, train = fitted.regressor, fitted.classifier, fitted.alphas, fitted.train
         counts = predict_count(reg, origins[col_reg], f["conteo"], margin_all)
-        cls, alphas = None, None
-        if f["probabilidad"] == "binomial_negativa":
-            fit = predict_count(reg, train[col_reg], f["conteo"], m_tr)
-            alphas = [negative_binomial_dispersion(fit[:, i], y_cases[:, i]) for i in range(len(H))]
+        if alphas is not None:
             if not pseudo:
                 in_sample_alphas[block] = dict(zip(H, alphas))
         else:
-            spw = _spw(y_outbreak) if f["probabilidad"] == "clasificador_spw" else None
-            cls = _classifier(seed, spw, **extra).fit(train[col_cls], y_outbreak)
             prob_all = cls.predict_proba(origins[col_cls])
         if return_models and not pseudo:
             models[block] = {"regresor": reg, "clasificador": cls, "alphas": alphas,
