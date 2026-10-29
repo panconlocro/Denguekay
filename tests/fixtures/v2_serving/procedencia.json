@@ -1,0 +1,20 @@
+{
+ "fuentes": {
+  "meteo_socio_epi_piura_2017_2025.csv": "b04dc8c31793a08b417e5bafd9db101f4a18c9299686cb2dd4bfe2e5049b6c88",
+  "meteo_socio_epi_piura_2017_2025.coverage.csv": "e85f7e68b1b78ef97bb31aef56247d22b7eebac3cd0e28ba82e980641cacfb67",
+  "meteo_socio_epi_piura_2017_2025_h2_gold.csv": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3",
+  "epi_sala_semanal.csv": "b53a1fd75b9c39f0de3cc4353bef825ecc417ffac54383052a3d47247bbf0c24"
+ },
+ "distritos": [
+  "200101",
+  "200104",
+  "200201",
+  "200204",
+  "200502",
+  "200601"
+ ],
+ "regla_distritos": "los 3 distritos de tests/fixtures/backend (200101, 200201, 200502), uno que nunca tuvo casos (200204) y los dos con más casos en 2023 después de 200101 (200104 y 200601)",
+ "commit_modelo": "ab8503b",
+ "huella_v2": "0fe5d10712d4127e9e2728d7de230b8db6bfbae364b018f2b449ccd10818e2b3",
+ "nota": "Datos agregados públicos (casos por distrito y semana, clima, población); sin datos personales. Aprobado por Rosa en la fase 4"
+}

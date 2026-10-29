@@ -76,8 +76,7 @@ class TestPoliticasServicio(unittest.TestCase):
         cambios = ({"paquete": {**paquete, "horizontes": []}}, {"paquete": {**paquete, "horizontes": [5]}},
                    {"paquete": {**paquete, "horizontes": [2, 2]}}, {"paquete": {**paquete, "tipo": "inventado"}},
                    {"paquete": {**paquete, "opciones": ["variantes"]}},
-                   {"servir_no_validadas": "true"}, {"seleccion_experimental": {"2": {"clasificacion": "x"}}},
-                   {"seleccion_experimental": {"2": {"clasificacion": "x" * 21, "regresion": "y"}}})
+                   {"servir_no_validadas": "true"})
         with tempfile.TemporaryDirectory() as carpeta:
             ruta = Path(carpeta) / "config.yaml"
             for cambio in cambios:
@@ -108,8 +107,14 @@ class TestParametrosYAlmacenamiento(unittest.TestCase):
                         s.get(SystemParameter, clave).valor = anterior
                         s.flush()
                     self.assertEqual(parametros.experimental_selection(s), {})
-                    parametros.seed_experimental_selection(s, {2: {"clasificacion": "a", "regresion": "b"}})
-                    self.assertEqual(parametros.experimental_selection(s)[2]["regresion"], "b")
+                    parametros.set_experimental_selection(s, {2: {"clasificacion": "a", "regresion": "b"}})
+                    parametros.set_experimental_selection(s, {3: {"clasificacion": "c", "regresion": "d"}})
+                    self.assertEqual(parametros.experimental_selection(s),
+                                     {2: {"clasificacion": "a", "regresion": "b"}, 3: {"clasificacion": "c", "regresion": "d"}})
+                    s.delete(s.get(SystemParameter, "seleccion_experimental"))
+                    s.flush()
+                    with self.assertRaises(parametros.MissingParameter):
+                        parametros.set_experimental_selection(s, {2: {"clasificacion": "a", "regresion": "b"}})
                     s.get(SystemParameter, "cortes_riesgo").valor = {"medio": .5, "alto": .25, "muy_alto": .75}
                     s.flush()
                     with self.assertRaises(ValueError):

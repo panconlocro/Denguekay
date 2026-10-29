@@ -78,15 +78,14 @@ def publish_fixtures(engine, folder, frozen=False):
     from denguekay.serving.storage import LocalStorage
 
     if frozen:
-        from serving_support import protocolo_muestra
-        from denguekay.serving.settings import service_settings
+        from serving_support import configuracion_v0, protocolo_muestra
 
-        cfg, protocol = service_settings(), protocolo_muestra()
+        cfg, protocol = configuracion_v0(), protocolo_muestra()
         trained = v0.versions_from_boosters(protocol, (2, 4), cfg.opciones["variantes"], CORTE, frozen_artifacts())
         sample_dataset_hashes(trained)
     else:
         cfg, protocol, trained = preparar_muestra()
-    data = datos_muestra(folder, cfg.seleccion_experimental)
+    data = datos_muestra(folder)
     data = replace(data, observaciones=[o for o in data.observaciones if o["id_semana"] >= 202530])
     storage = LocalStorage(folder / "storage")
     with transaction(engine) as session:

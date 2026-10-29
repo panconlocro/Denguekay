@@ -15,7 +15,7 @@ import pandas as pd
 from sqlalchemy import delete, func, select
 
 from backend_support import datos_muestra, leer_csv, migrar, motor_temporal, url_pg_pruebas
-from serving_support import sample_package, preparar_muestra
+from serving_support import V0_SELECCION, fijar_seleccion, sample_package, preparar_muestra
 from denguekay.db.models import (Alert, District, Run, WeeklyObservation, SystemParameter,
                             Prediction, EpiWeek, ModelVersion)
 from denguekay.db.session import make_engine, transaction
@@ -47,7 +47,7 @@ class EntornoInferencia:
         cls.carpeta = tempfile.TemporaryDirectory()
         ruta = Path(cls.carpeta.name)
         cls.cfg, cls.protocolo, cls.preparadas = preparar_muestra()
-        datos = datos_muestra(ruta, cls.cfg.seleccion_experimental)
+        datos = datos_muestra(ruta)
         # Solo el tramo contiguo 2025 S30-S52: la historia de la fixture tiene un hueco 2017-2025.
         cls.data = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
         cls.motor = cls.crear_motor(ruta)
@@ -59,6 +59,8 @@ class EntornoInferencia:
             ruta_paquete, sha = save_package(cls.storage, cls.paquete, cumple)
             cls.versiones = {k: v.id_version for k, v in save_versions(
                 s, cls.paquete, ruta_paquete, sha, "run-prueba", cumple).items()}
+        # Since phase 4 load_data does not seed the selection: the v0 tests set it (as publish would).
+        fijar_seleccion(cls.motor)
 
     @classmethod
     def tearDownClass(cls):
@@ -305,7 +307,7 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
         finally:
             with transaction(self.motor) as s:
                 s.get(SystemParameter, "seleccion_experimental").valor = {
-                    str(h): v for h, v in self.cfg.seleccion_experimental.items()}
+                    str(h): v for h, v in V0_SELECCION.items()}
 
 
 @unittest.skipUnless(url_pg_pruebas(), "Sin DENGUEKAY_PG_PRUEBAS_URL: se omite la inferencia en PostgreSQL")

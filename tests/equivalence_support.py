@@ -254,7 +254,7 @@ def build_smoke_database(folder):
     from denguekay.serving.load_data import persist_load
 
     cfg, protocol, prepared = preparar_muestra()
-    data = datos_muestra(folder, cfg.seleccion_experimental)
+    data = datos_muestra(folder)
     data = replace(data, observaciones=[o for o in data.observaciones if o["id_semana"] >= 202530])
     storage = folder / "storage"
     engine = motor_temporal(folder)

@@ -1,0 +1,8 @@
+{
+ "sistema": "Windows",
+ "maquina": "AMD64",
+ "xgboost": "3.4.1",
+ "configuracion": "device=cpu,n_jobs=2",
+ "commit": "ab8503b",
+ "nota": "Entorno en que se grabaron los resultados del modelo; un reentrenamiento solo los reproduce bit a bit con esta clave"
+}

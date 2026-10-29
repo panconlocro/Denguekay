@@ -40,7 +40,7 @@ class TestAPIReal(unittest.TestCase):
         cls.base = tempfile.TemporaryDirectory()
         ruta = Path(cls.base.name)
         cls.cfg, cls.protocolo, cls.preparadas = preparar_muestra()
-        datos = datos_muestra(ruta, cls.cfg.seleccion_experimental)
+        datos = datos_muestra(ruta)
         datos = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
         cls.storage = LocalStorage(ruta / "storage")
         plantilla = ruta / "plantilla"

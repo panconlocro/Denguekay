@@ -10,7 +10,7 @@ import unittest
 from sqlalchemy import func, select
 
 from backend_support import datos_muestra, motor_temporal
-from serving_support import CORTE, sample_package, preparar_muestra
+from serving_support import CORTE, fijar_seleccion, sample_package, preparar_muestra
 from denguekay.db.models import Run, VariableImportance, SystemParameter, Prediction, ModelVersion
 from denguekay.db.session import transaction
 from denguekay.serving import parameters as parametros
@@ -29,7 +29,7 @@ class TestPublicacion(unittest.TestCase):
         cls.fixture = tempfile.TemporaryDirectory()
         cls.cfg, cls.protocolo, cls.preparadas = preparar_muestra()
         cls.paquete = sample_package(cls.cfg, cls.protocolo, cls.preparadas)
-        datos = datos_muestra(Path(cls.fixture.name), cls.cfg.seleccion_experimental)
+        datos = datos_muestra(Path(cls.fixture.name))
         cls.data = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
 
     @classmethod
@@ -42,6 +42,8 @@ class TestPublicacion(unittest.TestCase):
         self.storage = LocalStorage(Path(self.carpeta.name) / "storage")
         with transaction(self.motor) as s:
             persist_load(s, self.data)
+        # Since phase 4 load_data does not seed the selection: the v0 tests set it (as publish would).
+        fijar_seleccion(self.motor)
 
     def tearDown(self):
         self.motor.dispose()

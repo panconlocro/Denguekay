@@ -10,7 +10,7 @@ import pandas as pd
 from sqlalchemy import select
 
 from backend_support import datos_muestra, motor_temporal
-from serving_support import preparar_muestra, sample_package
+from serving_support import fijar_seleccion, preparar_muestra, sample_package
 from apps.api import queries
 from denguekay.db.models import Prediction, SystemParameter
 from denguekay.db.session import transaction
@@ -73,7 +73,7 @@ class TestIntervalLevel(unittest.TestCase):
         cls.cfg, protocol, trained = preparar_muestra()
         cls.package = replace(sample_package(cls.cfg, protocol, trained), interval_level=0.9)
         cls.base = tempfile.TemporaryDirectory()
-        load = datos_muestra(Path(cls.base.name), cls.cfg.seleccion_experimental)
+        load = datos_muestra(Path(cls.base.name))
         cls.load = replace(load, observaciones=[o for o in load.observaciones if o["id_semana"] >= 202530])
 
     @classmethod
@@ -89,6 +89,8 @@ class TestIntervalLevel(unittest.TestCase):
             meets = thresholds(self.package, parameters.acceptance_criteria(s))
             path, sha = save_package(self.storage, self.package, meets)
             save_versions(s, self.package, path, sha, "run-test", meets)
+        # Since phase 4 load_data does not seed the selection: the v0 tests set it (as publish would).
+        fijar_seleccion(self.engine)
 
     def tearDown(self):
         self.engine.dispose()

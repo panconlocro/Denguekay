@@ -37,7 +37,7 @@ class TestContractV1(unittest.TestCase):
         cls.base = tempfile.TemporaryDirectory()
         folder = Path(cls.base.name)
         cls.cfg, protocol, prepared = preparar_muestra()
-        data = datos_muestra(folder, cls.cfg.seleccion_experimental)
+        data = datos_muestra(folder)
         data = replace(data, observaciones=[o for o in data.observaciones if o["id_semana"] >= 202530])
         cls.storage = LocalStorage(folder / "storage")
         template = folder / "plantilla"
