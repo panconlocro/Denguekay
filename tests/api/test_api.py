@@ -13,7 +13,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.engine import URL
 
 from backend_support import datos_muestra, entorno_bd, motor_temporal
-from serving_support import preparar_muestra
+from serving_support import preparar_muestra, publish_sample
 from apps.api.cache import ReadCache
 from apps.api.main import create_app
 from denguekay.db.models import Alert, Run, Prediction, ModelVersion
@@ -21,7 +21,6 @@ from denguekay.db.session import make_engine, transaction
 from denguekay.serving.storage import LocalStorage
 from denguekay.serving.load_data import persist_load
 from denguekay.serving.inference import update_alerts
-from denguekay.serving.publish import publish_to_db
 from denguekay.config.paths import ROOT
 
 CLAVE = "clave-local-de-prueba"
@@ -49,8 +48,8 @@ class TestAPIReal(unittest.TestCase):
         motor = motor_temporal(plantilla)
         with transaction(motor) as s:
             persist_load(s, datos)
-        publish_to_db(motor, datos, cls.protocolo, cls.preparadas, (2, 4), cls.cfg, "run-prueba",
-                       "huella-api", cls.storage, 0)
+        cls.publicacion = publish_sample(motor, datos, cls.cfg, cls.protocolo, cls.preparadas, cls.storage,
+                                           "run-prueba", "huella-api")
         with transaction(motor) as s:
             # Una predicción real elevada a muy_alto para ejercitar alertas (los datos de fin de año dan riesgo bajo).
             p = s.scalar(select(Prediction).where(Prediction.ubigeo == "200101", Prediction.horizonte == 2,
@@ -206,7 +205,8 @@ class TestAPIReal(unittest.TestCase):
         self.assertEqual(len(self.get("/modelos/activo?horizonte=2")["elementos"]), 2)
         self.assertFalse(self.get("/modelos/activo?horizonte=3")["disponible"])
         detalle = self.get(f"/modelos/{r['elementos'][0]['id_version']}")
-        self.assertEqual(detalle["ruta_artefacto"], f"modelos/{detalle['codigo']}.json")
+        self.assertEqual(detalle["ruta_artefacto"], self.publicacion["paquete"]["ruta"])
+        self.assertEqual(detalle["sha256_artefacto"], self.publicacion["paquete"]["sha256"])
         self.assertIn("temporada_2024", detalle["metricas"]["bloques"])
         variables = self.get(f"/modelos/{detalle['id_version']}/variables")
         self.assertTrue(variables["elementos"])
@@ -237,7 +237,7 @@ class TestAPIReal(unittest.TestCase):
             with self.subTest(cuerpo=cuerpo):
                 r = self.post("/admin/inferencias", cuerpo)
                 self.assertEqual((r.status_code, r.json()["codigo"]), (estado, codigo))
-        ruta = Path(self.base.name) / "storage" / "modelos" / "clf-h2-v1.json"
+        ruta = Path(self.base.name) / "storage" / "modelos" / self.publicacion["paquete"]["codigo"] / "h2_clasificacion.json"
         original = ruta.read_bytes()
         try:
             ruta.write_bytes(original + b" ")
@@ -266,12 +266,24 @@ class TestAPIReal(unittest.TestCase):
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(r.json()["activada"]["estado"], "activa")
         self.assertIsNone(r.json()["archivada"])
+        self.assertIn("reg-h2-v1", r.json()["nota"])  # pareja del mismo paquete (decisión M3)
         self.assertEqual(self.post(f"/admin/modelos/{clf}/activar").json()["codigo"], "ya_activa")
+        self.assertEqual(self.post(f"/admin/modelos/{self.version('reg-h2-v1')}/activar").json()["codigo"], "ya_activa")
         with transaction(self.motor) as s:
             s.get(ModelVersion, self.version("reg-h4-v1")).estado = "rechazada"
             s.get(ModelVersion, self.version("reg-h4-v1")).cumple_umbrales = True
         self.assertEqual(self.post(f"/admin/modelos/{self.version('reg-h4-v1')}/activar").json()["codigo"], "version_rechazada")
-        self.post(f"/admin/modelos/{self.version('reg-h2-v1')}/activar")
+        # La pareja no se activa a medias: ni con la hermana rechazada ni con una hermana que no cumple.
+        with transaction(self.motor) as s:
+            s.get(ModelVersion, self.version("clf-h4-v1")).cumple_umbrales = True
+        r = self.post(f"/admin/modelos/{self.version('clf-h4-v1')}/activar")
+        self.assertEqual((r.status_code, r.json()["codigo"]), (409, "version_rechazada"))
+        with transaction(self.motor) as s:
+            s.get(ModelVersion, self.version("reg-h4-v1")).estado = "candidata"
+            s.get(ModelVersion, self.version("reg-h4-v1")).cumple_umbrales = False
+        r = self.post(f"/admin/modelos/{self.version('clf-h4-v1')}/activar")
+        self.assertEqual((r.status_code, r.json()["codigo"]), (409, "no_cumple_umbrales"))
+        self.assertIn("reg-h4-v1", r.json()["mensaje"])
         en_uso = self.get("/modelos/activo?horizonte=2")["elementos"]
         self.assertEqual({m["seleccion"] for m in en_uso}, {"activa"})
         inferencia = self.post("/admin/inferencias", {"horizonte": 2}).json()

@@ -49,6 +49,23 @@ def inferencias(solicitud: SolicitudInferencia, request: Request, sesion: DbSess
     return {k: result[k] for k in InferenciaRespuesta.model_fields}
 
 
+def sibling(sesion, version):
+    """The other task of the same package and horizon (decision M3), if the package has it."""
+    return sesion.scalar(select(ModelVersion).where(
+        ModelVersion.horizonte == version.horizonte, ModelVersion.tarea != version.tarea,
+        ModelVersion.ruta_artefacto == version.ruta_artefacto,
+        ModelVersion.sha256_artefacto == version.sha256_artefacto,
+    ).order_by(ModelVersion.id_version.desc()).limit(1).with_for_update())
+
+
+def check_activable(version):
+    if not version.cumple_umbrales:
+        raise APIError(409, "no_cumple_umbrales",
+                       f"La versión {version.codigo} no cumple los umbrales de aceptación; se sirve solo como experimental")
+    if version.estado == "rechazada":
+        raise APIError(409, "version_rechazada", "Una versión rechazada no se puede activar")
+
+
 @router.post("/modelos/{version}/activar", response_model=ActivacionRespuesta,
              summary="Activar una versión que cumple los umbrales (HU0009)")
 def activar(version: Identifier, request: Request, sesion: DbSession):
@@ -56,31 +73,44 @@ def activar(version: Identifier, request: Request, sesion: DbSession):
 
     Una versión con cumple_umbrales = false no se activa (409): así lo exige el DDL.
     """
+    # The docstring above is part of the frozen v1 contract (OpenAPI description). Decision M3: both tasks
+    # of a horizon come from one package, so the sibling version of that package is activated too and the
+    # active versions of both tasks are archived; the response notes it in ``nota``.
     new = sesion.scalar(select(ModelVersion).where(ModelVersion.id_version == version).with_for_update())
     if new is None:
         raise APIError(404, "modelo_no_encontrado", "La versión de modelo no existe")
-    if not new.cumple_umbrales:
-        raise APIError(409, "no_cumple_umbrales",
-                       "La versión no cumple los umbrales de aceptación; se sirve solo como experimental")
+    check_activable(new)
     if new.estado == "activa":
         raise APIError(409, "ya_activa", "La versión ya está activa")
-    if new.estado == "rechazada":
-        raise APIError(409, "version_rechazada", "Una versión rechazada no se puede activar")
-    previous = sesion.scalar(select(ModelVersion).where(
-        ModelVersion.tarea == new.tarea, ModelVersion.horizonte == new.horizonte,
-        ModelVersion.estado == "activa").with_for_update())
+    pair = [new]
+    other = sibling(sesion, new)
+    # A rejected or non-compliant sibling stops the pair: a horizon never mixes tasks of two packages.
+    if other is not None and other.estado != "activa":
+        check_activable(other)
+        pair.append(other)
     now = utc_now()
-    if previous is not None:
-        previous.estado = "archivada"
-        sesion.flush()  # frees the partial unique index before activating the new one
-    new.estado, new.fecha_activacion = "activa", now
+    archived = {}
+    for v in pair:
+        previous = sesion.scalar(select(ModelVersion).where(
+            ModelVersion.tarea == v.tarea, ModelVersion.horizonte == v.horizonte,
+            ModelVersion.estado == "activa").with_for_update())
+        if previous is not None:
+            previous.estado = "archivada"
+            archived[v.tarea] = previous
+    sesion.flush()  # frees the partial unique index before activating the new ones
+    for v in pair:
+        v.estado, v.fecha_activacion = "activa", now
+    previous = archived.get(new.tarea)
     run = Run(tipo="mantenimiento", estado="exitosa", fin=now, detalle={
         "accion": "activacion", "version": new.codigo, "id_version": new.id_version,
-        "archivada": previous.codigo if previous else None})
+        "archivada": previous.codigo if previous else None,
+        "activadas": [v.codigo for v in pair], "archivadas": [v.codigo for v in archived.values()]})
     sesion.add(run)
     sesion.flush()
+    note = "La activación no recalcula predicciones: ejecute POST /admin/inferencias"
+    if len(pair) == 2:
+        note = f"Se activó también {pair[1].codigo} (misma pareja del paquete). " + note
     response = {"id_ejecucion": run.id_ejecucion, "activada": q.model_dto(new),
-                 "archivada": q.model_dto(previous) if previous else None,
-                 "nota": "La activación no recalcula predicciones: ejecute POST /admin/inferencias"}
+                 "archivada": q.model_dto(previous) if previous else None, "nota": note}
     commit_and_invalidate(request, sesion)
     return response

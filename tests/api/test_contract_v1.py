@@ -17,7 +17,7 @@ from sqlalchemy import select, text
 from sqlalchemy.engine import URL
 
 from backend_support import datos_muestra, motor_temporal
-from serving_support import preparar_muestra
+from serving_support import preparar_muestra, publish_sample
 from apps.api.contract import CONTRACT_HEADER, CONTRACT_VERSION
 from apps.api.main import create_app
 from apps.api import schemas as s
@@ -25,7 +25,6 @@ from denguekay.db.models import Alert, ModelVersion, Prediction, SystemParameter
 from denguekay.db.session import make_engine, transaction
 from denguekay.serving.inference import update_alerts
 from denguekay.serving.load_data import persist_load
-from denguekay.serving.publish import publish_to_db
 from denguekay.serving.storage import LocalStorage
 
 KEY = "clave-contrato-v1"
@@ -46,8 +45,7 @@ class TestContractV1(unittest.TestCase):
         engine = motor_temporal(template)
         with transaction(engine) as session:
             persist_load(session, data)
-        publish_to_db(engine, data, protocol, prepared, (2, 4), cls.cfg, "run-contrato", "huella-contrato",
-                      cls.storage, 0)
+        publish_sample(engine, data, cls.cfg, protocol, prepared, cls.storage, "run-contrato", "huella-contrato")
         with transaction(engine) as session:
             # One real prediction raised to muy_alto so that an alert exists to validate.
             p = session.scalar(select(Prediction).where(Prediction.ubigeo == "200101", Prediction.horizonte == 2,
