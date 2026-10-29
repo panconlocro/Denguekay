@@ -70,8 +70,12 @@ class TestPoliticasServicio(unittest.TestCase):
                 _compare_metrics(actual, esperado)
 
     def test_configuracion_rechaza_valores_invalidos(self):
+        """Las opciones propias del tipo (variantes de la v0) las valida su predictor al publicar."""
         original = asdict(self.cfg)
-        cambios = ({"horizontes": []}, {"horizontes": [3]}, {"variantes": {"clasificacion": "inventada", "regresion": "base_6"}},
+        paquete = original["paquete"]
+        cambios = ({"paquete": {**paquete, "horizontes": []}}, {"paquete": {**paquete, "horizontes": [5]}},
+                   {"paquete": {**paquete, "horizontes": [2, 2]}}, {"paquete": {**paquete, "tipo": "inventado"}},
+                   {"paquete": {**paquete, "opciones": ["variantes"]}},
                    {"servir_no_validadas": "true"}, {"seleccion_experimental": {"2": {"clasificacion": "x"}}},
                    {"seleccion_experimental": {"2": {"clasificacion": "x" * 21, "regresion": "y"}}})
         with tempfile.TemporaryDirectory() as carpeta:
@@ -93,6 +97,16 @@ class TestParametrosYAlmacenamiento(unittest.TestCase):
                 with transaction(motor) as s:
                     self.assertEqual(parametros.risk_cutoffs(s), CORTES)
                     self.assertEqual(parametros.acceptance_criteria(s), CRITERIOS)
+                    self.assertEqual((parametros.default_horizon(s), parametros.interval_level(s)), (4, 0.80))
+                    for clave, valor, funcion in (("nivel_intervalo_casos", {"nivel": 1.2}, parametros.interval_level),
+                                                  ("horizonte_por_defecto", {"horizonte": 7}, parametros.default_horizon)):
+                        anterior = s.get(SystemParameter, clave).valor
+                        s.get(SystemParameter, clave).valor = valor
+                        s.flush()
+                        with self.subTest(clave=clave), self.assertRaises(ValueError):
+                            funcion(s)
+                        s.get(SystemParameter, clave).valor = anterior
+                        s.flush()
                     self.assertEqual(parametros.experimental_selection(s), {})
                     parametros.seed_experimental_selection(s, {2: {"clasificacion": "a", "regresion": "b"}})
                     self.assertEqual(parametros.experimental_selection(s)[2]["regresion"], "b")

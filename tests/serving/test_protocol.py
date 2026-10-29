@@ -1,19 +1,15 @@
 """Importación de OOS y serialización contrastadas con salidas reales."""
 
 from copy import deepcopy
-from pathlib import Path
-import tempfile
 import unittest
 
 import numpy as np
 import pandas as pd
 
 from serving_support import protocolo_muestra
-from denguekay.db.models import ModelVersion
 from denguekay.model.train import fit_models, counts_from_log1p, evaluate_fold
 from denguekay.evaluation.compact_validation import compact_variants
-from denguekay.serving.storage import LocalStorage
-from denguekay.serving.artifacts import predict_with_version, serialize_booster, sha256_bytes
+from denguekay.serving.predictors import v0_compact_xgb as v0
 from denguekay.serving.protocol import check_block
 
 
@@ -59,16 +55,11 @@ class TestContratoProtocolo(unittest.TestCase):
         reg.set_params(device="cpu")
         cls.set_params(device="cpu")
         vectores = datos.iloc[-6:][cols]
-        with tempfile.TemporaryDirectory() as carpeta:
-            almacenamiento = LocalStorage(Path(carpeta))
-            for tarea, modelo, esperado in (("clasificacion", cls, cls.predict_proba(vectores)[:, 1]),
-                ("regresion", reg, counts_from_log1p(reg.predict(vectores)))):
-                contenido = serialize_booster(modelo)
-                ruta = f"modelos/{tarea}.json"
-                almacenamiento.save(ruta, contenido)
-                version = ModelVersion(codigo=tarea, tarea=tarea, variables=cols, ruta_artefacto=ruta,
-                                        sha256_artefacto=sha256_bytes(contenido))
-                np.testing.assert_array_equal(predict_with_version(version, vectores.to_dict("records"), almacenamiento), esperado)
+        for tarea, modelo, esperado in (("clasificacion", cls, cls.predict_proba(vectores)[:, 1]),
+            ("regresion", reg, counts_from_log1p(reg.predict(vectores)))):
+            contenido = bytes(modelo.get_booster().save_raw(raw_format="json"))
+            booster = v0.load_booster(contenido)
+            np.testing.assert_array_equal(v0.predict_booster(booster, tarea, cols, vectores.to_dict("records")), esperado)
 
     def test_casos_reales_entre_umbral_f1_y_05_no_son_alertas_visibles(self):
         umbral = self.fold["clasificacion"]["umbral_probabilidad"]

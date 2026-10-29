@@ -15,18 +15,21 @@ import pandas as pd
 from sqlalchemy import delete, func, select
 
 from backend_support import datos_muestra, leer_csv, migrar, motor_temporal, url_pg_pruebas
-from serving_support import preparar_muestra
+from serving_support import sample_package, preparar_muestra
 from denguekay.db.models import (Alert, District, Run, WeeklyObservation, SystemParameter,
                             Prediction, EpiWeek, ModelVersion)
 from denguekay.db.session import make_engine, transaction
 from denguekay.model.future_rows import build_future_rows
 from denguekay.serving import parameters as parametros
 from denguekay.serving.storage import LocalStorage
-from denguekay.serving.artifacts import InvalidArtifact, predict_with_version
+from denguekay.serving.artifacts import InvalidArtifact
+from denguekay.serving.inputs import build_inputs
 from denguekay.serving.load_data import persist_load
 from denguekay.serving.inference import (InferenceUnavailable, update_alerts, import_oos, infer,
-                                    select_versions, vectors_from_db)
-from denguekay.serving.models import save_versions
+                                    select_versions)
+from denguekay.serving.models import save_versions, thresholds
+from denguekay.serving.package import load_package, save_package
+from denguekay.serving.predictors import load_predictor, v0_compact_xgb as v0
 
 UBIGEOS = ["200101", "200201", "200502"]
 TOLERANCIA = 1e-9
@@ -49,10 +52,13 @@ class EntornoInferencia:
         cls.data = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
         cls.motor = cls.crear_motor(ruta)
         cls.storage = LocalStorage(ruta / "storage")
+        cls.paquete = sample_package(cls.cfg, cls.protocolo, cls.preparadas)
         with transaction(cls.motor) as s:
             persist_load(s, cls.data)
+            cumple = thresholds(cls.paquete, parametros.acceptance_criteria(s))
+            ruta_paquete, sha = save_package(cls.storage, cls.paquete, cumple)
             cls.versiones = {k: v.id_version for k, v in save_versions(
-                s, cls.preparadas, "run-prueba", parametros.acceptance_criteria(s), cls.storage).items()}
+                s, cls.paquete, ruta_paquete, sha, "run-prueba", cumple).items()}
 
     @classmethod
     def tearDownClass(cls):
@@ -69,6 +75,17 @@ class EntornoInferencia:
     def inferir(self, h=2, corte=None, servir=True):
         with transaction(self.motor) as s:
             return infer(s, h, corte, storage=self.storage, servir_no_validadas=servir)
+
+    def vectores(self, s, h, corte, columnas):
+        """Vectores del predictor v0 desde la BD (antes vectors_from_db)."""
+        semana = s.get(EpiWeek, corte)
+        return v0.future_rows(build_inputs(s, semana, v0.Predictor.required_inputs), h, semana, columnas)
+
+    def predecir(self, version, filas):
+        """Salida del booster de la versión, cargado del paquete verificado (antes predict_with_version)."""
+        predictor = load_predictor(load_package(self.storage, version.ruta_artefacto, version.sha256_artefacto))
+        return v0.predict_booster(predictor.boosters[version.horizonte, version.tarea], version.tarea,
+                                  list(version.variables), filas)
 
     def predictions(self, h=2, corte=202552):
         with transaction(self.motor) as s:
@@ -107,7 +124,7 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
             gold = leer_csv(f"gold_temporal_h{h}_muestra.csv").set_index(["ubigeo", "semana_inicio"])
             for corte in (202533, 202540, 202552 - h):
                 with self.subTest(h=h, corte=corte), transaction(self.motor) as s:
-                    filas, motivos = vectors_from_db(s, h, corte, columnas)
+                    filas, motivos = self.vectores(s, h, corte, columnas)
                     self.assertEqual(sorted(filas.ubigeo), UBIGEOS)
                     esperado = gold.loc[list(zip(filas.ubigeo, filas.semana_inicio)), columnas].to_numpy(float)
                     np.testing.assert_allclose(filas[columnas].to_numpy(float), esperado, rtol=0, atol=TOLERANCIA)
@@ -124,19 +141,18 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
                 for corte in (202540, 202552 - h):
                     fecha = pd.Timestamp(s.get(EpiWeek, corte).fecha_fin)
                     actual, _ = build_future_rows(panel, h, columns=columnas, cutoff_date=fecha, reference=referencia)
-                    desde_bd, _ = vectors_from_db(s, h, corte, columnas)
+                    desde_bd, _ = self.vectores(s, h, corte, columnas)
                     actual, desde_bd = actual.sort_values("ubigeo"), desde_bd.sort_values("ubigeo")
                     for version in (clf, reg):
                         with self.subTest(h=h, corte=corte, tarea=version.tarea):
-                            np.testing.assert_array_equal(
-                                predict_with_version(version, desde_bd, self.storage),
-                                predict_with_version(version, actual, self.storage))
+                            np.testing.assert_array_equal(self.predecir(version, desde_bd),
+                                                          self.predecir(version, actual))
         # La probabilidad guardada es la del modelo redondeada a numeric(5,4).
         self.inferir(4, 202548)
         with transaction(self.motor) as s:
             clf = s.get(ModelVersion, self.versiones[4, "clasificacion"])
-            filas, _ = vectors_from_db(s, 4, 202548, sorted(set(clf.variables)))
-            esperadas = dict(zip(filas.ubigeo, predict_with_version(clf, filas, self.storage)))
+            filas, _ = self.vectores(s, 4, 202548, sorted(set(clf.variables)))
+            esperadas = dict(zip(filas.ubigeo, self.predecir(clf, filas)))
         guardadas = self.predictions(4, 202548)
         for ubigeo, p in esperadas.items():
             self.assertAlmostEqual(guardadas[ubigeo][1], round(float(p), 4), places=9)
@@ -171,17 +187,45 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
             self.inferir(5)
 
     def test_artefacto_alterado_se_rechaza(self):
-        ruta = Path(self.carpeta.name) / "storage" / "modelos" / "clf-h2-v1.json"
-        original = ruta.read_bytes()
+        carpeta = Path(self.carpeta.name) / "storage" / "modelos" / self.paquete.code
+        for ruta in (carpeta / "h2_clasificacion.json", carpeta / "manifest.json"):
+            original = ruta.read_bytes()
+            try:
+                ruta.write_bytes(original + b" ")
+                with self.subTest(archivo=ruta.name), self.assertRaisesRegex(InvalidArtifact, "SHA-256"):
+                    self.inferir(2)
+                ruta.unlink()
+                with self.subTest(archivo=ruta.name), self.assertRaisesRegex(InvalidArtifact, "No se encontró"):
+                    self.inferir(2)
+            finally:
+                ruta.write_bytes(original)
+
+    def test_pareja_de_paquetes_distintos_se_rechaza(self):
+        with transaction(self.motor) as s:
+            v = s.get(ModelVersion, self.versiones[2, "regresion"])
+            original = v.sha256_artefacto
+            v.sha256_artefacto = "0" * 64
         try:
-            ruta.write_bytes(original + b" ")
-            with self.assertRaisesRegex(InvalidArtifact, "SHA-256"):
-                self.inferir(2)
-            ruta.unlink()
-            with self.assertRaisesRegex(InvalidArtifact, "No se encontró"):
+            with self.assertRaisesRegex(InvalidArtifact, "mismo paquete"):
                 self.inferir(2)
         finally:
-            ruta.write_bytes(original)
+            with transaction(self.motor) as s:
+                s.get(ModelVersion, self.versiones[2, "regresion"]).sha256_artefacto = original
+
+    def test_paquete_sin_intervalos_no_lee_el_nivel(self):
+        """v0 no estima intervalos: sus predicciones los dejan en NULL y no exige el parámetro."""
+        with transaction(self.motor) as s:
+            fila = s.get(SystemParameter, "nivel_intervalo_casos")
+            valor = fila.valor
+            s.delete(fila)
+        try:
+            self.inferir(2)
+            with transaction(self.motor) as s:
+                self.assertEqual(s.scalar(select(func.count()).select_from(Prediction).where(
+                    Prediction.casos_intervalo_inferior.is_not(None))), 0)
+        finally:
+            with transaction(self.motor) as s:
+                s.add(SystemParameter(clave="nivel_intervalo_casos", valor=valor, descripcion="restituido"))
 
     def test_alertas_cambio_y_retiro(self):
         with transaction(self.motor) as s:
@@ -233,11 +277,11 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
     def test_importa_oos_como_cortes_pasados(self):
         with transaction(self.motor) as s:
             versiones = {k: s.get(ModelVersion, v) for k, v in self.versiones.items()}
-            resumen = import_oos(s, self.protocolo, (2, 4), self.cfg, versiones)
+            resumen = import_oos(s, self.paquete.oos, self.paquete.oos_detail, versiones)
             self.assertTrue(resumen)
             total = s.scalar(select(func.count()).select_from(Prediction))
             esperado = len(self.protocolo.predictions.loc[
-                self.protocolo.predictions.variante.eq(self.cfg.variantes["clasificacion"])])
+                self.protocolo.predictions.variante.eq(self.cfg.opciones["variantes"]["clasificacion"])])
             self.assertEqual(total, esperado)
             p = s.scalar(select(Prediction).limit(1))
             self.assertIsNone(p.id_version_clasificador)
@@ -248,7 +292,7 @@ class TestInferenciaSQLite(EntornoInferencia, unittest.TestCase):
             self.assertTrue(e.detalle["experimental"])
             self.assertEqual(s.scalar(select(func.count()).select_from(Alert)), 0)
             # Reimportar no duplica (UPSERT por la clave del documento).
-            import_oos(s, self.protocolo, (2, 4), self.cfg, versiones)
+            import_oos(s, self.paquete.oos, self.paquete.oos_detail, versiones)
             self.assertEqual(s.scalar(select(func.count()).select_from(Prediction)), total)
 
     def test_seleccion_experimental_incompleta(self):

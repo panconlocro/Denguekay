@@ -6,7 +6,7 @@ import json
 
 from backend_support import leer_csv
 from denguekay.serving.settings import service_settings
-from denguekay.serving.models import train_service_versions
+from denguekay.serving.predictors import v0_compact_xgb as v0
 from denguekay.serving.protocol import Protocol
 from denguekay.config.paths import BACKEND_FIXTURES
 
@@ -35,9 +35,22 @@ def preparar_muestra():
     """Entrena XGBoost real sobre filas reales de gold; no usa dobles ni probabilidades fijas."""
     protocolo = protocolo_muestra()
     cfg = service_settings()
-    preparadas = train_service_versions(protocolo, (2, 4), cfg, CORTE)
+    preparadas = v0.train_service_versions(protocolo, (2, 4), cfg.opciones["variantes"], CORTE)
     # El booster de prueba se ajustó sobre estos archivos, no sobre gold completo.
     for (h, _), preparada in preparadas.items():
         preparada.data["sha256_dataset"] = hashlib.sha256(
             (BACKEND_FIXTURES / f"entrenamiento_h{h}_muestra.csv").read_bytes()).hexdigest()
     return cfg, protocolo, preparadas
+
+
+def sample_package(cfg, protocol, trained):
+    """v0 package (four boosters, versions and OOS) of the boosters trained on the fixtures."""
+    return v0.build(v0.Prepared(protocol, dict(protocol.hashes)), (2, 4), cfg.opciones, CORTE, trained=trained)
+
+
+def publish_sample(engine, load, cfg, protocol, trained, storage, run_id, fingerprint):
+    """Full publication of the fixtures with the current inference (like ``publish --inferir``)."""
+    from denguekay.serving.publish import publish_to_db
+
+    return publish_to_db(engine, load, sample_package(cfg, protocol, trained), run_id, fingerprint, storage, 0,
+                         servir_no_validadas=cfg.servir_no_validadas, run_inference=True)

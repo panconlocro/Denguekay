@@ -1,8 +1,9 @@
-"""Publication CLI: sources -> XGBoost fit (train.py) -> Storage and database, with an auditable run.
+"""Publication CLI: sources -> package of the configured predictor type -> Storage and database, audited.
 
-Steps: load (ingestion), serving fit and MLflow logging (retraining), ``candidata``
-versions with their booster in Storage, the protocol's OOS predictions as past
-cutoffs and the inference of the current cutoff.
+Steps: load (ingestion), the type's fit and its MLflow logging (retraining), the package (manifest and
+files) in Storage, its ``candidata`` versions (one per task and horizon) and its OOS predictions as past
+cutoffs. The current inference is done by the API (``POST /admin/inferencias``, decision D2); ``--inferir``
+also runs it in this process for local use.
 """
 
 import argparse
@@ -15,12 +16,10 @@ import time
 
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
-from xgboost import __version__ as XGBOOST_VERSION
 
 from denguekay.db.models import Run, utc_now
 from denguekay.db.session import make_engine, transaction
 from denguekay.model.tracking import log_report
-from denguekay.model.train import BASE_PARAMS
 from denguekay.serving import parameters as parametros
 from denguekay.serving.storage import LocalStorage
 from denguekay.serving.artifacts import json_fingerprint
@@ -28,9 +27,10 @@ from denguekay.serving.load_data import (require_schema, source_hashes, persist_
                                       record_failure)
 from denguekay.serving.settings import service_settings
 from denguekay.serving.inference import import_oos, infer
-from denguekay.serving.models import train_service_versions, save_versions, service_report
-from denguekay.serving.protocol import load_protocol
-from denguekay.config.paths import GOLD, ROOT, SERVING_RUNS, SILVER_INTEGRATED, SRC
+from denguekay.serving.models import save_versions, thresholds
+from denguekay.serving.package import save_package
+from denguekay.serving.predictors import predictor_module
+from denguekay.config.paths import GOLD, ROOT, SERVING_RUNS, SRC
 
 
 def code_hashes():
@@ -49,70 +49,81 @@ def existing_publication(sesion, fingerprint):
     return None
 
 
-def publish_to_db(motor, load, protocol, prepared_versions, horizons, cfg, run_id, fingerprint, storage, start):
-    """Versions, OOS and current inference in a single transaction."""
+def infer_current(motor, horizons, storage, servir_no_validadas):
+    """Current inference of each horizon (what ``POST /admin/inferencias`` does), in one transaction."""
+    with transaction(motor) as sesion:
+        return [infer(sesion, h, storage=storage, servir_no_validadas=servir_no_validadas, origin="publicacion")
+                for h in horizons]
+
+
+def publish_to_db(motor, load, built, run_id, fingerprint, storage, start, *, servir_no_validadas=True,
+                  run_inference=False):
+    """Package in Storage, versions and OOS in a single transaction; optionally the current inference."""
     with transaction(motor) as sesion:
         run = Run(tipo="reentrenamiento", estado="en_curso", detalle={"huella": fingerprint})
         sesion.add(run)
         sesion.flush()
-        versions = save_versions(sesion, prepared_versions, run_id, parametros.acceptance_criteria(sesion), storage)
-        oos = import_oos(sesion, protocol, horizons, cfg, versions)
-        current_rows = [infer(sesion, h, storage=storage,
-                            servir_no_validadas=cfg.servir_no_validadas, origin="publicacion")
-                    for h in horizons]
+        meets = thresholds(built, parametros.acceptance_criteria(sesion))
+        path, sha256 = save_package(storage, built, meets)
+        versions = save_versions(sesion, built, path, sha256, run_id, meets)
+        oos = import_oos(sesion, built.oos, built.oos_detail, versions) if built.oos is not None else []
+        current = ([infer(sesion, h, storage=storage, servir_no_validadas=servir_no_validadas, origin="publicacion")
+                    for h in built.horizons] if run_inference else [])
         summary = {"mlflow_run_id": run_id, "fecha_corte_datos": str(load.fecha_corte_datos),
+                   "paquete": {"codigo": built.code, "tipo_predictor": built.kind, "ruta": path, "sha256": sha256},
                    "versiones": [{"codigo": v.codigo, "tarea": v.tarea, "horizonte": v.horizonte,
                                   "cumple_umbrales": v.cumple_umbrales, "estado": v.estado,
                                   "ruta_artefacto": v.ruta_artefacto} for v in versions.values()],
-                   "oos": oos, "inferencias_vigentes": current_rows}
+                   "oos": oos, "inferencias_vigentes": current}
         run.estado, run.fin = "exitosa", utc_now()
-        run.id_semana_corte = current_rows[0]["id_semana_corte"] if current_rows else None
+        run.id_semana_corte = current[0]["id_semana_corte"] if current else None
         run.detalle = {"huella": fingerprint, "resumen": summary,
-                             "duracion_segundos": round(time.perf_counter() - start, 3)}
+                       "duracion_segundos": round(time.perf_counter() - start, 3)}
         sesion.flush()
         return {"id_ejecucion": run.id_ejecucion, "reutilizada": False, **summary}
 
 
-def publish(motor, horizons=None, *, cfg=None, storage=None):
+def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False):
     """Validate, fit, log to MLflow and commit the publication in the database."""
     start = time.perf_counter()
     cfg = cfg or service_settings()
     storage = storage or LocalStorage()
+    builder = predictor_module(cfg.tipo_paquete)
     horizons = tuple(sorted(horizons if horizons is not None else cfg.horizontes))
     if not horizons or len(set(horizons)) != len(horizons):
         raise ValueError("Indique horizontes no repetidos")
-    for h in horizons:
-        if h not in (2, 4):
-            raise ValueError("No hay gold ni contrato de modelado para horizonte 3; no se inventarán predicciones")
-        if not (GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv").exists():
-            raise ValueError(f"Falta el gold para horizonte {h}")
+    builder.validate(horizons, cfg.opciones)
     require_schema(motor)
     load = prepare_load()
-    protocol = load_protocol(horizons, cfg.variantes)
-    hashes = {**load.hashes, **protocol.hashes, **code_hashes()}
+    prepared = builder.prepare(horizons, cfg.opciones)
+    hashes = {**load.hashes, **prepared.hashes, **code_hashes()}
     fingerprint = json_fingerprint({"hashes": hashes, "configuracion": asdict(cfg), "horizontes": horizons,
-                          "parametros": BASE_PARAMS, "xgboost": XGBOOST_VERSION,
-                          "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}"})
+                                    **builder.fingerprint_parameters(),
+                                    "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}"})
     with transaction(motor) as sesion:
         persist_load(sesion, load)
         previous = existing_publication(sesion, fingerprint)
         if previous is not None:
-            return {"id_ejecucion": previous.id_ejecucion, "reutilizada": True, **previous.detalle["resumen"]}
+            summary = {"id_ejecucion": previous.id_ejecucion, "reutilizada": True, **previous.detalle["resumen"]}
+    if previous is not None:
+        if run_inference:
+            summary["inferencias_vigentes"] = infer_current(motor, horizons, storage, cfg.servir_no_validadas)
+        return summary
     try:
-        prepared_versions = train_service_versions(protocol, horizons, cfg, load.fecha_corte_datos)
+        built = builder.build(prepared, horizons, cfg.opciones, load.fecha_corte_datos)
         directory = SERVING_RUNS / fingerprint
         directory.mkdir(parents=True, exist_ok=True)
-        report = service_report(prepared_versions, protocol, load.fecha_corte_datos)
         report_path = directory / "reporte_servicio.json"
-        report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        run_id = log_report("serving", report, metrics_path=report_path,
+        report_path.write_text(json.dumps(built.report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        run_id = log_report("serving", built.report, metrics_path=report_path,
             output_dir=directory, gold_dir=GOLD, data_quality=load.validacion_gx,
             description="Ajuste de servicio. La evaluación temporal adjunta es importada del protocolo previo, no un entrenamiento OOS de esta corrida.")
         if load.hashes != source_hashes() or code_hashes() != {k: v for k, v in hashes.items() if k.startswith("src/denguekay/")}:
             raise ValueError("Las entradas o el código cambiaron durante la ejecución; publicación rechazada")
-        summary = publish_to_db(motor, load, protocol, prepared_versions, horizons, cfg, run_id, fingerprint,
-                                 storage, start)
-        (directory / "publicacion.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        summary = publish_to_db(motor, load, built, run_id, fingerprint, storage, start,
+                                servir_no_validadas=cfg.servir_no_validadas, run_inference=run_inference)
+        (directory / "publicacion.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2, default=str) + "\n",
+                                                    encoding="utf-8")
         return summary
     except Exception as error:
         record_failure(motor, "reentrenamiento", error, {"huella": fingerprint})
@@ -120,15 +131,17 @@ def publish(motor, horizons=None, *, cfg=None, storage=None):
 
 
 def main(argv=None):
-    """``python -m denguekay.serving.publish --horizontes 2 4``."""
+    """``python -m denguekay.serving.publish [--horizontes 2 4] [--inferir]``."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--horizontes", nargs="+", type=int, choices=(2, 3, 4), default=None,
-                        help="Horizontes con gold y contrato disponibles (2 y 4)")
+                        help="Por defecto, los del paquete configurado en config.yaml (serving.paquete)")
+    parser.add_argument("--inferir", action="store_true",
+                        help="Además corre la inferencia vigente en este proceso (uso local; en despliegue la hace la API)")
     args = parser.parse_args(argv)
     motor = None
     try:
         motor = make_engine()
-        print(json.dumps(publish(motor, args.horizontes), ensure_ascii=False, default=str))
+        print(json.dumps(publish(motor, args.horizontes, run_inference=args.inferir), ensure_ascii=False, default=str))
         return 0
     except SQLAlchemyError:
         print("No se pudo publicar: revise la conexión, migraciones y permisos de la BD", file=sys.stderr)

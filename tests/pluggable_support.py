@@ -28,11 +28,10 @@ def publish_fixtures(engine, folder):
     from dataclasses import replace
 
     from backend_support import datos_muestra
-    from serving_support import preparar_muestra
+    from serving_support import preparar_muestra, publish_sample
     from denguekay.db.session import transaction
     from denguekay.serving.inference import infer
     from denguekay.serving.load_data import persist_load
-    from denguekay.serving.publish import publish_to_db
     from denguekay.serving.storage import LocalStorage
 
     cfg, protocol, prepared = preparar_muestra()
@@ -41,7 +40,8 @@ def publish_fixtures(engine, folder):
     storage = LocalStorage(folder / "storage")
     with transaction(engine) as session:
         persist_load(session, data)
-    publish_to_db(engine, data, protocol, prepared, (2, 4), cfg, "run-paridad", "huella-paridad", storage, 0)
+    # Since the refactor the current inference is explicit (publish --inferir); before it, publish_to_db ran it.
+    publish_sample(engine, data, cfg, protocol, prepared, storage, "run-paridad", "huella-paridad")
     with transaction(engine) as session:
         for horizon, cutoff in EXTRA_INFERENCES:
             infer(session, horizon, cutoff, storage=storage, servir_no_validadas=cfg.servir_no_validadas)
