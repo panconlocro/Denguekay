@@ -266,7 +266,7 @@ src/denguekay/db/
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # revisiones Alembic; 0003_oe2 es el esquema vigente
+└── migrations/               # revisiones Alembic; 0003_oe2 = esquema OE2; 0004_v1 siembra horizonte_por_defecto
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
 ├── settings.py               # horizontes, variantes y selección experimental (config.yaml)
@@ -277,7 +277,8 @@ src/denguekay/serving/
 ├── artifacts.py              # booster en Storage, verificación SHA-256 e inferencia
 ├── risk.py                   # nivel de riesgo y cambio de alerta
 ├── inference.py              # vector desde la BD, UPSERT de predicciones, alertas, OOS
-└── publish.py                # CLI: carga, ajuste, MLflow, versiones, OOS e inferencia
+├── publish.py                # CLI: carga, ajuste, MLflow, versiones, OOS e inferencia
+└── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
 └── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
 ```
@@ -287,22 +288,26 @@ src/denguekay/pipelines/
 ```text
 apps/api/                     # FastAPI: rutas de la Tabla 2 del documento OE2
 ├── main.py                   # create_app() y app (uvicorn apps.api.main:app)
+├── contract.py               # versión del contrato (semver), versión de la aplicación y horizontes del DDL
 ├── dependencies.py, errors.py, queries.py, cache.py, openapi.py
 ├── schemas.py                # esquemas Pydantic (contrato; nombres en español, D2)
-├── routers/                  # reference, data, surveillance, models y admin
-└── tools/                    # benchmark.py, export_openapi.py, smoke_test.py
+├── routers/                  # reference (salud, configuración, distritos), data, surveillance, models y admin
+└── tools/                    # benchmark.py, export_openapi.py (--contrato), smoke_test.py
 tests/
-├── backend_support.py, serving_support.py, equivalence_support.py
-├── db/, serving/, api/       # tests del backend
-├── test_equivalence.py       # guardas de equivalencia de la reestructuración
+├── backend_support.py, serving_support.py, equivalence_support.py, contract_v1_support.py
+├── db/, serving/, api/       # tests del backend (api/test_contract_v1.py: contrato con datos)
+├── test_equivalence.py       # guardas de la reestructuración (V1/V2 bit a bit, esquema en 0003_oe2)
+├── test_contract_v1_guards.py # guardas del contrato v1: OpenAPI, esquema por migración y smoke v1
 ├── test_layout.py            # sin restos del paquete src y dependencias en un solo sentido
 └── fixtures/
     ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
-    └── equivalence/          # línea base: predicciones V1/V2, esquemas, prueba de humo
-docs/backend/                 # especificación OE2, desviaciones, operación y contrato
+    ├── equivalence/          # línea base del ADR 0001 (no se regenera; smoke.json es historia)
+    └── contract_v1/          # línea base v1: esquema de cada migración nueva y smoke v1 (no se regenera)
+docs/backend/                 # especificación OE2, desviaciones, operación y contrato (openapi_v1.json congelado)
 └── evidencia/                # SQL de la migración, prueba de humo TB1 (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes); no se versiona
 models/serving/               # BD SQLite y ejecuciones locales; no se versionan
+└── demo/                     # BD de demostración (D1), su storage y su MLflow; se comparte fuera de Git
 ```
 
 El esquema y la API siguen `docs/backend/especificacion_oe2.md` y `ddl_oe2.sql`;
@@ -437,6 +442,8 @@ great_expectations/gx/
 | Documentación y evidencia del backend | `docs/backend/` |
 | Muestra real para pruebas del backend | `tests/fixtures/backend/` |
 | Guarda de equivalencia de la reestructuración | `tests/test_equivalence.py` (línea base en `tests/fixtures/equivalence/`) |
+| Guarda del contrato v1 o línea base de una migración nueva | `tests/test_contract_v1_guards.py` (línea base en `tests/fixtures/contract_v1/`, se graba con `python tests/contract_v1_support.py record`) |
+| Guía y contrato para el frontend | `docs/backend/guia_frontend.md`, `docs/backend/openapi_v1.json` |
 | Test de un módulo del paquete | `tests/<subpaquete>/test_<módulo>.py` |
 | Notebook que orquesta un paso del pipeline | `pipelines/notebooks/`, numerado |
 | Dato tal cual vino de la fuente | `data/bronze/<fuente>/` |

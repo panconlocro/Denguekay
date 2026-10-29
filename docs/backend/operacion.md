@@ -51,6 +51,19 @@ Las variables del proceso tienen prioridad sobre `.env`. Ningún comando imprime
 
 Con la BD ya poblada basta el último comando.
 
+## BD de demostración para el frontend (decisión D1)
+
+```powershell
+.\.venv\Scripts\python -m denguekay.serving.demo_database
+```
+
+Genera `models/serving/demo/` (no se versiona): `denguekay_demo.sqlite`, migrada con Alembic y con los datos
+agregados reales y la v0 publicados, su `storage/` y su propio MLflow (`mlflow.db` y `mlartifacts/`), que no
+toca el `mlflow.db` del proyecto. Solo lee `data/`; como toda publicación, deja además su reporte en
+`models/serving/ejecuciones/<huella>/` (tampoco se versiona). `--reemplazar` rehace una demo existente y `--salida`
+cambia la carpeta. La carpeta se comparte fuera de Git (Drive o un Release); cómo usarla está en
+[guia_frontend.md](guia_frontend.md).
+
 ## Prueba de humo y evidencia
 
 Con uvicorn levantado y `API_KEY` definida:
@@ -59,9 +72,11 @@ Con uvicorn levantado y `API_KEY` definida:
 .\.venv\Scripts\python -m apps.api.tools.smoke_test --url http://127.0.0.1:8000
 ```
 
-Llama a cada endpoint de la Tabla 2 y escribe [evidencia_tb1.md](evidencia/evidencia_tb1.md)
-(sin credenciales). La evidencia SQL de la migración se regenera con
-`.\.venv\Scripts\python -m denguekay.db.export_migration_sql` (no se conecta a ninguna BD).
+Llama a cada endpoint de la Tabla 2 y a `GET /configuracion`, y escribe
+[evidencia_tb1.md](evidencia/evidencia_tb1.md) (sin credenciales). La evidencia SQL de la migración OE2
+(`0002_serving:0003_oe2`) se regenera con `.\.venv\Scripts\python -m denguekay.db.export_migration_sql`
+(no se conecta a ninguna BD). El SQL de cada migración posterior es una línea base en
+`tests/fixtures/contract_v1/`.
 
 ## Inferencia y activación desde la API
 

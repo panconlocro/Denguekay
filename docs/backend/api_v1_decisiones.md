@@ -427,6 +427,20 @@ implementa.
 | D2 | ¿Usuarios LOGIN que heredan `rol_api` y `rol_pipeline`, con la inferencia vigente hecha por la API? | Sí | **Sí** | 3 (permisos), 5 (diseño de despliegue) |
 | G1 | ¿Reemplazar en la fase 2 la guarda `TestOpenAPIContract` por la del contrato v1 (`openapi_v1.json`)? | Sí | **Sí; la línea base de equivalencia no se toca** | 2 |
 
+### Precisiones de la fase 2 (29/10/2026, aprobadas por Rosa)
+
+- **Guardas del ADR 0001 (amplía G1).** Se versionan por contrato:
+  - la guarda de esquema del ADR 0001 se mantiene y comprueba la cabeza `0003_oe2`;
+  - la prueba de humo del ADR 0001 (`smoke.json`, 15 rutas) deja de correr y queda como historia en el tag
+    `restructure-done`;
+  - hay líneas base nuevas en `tests/fixtures/contract_v1/`, una por migración nueva y una prueba de humo
+    v1 (16 rutas), que se graban una vez y nunca se regeneran.
+
+  Detalle en la sección «Consecuencias» de `docs/decisions/0001-repo-restructure.md`.
+- **Siembra de `horizonte_por_defecto` (C2).** Migración `0004_v1`, de solo datos (`INSERT` en
+  `parametro_sistema`, valor 4), como las semillas de la 0003. Si falta el parámetro, la API responde 503
+  `parametros_no_configurados`. Su línea base de esquema está en `tests/fixtures/contract_v1/`.
+
 ## 4. Pendiente fuera de este encargo
 
 - **Los 8 distritos sin historia antes de 2017 (§1.9.3)** (`200206`, `200208`, `200303`, `200305`, `200307`,
