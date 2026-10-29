@@ -10,7 +10,7 @@ pantallas está en [apps/web/README.md](../../apps/web/README.md).
   verdad para el frontend: un test del CI falla si la API se aparta de él.
 - **Con ejemplos reales:** [openapi.json](openapi.json) (el mismo contrato, más un ejemplo por lectura
   sacado de la BD de demostración).
-- **Reglas y versiones:** [contrato_api.md](contrato_api.md). La versión del contrato es **1.0.0** y viaja
+- **Reglas y versiones:** [contrato_api.md](contrato_api.md). La versión del contrato es **1.1.0** y viaja
   en la cabecera `X-Version-Contrato` de cada respuesta. Un cambio aditivo sube la minor (1.1.0, …) y nunca
   rompe lo que ya funciona; un cambio que rompe iría en `/api/v2`.
 - **URL base en desarrollo:** `http://127.0.0.1:8000/api/v1`. La documentación interactiva está en
@@ -31,8 +31,8 @@ repositorio clonado. No necesitas `data/` ni PostgreSQL.
 
 2. **BD de demostración.** Rosa la genera en su PC (paso 4) y la comparte fuera de Git (Drive o un
    Release de GitHub): es la carpeta `demo/` con `denguekay_demo.sqlite` y `storage/`. Contiene los datos
-   agregados reales de Piura (casos y clima por distrito y semana; sin datos personales) y el modelo v0
-   publicado como demo experimental. Descomprímela, por ejemplo, en `models/serving/demo/` (esa carpeta
+   agregados reales de Piura (casos y clima por distrito y semana; sin datos personales) y el modelo v2
+   (h=2, 3 y 4) publicado como demo experimental. Descomprímela, por ejemplo, en `models/serving/demo/` (esa carpeta
    no se versiona).
 
 3. **Arrancar la API** apuntando a esa BD:
@@ -75,16 +75,16 @@ Regenera los tipos cada vez que cambie la minor del contrato (el changelog está
 
 - **Nada en código duro.** Horizontes disponibles, horizonte por defecto (4), cortes de riesgo, niveles,
   leyenda del mapa, corte vigente y nota experimental salen de `GET /configuracion`.
-- **Horizontes:** 2, 3 y 4 semanas. Un horizonte sin modelo (hoy, h=3) responde 200 con `disponible: false`
-  y `motivo: "sin modelo para h=3"`: la interfaz lo muestra así, no como error.
+- **Horizontes:** 2, 3 y 4 semanas (con la v2, los tres tienen modelo). Un horizonte sin modelo responde 200
+  con `disponible: false` y `motivo: "sin modelo para h=N"`: la interfaz lo muestra así, no como error.
 - **Faltantes ≠ ceros.** Un `null` con `disponible: false` y `motivo` se muestra como «sin datos» con su
   motivo, nunca como 0. Un 0 sí es un dato (cero casos notificados).
 - **`experimental: true` siempre visible.** Hoy ningún modelo cumple los umbrales de aceptación (HU0007-4);
   la nota de `/configuracion`, `/tablero/resumen` y `/modelos/activo` lo explica.
 - **`ubigeo` es texto** de seis dígitos con ceros a la izquierda; nunca se convierte a número.
 - **Intervalos de casos** (`casos_intervalo_inferior`, `casos_intervalo_superior`, `nivel_intervalo` = 0,80):
-  hoy son `null` con `motivo_intervalo`, porque el modelo servido no los estima. La interfaz debe estar
-  lista para mostrarlos cuando lleguen, sin cambiar el contrato.
+  con la v2 vienen con valor; con un modelo que no los estima (la v0) son `null` con `motivo_intervalo`.
+  Con la v2 son el intervalo central de la binomial negativa NB2(μ, α) de cada horizonte (cuantiles 0,10 y 0,90). **El intervalo no está calibrado:** Platt corrige la probabilidad de brote, no la distribución de los casos, así que su cobertura real puede apartarse del 80 %. La interfaz debe decirlo junto al intervalo (por ejemplo, «rango orientativo, no calibrado»).
 - **Mapa:** `features[].geometry` puede ser `Point` (hoy, centroides), `Polygon` o `MultiPolygon` (cuando
   haya límites con licencia). Las coordenadas son `[longitud, latitud]`.
 - Textos en español y unidades en los gráficos (casos, casos por 100 000 hab.).

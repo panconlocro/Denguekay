@@ -3,7 +3,7 @@
   "info": {
     "title": "Denguekay: pronóstico distrital de dengue",
     "description": "API del documento OE2 (Tabla 2) sobre datos agregados de Piura. Contrato v1, independiente del modelo: los horizontes disponibles salen de la BD (GET /configuracion). Las predicciones de versiones que no cumplen los umbrales se marcan experimental: true (demo; desviación temporal documentada). Cada respuesta lleva la versión del contrato en X-Version-Contrato.",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "paths": {
     "/api/v1/salud": {
@@ -1540,7 +1540,7 @@
         "tags": [
           "Modelos"
         ],
-        "summary": "Importancias gain de una versión (extensión, HU0008-4)",
+        "summary": "Importancias de las variables de una versión (extensión, HU0008-4)",
         "description": "Las importancias no implican causalidad; su ausencia se informa sin rellenar con ceros.",
         "operationId": "variables_api_v1_modelos__identificador__variables_get",
         "parameters": [
@@ -4533,7 +4533,7 @@
           "nota"
         ],
         "title": "VariablesRespuesta",
-        "description": "Importancias gain reales; no constituyen relaciones causales"
+        "description": "Importancias de la versión; el método con que se calcularon va en nota. No constituyen relaciones causales"
       }
     },
     "securitySchemes": {

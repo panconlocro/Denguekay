@@ -366,6 +366,19 @@ def models_in_use(session, horizon, servir_no_validadas):
             "nota": EXPERIMENTAL_NOTE if experimental else "Versiones activas que cumplen los umbrales de aceptación"}
 
 
+IMPORTANCE_NOTES = {
+    "shap_medio_por_horizonte": "Importancia SHAP: |SHAP| medio de la salida de este horizonte del regresor "
+                                "multisalida, calculado al publicar; no implica causalidad",
+}
+GAIN_NOTE = "Importancia gain del booster; no implica causalidad"
+
+
+def importance_note(version):
+    """How the version's importances were computed (``reproducibilidad.tipo_importancia``; v0: gain)."""
+    kind = ((version.reproducibilidad or {}) if version is not None else {}).get("tipo_importancia")
+    return IMPORTANCE_NOTES.get(kind, GAIN_NOTE)
+
+
 def variables(session, identifier):
     existing_model(session, identifier)
     rows = list(session.scalars(select(VariableImportance).where(
@@ -373,7 +386,7 @@ def variables(session, identifier):
     return {**metadata(session, bool(rows), None if rows else "La versión no tiene importancias guardadas"),
             "id_version": identifier,
             "elementos": [{"variable": f.variable, "importancia": f.importancia, "rango": f.rango} for f in rows],
-            "nota": "Importancia gain del booster; no implica causalidad"}
+            "nota": importance_note(session.get(ModelVersion, identifier))}
 
 
 # --- health ----------------------------------------------------------------------

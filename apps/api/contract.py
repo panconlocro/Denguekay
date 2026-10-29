@@ -4,7 +4,7 @@ The contract follows semver (docs/backend/contrato_api.md): an additive change r
 version; a breaking change is not allowed under /api/v1.
 """
 
-CONTRACT_VERSION = "1.0.0"
+CONTRACT_VERSION = "1.1.0"
 CONTRACT_HEADER = "X-Version-Contrato"
 APP_VERSION = "2.0.0"
 # Horizons admitted by the DDL CHECK; which of them have a model is read from the database.
