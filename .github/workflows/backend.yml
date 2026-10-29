@@ -133,3 +133,5 @@ jobs:
           test "$n" -gt 0
           # Guarda de la reestructuración: el esquema migrado en PostgreSQL es el de la línea base.
           grep -qE "\(test_equivalence\.TestMigratedSchema\.test_postgresql_schema_matches_baseline\) \.\.\. ok$" pruebas.log
+          # Guarda del contrato v1: el esquema de cada migración nueva coincide con su línea base.
+          grep -qE "\(test_contract_v1_guards\.TestSchemaPerMigration\.test_postgresql_schema_matches_baseline\) \.\.\. ok$" pruebas.log
