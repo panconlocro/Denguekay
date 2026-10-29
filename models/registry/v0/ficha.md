@@ -2,17 +2,18 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | **Servida** por el backend TB1, como `experimental: true` |
+| Estado | **Servida** por el backend, como `experimental: true` |
 | Tag | `model/v0` (`3d59090`) |
 | Modelo | E1·S1: un XGBoost por horizonte y tarea, h=2 y h=4 (h=3 responde 409) |
-| Versiones en la BD | `clf-h2-v1`, `reg-h2-v1`, `clf-h4-v1`, `reg-h4-v1` |
+| Predictor | `v0_compact_xgb` (`denguekay.serving.predictors`), desde la fase 3 de la API v1: un paquete con los cuatro boosters (`modelos/<codigo_paquete>/manifest.json`); las predicciones son idénticas a las de antes del motor enchufable (`tests/serving/test_v0_parity.py`) |
+| Versiones en la BD | `clf-h2-v1`, `reg-h2-v1`, `clf-h4-v1`, `reg-h4-v1` (en una BD republicada tras la 0005, los siguientes números) |
 | Estudio | [`research/03_first_models_and_ablations`](../../../research/03_first_models_and_ablations/README.md), informe [validacion_temporal_compacta.md](../../../research/03_first_models_and_ablations/docs/validacion_temporal_compacta.md); tag `archive/training` (`573219d`) |
 | Métricas de selección | [`validacion_temporal_compacta.json`](validacion_temporal_compacta.json) (en esta carpeta; lo lee serving) |
 
 ## Configuración
 
 No es una configuración congelada de `denguekay.model.frozen_configs`. Las variantes se leen de
-`configs/config.yaml` (`serving.variantes`) y los hiperparámetros son `denguekay.model.train.BASE_PARAMS`
+`configs/config.yaml` (`serving.paquete.opciones.variantes`) y los hiperparámetros son `denguekay.model.train.BASE_PARAMS`
 (160 árboles, profundidad 3, learning rate 0,05, semilla 17):
 
 | Tarea | Variante | Columnas (h=4; en h=2 los rezagos son 2 y 3) |

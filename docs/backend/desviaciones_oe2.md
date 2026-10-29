@@ -32,7 +32,10 @@ Tipos de desviación:
 | — | `alerta.motivo` | Se mantiene como columna opcional (nullable) que explica el retiro | Extensión |
 | — | Reproducibilidad del modelo | Una sola columna opcional `version_modelo.reproducibilidad` jsonb con `device`, `version_xgboost`, `plataforma`, `particion_temporal` y fechas de entrenamiento | Extensión |
 | — | `GET /configuracion` (contrato v1, C2; aprobada por Rosa el 29/10/2026) | Extensión de lectura con horizontes disponibles y por defecto, cortes, niveles, leyenda, corte vigente y nota experimental. Nueva clave `parametro_sistema.horizonte_por_defecto` = `{"horizonte": 4}`, sembrada por la migración de solo datos `0004_v1`; si falta, 503 `parametros_no_configurados` | Extensión |
-| — | Intervalo de casos (contrato v1, C3; aprobada por Rosa el 29/10/2026) | Campos anulables `casos_intervalo_inferior`, `casos_intervalo_superior`, `nivel_intervalo` (0,80) y `motivo_intervalo` en las predicciones y el mapa. En la fase 2 valen `null` con motivo; la fase 3 agrega dos columnas anulables a `prediccion`, y las escribe el predictor que los estime | Extensión |
+| — | Intervalo de casos (contrato v1, C3; aprobada por Rosa el 29/10/2026) | Campos anulables `casos_intervalo_inferior`, `casos_intervalo_superior`, `nivel_intervalo` (0,80) y `motivo_intervalo` en las predicciones y el mapa. La migración `0005_v1` agrega a `prediccion` dos columnas anulables `numeric(10,2)` con el CHECK `ck_prediccion_intervalo_coherente` (las dos juntas, solo en predicciones disponibles, `0 ≤ inferior ≤ superior`); las escribe el predictor que los estime. El nivel no es una columna: es `parametro_sistema.nivel_intervalo_casos` = `{"nivel": 0.80}` (sembrado por la 0005); el manifiesto de cada paquete declara su nivel y la inferencia rechaza (409) uno distinto. Cambiar el parámetro obliga a volver a inferir | Extensión |
+| — | Humedad en `double precision` (M5; aprobada por Rosa el 29/10/2026) | `observacion_semanal.hum_rel_media_pct` pasa de `numeric(5,2)` a `double precision` (migración `0005_v1`) y `load_data` deja de redondearla: con dos decimales, la media de 5 semanas de A3 difería de gold hasta 0,0043 y la paridad ≤ 1e-9 de la v2 era imposible. El CHECK `BETWEEN 0 AND 100` se mantiene. En SQLite (solo pruebas) el tipo declarado no cambia porque SQLite guarda el `REAL` completo | Corrección del documento |
+| f′ | Permisos de `rol_pipeline` (D2; aprobada por Rosa el 29/10/2026) | Amplía la decisión f: `rol_pipeline` recibe además INSERT y UPDATE en `prediccion` (migración `0005_v1`) para las predicciones OOS de cada paquete. La inferencia vigente la hace la API (`rol_api`), no la publicación | Corrección del documento |
+| — | Paquete de modelo (M2; aprobada por Rosa el 29/10/2026) | `version_modelo.ruta_artefacto` apunta al manifiesto `modelos/<codigo_paquete>/manifest.json` y `sha256_artefacto` es su SHA-256. El manifiesto declara el tipo de predictor, horizontes, variables, nivel del intervalo y el SHA-256 de cada archivo; la inferencia verifica todos al cargar (409 `artefacto_invalido`). Sin columnas nuevas | Extensión (uso) |
 | — | Versión del contrato (C5) | `info.version` del OpenAPI = versión del contrato (`1.0.0`, semver), cabecera `X-Version-Contrato` en todas las respuestas; `version_api` de `/salud` sigue siendo la versión de la aplicación | Extensión |
 | — | Geometría del mapa (C4) | El contrato admite `Point`, `Polygon` y `MultiPolygon`; hoy se sirven centroides (`Point`) | Conforme al documento |
 
@@ -233,6 +236,12 @@ Extensiones del esquema (sección 5, Tablas 9–14):
 7. `version_modelo.reproducibilidad` (jsonb, opcional): device, versión de XGBoost, plataforma,
    partición temporal y fechas de entrenamiento.
 8. Parámetro `seleccion_experimental` en `parametro_sistema` (mientras ningún modelo cumpla los umbrales).
+8b. Contrato v1 (migraciones `0004_v1` y `0005_v1`):
+    - parámetros `horizonte_por_defecto` (`{"horizonte": 4}`) y `nivel_intervalo_casos` (`{"nivel": 0.80}`);
+    - columnas anulables `prediccion.casos_intervalo_inferior` y `casos_intervalo_superior` (`numeric(10,2)`), con el CHECK
+      `ck_prediccion_intervalo_coherente`;
+    - `observacion_semanal.hum_rel_media_pct` en `double precision` (corrección: `numeric(5,2)` redondeaba la humedad que usa A3);
+    - `GRANT INSERT, UPDATE ON prediccion TO rol_pipeline` (predicciones OOS de cada paquete).
 
 API (Tabla 2):
 9. Endpoints extra: GET `/distritos/{ubigeo}`, `/observaciones`, `/alertas/{id}`, `/modelos/{id}`,
@@ -250,10 +259,25 @@ Operación y datos:
     `ejecucion.detalle`); persistencia calculada al vuelo, sin versión propia.
 15. Modo demo experimental: versiones `candidata` servidas como experimentales hasta que una cumpla
     los umbrales (desviación temporal).
+16. Paquete de modelo: `version_modelo.ruta_artefacto` apunta a `modelos/<codigo_paquete>/manifest.json`
+    y `sha256_artefacto` es su hash; varias filas (una por tarea y horizonte) comparten el paquete y se
+    activan por horizonte en pareja (§8).
 
-## 8. Propuesta pendiente (no implementada): modelo multi-salida E3·S4_s2
+## 8. Modelo multi-salida: varias filas por paquete (aprobada, adaptada a E3·S4_s3)
 
-Origen: encargo de arquitectura multi-horizonte (`research/04_horizon_architecture/docs/arquitectura_horizontes.md`, fase 5). Requiere aprobación de Rosa antes de implementarse.
+Origen: encargo de arquitectura multi-horizonte (`research/04_horizon_architecture/docs/arquitectura_horizontes.md`, fase 5), propuesta para E3·S4_s2. **Aprobada por Rosa el 29/10/2026 (decisión M3 de `api_v1_decisiones.md`) y adaptada a la v2 (E3·S4_s3).** La fase 3 del encargo de la API v1 implementa el encaje genérico:
+- **Implementado en la fase 3** para todo paquete:
+  - una fila de `version_modelo` por `(tarea, horizonte)` que apunta al mismo manifiesto;
+  - la activación por horizonte y en pareja;
+  - la regla de brote (`parametro_sistema.regla_brote`) como entrada disponible para los predictores (`ServingInputs.outbreak_rule`).
+- **Para la fase 4** (servir la v2):
+  - el cálculo en memoria del umbral de brote de las semanas futuras, dentro del predictor v2;
+  - `algoritmo = 'xgboost_multisalida_bn'`, `grupo_artefacto` = código del paquete y `umbral_probabilidad = 0,500`;
+  - importancias SHAP por horizonte calculadas al publicar (no en la API);
+  - códigos `v2-clf-h2-1`.
+- La v0 también es un paquete (cuatro boosters), con sus cuatro filas sobre el mismo manifiesto.
+
+La tabla siguiente es la propuesta original:
 
 | Tema | Propuesta | Tipo |
 |---|---|---|
