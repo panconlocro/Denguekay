@@ -1,7 +1,20 @@
 {
   "version": "v2",
-  "estado": "vigente",
-  "estado_detalle": "Configuración congelada vigente para la evaluación prospectiva de 2026. Todavía no se sirve: integrarla en serving es un encargo aparte.",
+  "estado": "servida",
+  "estado_detalle": "Configuración congelada vigente para la evaluación prospectiva de 2026, servida desde la fase 4 de la API v1 como selección experimental (experimental: true: no cumple la HU0007-4) con h=2, 3 y 4.",
+  "servicio": {
+    "predictor": "v2_e3_s4",
+    "modulo": "denguekay.serving.predictors.v2_e3_s4",
+    "paquete": "modelos/<codigo_paquete>/manifest.json con booster.json (regresor multisalida), dispersion.json (α por horizonte) y platt.json (a y b por horizonte)",
+    "versiones": "6 filas de version_modelo (clasificación y regresión × h=2, 3 y 4), códigos v2-clf-h2-1 … v2-reg-h4-1, algoritmo xgboost_multisalida_bn, umbral_probabilidad 0,50 en clasificación",
+    "ajuste": "fit_e3 con todos los orígenes cuyos tres objetivos cerraron al corte de los datos (semilla 17)",
+    "probabilidad": "P(casos ≥ k) NB2 con la α dentro de la muestra del ajuste, k = max(⌊umbral⌋ + 1, 2) con el umbral calculado desde los casos de la BD, y Platt ajustado con las OOS de las temporadas cerradas 2021–2024",
+    "intervalo": "intervalo central de la NB2(μ, α) al 0,80 (cuantiles 0,10 y 0,90); no está calibrado: Platt solo corrige la probabilidad",
+    "importancias": "|SHAP| medio por horizonte de la salida correspondiente, calculado al publicar",
+    "oos": "predicciones OOS del protocolo por bloques (temporadas 2022–2024 y calendario 2025), calibradas con Platt cronológico; reemplazan a las de la v0 en la serie (M6)",
+    "sin_historia_previa": "los orígenes cuyo t+2 cae en 2021 o antes necesitan casos anteriores a 2017 (umbral o B3) y quedan no disponibles con su motivo (M4)",
+    "paridad": "tests/serving/test_v2_parity.py: variables BD = gold + B3 (exacto salvo la precipitación de A3, ≤ 1e-9; diferencia medida 5,7e-14) y serving del modelo congelado del bloque calendario_2025 = frozen_configs.predict + Platt (≤ 1e-9)"
+  },
   "tag": "model/v2",
   "commit": "424a148",
   "fecha_congelamiento": "2026-10-27",

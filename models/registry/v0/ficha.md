@@ -1,8 +1,8 @@
-# V0 · XGBoost directo por horizonte (servida hoy)
+# V0 · XGBoost directo por horizonte (registrada; se sirvió hasta la fase 4)
 
 | Campo | Valor |
 |---|---|
-| Estado | **Servida** por el backend, como `experimental: true` |
+| Estado | **Registrada.** Se sirvió como `experimental: true` hasta la fase 4 de la API v1; desde entonces se sirve la [v2](../v2/ficha.md) y sus OOS reemplazan a las de la v0 en la serie (M6) |
 | Tag | `model/v0` (`3d59090`) |
 | Modelo | E1·S1: un XGBoost por horizonte y tarea, h=2 y h=4 (h=3 responde 409) |
 | Predictor | `v0_compact_xgb` (`denguekay.serving.predictors`), desde la fase 3 de la API v1: un paquete con los cuatro boosters (`modelos/<codigo_paquete>/manifest.json`); las predicciones son idénticas a las de antes del motor enchufable (`tests/serving/test_v0_parity.py`) |
@@ -12,8 +12,9 @@
 
 ## Configuración
 
-No es una configuración congelada de `denguekay.model.frozen_configs`. Las variantes se leen de
-`configs/config.yaml` (`serving.paquete.opciones.variantes`) y los hiperparámetros son `denguekay.model.train.BASE_PARAMS`
+No es una configuración congelada de `denguekay.model.frozen_configs`. Las variantes son las opciones de su tipo
+de paquete (`serving.paquete.opciones.variantes` con `tipo: v0_compact_xgb` en `configs/config.yaml`, que desde la
+fase 4 publica la v2) y los hiperparámetros son `denguekay.model.train.BASE_PARAMS`
 (160 árboles, profundidad 3, learning rate 0,05, semilla 17):
 
 | Tarea | Variante | Columnas (h=4; en h=2 los rezagos son 2 y 3) |

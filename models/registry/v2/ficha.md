@@ -1,8 +1,8 @@
-# V2 · C3+A3·E3·S4_s3 (vigente)
+# V2 · C3+A3·E3·S4_s3 (vigente y servida)
 
 | Campo | Valor |
 |---|---|
-| Estado | **Vigente**: configuración congelada para la evaluación prospectiva de 2026. Todavía no se sirve (integrarla en serving es un encargo aparte) |
+| Estado | **Vigente y servida**: configuración congelada para la evaluación prospectiva de 2026; desde la fase 4 de la API v1 se sirve como selección experimental (`experimental: true`), con h=2, 3 y 4 |
 | Tag | `model/v2` (`424a148`), congelada el 2026-10-27 |
 | Configuración | `denguekay.model.frozen_configs.CONFIG_2026` (antes `CONFIGURACION_2026`); se carga con `denguekay.model.registry.configuration("v2")` |
 | Reemplaza a | [V1](../v1/ficha.md) |
@@ -15,6 +15,30 @@ La V1 más A3: `hum_rel_media_media5_h2` y `precip_total_mm_media5_h2` (clima de
 el origen), 11 columnas. Se excluyen los 65 orígenes con nulos de arranque de A3 (semana del 2017-02-05). Todo
 lo demás queda idéntico a la V1: E3 · S4_s3 · α dentro de la muestra · hiperparámetros heredados · Platt ·
 p ≥ 0,50 · semilla 17.
+
+## Servicio
+
+Predictor `v2_e3_s4` (`denguekay.serving.predictors`), desde la fase 4 de la API v1 (`docs/backend/api_v1_decisiones.md`):
+
+- **Paquete:** `modelos/<codigo_paquete>/manifest.json` con `booster.json` (el regresor multisalida),
+  `dispersion.json` (α por horizonte) y `platt.json` (a y b por horizonte). Seis versiones (clasificación y
+  regresión × h=2, 3 y 4) que apuntan al mismo manifiesto: `v2-clf-h2-1` … `v2-reg-h4-1`, algoritmo
+  `xgboost_multisalida_bn`, `umbral_probabilidad` 0,50.
+- **Ajuste:** `fit_e3` con todos los orígenes cuyos tres objetivos cerraron al corte de los datos (semilla 17).
+  La publicación recalcula el protocolo por bloques y comprueba la huella de comportamiento cuando gold h=2 es el
+  congelado.
+- **Probabilidad:** NB2 con la α dentro de la muestra, `k` calculado desde los casos de la BD (no desde la columna
+  redondeada) y Platt con las OOS de las temporadas cerradas 2021–2024, guardado como coeficientes.
+- **Intervalo de casos:** intervalo central de la NB2(μ, α) al 0,80 (cuantiles 0,10 y 0,90). **No está
+  calibrado:** Platt corrige la probabilidad, no la distribución de los casos.
+- **Importancias:** |SHAP| medio por horizonte, calculado al publicar.
+- **OOS:** las del protocolo (temporadas 2022–2024 y calendario 2025), calibradas; reemplazan a las de la v0 en
+  la serie (M6).
+- **Sin historia previa a 2017** (M4): los orígenes cuyo t+2 cae en 2021 o antes quedan no disponibles con su motivo.
+- **Paridad** (`tests/serving/test_v2_parity.py`, fixtures en `tests/fixtures/v2_serving/`): el vector de la BD es
+  igual al de gold + B3, exacto salvo la precipitación de A3 (≤ 1e-9; diferencia medida 5,7e-14, porque la BD la
+  guarda en `numeric(7,2)`), y el modelo congelado del bloque `calendario_2025` servido desde la BD da las mismas
+  predicciones que `frozen_configs.predict` + Platt (≤ 1e-9; medido: 0).
 
 ## Huellas
 

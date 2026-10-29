@@ -475,6 +475,55 @@ implementa.
   lo mismo a la paridad de la v2: modelos congelados para la paridad del serving y reentrenamiento clavado
   al entorno de grabación.
 
+### Precisiones de la fase 4 (29/10/2026, aprobadas por Rosa)
+
+- **Platt del paquete de servicio.** Se ajusta con las OOS de las temporadas cerradas 2021–2024, como dice la
+  configuración congelada («temporadas previas cerradas»), y se guarda como coeficientes `a, b` por horizonte
+  (`platt.json`). Se aplica con `expit(a · logit(p) + b)`; un test lo compara con `LogisticRegression.predict_proba`.
+- **Intervalo de casos.** Es el intervalo central de la NB2(μ, α) de cada horizonte: cuantiles 0,10 y 0,90, al nivel
+  0,80 de `nivel_intervalo_casos`. **No está calibrado:** Platt corrige la probabilidad, no la distribución de los
+  casos. Así consta en `contrato_api.md`, `guia_frontend.md` y la ficha de la v2.
+- **P4. Selección experimental.** No se fija con una migración: qué modelo se sirve es un dato operativo, y una
+  migración por modelo contradiría el objetivo del encargo. `load_data` deja de sembrarla. La fija
+  `publish --seleccionar-experimental` para los horizontes del paquete, en la misma transacción que lo registra.
+  La migración `0006_v1` es solo de permisos y no trae datos de modelos:
+  - crea vacía la fila `seleccion_experimental` si falta;
+  - da a `rol_pipeline` `UPDATE (valor, fecha_actualizacion)` en `parametro_sistema`;
+  - con RLS, limita esa actualización a la fila `clave = 'seleccion_experimental'`.
+
+  Sin selección para un horizonte, la API responde como cuando no hay modelo. Los tests de la v0 fijan su
+  selección en la BD temporal (`serving_support.fijar_seleccion`), y los fixtures del smoke no se tocaron.
+- **Contrato 1.1.0.** Cambian solo dos textos, el summary de `/modelos/{identificador}/variables` y la descripción
+  de `VariablesRespuesta`, que quedan neutros. El método de cada versión va en `nota` (gain en la v0, SHAP en la
+  v2). `openapi_v1.json` se regeneró a propósito con `export_openapi --contrato`; su diff solo toca esos dos textos
+  y `info.version`.
+- **Fixtures de la v2.** `tests/fixtures/v2_serving/` guarda datos reales y agregados de 6 distritos: 200101, 200201
+  y 200502 (los de `tests/fixtures/backend`), 200204 (nunca tuvo casos), 200104 y 200601 (con brote en 2023). Los
+  resultados del modelo se grabaron una vez desde `ab8503b`, en CPU con `n_jobs=2`
+  (`python tests/v2_support.py record <worktree>`).
+- **Precipitación de A3 (aprobado por Rosa).** La BD guarda `precip_total_mm` en `numeric(7,2)`, y el esquema no
+  cambia. Por eso la media de 5 semanas que se calcula desde la BD difiere de gold en hasta **5,7e-14** (medido
+  con los 65 distritos), sin cambiar ninguna predicción: con CPU y `n_jobs=2`, las 10 140 filas del bloque
+  `calendario_2025` dan diferencia 0. En la paridad de variables solo `precip_total_mm_media5_h2` usa la tolerancia
+  de 1e-9; las otras 10 columnas y el umbral son exactos.
+- **Precisión de M4.** M4 decía que la historia previa a 2017 solo hacía falta para las temporadas 2017–2021. No es
+  así: el umbral de una semana objetivo de 2021 usa 2016–2020, y esas semanas (septiembre a diciembre) son parte de
+  la temporada 2022. Los orígenes cuyo t+2 cae en 2021 o antes (cierre anterior al 25/12/2021) quedan no
+  disponibles con el motivo «El origen necesita casos anteriores a 2017, que no están en la base de datos». La
+  paridad de variables empieza en el primer objetivo de 2022. Para el corte vigente no cambia nada.
+- **Cambios en `denguekay.model`, `evaluation` y `features`** (la única intervención permitida en esta fase: mover
+  código sin cambiar lógica):
+  - `model/probabilistic_output.py`: `fit_e3` (el ajuste de un bloque, que `predict_e3` ahora llama), `E3Fit`,
+    `e3_parameters` y `e3_margin`;
+  - `evaluation/onsets.py`: `own_history` (semanas desde el último caso y pendiente de 4 semanas), que
+    `weekly_status` ahora llama;
+  - `evaluation/protocol.py`: `platt_logit` y `fit_platt`, que `fit_calibrator` ahora llama;
+  - `features/outbreak_label.py`: `future_outbreak_threshold` acepta una historia vacía o `None` (la BD empieza
+    en 2017). Si un objetivo necesita años anteriores, falla igual que antes con «Faltan años de historia».
+
+  `tests/test_equivalence.py` (V1 y V2 bit a bit) se corrió completo en la PC de Rosa, en CPU con `n_jobs=2` y en
+  CUDA, con todas las extracciones; el resultado está en el resumen de la fase y en el PR.
+
 ## 4. Pendiente fuera de este encargo
 
 - **Los 8 distritos sin historia antes de 2017 (§1.9.3)** (`200206`, `200208`, `200303`, `200305`, `200307`,
