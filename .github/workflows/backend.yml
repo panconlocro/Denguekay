@@ -1,7 +1,9 @@
 name: Calidad del backend
 
 on:
+  # Push solo a las ramas permanentes (ADR 0002); las demás ramas se prueban en su PR.
   push:
+    branches: [main, develop]
   pull_request:
   workflow_dispatch:
 
