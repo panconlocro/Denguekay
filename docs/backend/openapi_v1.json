@@ -1,0 +1,4548 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Denguekay: pronóstico distrital de dengue",
+    "description": "API del documento OE2 (Tabla 2) sobre datos agregados de Piura. Contrato v1, independiente del modelo: los horizontes disponibles salen de la BD (GET /configuracion). Las predicciones de versiones que no cumplen los umbrales se marcan experimental: true (demo; desviación temporal documentada). Cada respuesta lleva la versión del contrato en X-Version-Contrato.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/salud": {
+      "get": {
+        "tags": [
+          "Salud y distritos"
+        ],
+        "summary": "Comprobar API y conexión a la base de datos (HU0016)",
+        "description": "Consulta la BD en cada solicitud y reporta la última ejecución exitosa.",
+        "operationId": "salud_api_v1_salud_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaludRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/configuracion": {
+      "get": {
+        "tags": [
+          "Salud y distritos",
+          "Configuración"
+        ],
+        "summary": "Horizontes disponibles, horizonte por defecto, cortes y leyenda (extensión)",
+        "description": "Los horizontes disponibles salen de las versiones en uso de la BD; nada queda en código duro en el frontend.",
+        "operationId": "configuracion_api_v1_configuracion_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracionRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/distritos": {
+      "get": {
+        "tags": [
+          "Salud y distritos"
+        ],
+        "summary": "Listar distritos de Piura",
+        "description": "Catálogo con provincia, centroide y población censal 2017; ubigeo como texto.",
+        "operationId": "distritos_api_v1_distritos_get",
+        "parameters": [
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Página, comenzando en uno",
+              "default": 1,
+              "title": "Pagina"
+            },
+            "description": "Página, comenzando en uno"
+          },
+          {
+            "name": "tamano_pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Cantidad máxima de elementos por página",
+              "default": 65,
+              "title": "Tamano Pagina"
+            },
+            "description": "Cantidad máxima de elementos por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pagina_DistritoRespuesta_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/distritos/{ubigeo}": {
+      "get": {
+        "tags": [
+          "Salud y distritos"
+        ],
+        "summary": "Consultar un distrito (extensión)",
+        "description": "Responde 404 si el código de seis dígitos no pertenece al catálogo.",
+        "operationId": "distrito_api_v1_distritos__ubigeo__get",
+        "parameters": [
+          {
+            "name": "ubigeo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{6}$",
+              "description": "Código distrital de seis dígitos, conservado como texto",
+              "title": "Ubigeo"
+            },
+            "description": "Código distrital de seis dígitos como texto"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DistritoRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/observaciones": {
+      "get": {
+        "tags": [
+          "Datos semanales"
+        ],
+        "summary": "Consultar casos y clima observados (extensión)",
+        "description": "Los ceros se conservan; una ausencia es null y su cobertura se informa.",
+        "operationId": "observaciones_api_v1_observaciones_get",
+        "parameters": [
+          {
+            "name": "ubigeo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]{6}$",
+                  "description": "Código distrital de seis dígitos, conservado como texto"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ubigeo"
+            },
+            "description": "Código distrital de seis dígitos como texto"
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inicio inclusivo (fecha de inicio de semana), AAAA-MM-DD",
+              "title": "Desde"
+            },
+            "description": "Inicio inclusivo (fecha de inicio de semana), AAAA-MM-DD"
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin inclusivo (fecha de inicio de semana), AAAA-MM-DD",
+              "title": "Hasta"
+            },
+            "description": "Fin inclusivo (fecha de inicio de semana), AAAA-MM-DD"
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Página, comenzando en uno",
+              "default": 1,
+              "title": "Pagina"
+            },
+            "description": "Página, comenzando en uno"
+          },
+          {
+            "name": "tamano_pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Cantidad máxima de elementos por página",
+              "default": 50,
+              "title": "Tamano Pagina"
+            },
+            "description": "Cantidad máxima de elementos por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pagina_ObservacionRespuesta_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/predicciones": {
+      "get": {
+        "tags": [
+          "Datos semanales"
+        ],
+        "summary": "Predicciones por distrito para un horizonte y semana de corte (HU0010, HU0011)",
+        "description": "Sin ``corte`` devuelve el corte vigente. Un horizonte sin modelo responde disponible=false («sin modelo para h=N»).",
+        "operationId": "predicciones_api_v1_predicciones_get",
+        "parameters": [
+          {
+            "name": "horizonte",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 4,
+              "minimum": 2,
+              "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false",
+              "title": "Horizonte"
+            },
+            "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
+          },
+          {
+            "name": "ubigeo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]{6}$",
+                  "description": "Código distrital de seis dígitos, conservado como texto"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ubigeo"
+            },
+            "description": "Código distrital de seis dígitos como texto"
+          },
+          {
+            "name": "corte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 209953,
+                  "minimum": 201701
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Semana de corte anio*100+semana; por defecto, el corte vigente",
+              "title": "Corte"
+            },
+            "description": "Semana de corte anio*100+semana; por defecto, el corte vigente"
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Página, comenzando en uno",
+              "default": 1,
+              "title": "Pagina"
+            },
+            "description": "Página, comenzando en uno"
+          },
+          {
+            "name": "tamano_pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Cantidad máxima de elementos por página",
+              "default": 65,
+              "title": "Tamano Pagina"
+            },
+            "description": "Cantidad máxima de elementos por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pagina_PrediccionRespuesta_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/series/{ubigeo}": {
+      "get": {
+        "tags": [
+          "Datos semanales"
+        ],
+        "summary": "Serie semanal de casos observados y predicciones del distrito (HU0013)",
+        "description": "Todas las semanas del intervalo (por defecto 26 hasta la última predicción), con null en los huecos.",
+        "operationId": "series_api_v1_series__ubigeo__get",
+        "parameters": [
+          {
+            "name": "ubigeo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{6}$",
+              "description": "Código distrital de seis dígitos, conservado como texto",
+              "title": "Ubigeo"
+            },
+            "description": "Código distrital de seis dígitos como texto"
+          },
+          {
+            "name": "horizonte",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 4,
+              "minimum": 2,
+              "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false",
+              "title": "Horizonte"
+            },
+            "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inicio inclusivo (fecha de inicio de semana), AAAA-MM-DD",
+              "title": "Desde"
+            },
+            "description": "Inicio inclusivo (fecha de inicio de semana), AAAA-MM-DD"
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin inclusivo (fecha de inicio de semana), AAAA-MM-DD",
+              "title": "Hasta"
+            },
+            "description": "Fin inclusivo (fecha de inicio de semana), AAAA-MM-DD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeriesRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tablero/resumen": {
+      "get": {
+        "tags": [
+          "Vigilancia"
+        ],
+        "summary": "Resumen del corte vigente (HU0012)",
+        "description": "Niveles de riesgo, alertas activas y casos; la suma regional es null si falta algún distrito.",
+        "operationId": "tablero_api_v1_tablero_resumen_get",
+        "parameters": [
+          {
+            "name": "horizonte",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 4,
+              "minimum": 2,
+              "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false",
+              "title": "Horizonte"
+            },
+            "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TableroRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mapa-riesgo": {
+      "get": {
+        "tags": [
+          "Vigilancia"
+        ],
+        "summary": "Mapa de riesgo GeoJSON (HU0014)",
+        "description": "FeatureCollection con una geometría por distrito (hoy Point, el centroide) y su nivel de riesgo o Sin datos.",
+        "operationId": "mapa_riesgo_api_v1_mapa_riesgo_get",
+        "parameters": [
+          {
+            "name": "horizonte",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 4,
+              "minimum": 2,
+              "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false",
+              "title": "Horizonte"
+            },
+            "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapaRiesgoRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/alertas": {
+      "get": {
+        "tags": [
+          "Vigilancia"
+        ],
+        "summary": "Listar alertas (HU0015)",
+        "description": "Filtros por horizonte, distrito y nivel (Tabla 2); ``estado`` es un filtro extra.",
+        "operationId": "alertas_api_v1_alertas_get",
+        "parameters": [
+          {
+            "name": "horizonte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 4,
+                  "minimum": 2,
+                  "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Horizonte"
+            }
+          },
+          {
+            "name": "ubigeo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9]{6}$",
+                  "description": "Código distrital de seis dígitos, conservado como texto"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Ubigeo"
+            },
+            "description": "Código distrital de seis dígitos como texto"
+          },
+          {
+            "name": "nivel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "alto",
+                    "muy_alto"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Nivel"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "activa",
+                    "retirada"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Estado"
+            },
+            "description": "Estado de alerta: activa o retirada"
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Página, comenzando en uno",
+              "default": 1,
+              "title": "Pagina"
+            },
+            "description": "Página, comenzando en uno"
+          },
+          {
+            "name": "tamano_pagina",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Cantidad máxima de elementos por página",
+              "default": 50,
+              "title": "Tamano Pagina"
+            },
+            "description": "Cantidad máxima de elementos por página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pagina_AlertaRespuesta_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/alertas/{identificador}": {
+      "get": {
+        "tags": [
+          "Vigilancia"
+        ],
+        "summary": "Consultar una alerta (extensión)",
+        "description": "Incluye la predicción que la sustenta; conserva estado retirado y motivo.",
+        "operationId": "alerta_api_v1_alertas__identificador__get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Identificador positivo del registro guardado en la BD",
+              "title": "Identificador"
+            },
+            "description": "Identificador positivo del registro guardado en la BD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlertaRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modelos/activo": {
+      "get": {
+        "tags": [
+          "Modelos"
+        ],
+        "summary": "Versiones en uso por horizonte (HU0008)",
+        "description": "Versión activa por tarea; sin activa, la selección experimental marcada ``experimental: true``.",
+        "operationId": "modelos_activos_api_v1_modelos_activo_get",
+        "parameters": [
+          {
+            "name": "horizonte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 4,
+                  "minimum": 2,
+                  "description": "Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Horizonte"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelosActivosRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modelos/{identificador}": {
+      "get": {
+        "tags": [
+          "Modelos"
+        ],
+        "summary": "Detalle de una versión (extensión)",
+        "description": "Variables, hiperparámetros, métricas por bloque, hashes y reproducibilidad.",
+        "operationId": "modelo_api_v1_modelos__identificador__get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Identificador positivo del registro guardado en la BD",
+              "title": "Identificador"
+            },
+            "description": "Identificador positivo del registro guardado en la BD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModeloDetalle"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modelos/{identificador}/variables": {
+      "get": {
+        "tags": [
+          "Modelos"
+        ],
+        "summary": "Importancias gain de una versión (extensión, HU0008-4)",
+        "description": "Las importancias no implican causalidad; su ausencia se informa sin rellenar con ceros.",
+        "operationId": "variables_api_v1_modelos__identificador__variables_get",
+        "parameters": [
+          {
+            "name": "identificador",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Identificador positivo del registro guardado en la BD",
+              "title": "Identificador"
+            },
+            "description": "Identificador positivo del registro guardado en la BD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VariablesRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/inferencias": {
+      "post": {
+        "tags": [
+          "Administración"
+        ],
+        "summary": "Ejecutar la inferencia de una semana de corte (HU0009)",
+        "description": "Reconstruye los vectores desde la BD, aplica la versión en uso y hace UPSERT de predicciones y alertas.\n\nNo entrena. Un horizonte sin modelo, un corte sin observaciones o un artefacto alterado responden 409.",
+        "operationId": "inferencias_api_v1_admin_inferencias_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudInferencia"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InferenciaRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/modelos/{version}/activar": {
+      "post": {
+        "tags": [
+          "Administración"
+        ],
+        "summary": "Activar una versión que cumple los umbrales (HU0009)",
+        "description": "Archiva la versión activa de la misma tarea y horizonte, en una transacción auditada.\n\nUna versión con cumple_umbrales = false no se activa (409): así lo exige el DDL.",
+        "operationId": "activar_api_v1_admin_modelos__version__activar_post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Identificador positivo del registro guardado en la BD",
+              "title": "Version"
+            },
+            "description": "Identificador positivo del registro guardado en la BD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivacionRespuesta"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Clave de escritura ausente o inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Solicitud no atendible con los datos o modelos (horizonte sin modelo, artefacto, umbrales)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parámetro inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de datos, parámetros o escritura no disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error interno controlado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorRespuesta"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActivacionRespuesta": {
+        "properties": {
+          "id_ejecucion": {
+            "type": "integer",
+            "title": "Id Ejecucion"
+          },
+          "activada": {
+            "$ref": "#/components/schemas/ModeloRespuesta"
+          },
+          "archivada": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModeloRespuesta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nota": {
+            "type": "string",
+            "title": "Nota"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_ejecucion",
+          "activada",
+          "archivada",
+          "nota"
+        ],
+        "title": "ActivacionRespuesta",
+        "description": "Activación auditada como ejecución de mantenimiento"
+      },
+      "AlertaRespuesta": {
+        "properties": {
+          "id_alerta": {
+            "type": "integer",
+            "title": "Id Alerta"
+          },
+          "ubigeo": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Ubigeo"
+          },
+          "distrito": {
+            "type": "string",
+            "title": "Distrito"
+          },
+          "horizonte": {
+            "type": "integer",
+            "title": "Horizonte"
+          },
+          "nivel": {
+            "type": "string",
+            "enum": [
+              "alto",
+              "muy_alto"
+            ],
+            "title": "Nivel"
+          },
+          "nivel_etiqueta": {
+            "type": "string",
+            "title": "Nivel Etiqueta"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "activa",
+              "retirada"
+            ],
+            "title": "Estado"
+          },
+          "cambio": {
+            "type": "string",
+            "enum": [
+              "nueva",
+              "se_mantiene",
+              "sube_nivel",
+              "baja_nivel"
+            ],
+            "title": "Cambio"
+          },
+          "fecha_generacion": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Generacion"
+          },
+          "fecha_retiro": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Retiro"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "prediccion": {
+            "$ref": "#/components/schemas/PrediccionRespuesta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_alerta",
+          "ubigeo",
+          "distrito",
+          "horizonte",
+          "nivel",
+          "nivel_etiqueta",
+          "estado",
+          "cambio",
+          "fecha_generacion",
+          "fecha_retiro",
+          "motivo",
+          "experimental",
+          "prediccion"
+        ],
+        "title": "AlertaRespuesta",
+        "description": "Alerta alto/muy_alto con cambio respecto del corte anterior y su predicción"
+      },
+      "ConfiguracionRespuesta": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "version_contrato": {
+            "type": "string",
+            "title": "Version Contrato"
+          },
+          "horizontes_disponibles": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Horizontes Disponibles",
+            "description": "Horizontes con un modelo en uso"
+          },
+          "horizonte_por_defecto": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 2.0,
+            "title": "Horizonte Por Defecto",
+            "description": "parametro_sistema.horizonte_por_defecto"
+          },
+          "horizontes": {
+            "items": {
+              "$ref": "#/components/schemas/HorizonteConfiguracion"
+            },
+            "type": "array",
+            "title": "Horizontes"
+          },
+          "cortes_riesgo": {
+            "$ref": "#/components/schemas/CortesRiesgo"
+          },
+          "niveles": {
+            "items": {
+              "$ref": "#/components/schemas/NivelRiesgo"
+            },
+            "type": "array",
+            "title": "Niveles"
+          },
+          "leyenda": {
+            "items": {
+              "$ref": "#/components/schemas/ElementoLeyenda"
+            },
+            "type": "array",
+            "title": "Leyenda"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "nota": {
+            "type": "string",
+            "title": "Nota"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "version_contrato",
+          "horizontes_disponibles",
+          "horizonte_por_defecto",
+          "horizontes",
+          "cortes_riesgo",
+          "niveles",
+          "leyenda",
+          "experimental",
+          "nota"
+        ],
+        "title": "ConfiguracionRespuesta",
+        "description": "Todo lo que el frontend necesita para no tener valores en código duro."
+      },
+      "CortesRiesgo": {
+        "properties": {
+          "medio": {
+            "type": "number",
+            "exclusiveMaximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Medio"
+          },
+          "alto": {
+            "type": "number",
+            "exclusiveMaximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Alto"
+          },
+          "muy_alto": {
+            "type": "number",
+            "exclusiveMaximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Muy Alto"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "medio",
+          "alto",
+          "muy_alto"
+        ],
+        "title": "CortesRiesgo"
+      },
+      "DistritoRespuesta": {
+        "properties": {
+          "ubigeo": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Ubigeo",
+            "description": "Código distrital de seis dígitos como texto"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "ubigeo_provincia": {
+            "type": "string",
+            "pattern": "^[0-9]{4}$",
+            "title": "Ubigeo Provincia"
+          },
+          "provincia": {
+            "type": "string",
+            "title": "Provincia"
+          },
+          "latitud": {
+            "type": "number",
+            "title": "Latitud"
+          },
+          "longitud": {
+            "type": "number",
+            "title": "Longitud"
+          },
+          "poblacion_censo_2017": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Poblacion Censo 2017"
+          },
+          "activo": {
+            "type": "boolean",
+            "title": "Activo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ubigeo",
+          "nombre",
+          "ubigeo_provincia",
+          "provincia",
+          "latitud",
+          "longitud",
+          "poblacion_censo_2017",
+          "activo"
+        ],
+        "title": "DistritoRespuesta",
+        "description": "Catálogo distrital real con provincia, centroide y población censal 2017"
+      },
+      "ElementoLeyenda": {
+        "properties": {
+          "nivel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "bajo",
+                  "medio",
+                  "alto",
+                  "muy_alto"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel",
+            "description": "null = Sin datos"
+          },
+          "etiqueta": {
+            "type": "string",
+            "title": "Etiqueta"
+          },
+          "desde": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Desde",
+            "description": "Probabilidad mínima del nivel (incluida)"
+          },
+          "hasta": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hasta",
+            "description": "Probabilidad máxima del nivel (excluida, salvo 1)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nivel",
+          "etiqueta",
+          "desde",
+          "hasta"
+        ],
+        "title": "ElementoLeyenda",
+        "description": "Nivel de riesgo con su rango de probabilidad, o «Sin datos»"
+      },
+      "ErrorRespuesta": {
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "mensaje": {
+            "type": "string",
+            "title": "Mensaje"
+          },
+          "detalle": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detalle"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "codigo",
+          "mensaje"
+        ],
+        "title": "ErrorRespuesta",
+        "description": "Error homogéneo, sin credenciales ni SQL interno."
+      },
+      "FeatureDistrito": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Feature",
+            "title": "Type",
+            "default": "Feature"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Id",
+            "description": "ubigeo del distrito"
+          },
+          "geometry": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GeometriaPunto"
+              },
+              {
+                "$ref": "#/components/schemas/GeometriaPoligono"
+              },
+              {
+                "$ref": "#/components/schemas/GeometriaMultiPoligono"
+              }
+            ],
+            "title": "Geometry",
+            "description": "Hoy Point (centroide); Polygon o MultiPolygon cuando haya límites con licencia",
+            "discriminator": {
+              "propertyName": "type",
+              "mapping": {
+                "MultiPolygon": "#/components/schemas/GeometriaMultiPoligono",
+                "Point": "#/components/schemas/GeometriaPunto",
+                "Polygon": "#/components/schemas/GeometriaPoligono"
+              }
+            }
+          },
+          "properties": {
+            "$ref": "#/components/schemas/PropiedadesDistrito"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "geometry",
+          "properties"
+        ],
+        "title": "FeatureDistrito",
+        "description": "Feature GeoJSON de un distrito: geometría Point, Polygon o MultiPolygon y su riesgo"
+      },
+      "GeometriaMultiPoligono": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "MultiPolygon",
+            "title": "Type"
+          },
+          "coordinates": {
+            "items": {
+              "items": {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array",
+                  "maxItems": 3,
+                  "minItems": 2,
+                  "description": "[longitud, latitud] en grados (WGS 84)"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "GeometriaMultiPoligono"
+      },
+      "GeometriaPoligono": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Polygon",
+            "title": "Type"
+          },
+          "coordinates": {
+            "items": {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array",
+                "maxItems": 3,
+                "minItems": 2,
+                "description": "[longitud, latitud] en grados (WGS 84)"
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Coordinates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "GeometriaPoligono"
+      },
+      "GeometriaPunto": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Point",
+            "title": "Type"
+          },
+          "coordinates": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 2,
+            "title": "Coordinates",
+            "description": "[longitud, latitud] en grados (WGS 84)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "coordinates"
+        ],
+        "title": "GeometriaPunto"
+      },
+      "HorizonteConfiguracion": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "horizonte": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 2.0,
+            "title": "Horizonte"
+          },
+          "semana_corte_vigente": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SemanaRespuesta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Último corte publicado; null si no hay"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental",
+            "description": "El modelo en uso para el horizonte no cumple los umbrales"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "horizonte",
+          "semana_corte_vigente",
+          "experimental"
+        ],
+        "title": "HorizonteConfiguracion",
+        "description": "Disponibilidad de un horizonte según los modelos en uso de la BD"
+      },
+      "Indicador": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "valor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valor"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "valor"
+        ],
+        "title": "Indicador"
+      },
+      "InferenciaRespuesta": {
+        "properties": {
+          "id_ejecucion": {
+            "type": "integer",
+            "title": "Id Ejecucion"
+          },
+          "horizonte": {
+            "type": "integer",
+            "title": "Horizonte"
+          },
+          "id_semana_corte": {
+            "type": "integer",
+            "title": "Id Semana Corte"
+          },
+          "id_semana_objetivo": {
+            "type": "integer",
+            "title": "Id Semana Objetivo"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "seleccion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seleccion"
+          },
+          "versiones": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Versiones"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo"
+          },
+          "predicciones": {
+            "type": "integer",
+            "title": "Predicciones"
+          },
+          "disponibles": {
+            "type": "integer",
+            "title": "Disponibles"
+          },
+          "no_disponibles": {
+            "type": "integer",
+            "title": "No Disponibles"
+          },
+          "alertas": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Alertas"
+          },
+          "duracion_segundos": {
+            "type": "number",
+            "title": "Duracion Segundos"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_ejecucion",
+          "horizonte",
+          "id_semana_corte",
+          "id_semana_objetivo",
+          "experimental",
+          "seleccion",
+          "versiones",
+          "motivo",
+          "predicciones",
+          "disponibles",
+          "no_disponibles",
+          "alertas",
+          "duracion_segundos"
+        ],
+        "title": "InferenciaRespuesta",
+        "description": "Resumen de la ejecución de inferencia confirmada en la BD"
+      },
+      "MapaRiesgoRespuesta": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "type": {
+            "type": "string",
+            "const": "FeatureCollection",
+            "title": "Type",
+            "default": "FeatureCollection"
+          },
+          "horizonte": {
+            "type": "integer",
+            "title": "Horizonte"
+          },
+          "semana_corte": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SemanaRespuesta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "semana_objetivo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SemanaRespuesta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "leyenda": {
+            "items": {
+              "$ref": "#/components/schemas/ElementoLeyenda"
+            },
+            "type": "array",
+            "title": "Leyenda"
+          },
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/FeatureDistrito"
+            },
+            "type": "array",
+            "title": "Features"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "horizonte",
+          "semana_corte",
+          "semana_objetivo",
+          "experimental",
+          "leyenda",
+          "features"
+        ],
+        "title": "MapaRiesgoRespuesta",
+        "description": "GeoJSON FeatureCollection; los demás campos son miembros extra permitidos por RFC 7946."
+      },
+      "ModeloDetalle": {
+        "properties": {
+          "id_version": {
+            "type": "integer",
+            "title": "Id Version"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "tarea": {
+            "type": "string",
+            "enum": [
+              "clasificacion",
+              "regresion"
+            ],
+            "title": "Tarea"
+          },
+          "horizonte": {
+            "type": "integer",
+            "title": "Horizonte"
+          },
+          "algoritmo": {
+            "type": "string",
+            "title": "Algoritmo"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "candidata",
+              "activa",
+              "archivada",
+              "rechazada"
+            ],
+            "title": "Estado"
+          },
+          "cumple_umbrales": {
+            "type": "boolean",
+            "title": "Cumple Umbrales"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "umbral_probabilidad": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Umbral Probabilidad"
+          },
+          "mlflow_run_id": {
+            "type": "string",
+            "title": "Mlflow Run Id"
+          },
+          "fecha_registro": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Registro"
+          },
+          "fecha_activacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Activacion"
+          },
+          "variables": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Variables"
+          },
+          "hiperparametros": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Hiperparametros"
+          },
+          "metricas": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metricas"
+          },
+          "ruta_artefacto": {
+            "type": "string",
+            "title": "Ruta Artefacto"
+          },
+          "sha256_artefacto": {
+            "type": "string",
+            "title": "Sha256 Artefacto"
+          },
+          "sha256_dataset": {
+            "type": "string",
+            "title": "Sha256 Dataset"
+          },
+          "reproducibilidad": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reproducibilidad"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_version",
+          "codigo",
+          "tarea",
+          "horizonte",
+          "algoritmo",
+          "estado",
+          "cumple_umbrales",
+          "experimental",
+          "umbral_probabilidad",
+          "mlflow_run_id",
+          "fecha_registro",
+          "fecha_activacion",
+          "variables",
+          "hiperparametros",
+          "metricas",
+          "ruta_artefacto",
+          "sha256_artefacto",
+          "sha256_dataset",
+          "reproducibilidad"
+        ],
+        "title": "ModeloDetalle",
+        "description": "Métricas por bloque, variables, hashes y reproducibilidad de una versión"
+      },
+      "ModeloEnUso": {
+        "properties": {
+          "id_version": {
+            "type": "integer",
+            "title": "Id Version"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "tarea": {
+            "type": "string",
+            "enum": [
+              "clasificacion",
+              "regresion"
+            ],
+            "title": "Tarea"
+          },
+          "horizonte": {
+            "type": "integer",
+            "title": "Horizonte"
+          },
+          "algoritmo": {
+            "type": "string",
+            "title": "Algoritmo"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "candidata",
+              "activa",
+              "archivada",
+              "rechazada"
+            ],
+            "title": "Estado"
+          },
+          "cumple_umbrales": {
+            "type": "boolean",
+            "title": "Cumple Umbrales"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "umbral_probabilidad": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Umbral Probabilidad"
+          },
+          "mlflow_run_id": {
+            "type": "string",
+            "title": "Mlflow Run Id"
+          },
+          "fecha_registro": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Registro"
+          },
+          "fecha_activacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Activacion"
+          },
+          "seleccion": {
+            "type": "string",
+            "enum": [
+              "activa",
+              "experimental"
+            ],
+            "title": "Seleccion",
+            "description": "activa = estado 'activa'; experimental = parametro_sistema.seleccion_experimental"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_version",
+          "codigo",
+          "tarea",
+          "horizonte",
+          "algoritmo",
+          "estado",
+          "cumple_umbrales",
+          "experimental",
+          "umbral_probabilidad",
+          "mlflow_run_id",
+          "fecha_registro",
+          "fecha_activacion",
+          "seleccion"
+        ],
+        "title": "ModeloEnUso",
+        "description": "Versión en uso (activa o selección experimental) por tarea y horizonte"
+      },
+      "ModeloRespuesta": {
+        "properties": {
+          "id_version": {
+            "type": "integer",
+            "title": "Id Version"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "tarea": {
+            "type": "string",
+            "enum": [
+              "clasificacion",
+              "regresion"
+            ],
+            "title": "Tarea"
+          },
+          "horizonte": {
+            "type": "integer",
+            "title": "Horizonte"
+          },
+          "algoritmo": {
+            "type": "string",
+            "title": "Algoritmo"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "candidata",
+              "activa",
+              "archivada",
+              "rechazada"
+            ],
+            "title": "Estado"
+          },
+          "cumple_umbrales": {
+            "type": "boolean",
+            "title": "Cumple Umbrales"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "umbral_probabilidad": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Umbral Probabilidad"
+          },
+          "mlflow_run_id": {
+            "type": "string",
+            "title": "Mlflow Run Id"
+          },
+          "fecha_registro": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Registro"
+          },
+          "fecha_activacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Activacion"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_version",
+          "codigo",
+          "tarea",
+          "horizonte",
+          "algoritmo",
+          "estado",
+          "cumple_umbrales",
+          "experimental",
+          "umbral_probabilidad",
+          "mlflow_run_id",
+          "fecha_registro",
+          "fecha_activacion"
+        ],
+        "title": "ModeloRespuesta"
+      },
+      "ModelosActivosRespuesta": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "elementos": {
+            "items": {
+              "$ref": "#/components/schemas/ModeloEnUso"
+            },
+            "type": "array",
+            "title": "Elementos"
+          },
+          "nota": {
+            "type": "string",
+            "title": "Nota"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "elementos",
+          "nota"
+        ],
+        "title": "ModelosActivosRespuesta"
+      },
+      "NivelRiesgo": {
+        "properties": {
+          "nivel": {
+            "type": "string",
+            "enum": [
+              "bajo",
+              "medio",
+              "alto",
+              "muy_alto"
+            ],
+            "title": "Nivel"
+          },
+          "etiqueta": {
+            "type": "string",
+            "title": "Etiqueta"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nivel",
+          "etiqueta"
+        ],
+        "title": "NivelRiesgo"
+      },
+      "ObservacionRespuesta": {
+        "properties": {
+          "ubigeo": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Ubigeo"
+          },
+          "distrito": {
+            "type": "string",
+            "title": "Distrito"
+          },
+          "semana": {
+            "$ref": "#/components/schemas/SemanaRespuesta"
+          },
+          "casos_dengue": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Dengue",
+            "description": "null = sin dato; 0 = cero notificado"
+          },
+          "brote": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brote"
+          },
+          "umbral_brote_casos": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Umbral Brote Casos"
+          },
+          "temp_media_c": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temp Media C"
+          },
+          "temp_min_c": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temp Min C"
+          },
+          "temp_max_c": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temp Max C"
+          },
+          "precip_total_mm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precip Total Mm"
+          },
+          "hum_rel_media_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hum Rel Media Pct"
+          },
+          "fuente_casos": {
+            "type": "string",
+            "enum": [
+              "excel_historico",
+              "sala_situacional"
+            ],
+            "title": "Fuente Casos"
+          },
+          "estado_cobertura": {
+            "type": "string",
+            "enum": [
+              "verificado",
+              "sin_registro",
+              "pendiente"
+            ],
+            "title": "Estado Cobertura"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ubigeo",
+          "distrito",
+          "semana",
+          "casos_dengue",
+          "brote",
+          "umbral_brote_casos",
+          "temp_media_c",
+          "temp_min_c",
+          "temp_max_c",
+          "precip_total_mm",
+          "hum_rel_media_pct",
+          "fuente_casos",
+          "estado_cobertura"
+        ],
+        "title": "ObservacionRespuesta",
+        "description": "Casos, etiqueta de brote y clima observados; un faltante conserva null"
+      },
+      "Pagina_AlertaRespuesta_": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "elementos": {
+            "items": {
+              "$ref": "#/components/schemas/AlertaRespuesta"
+            },
+            "type": "array",
+            "title": "Elementos"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Cantidad real de registros que cumplen el filtro"
+          },
+          "pagina": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Pagina"
+          },
+          "tamano_pagina": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Tamano Pagina"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "elementos",
+          "total",
+          "pagina",
+          "tamano_pagina"
+        ],
+        "title": "Pagina[AlertaRespuesta]",
+        "description": "Listado paginado con disponibilidad, total y corte de datos"
+      },
+      "Pagina_DistritoRespuesta_": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "elementos": {
+            "items": {
+              "$ref": "#/components/schemas/DistritoRespuesta"
+            },
+            "type": "array",
+            "title": "Elementos"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Cantidad real de registros que cumplen el filtro"
+          },
+          "pagina": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Pagina"
+          },
+          "tamano_pagina": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Tamano Pagina"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "elementos",
+          "total",
+          "pagina",
+          "tamano_pagina"
+        ],
+        "title": "Pagina[DistritoRespuesta]",
+        "description": "Listado paginado con disponibilidad, total y corte de datos"
+      },
+      "Pagina_ObservacionRespuesta_": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "elementos": {
+            "items": {
+              "$ref": "#/components/schemas/ObservacionRespuesta"
+            },
+            "type": "array",
+            "title": "Elementos"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Cantidad real de registros que cumplen el filtro"
+          },
+          "pagina": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Pagina"
+          },
+          "tamano_pagina": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Tamano Pagina"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "elementos",
+          "total",
+          "pagina",
+          "tamano_pagina"
+        ],
+        "title": "Pagina[ObservacionRespuesta]",
+        "description": "Listado paginado con disponibilidad, total y corte de datos"
+      },
+      "Pagina_PrediccionRespuesta_": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "elementos": {
+            "items": {
+              "$ref": "#/components/schemas/PrediccionRespuesta"
+            },
+            "type": "array",
+            "title": "Elementos"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total",
+            "description": "Cantidad real de registros que cumplen el filtro"
+          },
+          "pagina": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Pagina"
+          },
+          "tamano_pagina": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Tamano Pagina"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "elementos",
+          "total",
+          "pagina",
+          "tamano_pagina"
+        ],
+        "title": "Pagina[PrediccionRespuesta]",
+        "description": "Listado paginado con disponibilidad, total y corte de datos"
+      },
+      "PrediccionRespuesta": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "id_prediccion": {
+            "type": "integer",
+            "title": "Id Prediccion"
+          },
+          "ubigeo": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Ubigeo"
+          },
+          "distrito": {
+            "type": "string",
+            "title": "Distrito"
+          },
+          "horizonte": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 2.0,
+            "title": "Horizonte"
+          },
+          "semana_corte": {
+            "$ref": "#/components/schemas/SemanaRespuesta"
+          },
+          "semana_objetivo": {
+            "$ref": "#/components/schemas/SemanaRespuesta"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "vigente",
+              "retrospectiva"
+            ],
+            "title": "Tipo",
+            "description": "vigente = último corte publicado del horizonte"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "disponible",
+              "no_disponible"
+            ],
+            "title": "Estado"
+          },
+          "probabilidad_brote": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Probabilidad Brote"
+          },
+          "nivel_riesgo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "bajo",
+                  "medio",
+                  "alto",
+                  "muy_alto"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel Riesgo"
+          },
+          "nivel_riesgo_etiqueta": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel Riesgo Etiqueta"
+          },
+          "casos_estimados": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Estimados"
+          },
+          "casos_intervalo_inferior": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Intervalo Inferior",
+            "description": "Límite inferior del intervalo de casos; null si el modelo no lo estima"
+          },
+          "casos_intervalo_superior": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Intervalo Superior",
+            "description": "Límite superior del intervalo de casos; null si el modelo no lo estima"
+          },
+          "nivel_intervalo": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMaximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel Intervalo",
+            "description": "Probabilidad nominal del intervalo (0,80)"
+          },
+          "motivo_intervalo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo Intervalo",
+            "description": "Por qué el intervalo es null"
+          },
+          "casos_persistencia": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Persistencia",
+            "description": "Línea base: casos observados en la semana de corte"
+          },
+          "alerta_modelo": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alerta Modelo",
+            "description": "probabilidad >= umbral F1 de la versión; independiente de la alerta"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental",
+            "description": "La versión usada no cumple los umbrales de aceptación"
+          },
+          "id_version_clasificador": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Version Clasificador"
+          },
+          "id_version_regresor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Version Regresor"
+          },
+          "id_ejecucion": {
+            "type": "integer",
+            "title": "Id Ejecucion"
+          },
+          "fecha_generacion": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Generacion"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "id_prediccion",
+          "ubigeo",
+          "distrito",
+          "horizonte",
+          "semana_corte",
+          "semana_objetivo",
+          "tipo",
+          "estado",
+          "probabilidad_brote",
+          "nivel_riesgo",
+          "nivel_riesgo_etiqueta",
+          "casos_estimados",
+          "casos_intervalo_inferior",
+          "casos_intervalo_superior",
+          "nivel_intervalo",
+          "motivo_intervalo",
+          "casos_persistencia",
+          "alerta_modelo",
+          "experimental",
+          "id_version_clasificador",
+          "id_version_regresor",
+          "id_ejecucion",
+          "fecha_generacion"
+        ],
+        "title": "PrediccionRespuesta",
+        "description": "Probabilidad, nivel de riesgo, magnitud, línea base y trazabilidad del modelo"
+      },
+      "PropiedadesDistrito": {
+        "properties": {
+          "ubigeo": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$",
+            "title": "Ubigeo"
+          },
+          "distrito": {
+            "type": "string",
+            "title": "Distrito"
+          },
+          "provincia": {
+            "type": "string",
+            "title": "Provincia"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "disponible",
+              "no_disponible"
+            ],
+            "title": "Estado"
+          },
+          "nivel_riesgo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "bajo",
+                  "medio",
+                  "alto",
+                  "muy_alto"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel Riesgo"
+          },
+          "nivel_riesgo_etiqueta": {
+            "type": "string",
+            "title": "Nivel Riesgo Etiqueta",
+            "description": "Etiqueta del nivel o «Sin datos»"
+          },
+          "probabilidad_brote": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Probabilidad Brote"
+          },
+          "casos_estimados": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Estimados"
+          },
+          "casos_intervalo_inferior": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Intervalo Inferior"
+          },
+          "casos_intervalo_superior": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Intervalo Superior"
+          },
+          "nivel_intervalo": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMaximum": 1.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel Intervalo"
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ubigeo",
+          "distrito",
+          "provincia",
+          "estado",
+          "nivel_riesgo",
+          "nivel_riesgo_etiqueta",
+          "probabilidad_brote",
+          "casos_estimados",
+          "casos_intervalo_inferior",
+          "casos_intervalo_superior",
+          "nivel_intervalo",
+          "experimental",
+          "motivo"
+        ],
+        "title": "PropiedadesDistrito",
+        "description": "Riesgo, magnitud, intervalo y motivo de ausencia de un distrito en el mapa"
+      },
+      "SaludRespuesta": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "conexion_bd": {
+            "type": "boolean",
+            "title": "Conexion Bd"
+          },
+          "version_api": {
+            "type": "string",
+            "title": "Version Api",
+            "description": "Versión de la aplicación; la del contrato va en X-Version-Contrato"
+          },
+          "ultima_ejecucion": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ultima Ejecucion"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "estado",
+          "conexion_bd",
+          "version_api",
+          "ultima_ejecucion"
+        ],
+        "title": "SaludRespuesta"
+      },
+      "SemanaRespuesta": {
+        "properties": {
+          "id_semana": {
+            "type": "integer",
+            "title": "Id Semana",
+            "description": "anio*100 + semana (MMWR, domingo a sábado)"
+          },
+          "anio": {
+            "type": "integer",
+            "title": "Anio"
+          },
+          "semana": {
+            "type": "integer",
+            "maximum": 53.0,
+            "minimum": 1.0,
+            "title": "Semana"
+          },
+          "fecha_inicio": {
+            "type": "string",
+            "format": "date",
+            "title": "Fecha Inicio"
+          },
+          "fecha_fin": {
+            "type": "string",
+            "format": "date",
+            "title": "Fecha Fin"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_semana",
+          "anio",
+          "semana",
+          "fecha_inicio",
+          "fecha_fin"
+        ],
+        "title": "SemanaRespuesta",
+        "description": "Semana epidemiológica MMWR (id_semana = anio*100 + semana)"
+      },
+      "SerieSemana": {
+        "properties": {
+          "semana": {
+            "$ref": "#/components/schemas/SemanaRespuesta"
+          },
+          "casos_dengue": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Casos Dengue"
+          },
+          "brote": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brote"
+          },
+          "observado": {
+            "type": "boolean",
+            "title": "Observado",
+            "description": "Hay observación cargada para la semana"
+          },
+          "prediccion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrediccionRespuesta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "semana",
+          "casos_dengue",
+          "brote",
+          "observado",
+          "prediccion"
+        ],
+        "title": "SerieSemana"
+      },
+      "SeriesRespuesta": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "ubigeo": {
+            "type": "string",
+            "title": "Ubigeo"
+          },
+          "distrito": {
+            "type": "string",
+            "title": "Distrito"
+          },
+          "horizonte": {
+            "type": "integer",
+            "title": "Horizonte"
+          },
+          "desde": {
+            "type": "string",
+            "format": "date",
+            "title": "Desde"
+          },
+          "hasta": {
+            "type": "string",
+            "format": "date",
+            "title": "Hasta"
+          },
+          "elementos": {
+            "items": {
+              "$ref": "#/components/schemas/SerieSemana"
+            },
+            "type": "array",
+            "title": "Elementos"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "ubigeo",
+          "distrito",
+          "horizonte",
+          "desde",
+          "hasta",
+          "elementos"
+        ],
+        "title": "SeriesRespuesta",
+        "description": "Semanas continuas con observado y predicción anulables"
+      },
+      "SolicitudInferencia": {
+        "properties": {
+          "horizonte": {
+            "type": "integer",
+            "maximum": 4.0,
+            "minimum": 2.0,
+            "title": "Horizonte",
+            "description": "2, 3 o 4; un horizonte sin modelo responde 409"
+          },
+          "id_semana_corte": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 209953.0,
+                "minimum": 201701.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Semana Corte",
+            "description": "Semana de corte (anio*100+semana); por defecto, la última observada"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "horizonte"
+        ],
+        "title": "SolicitudInferencia"
+      },
+      "TableroRespuesta": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "horizonte": {
+            "type": "integer",
+            "title": "Horizonte"
+          },
+          "semana_corte": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SemanaRespuesta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "semana_objetivo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SemanaRespuesta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "experimental": {
+            "type": "boolean",
+            "title": "Experimental"
+          },
+          "distritos": {
+            "type": "integer",
+            "title": "Distritos"
+          },
+          "distritos_con_prediccion": {
+            "type": "integer",
+            "title": "Distritos Con Prediccion"
+          },
+          "niveles_riesgo": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Niveles Riesgo"
+          },
+          "alertas_activas": {
+            "type": "integer",
+            "title": "Alertas Activas"
+          },
+          "casos_estimados_region": {
+            "$ref": "#/components/schemas/Indicador"
+          },
+          "casos_observados_ultima_semana": {
+            "$ref": "#/components/schemas/Indicador"
+          },
+          "nota": {
+            "type": "string",
+            "title": "Nota"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "horizonte",
+          "semana_corte",
+          "semana_objetivo",
+          "experimental",
+          "distritos",
+          "distritos_con_prediccion",
+          "niveles_riesgo",
+          "alertas_activas",
+          "casos_estimados_region",
+          "casos_observados_ultima_semana",
+          "nota"
+        ],
+        "title": "TableroRespuesta",
+        "description": "Indicadores del corte vigente; la suma regional es null si falta un distrito"
+      },
+      "VariablesRespuesta": {
+        "properties": {
+          "disponible": {
+            "type": "boolean",
+            "title": "Disponible",
+            "description": "Indica que existe un valor utilizable; cero sí es un valor"
+          },
+          "motivo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivo",
+            "description": "Explicación de la ausencia o restricción"
+          },
+          "fecha_corte_datos": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Corte Datos",
+            "description": "Último cierre semanal de las fuentes cargadas"
+          },
+          "fecha_actualizacion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Actualizacion",
+            "description": "Fin de la última ejecución exitosa"
+          },
+          "id_version": {
+            "type": "integer",
+            "title": "Id Version"
+          },
+          "elementos": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Elementos"
+          },
+          "nota": {
+            "type": "string",
+            "title": "Nota"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "disponible",
+          "fecha_corte_datos",
+          "fecha_actualizacion",
+          "id_version",
+          "elementos",
+          "nota"
+        ],
+        "title": "VariablesRespuesta",
+        "description": "Importancias gain reales; no constituyen relaciones causales"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "description": "Clave de escritura definida en API_KEY; las lecturas son públicas",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  }
+}

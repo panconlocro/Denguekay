@@ -36,14 +36,15 @@ def observaciones(request: Request, response: Response, sesion: DbSession,
 def predicciones(request: Request, response: Response, sesion: DbSession, horizonte: Horizon,
                  ubigeo: Ubigeo | None = None, corte: Cutoff = None,
                  pagina: PageNumber = 1, tamano_pagina: PageSize = 65):
-    """Sin ``corte`` devuelve el corte vigente. h=3 responde disponible=false (sin modelo para h=3)."""
+    """Sin ``corte`` devuelve el corte vigente. Un horizonte sin modelo responde disponible=false («sin modelo para h=N»)."""
     if ubigeo:
         q.existing_district(sesion, ubigeo)
 
     def build():
-        chosen = corte or (q.current_cutoff(sesion, horizonte) if horizonte != 3 else None)
+        chosen = corte or q.current_cutoff(sesion, horizonte)
         if chosen is None:
-            meta = q.metadata(sesion, False, q.no_prediction_reason(sesion, horizonte))
+            meta = q.metadata(sesion, False, q.no_prediction_reason(
+                sesion, horizonte, request.app.state.cfg.servir_no_validadas))
             return {**meta, "elementos": [], "total": 0, "pagina": pagina, "tamano_pagina": tamano_pagina}
         result = q.paginate(sesion, q.predictions_query(horizonte, chosen, ubigeo), pagina, tamano_pagina,
                               lambda filas: q.prediction_dtos(sesion, filas))
@@ -59,4 +60,5 @@ def series(ubigeo: Ubigeo, request: Request, response: Response, sesion: DbSessi
            horizonte: Horizon, desde: FromDate = None, hasta: ToDate = None):
     """Todas las semanas del intervalo (por defecto 26 hasta la última predicción), con null en los huecos."""
     validate_range(desde, hasta)
-    return cached_read(request, response, sesion, lambda: q.series(sesion, ubigeo, horizonte, desde, hasta))
+    return cached_read(request, response, sesion, lambda: q.series(
+        sesion, ubigeo, horizonte, desde, hasta, request.app.state.cfg.servir_no_validadas))

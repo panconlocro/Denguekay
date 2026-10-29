@@ -30,7 +30,8 @@ TABLA_2 = {("get", "/salud"), ("get", "/distritos"), ("get", "/predicciones"), (
            ("get", "/tablero/resumen"), ("get", "/mapa-riesgo"), ("get", "/alertas"), ("get", "/modelos/activo"),
            ("post", "/admin/inferencias"), ("post", "/admin/modelos/{version}/activar")}
 EXTENSIONES = {("get", "/distritos/{ubigeo}"), ("get", "/observaciones"), ("get", "/alertas/{identificador}"),
-               ("get", "/modelos/{identificador}"), ("get", "/modelos/{identificador}/variables")}
+               ("get", "/modelos/{identificador}"), ("get", "/modelos/{identificador}/variables"),
+               ("get", "/configuracion")}
 
 
 class TestAPIReal(unittest.TestCase):
@@ -361,7 +362,7 @@ class TestAPIReal(unittest.TestCase):
             r = exportar_openapi.export(self.motor)
         finally:
             exportar_openapi.OPENAPI_JSON = original
-        self.assertEqual(r["rutas"], 15)
+        self.assertEqual(r["rutas"], 16)
         self.assertTrue(destino.is_file())
 
     def test_base_vacia_sin_cero_ficticio(self):
@@ -388,7 +389,7 @@ class TestAPIReal(unittest.TestCase):
         self.assertEqual(estados["GET", "/mapa-riesgo?horizonte=4"], 200)
         self.assertEqual(estados["POST", "/admin/inferencias (sin X-API-Key)"], 401)
         self.assertEqual([r["http"] for r in resultados if r["ruta"].endswith("/activar")], [409])
-        self.assertEqual(sum(r["http"] == 200 for r in resultados), 10)
+        self.assertEqual(sum(r["http"] == 200 for r in resultados), 11)
         texto = markdown(resultados, "http://testserver", "SQLite de prueba")
         self.assertIn("| GET | `/salud` | 200 |", texto)
         self.assertNotIn(CLAVE, texto)

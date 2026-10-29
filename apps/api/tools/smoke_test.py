@@ -1,4 +1,4 @@
-"""TB1 smoke test: one real HTTP call to each endpoint of Table 2 and evidence in Markdown.
+"""Smoke test: one real HTTP call to each endpoint of Table 2 (and GET /configuracion) and evidence in Markdown.
 
 Usage (with uvicorn running): ``python -m apps.api.tools.smoke_test --url http://127.0.0.1:8000``.
 The write key is read from API_KEY (environment or .env) and is never written to the evidence.
@@ -28,6 +28,9 @@ def summarize(path, body):
     if path.startswith("/salud"):
         return (f"estado={body['estado']}; conexion_bd={body['conexion_bd']}; "
                 f"fecha_corte_datos={body['fecha_corte_datos']}; ultima_ejecucion={body['ultima_ejecucion']}")
+    if path.startswith("/configuracion"):
+        return (f"version_contrato={body['version_contrato']}; horizontes_disponibles={body['horizontes_disponibles']}; "
+                f"horizonte_por_defecto={body['horizonte_por_defecto']}; experimental={body['experimental']}")
     if path.startswith("/mapa-riesgo"):
         statuses = [f["properties"]["estado"] for f in body["features"]]
         return (f"type={body['type']}; features={len(body['features'])}; "
@@ -61,7 +64,7 @@ def summarize(path, body):
 def run(client, key):
     """Call each endpoint of Table 2; activation uses a real version from the database."""
     write_headers = {"X-API-Key": key}
-    calls = [("GET", "/salud", None), ("GET", "/distritos", None),
+    calls = [("GET", "/salud", None), ("GET", "/configuracion", None), ("GET", "/distritos", None),
                 ("GET", "/predicciones?horizonte=4", None), ("GET", "/predicciones?horizonte=2", None),
                 ("GET", "/series/200101?horizonte=4", None), ("GET", "/tablero/resumen?horizonte=4", None),
                 ("GET", "/mapa-riesgo?horizonte=4", None), ("GET", "/alertas?horizonte=4", None),
@@ -88,7 +91,7 @@ def run(client, key):
 def markdown(results, url, motor_bd):
     rows = "\n".join(f"| {r['metodo']} | `{r['ruta']}`{' ' + json.dumps(r['cuerpo']) if r['cuerpo'] else ''} | "
                       f"{r['http']} | {r['ms']} | {r['resumen'].replace('|', '/')} |" for r in results)
-    return f"""# Evidencia TB1: prueba de humo local
+    return f"""# Evidencia: prueba de humo local (contrato v1)
 
 Generado por `python -m apps.api.tools.smoke_test` el {datetime.now(timezone.utc).isoformat(timespec='seconds')}.
 Servidor: uvicorn en `{url}`; BD: {motor_bd}. Sin credenciales: la clave X-API-Key no se registra.
@@ -104,7 +107,8 @@ Notas:
 - Las versiones de modelo no cumplen los umbrales de aceptación: se sirven como `experimental: true`
   (desviación temporal, `docs/backend/desviaciones_oe2.md`). Por eso la activación responde 409
   `no_cumple_umbrales`, que es el comportamiento exigido por el CHECK del DDL.
-- `POST /admin/inferencias` con h=3 responde 409 («sin modelo para h=3»); sin `X-API-Key`, 401.
+- `POST /admin/inferencias` con un horizonte sin modelo (hoy h=3) responde 409 («sin modelo para h=3»);
+  sin `X-API-Key`, 401.
 """
 
 
