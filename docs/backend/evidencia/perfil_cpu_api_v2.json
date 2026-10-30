@@ -1,0 +1,369 @@
+{
+ "descripcion": "Segundos de CPU (user+system) del proceso uvicorn por petición, medidos con psutil.Process.cpu_times(). BD: copia de la BD de demostración (v2 servida en h=2, 3 y 4). Entorno solo con requirements-api.txt, un worker, DENGUEKAY_XGB_DEVICE=cpu y DENGUEKAY_XGB_NJOBS=1, Cache-Control: no-cache en las lecturas. Estimación con 0,1 CPU = segundos de CPU / 0,1 (supone un núcleo tan rápido como el de esta PC y sin espera de E/S). La resolución del reloj de CPU de Windows es de unos 15,6 ms: las lecturas por debajo de eso marcan 0.",
+ "fecha": "2026-10-30",
+ "plataforma": "Windows-11-10.0.26300-SP0",
+ "python": "3.12.10",
+ "cpu_s_arranque_hasta_primera_salud": 1.359,
+ "estimado_0_1_cpu_arranque_s": 13.6,
+ "rss_mb_final": 335.2,
+ "versiones_entorno_api": {
+  "xgboost": "3.4.1",
+  "pandas": "3.1.0",
+  "numpy": "2.5.4",
+  "scipy": "1.18.1",
+  "scikit-learn": "1.9.1"
+ },
+ "endpoints": [
+  {
+   "metodo": "POST",
+   "ruta": "/admin/inferencias",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 4.9844,
+   "cpu_s_mediana_siguientes": 2.9922,
+   "wall_s_primera": 3.5566,
+   "wall_s_mediana_siguientes": 2.0686,
+   "estimado_0_1_cpu_s_primera": 49.84,
+   "estimado_0_1_cpu_s_tibia": 29.92
+  },
+  {
+   "metodo": "POST",
+   "ruta": "/admin/inferencias",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 3.25,
+   "cpu_s_mediana_siguientes": 3.0234,
+   "wall_s_primera": 1.9399,
+   "wall_s_mediana_siguientes": 1.9381,
+   "estimado_0_1_cpu_s_primera": 32.5,
+   "estimado_0_1_cpu_s_tibia": 30.23
+  },
+  {
+   "metodo": "POST",
+   "ruta": "/admin/inferencias",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 2.7969,
+   "cpu_s_mediana_siguientes": 2.7812,
+   "wall_s_primera": 1.9459,
+   "wall_s_mediana_siguientes": 1.9272,
+   "estimado_0_1_cpu_s_primera": 27.97,
+   "estimado_0_1_cpu_s_tibia": 27.81
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/salud",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0,
+   "cpu_s_mediana_siguientes": 0.0,
+   "wall_s_primera": 0.0036,
+   "wall_s_mediana_siguientes": 0.003,
+   "estimado_0_1_cpu_s_primera": 0.0,
+   "estimado_0_1_cpu_s_tibia": 0.0
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/configuracion",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.2031,
+   "cpu_s_mediana_siguientes": 0.0312,
+   "wall_s_primera": 0.0319,
+   "wall_s_mediana_siguientes": 0.0266,
+   "estimado_0_1_cpu_s_primera": 2.03,
+   "estimado_0_1_cpu_s_tibia": 0.31
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/distritos",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0,
+   "cpu_s_mediana_siguientes": 0.0078,
+   "wall_s_primera": 0.0068,
+   "wall_s_mediana_siguientes": 0.0063,
+   "estimado_0_1_cpu_s_primera": 0.0,
+   "estimado_0_1_cpu_s_tibia": 0.08
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/distritos/200101",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0,
+   "cpu_s_mediana_siguientes": 0.0,
+   "wall_s_primera": 0.0033,
+   "wall_s_mediana_siguientes": 0.0024,
+   "estimado_0_1_cpu_s_primera": 0.0,
+   "estimado_0_1_cpu_s_tibia": 0.0
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/observaciones",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0,
+   "cpu_s_mediana_siguientes": 0.0,
+   "wall_s_primera": 0.0107,
+   "wall_s_mediana_siguientes": 0.0066,
+   "estimado_0_1_cpu_s_primera": 0.0,
+   "estimado_0_1_cpu_s_tibia": 0.0
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/modelos/activo",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0156,
+   "cpu_s_mediana_siguientes": 0.0,
+   "wall_s_primera": 0.0067,
+   "wall_s_mediana_siguientes": 0.0064,
+   "estimado_0_1_cpu_s_primera": 0.16,
+   "estimado_0_1_cpu_s_tibia": 0.0
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/predicciones?horizonte=2",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0312,
+   "cpu_s_mediana_siguientes": 0.0234,
+   "wall_s_primera": 0.0278,
+   "wall_s_mediana_siguientes": 0.0237,
+   "estimado_0_1_cpu_s_primera": 0.31,
+   "estimado_0_1_cpu_s_tibia": 0.23
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/series/200101?horizonte=2",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0312,
+   "cpu_s_mediana_siguientes": 0.0156,
+   "wall_s_primera": 0.0221,
+   "wall_s_mediana_siguientes": 0.0184,
+   "estimado_0_1_cpu_s_primera": 0.31,
+   "estimado_0_1_cpu_s_tibia": 0.16
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/tablero/resumen?horizonte=2",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0312,
+   "cpu_s_mediana_siguientes": 0.0234,
+   "wall_s_primera": 0.0254,
+   "wall_s_mediana_siguientes": 0.0227,
+   "estimado_0_1_cpu_s_primera": 0.31,
+   "estimado_0_1_cpu_s_tibia": 0.23
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/mapa-riesgo?horizonte=2",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0156,
+   "cpu_s_mediana_siguientes": 0.0234,
+   "wall_s_primera": 0.0254,
+   "wall_s_mediana_siguientes": 0.0253,
+   "estimado_0_1_cpu_s_primera": 0.16,
+   "estimado_0_1_cpu_s_tibia": 0.23
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/alertas?horizonte=2",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0,
+   "cpu_s_mediana_siguientes": 0.0078,
+   "wall_s_primera": 0.0081,
+   "wall_s_mediana_siguientes": 0.0062,
+   "estimado_0_1_cpu_s_primera": 0.0,
+   "estimado_0_1_cpu_s_tibia": 0.08
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/predicciones?horizonte=3",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0312,
+   "cpu_s_mediana_siguientes": 0.0234,
+   "wall_s_primera": 0.0281,
+   "wall_s_mediana_siguientes": 0.024,
+   "estimado_0_1_cpu_s_primera": 0.31,
+   "estimado_0_1_cpu_s_tibia": 0.23
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/series/200101?horizonte=3",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0156,
+   "cpu_s_mediana_siguientes": 0.0156,
+   "wall_s_primera": 0.0195,
+   "wall_s_mediana_siguientes": 0.0192,
+   "estimado_0_1_cpu_s_primera": 0.16,
+   "estimado_0_1_cpu_s_tibia": 0.16
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/tablero/resumen?horizonte=3",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0312,
+   "cpu_s_mediana_siguientes": 0.0234,
+   "wall_s_primera": 0.023,
+   "wall_s_mediana_siguientes": 0.0232,
+   "estimado_0_1_cpu_s_primera": 0.31,
+   "estimado_0_1_cpu_s_tibia": 0.23
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/mapa-riesgo?horizonte=3",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0312,
+   "cpu_s_mediana_siguientes": 0.0234,
+   "wall_s_primera": 0.0258,
+   "wall_s_mediana_siguientes": 0.0251,
+   "estimado_0_1_cpu_s_primera": 0.31,
+   "estimado_0_1_cpu_s_tibia": 0.23
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/alertas?horizonte=3",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0156,
+   "cpu_s_mediana_siguientes": 0.0,
+   "wall_s_primera": 0.0072,
+   "wall_s_mediana_siguientes": 0.0063,
+   "estimado_0_1_cpu_s_primera": 0.16,
+   "estimado_0_1_cpu_s_tibia": 0.0
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/predicciones?horizonte=4",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0312,
+   "cpu_s_mediana_siguientes": 0.0156,
+   "wall_s_primera": 0.0241,
+   "wall_s_mediana_siguientes": 0.0236,
+   "estimado_0_1_cpu_s_primera": 0.31,
+   "estimado_0_1_cpu_s_tibia": 0.16
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/series/200101?horizonte=4",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0156,
+   "cpu_s_mediana_siguientes": 0.0156,
+   "wall_s_primera": 0.0196,
+   "wall_s_mediana_siguientes": 0.0182,
+   "estimado_0_1_cpu_s_primera": 0.16,
+   "estimado_0_1_cpu_s_tibia": 0.16
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/tablero/resumen?horizonte=4",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0156,
+   "cpu_s_mediana_siguientes": 0.0234,
+   "wall_s_primera": 0.0225,
+   "wall_s_mediana_siguientes": 0.0222,
+   "estimado_0_1_cpu_s_primera": 0.16,
+   "estimado_0_1_cpu_s_tibia": 0.23
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/mapa-riesgo?horizonte=4",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0312,
+   "cpu_s_mediana_siguientes": 0.0234,
+   "wall_s_primera": 0.0246,
+   "wall_s_mediana_siguientes": 0.025,
+   "estimado_0_1_cpu_s_primera": 0.31,
+   "estimado_0_1_cpu_s_tibia": 0.23
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/alertas?horizonte=4",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0156,
+   "cpu_s_mediana_siguientes": 0.0,
+   "wall_s_primera": 0.007,
+   "wall_s_mediana_siguientes": 0.0064,
+   "estimado_0_1_cpu_s_primera": 0.16,
+   "estimado_0_1_cpu_s_tibia": 0.0
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/modelos/1",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0,
+   "cpu_s_mediana_siguientes": 0.0,
+   "wall_s_primera": 0.0031,
+   "wall_s_mediana_siguientes": 0.0025,
+   "estimado_0_1_cpu_s_primera": 0.0,
+   "estimado_0_1_cpu_s_tibia": 0.0
+  },
+  {
+   "metodo": "GET",
+   "ruta": "/modelos/1/variables",
+   "http": [
+    200
+   ],
+   "cpu_s_primera": 0.0,
+   "cpu_s_mediana_siguientes": 0.0,
+   "wall_s_primera": 0.0065,
+   "wall_s_mediana_siguientes": 0.0039,
+   "estimado_0_1_cpu_s_primera": 0.0,
+   "estimado_0_1_cpu_s_tibia": 0.0
+  },
+  {
+   "metodo": "POST",
+   "ruta": "/admin/modelos/1/activar",
+   "http": [
+    409
+   ],
+   "cpu_s_primera": 0.0156,
+   "cpu_s_mediana_siguientes": 0.0,
+   "wall_s_primera": 0.0047,
+   "wall_s_mediana_siguientes": 0.003,
+   "estimado_0_1_cpu_s_primera": 0.16,
+   "estimado_0_1_cpu_s_tibia": 0.0
+  }
+ ]
+}

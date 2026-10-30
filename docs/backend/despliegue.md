@@ -279,7 +279,81 @@ SQLAlchemy, Alembic, psycopg, python-dotenv, FastAPI, Pydantic, uvicorn y httpx.
   **No verificado:** los respaldos automáticos de Supabase en el plan gratuito. Antes de migrar producción, conviene
   un `pg_dump` manual.
 
-## Fuentes (consultadas el 29/10/2026)
+## 8. Inferencia en Render: qué calcula cada endpoint y cuánto tardaría
+
+Fase 6, pedido de Rosa (30/10/2026). Es una **estimación, no una medición en Render**. Perfil completo:
+[evidencia/perfil_cpu_api_v2.json](evidencia/perfil_cpu_api_v2.json).
+
+### Qué hace cada endpoint
+
+Comprobado en el código de `apps/api/routers/`: solo `admin.py` importa `denguekay.serving.inference.infer`.
+
+| Endpoint | Predicciones |
+|---|---|
+| `POST /admin/inferencias` | **Calcula en la petición**: carga y verifica el paquete (con caché por SHA-256), arma las entradas desde la BD, corre el predictor v2 para los 65 distritos y escribe `prediccion`, `alerta` y `ejecucion` |
+| `GET /predicciones`, `/series/{ubigeo}`, `/tablero/resumen`, `/mapa-riesgo`, `/alertas`, `/alertas/{id}` | Leen predicciones y alertas guardadas en la BD |
+| `GET /configuracion`, `/modelos/activo`, `/modelos/{id}`, `/modelos/{id}/variables` | Leen versiones, parámetros e importancias guardadas (las importancias SHAP se calculan al publicar, no en la API) |
+| `GET /salud`, `/distritos`, `/distritos/{ubigeo}`, `/observaciones` | Leen la BD; no tocan predicciones |
+| `POST /admin/modelos/{version}/activar` | Cambia el estado de las versiones; no recalcula (su respuesta lo dice) |
+
+### Estimación con 0,1 CPU
+
+**Método.** Medí los segundos de CPU (user + system) que el proceso `uvicorn` consume por petición, con
+`psutil.Process.cpu_times()`. El montaje fue:
+
+- una copia de la BD de demostración (v2, h=2, 3 y 4), servida con solo `requirements-api.txt`;
+- un worker y XGBoost en CPU con un hilo, como en `render.yaml`;
+- lecturas sin caché (`Cache-Control: no-cache`).
+
+La estimación con 0,1 CPU es CPU / 0,1. Supone un núcleo tan rápido como el de la PC y nada de espera de E/S. Es una
+**hipótesis**: no verifiqué cómo reparte Render la CPU del plan gratuito, ni si permite ráfagas.
+
+| Petición | CPU medida (PC) | Estimado con 0,1 CPU |
+|---|---|---|
+| `POST /admin/inferencias`, primera de cada horizonte (carga el paquete) | 2,8 a 5,0 s | **28 a 50 s** |
+| `POST /admin/inferencias`, siguientes (paquete en caché) | 2,8 a 3,0 s | **28 a 30 s** |
+| Lecturas (`/predicciones`, `/mapa-riesgo`, `/tablero`, `/series`) | ≤ 0,03 s | ≤ 0,3 s |
+| `GET /configuracion`, primera petición después de arrancar | 0,20 s | 2,0 s |
+| Arranque del proceso hasta el primer `/salud` (imports y app) | 1,36 s | 13,6 s, más el minuto que Render documenta para despertar un servicio dormido |
+
+El reloj de CPU de Windows tiene una resolución de unos 15,6 ms, así que las lecturas más rápidas marcan 0.
+
+**Conclusión.** Las lecturas quedan dentro de los 5 s del SLA (HU0016-3), salvo el arranque en frío. La inferencia
+**no**: con unos 30 s por horizonte, la superaría unas 6 a 10 veces.
+
+- La prueba de humo en PostgreSQL midió 2,4 a 4,1 s de reloj por horizonte en la PC
+  ([evidencia_api_v1.md](evidencia/evidencia_api_v1.md)).
+- **No verificado:** el tiempo máximo que Render espera una respuesta HTTP. Si corta antes, el cliente recibe un
+  error aunque el servidor termine la inferencia.
+
+### Propuesta (no implementada): que el ciclo semanal calcule y la API solo lea
+
+1. **Un comando de inferencia fuera de la API**, por ejemplo `python -m denguekay.serving.infer_current
+   --horizontes 2 3 4`.
+   - Llama a la misma `denguekay.serving.inference.infer` que usa el endpoint, con `origin="ciclo_semanal"`.
+   - Escribe las mismas filas de `prediccion`, `alerta` y `ejecucion`.
+   - Ya existe casi entero: `publish.infer_current`, que hoy usa `publish --inferir`.
+2. **Dónde corre:** en el workflow semanal de GitHub Actions, en un runner Linux en lugar de Render.
+   - Se conecta a Supabase con un usuario que hereda `rol_api`, que ya tiene `INSERT` y `UPDATE` en `prediccion`,
+     `alerta` y `ejecucion`, y lee Storage con la clave secreta, ambos como secretos del repositorio.
+   - El mismo comando sirve desde la PC de Rosa.
+   - **No verificado:** los recursos de los runners de GitHub.
+3. **La API solo lee.** Las lecturas ya ven las predicciones nuevas sin reiniciar nada:
+   - la caché de la API se invalida con la revisión de `ejecucion` (`max(id_ejecucion)` y `max(fin)`), que se consulta
+     en cada lectura;
+   - una inferencia hecha fuera de la API crea su fila en `ejecucion`.
+4. **Contrato: sin cambios.**
+   - `POST /admin/inferencias` sigue igual en el contrato v1. Queda para uso manual o local, y la documentación dice
+     que en Render puede tardar decenas de segundos.
+   - Ninguna ruta, ningún esquema y ningún código de estado cambian, así que `openapi_v1.json` no cambia.
+   - Cambia el documento OE2: el ciclo semanal ejecuta el comando en vez de llamar al endpoint.
+5. **Alternativas descartadas:**
+   - una inferencia asíncrona (202 más una consulta de estado) cambia el contrato;
+   - pasar a un plan pago de Render no es parte del diseño OE2 (plan gratuito).
+6. **Pendiente para decidir:** quién carga los datos semanales antes de la inferencia. `load_data` lee `data/` en la
+   PC de Rosa, y `data/` no está en el repo ni en el CI.
+
+## Fuentes (consultadas el 29 y el 30/10/2026)
 
 - Render: [Free instances](https://render.com/docs/free), [Deploys (pre-deploy command)](https://render.com/docs/deploys),
   [Blueprint spec](https://render.com/docs/blueprint-spec), [Python version](https://render.com/docs/python-version),

@@ -221,6 +221,9 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
 
 ## 7. Cambios que debe reflejar el documento OE2
 
+Lista consolidada al cierre del encargo de la API v1 (fase 6, 30/10/2026). Cada punto remite a la decisión
+que lo aprobó (sección 1 y `docs/backend/api_v1_decisiones.md`).
+
 Correcciones del DDL (Anexo B):
 1. **Permisos:** `GRANT INSERT, UPDATE ON ejecucion TO rol_api` (la API registra inferencias y
    activaciones) y `GRANT INSERT, UPDATE ON provincia, distrito, semana_epidemiologica,
@@ -256,10 +259,22 @@ API (Tabla 2):
 11. Campo calculado `experimental` en predicciones, alertas, tablero y modelos. Un horizonte sin modelo
     responde `no_disponible` («sin modelo para h=N») en lecturas y 409 en la inferencia; con la v2 los tres
     horizontes del documento tienen modelo (la desviación de h=3 se retiró en la fase 4).
-12. `/mapa-riesgo` devuelve centroides (`Point`), no polígonos.
+12. `/mapa-riesgo` devuelve centroides (`Point`), no polígonos; el contrato admite `Point`, `Polygon` y
+    `MultiPolygon` (C4).
+12b. **Endpoint `GET /configuracion`** (C2): horizontes disponibles (leídos de la BD) y por defecto, cortes y
+    niveles de riesgo, leyenda, corte vigente y nota experimental; 503 `parametros_no_configurados` si falta
+    `horizonte_por_defecto`.
+12c. **Intervalo de casos** (C3) en predicciones y mapa: `casos_intervalo_inferior`, `casos_intervalo_superior`,
+    `nivel_intervalo` (0,80) y `motivo_intervalo`, anulables. En la v2 es el intervalo central de la NB2 de cada
+    horizonte (cuantiles 0,10 y 0,90) y **no está calibrado**.
+12d. **h=3 servido:** los tres horizontes del documento (2, 3 y 4) tienen modelo con la v2; los horizontes
+    disponibles no están fijos en la API, salen de las versiones en uso (C1).
+12e. **Versión del contrato** (C5): `info.version` = versión del contrato (`1.1.0`), cabecera
+    `X-Version-Contrato` en todas las respuestas; `/salud.version_api` es la versión de la aplicación.
 
 Operación y datos:
-13. Storage local (`models/storage/<bucket>/`) en TB1 en lugar de Supabase Storage.
+13. Storage: puerto con dos adaptadores, local (`models/storage/<bucket>/`) y Supabase Storage por HTTP
+    (`STORAGE_BACKEND`), con los buckets privados del documento y verificación por SHA-256 de cada archivo.
 14. Predicciones OOS del protocolo guardadas como cortes pasados (`id_version_*` NULL; bloque en
     `ejecucion.detalle`); persistencia calculada al vuelo, sin versión propia.
 15. Modo demo experimental: versiones `candidata` servidas como experimentales hasta que una cumpla
@@ -267,6 +282,24 @@ Operación y datos:
 16. Paquete de modelo: `version_modelo.ruta_artefacto` apunta a `modelos/<codigo_paquete>/manifest.json`
     y `sha256_artefacto` es su hash; varias filas (una por tarea y horizonte) comparten el paquete y se
     activan por horizonte en pareja (§8).
+17. Motor de predicción enchufable (M1): la API depende solo del puerto `Predictor` y de las tablas; cada tipo
+    de paquete (hoy `v0_compact_xgb`, registrado, y `v2_e3_s4`, servido) es un módulo con su test. Un modelo nuevo
+    no cambia el contrato.
+18. Historia anterior a 2017 (M4): no se carga en la BD; los orígenes que la necesitan se publican como no
+    disponibles con su motivo.
+
+Despliegue (diseño físico, sección 3 del documento):
+19. Render (plan gratuito) sin `preDeployCommand`: las migraciones no corren en Render; Rosa las corre desde su
+    PC antes de cada release, y la API se conecta solo con un usuario que hereda `rol_api` (D2).
+20. Configuración por entorno (`DATABASE_URL`, `API_KEY`, `CORS_ORIGINS`, `SERVIR_NO_VALIDADAS`,
+    `STORAGE_BACKEND`, credenciales de Storage) sobre los valores por defecto de `config.yaml`; la API se instala
+    con `requirements-api.txt`, sin las dependencias de investigación.
+21. Conexión a Supabase por el *shared pooler* (IPv4; Render no tiene IPv6 saliente); en transaction mode se
+    desactivan las sentencias preparadas (`DB_PREPARED_STATEMENTS=false`). Detalle: `despliegue.md`.
+22. **Propuesta pendiente de aprobación (no implementada):** el ciclo semanal ejecuta un comando de inferencia (la
+    misma `serving.inference.infer`) en GitHub Actions, en lugar de llamar a `POST /admin/inferencias`. Con 0,1 CPU,
+    la inferencia de la v2 se estima en 28 a 50 s por horizonte, frente a los 5 s de la HU0016-3. El contrato no
+    cambia (`despliegue.md` §8).
 
 ## 8. Modelo multi-salida: varias filas por paquete (aprobada, adaptada a E3·S4_s3)
 
