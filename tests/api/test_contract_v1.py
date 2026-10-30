@@ -160,7 +160,7 @@ class TestContractV1(unittest.TestCase):
     def test_contract_header_on_errors_and_versions_kept_apart(self):
         r = self.client.get("/api/v1/ruta-inexistente")
         self.assertEqual((r.status_code, r.headers[CONTRACT_HEADER]), (404, CONTRACT_VERSION))
-        self.assertIn(CONTRACT_HEADER, self.client.get("/api/v1/salud", headers={"Origin": self.cfg.cors_origen})
+        self.assertIn(CONTRACT_HEADER, self.client.get("/api/v1/salud", headers={"Origin": self.cfg.cors_origenes[0]})
                       .headers["access-control-expose-headers"])
         salud = self.get("/salud", s.SaludRespuesta)
         self.assertNotEqual(salud.version_api, CONTRACT_VERSION)

@@ -26,7 +26,6 @@ from denguekay.model.tracking import log_or_warn
 from denguekay.config.paths import GOLD, MODELS, RESEARCH_FIRST_MODELS, SILVER_INTEGRATED
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.validation.forecast_contract import KEY
-from denguekay.data.validation.gx_quality import validate_modeling_inputs
 
 VALIDATION_SEASONS = (2021, 2022, 2023)
 MAIN_TEST_SEASON = 2024
@@ -264,7 +263,10 @@ def run_experiment(
     if audit:
         audit_handoff(gold_dir=gold_dir)
     # Data quality (Great Expectations) before training; it fails if gold/silver
-    # breaks its suite. The summary is attached to the MLflow run.
+    # breaks its suite. The summary is attached to the MLflow run. Imported here so that serving
+    # (the API) does not load Great Expectations.
+    from denguekay.data.validation.gx_quality import validate_modeling_inputs
+
     quality = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None)
                if validate_data else None)
     manifest = json.loads((gold_dir / "manifest_fase6.json").read_text(encoding="utf-8"))

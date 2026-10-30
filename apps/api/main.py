@@ -15,7 +15,7 @@ from apps.api.schemas import ErrorRespuesta
 from apps.api.routers import admin, data, models, reference, surveillance
 from denguekay.db.settings import InvalidDatabaseSettings
 from denguekay.db.session import create_session_factory, make_engine
-from denguekay.serving.storage import LocalStorage
+from denguekay.serving.storage import storage_from_environment
 from denguekay.serving.settings import service_settings
 from denguekay.config.paths import ENV_FILE
 
@@ -56,10 +56,10 @@ def create_app(engine=None, cfg=None, api_key=None, cache_ttl=10, storage=None):
     app.state.cfg = cfg
     app.state.api_key = os.environ.get("API_KEY", "") if api_key is None else api_key
     app.state.cache = ReadCache(ttl=cache_ttl)
-    app.state.storage = storage or LocalStorage()
+    app.state.storage = storage or storage_from_environment(cfg.almacenamiento)
     app.state.session_factory = create_session_factory(engine) if engine is not None else None
     register_error_handlers(app)
-    app.add_middleware(CORSMiddleware, allow_origins=[cfg.cors_origen],
+    app.add_middleware(CORSMiddleware, allow_origins=list(cfg.cors_origenes),
         allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-API-Key", "Cache-Control"],
         expose_headers=["X-Tiempo-Respuesta-ms", "X-Cache", CONTRACT_HEADER])
 

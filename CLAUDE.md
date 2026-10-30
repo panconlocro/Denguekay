@@ -1,7 +1,7 @@
 # Denguekay — contexto y reglas para Claude Code
 
 ## Qué es este proyecto
-Tesis de la UPC (Rosa y Nicolás): aplicación web de Machine Learning para **predecir brotes de dengue en Piura, Perú, con al menos 4 semanas de anticipación**. Metodología CRISP-DM; el **Hito 2** es Data Understanding / EDA. Stack: Python, pandas, scikit-learn, XGBoost, Great Expectations, Open-Meteo, Supabase; todo corre local en VS Code (ya no Colab). **MLflow** (seguimiento de experimentos) y **Great Expectations** (calidad de datos) están integrados en el modelado; ver `docs/modeling/mlflow_great_expectations.md`. DVC sigue descartado: no lo agregues.
+Tesis de la UPC (Rosa y Nicolás): aplicación web de Machine Learning para **predecir brotes de dengue en Piura, Perú, con al menos 4 semanas de anticipación**. Metodología CRISP-DM. La etapa actual es **OE3** (desarrollo completo); el EDA (Hito 2, Data Understanding) y OE2 están cerrados. Stack: Python, pandas, scikit-learn, XGBoost, Great Expectations, Open-Meteo, Supabase; todo corre local en VS Code (ya no Colab). **MLflow** (seguimiento de experimentos) y **Great Expectations** (calidad de datos) están integrados en el modelado; ver `docs/modeling/mlflow_great_expectations.md`. DVC sigue descartado: no lo agregues.
 
 Datos: panel **distrito × semana epidemiológica**, 65 distritos de Piura, 2017-2025. Fuentes: clima (Open-Meteo), sociodemografía (censo) y casos de dengue (Excel epidemiológico hasta 2024 + Sala Situacional MINSA para 2025).
 
@@ -54,13 +54,13 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/feat
 - Skill `eda-dengue` y subagente `revisor-eda`: método del EDA y auditor que recalcula cada cifra citada. Están versionados en `_claude_setup/` (no instalados en `.claude/`; se instalan con `scripts/install_claude_setup.ps1`) y apuntan al EDA congelado en `research/01_eda/`. Úsalos para cualquier análisis exploratorio nuevo.
 - Subagentes versionados en `.claude/agents/`: `revisor-backend` y `revisor-modelado`.
 - Decisiones de arquitectura del repo: `docs/decisions/` (ADR 0001: reestructuración en monorepo, con las decisiones D1–D6; ADR 0002: ramas `develop` y `main`).
-- Registro de modelos: `models/registry/` (ficha de v0, v1 y v2 y `CHANGELOG.md`). La v2 es la configuración vigente y la v0 la que se sirve; las configuraciones se cargan desde el paquete con `denguekay.model.registry`. Una versión nueva lleva su ficha y su entrada en el CHANGELOG.
+- Registro de modelos: `models/registry/` (ficha de v0, v1 y v2 y `CHANGELOG.md`). La v2 es la configuración vigente y la que se sirve, como selección experimental; la v0 queda registrada (predictor `v0_compact_xgb`); las configuraciones se cargan desde el paquete con `denguekay.model.registry`. Una versión nueva lleva su ficha y su entrada en el CHANGELOG.
 
 
 <!-- inicio: backend OE2 -->
 ## Backend (refactor OE2, TB1)
 - **Fuente de verdad del esquema y la API:** `docs/backend/especificacion_oe2.md` y `docs/backend/ddl_oe2.sql` (copiados del documento OE2: sección 5, Anexo B y Tabla 2). El código se adapta al documento, no al revés. Toda diferencia se justifica en `docs/backend/desviaciones_oe2.md` y se le consulta a Rosa antes.
-- **Alcance TB1: todo local.** PostgreSQL local + SQLite para tests, uvicorn local, artefactos en `models/storage/` mediante un adaptador local. Prohibido configurar o desplegar Supabase/Render en esta etapa.
+- **Alcance del despliegue:** El repo queda preparado para desplegar en Render, Supabase y Vercel (configuración, adaptadores y `despliegue.md`), pero no se despliega ni se conecta a servicios reales desde el código ni desde los tests. El despliegue lo hace Rosa manualmente.
 - Stack: FastAPI + Pydantic v2, SQLAlchemy 2 + Alembic, psycopg 3. Las migraciones en `src/denguekay/db/migrations/` son la autoridad del esquema; nunca `create_all` al arrancar la API.
 - Comandos (PowerShell, desde la raíz):
   - `.\.venv\Scripts\python -m alembic upgrade head`

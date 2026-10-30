@@ -11,7 +11,6 @@ from denguekay.model.train import evaluate_fold, prepare_gold, split_season, spl
 from denguekay.evaluation.compact_validation import run_compact_validation, compact_variants
 from denguekay.config.paths import (GOLD, GOLD_MANIFEST, COMPACT_METRICS, COMPACT_PREDICTIONS,
                              SERVING_REGENERATED_PROTOCOL, SILVER_INTEGRATED)
-from denguekay.data.validation.gx_quality import read_gold
 from denguekay.data.validation.forecast_contract import KEY
 
 
@@ -45,6 +44,9 @@ def load_protocol(horizons, variants, *, metrics_path=COMPACT_METRICS,
         raise ValueError("El CSV OOS tiene columnas ausentes o llaves duplicadas")
     if report["sha256_manifest_gold"] != hashlib.sha256(GOLD_MANIFEST.read_bytes()).hexdigest():
         raise ValueError("El protocolo temporal no corresponde al manifiesto gold actual")
+    # Imported here so that serving (the API) does not load Great Expectations.
+    from denguekay.data.validation.gx_quality import read_gold
+
     data, partitions = {}, {}
     for h in horizons:
         gold, file = read_gold(GOLD, h)

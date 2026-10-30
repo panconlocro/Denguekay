@@ -21,7 +21,7 @@ V0_SELECCION = {2: {"clasificacion": "clf-h2-v1", "regresion": "reg-h2-v1"},
 
 def configuracion_v0():
     """Opciones de servicio con el paquete v0 de las pruebas."""
-    return ServiceSettings(paquete=V0_PAQUETE, servir_no_validadas=True, cors_origen="http://localhost:5173")
+    return ServiceSettings(paquete=V0_PAQUETE, servir_no_validadas=True, cors_origenes=["http://localhost:5173"])
 
 
 def fijar_seleccion(motor, seleccion=None):

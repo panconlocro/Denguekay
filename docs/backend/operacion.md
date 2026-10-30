@@ -1,7 +1,8 @@
-# Operación del backend (esquema OE2, TB1 local)
+# Operación del backend (esquema OE2, local)
 
-Todo corre en local: PostgreSQL local (o SQLite para pruebas), uvicorn y artefactos en
-`models/storage/`. No se despliega en Supabase ni Render en TB1. Comandos en **Windows
+Este documento cubre la operación local: PostgreSQL local (o SQLite para pruebas), uvicorn y artefactos en
+`models/storage/`. El despliegue en Render, Supabase y Vercel está en [despliegue.md](despliegue.md) y lo hace
+Rosa a mano; el código y los tests nunca se conectan a servicios reales. Comandos en **Windows
 PowerShell**, desde la raíz del repo. Diseño: [especificación OE2](especificacion_oe2.md),
 [DDL](ddl_oe2.sql) y [desviaciones](desviaciones_oe2.md).
 
@@ -11,10 +12,13 @@ PowerShell**, desde la raíz del repo. Diseño: [especificación OE2](especifica
 |---|---|---|
 | `DATABASE_URL` | BD de la app: `postgresql+psycopg://usuario:clave@127.0.0.1:5432/denguekay` (o `sqlite:///ruta.db`) | `.env` (no se versiona) o entorno |
 | `API_KEY` | Clave de las escrituras (`X-API-Key`) | `.env` o entorno |
+| `MIGRATION_DATABASE_URL`, `DB_PREPARED_STATEMENTS`, `CORS_ORIGINS`, `SERVIR_NO_VALIDADAS`, `STORAGE_BACKEND`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `STORAGE_CACHE_DIR` | Opcionales en local; reemplazan a `config.yaml` (ver [despliegue.md](despliegue.md#2-variables-de-entorno) y `.env.example`) | `.env` o entorno |
 | `DENGUEKAY_PG_PRUEBAS_URL` | BD PostgreSQL **desechable** para los tests (su nombre debe contener «prueba») | variable de usuario |
 | `MLFLOW_TRACKING_URI` | Opcional; por defecto `mlflow.db` en la raíz | entorno |
 
-Las variables del proceso tienen prioridad sobre `.env`. Ningún comando imprime credenciales.
+Las variables del proceso tienen prioridad sobre `.env`. Ningún comando imprime credenciales. Ojo: si `.env` define
+`MIGRATION_DATABASE_URL`, `alembic upgrade head` migra esa BD aunque el proceso traiga otro `DATABASE_URL`; para
+migrar una BD temporal, define también `MIGRATION_DATABASE_URL` en el proceso (o déjala vacía en `.env`).
 
 ## Levantar el demo
 

@@ -16,7 +16,7 @@ ni los modelos, y no recalcula nada. Todo lo que muestra sale de la respuesta de
 
 - **React + Vite** (decisión del [ADR 0001](../../docs/decisions/0001-repo-restructure.md)).
 - El servidor de desarrollo de Vite usa `http://localhost:5173`, que ya es el origen CORS permitido por la
-  API (`serving.cors_origen` en `configs/config.yaml`).
+  API (`serving.cors_origenes` en `configs/config.yaml`; `CORS_ORIGINS` en la API agrega otros).
 - Por decidir: TypeScript (los tipos se pueden generar del contrato; ver la guía), librería de mapas (el mapa
   de riesgo llega como GeoJSON),
   librería de gráficos, gestor de estado/consultas y framework de tests.

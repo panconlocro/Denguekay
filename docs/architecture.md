@@ -47,12 +47,14 @@ Denguekay/
 ├── AGENTS.md                  # contexto y reglas para Codex
 ├── .codex/skills/             # workflows de Codex (feature engineering)
 ├── .gitignore
-├── .env.example               # conexión y secretos sin valores reales
+├── .env.example               # variables de entorno (BD, clave, CORS, Storage) sin valores reales
 ├── alembic.ini                # migraciones del backend, sin credenciales
 ├── pyproject.toml             # paquete instalable denguekay (pip install -e .); dependencias = requirements.txt
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
-├── .github/workflows/         # tests (SQLite y PostgreSQL) y cobertura en PR y push a main/develop; sin despliegue
+├── .github/workflows/         # tests (SQLite y PostgreSQL), cobertura y humo de la API liviana; sin despliegue
 ├── requirements.txt
+├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
+├── render.yaml                # Blueprint de Render para la API (docs/backend/despliegue.md); no despliega por sí solo
 ├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan) e install_claude_setup.ps1
 ├── configs/
 │   └── config.yaml
@@ -262,16 +264,16 @@ evaluation/
 ### `db/`, `serving/` y `pipelines/`
 ```text
 src/denguekay/db/
-├── settings.py               # DATABASE_URL desde .env o entorno
+├── settings.py               # DATABASE_URL (API), MIGRATION_DATABASE_URL (alembic) y DB_PREPARED_STATEMENTS desde .env o entorno
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
 └── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
-├── settings.py               # paquete a publicar (tipo, horizontes, opciones) y selección experimental (config.yaml)
+├── settings.py               # paquete a publicar, CORS, selección experimental y almacenamiento (config.yaml; el entorno los reemplaza)
 ├── parameters.py             # lectura de parametro_sistema (umbrales, cortes, horizonte por defecto, nivel del intervalo)
-├── storage.py                # puerto Storage + adaptador local models/storage/
+├── storage.py                # puerto Storage: adaptador local models/storage/ y SupabaseStorage (HTTP, caché por SHA-256)
 ├── protocol.py               # importa y verifica los resultados temporales de Rosa (protocolo compacto de la v0)
 ├── package.py                # paquete de modelo: manifiesto + archivos con SHA-256 (decisión M2)
 ├── inputs.py                 # ServingInputs: casos, clima, población, calendario y regla, desde la BD
@@ -314,7 +316,7 @@ tests/
     ├── pluggable_predictor/  # línea base de la v0 antes del motor enchufable, sus boosters congelados y su entorno (no se regenera)
     └── v2_serving/           # 6 distritos reales y lo que la v2 congelada calcula con los datos completos: orígenes,
                               #   predicciones, el modelo del bloque calendario_2025 y su entorno (no se regenera)
-docs/backend/                 # especificación OE2, desviaciones, operación y contrato (openapi_v1.json congelado)
+docs/backend/                 # especificación OE2, desviaciones, operación, despliegue y contrato (openapi_v1.json congelado)
 └── evidencia/                # SQL de la migración, prueba de humo TB1 (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
 models/serving/               # BD SQLite y ejecuciones locales; no se versionan
@@ -342,7 +344,9 @@ la implementación y mediciones reales. La copia de benchmark SQLite vive en
 `docs/backend/prompt_api_v1.md`, y su inventario y decisiones en `docs/backend/api_v1_decisiones.md`. `.github/workflows/backend.yml` ejecuta la
 suite completa con fixtures versionadas, sin descargar gold/silver ni desplegar:
 en Linux, Windows y macOS sobre SQLite, y en Linux contra un servicio PostgreSQL 18
-desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten.
+desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten. El job `humo-api` instala solo
+`requirements-api.txt`, migra una SQLite y arranca `uvicorn`, como el build de Render. El despliegue (Render,
+Supabase y Vercel) está en `docs/backend/despliegue.md`; lo hace Rosa a mano.
 
 ### Guardas y tolerancias por plataforma
 

@@ -1,15 +1,15 @@
-"""Alembic connection; the URL comes from the same environment as the application."""
+"""Alembic connection; the URL comes from the environment (MIGRATION_DATABASE_URL or DATABASE_URL)."""
 
 from alembic import context
 
-from denguekay.db.settings import get_url
+from denguekay.db.settings import migration_url
 from denguekay.db.models import Base
 from denguekay.db.session import make_engine
 
 
 if context.is_offline_mode():
     # Offline mode only needs the dialect: it accepts an injected URL without credentials.
-    url = context.config.attributes.get("url") or get_url()
+    url = context.config.attributes.get("url") or migration_url()
     context.configure(url=url, target_metadata=Base.metadata,
                       literal_binds=True, compare_type=True)
     with context.begin_transaction():
@@ -18,7 +18,7 @@ else:
     engine = context.config.attributes.get("motor")
     owned = engine is None
     if owned:
-        engine = make_engine()
+        engine = make_engine(migration_url())
     try:
         with engine.connect() as connection:
             context.configure(connection=connection, target_metadata=Base.metadata,

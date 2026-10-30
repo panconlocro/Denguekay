@@ -310,7 +310,7 @@ class TestAPIReal(unittest.TestCase):
             self.assertEqual(set(r.json()), {"codigo", "mensaje", "detalle"})
         with TestClient(create_app(self.motor, self.cfg, api_key="", storage=self.storage)) as c:
             self.assertEqual(c.post("/api/v1/admin/inferencias", json={"horizonte": 2}).status_code, 503)
-        for origen, permitido in ((self.cfg.cors_origen, True), ("https://origen-no-autorizado.invalid", False)):
+        for origen, permitido in ((self.cfg.cors_origenes[0], True), ("https://origen-no-autorizado.invalid", False)):
             r = self.cliente.get("/api/v1/distritos", headers={"Origin": origen})
             self.assertEqual("access-control-allow-origin" in r.headers, permitido)
 

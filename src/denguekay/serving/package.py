@@ -110,16 +110,16 @@ class Package:
         return self.manifest.get("nivel_intervalo")
 
 
-def _read(storage, path, what):
+def _read(storage, path, what, sha256):
     try:
-        return storage.read(path)
+        return storage.read(path, sha256=sha256)
     except (FileNotFoundError, ValueError) as error:
         raise InvalidArtifact(f"No se encontró el artefacto {what} ({path})") from error
 
 
 def load_package(storage, path, sha256):
     """Read the manifest and every file, checking each SHA-256 on every load."""
-    content = _read(storage, path, "del paquete")
+    content = _read(storage, path, "del paquete", sha256)
     if sha256_bytes(content) != sha256:
         raise InvalidArtifact(f"El manifiesto {path} no coincide con su SHA-256 registrado")
     try:
@@ -132,7 +132,7 @@ def load_package(storage, path, sha256):
         raise InvalidArtifact(f"El paquete {path} exige denguekay >= {manifest['version_minima_denguekay']}")
     files = {}
     for name, entry in manifest.get("archivos", {}).items():
-        data = _read(storage, entry["ruta"], f"{name} del paquete")
+        data = _read(storage, entry["ruta"], f"{name} del paquete", entry["sha256"])
         if sha256_bytes(data) != entry["sha256"]:
             raise InvalidArtifact(f"El archivo {name} del paquete {manifest.get('codigo_paquete')} "
                                   "no coincide con su SHA-256 registrado")

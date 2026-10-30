@@ -9,7 +9,6 @@ which model is served is operational data, set by publication and not by a migra
 """
 
 import argparse
-from dataclasses import asdict
 import hashlib
 import json
 import platform
@@ -23,7 +22,7 @@ from denguekay.db.models import Run, utc_now
 from denguekay.db.session import make_engine, transaction
 from denguekay.model.tracking import log_report
 from denguekay.serving import parameters as parametros
-from denguekay.serving.storage import LocalStorage
+from denguekay.serving.storage import storage_from_environment
 from denguekay.serving.artifacts import json_fingerprint
 from denguekay.serving.load_data import (require_schema, source_hashes, persist_load, prepare_load,
                                       record_failure)
@@ -105,7 +104,7 @@ def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False
     """Validate, fit, log to MLflow and commit the publication in the database."""
     start = time.perf_counter()
     cfg = cfg or service_settings()
-    storage = storage or LocalStorage()
+    storage = storage or storage_from_environment(cfg.almacenamiento)
     builder = predictor_module(cfg.tipo_paquete)
     horizons = tuple(sorted(horizons if horizons is not None else cfg.horizontes))
     if not horizons or len(set(horizons)) != len(horizons):
@@ -115,7 +114,7 @@ def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False
     load = prepare_load()
     prepared = builder.prepare(horizons, cfg.opciones)
     hashes = {**load.hashes, **prepared.hashes, **code_hashes()}
-    fingerprint = json_fingerprint({"hashes": hashes, "configuracion": asdict(cfg), "horizontes": horizons,
+    fingerprint = json_fingerprint({"hashes": hashes, "configuracion": cfg.publication_options(), "horizontes": horizons,
                                     **builder.fingerprint_parameters(),
                                     "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}"})
     with transaction(motor) as sesion:
