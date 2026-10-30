@@ -486,6 +486,8 @@ implementa.
 - **P4. Selección experimental.** No se fija con una migración: qué modelo se sirve es un dato operativo, y una
   migración por modelo contradiría el objetivo del encargo. `load_data` deja de sembrarla. La fija
   `publish --seleccionar-experimental` para los horizontes del paquete, en la misma transacción que lo registra.
+  Si la publicación se reutiliza porque ya estaba registrada con la misma huella, la selección se fija con sus
+  versiones en una transacción propia: el registro ya estaba confirmado.
   La migración `0006_v1` es solo de permisos y no trae datos de modelos:
   - crea vacía la fila `seleccion_experimental` si falta;
   - da a `rol_pipeline` `UPDATE (valor, fecha_actualizacion)` en `parametro_sistema`;

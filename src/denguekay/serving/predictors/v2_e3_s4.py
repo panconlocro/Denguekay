@@ -418,6 +418,19 @@ def fit_service(prepared, cutoff):
     return fitted.regressor, dict(zip(HORIZONS, fitted.alphas)), fitted.train
 
 
+def service_rows(prepared, cutoff):
+    """Origins a fit at ``cutoff`` uses (the SHAP rows of a frozen booster): the selection of ``fit_e3``.
+
+    ``tests/serving/test_v2_predictor.py`` checks that they equal the ``train`` that ``fit_e3`` returns.
+    """
+    targets = [f"semana_inicio_h{h}" for h in HORIZONS]
+    complete = prepared.origins.dropna(subset=targets)
+    train = complete.loc[(complete[targets[-1]] + pd.Timedelta(days=6)).le(pd.Timestamp(cutoff))]
+    if train.empty or not train.origen_cierre.lt(train.semana_inicio).all():
+        raise ValueError("Entrenamiento multi-salida vacío o con fuga")
+    return train
+
+
 def importances(regressor, x):
     """Mean |SHAP| of each output, per horizon (decision M3), computed at publication."""
     table = sp.shap_importance_by_horizon(regressor, x)
@@ -448,10 +461,7 @@ def build(prepared, horizons, options, cutoff, trained=None):
         booster, alphas, coefficients, platt_rows = trained.booster, dict(trained.alphas), dict(trained.platt), None
         regressor = XGBRegressor()
         regressor.load_model(bytearray(booster))
-        # The rows the frozen booster was fitted with (same selection as fit_e3), for its SHAP importances.
-        targets = [f"semana_inicio_h{h}" for h in HORIZONS]
-        complete = prepared.origins.dropna(subset=targets)
-        train = complete.loc[(complete[targets[-1]] + pd.Timedelta(days=6)).le(closed)]
+        train = service_rows(prepared, closed)
     files = {BOOSTER: booster,
              DISPERSION: _dumps({"alfa": {str(h): float(alphas[h]) for h in horizons},
                                  "metodo": "NB2 por máxima verosimilitud con las predicciones dentro de la muestra "

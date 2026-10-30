@@ -135,3 +135,6 @@ jobs:
           grep -qE "\(test_equivalence\.TestMigratedSchema\.test_postgresql_schema_matches_baseline\) \.\.\. ok$" pruebas.log
           # Guarda del contrato v1: el esquema de cada migración nueva coincide con su línea base.
           grep -qE "\(test_contract_v1_guards\.TestSchemaPerMigration\.test_postgresql_schema_matches_baseline\) \.\.\. ok$" pruebas.log
+          # 0006_v1: rol_pipeline solo actualiza la fila seleccion_experimental (necesita un usuario que asuma el rol).
+          grep -qE "\(db\.test_oe2_schema\.TestEsquemaOE2PostgreSQL\.test_pipeline_solo_actualiza_la_seleccion_experimental\)" pruebas.log
+          grep -A1 -E "\(db\.test_oe2_schema\.TestEsquemaOE2PostgreSQL\.test_pipeline_solo_actualiza_la_seleccion_experimental\)" pruebas.log | grep -qE "\.\.\. ok$"

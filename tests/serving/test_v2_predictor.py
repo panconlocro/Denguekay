@@ -170,6 +170,13 @@ class TestPackage(unittest.TestCase):
         with self.assertRaisesRegex(InferenceUnavailable, "sin modelo para h=3"):
             predictor.predict(memory_inputs("2025-06-07"), cutoff("2025-06-07"), (3,))
 
+    def test_frozen_shap_rows_are_the_fit_e3_rows(self):
+        """service_rows (SHAP of a frozen booster) selects exactly the rows fit_e3 trains with."""
+        prepared = vs.sample_prepared()
+        for close in (vs.package_meta()["corte_bloque"], vs.SERVICE_CUTOFF):
+            _, _, train = v2.fit_service(prepared, pd.Timestamp(close))
+            pd.testing.assert_frame_equal(v2.service_rows(prepared, close), train)
+
     def test_validate_options(self):
         for horizons, options in (((2, 3, 4), {"configuracion": "v1", "nivel_intervalo": 0.8}),
                                   ((2, 3, 4), {"configuracion": "v2", "nivel_intervalo": 1.0}),
