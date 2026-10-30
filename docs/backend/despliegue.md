@@ -30,7 +30,7 @@ variable vacía se ignora. Plantilla sin secretos: `.env.example`.
 | Variable | Uso | En Render |
 |---|---|---|
 | `DATABASE_URL` | Conexión de la API (`postgresql+psycopg://…?sslmode=require`), con un usuario que hereda `rol_api` | secreto (`sync: false`) |
-| `MIGRATION_DATABASE_URL` | Conexión de `alembic upgrade head`, con el dueño del esquema. Vacía: alembic usa `DATABASE_URL` | secreto |
+| `MIGRATION_DATABASE_URL` | Conexión de `alembic upgrade head`, con el dueño del esquema. Vacía: alembic usa `DATABASE_URL` | **no se define**: solo en la PC de Rosa (sección 3) |
 | `DB_PREPARED_STATEMENTS` | `false` desactiva las sentencias preparadas de psycopg 3 (`prepare_threshold=None`) | `true` (session mode) |
 | `API_KEY` | Clave de escritura (`X-API-Key`) | `generateValue: true` |
 | `CORS_ORIGINS` | Orígenes del frontend, separados por comas, sin barra final ni `*` | secreto (se completa al crear) |
@@ -54,10 +54,9 @@ variable vacía se ignora. Plantilla sin secretos: `.env.example`.
 - 750 horas gratis por *workspace* al mes; al agotarlas, Render suspende los servicios gratuitos hasta el mes
   siguiente.
 - **Sin `preDeployCommand`:** la página de despliegues lo ofrece solo para *paid web services*, *private services* y
-  *background workers*. Por eso `render.yaml` corre `alembic upgrade head` dentro del `startCommand`, antes de
-  `uvicorn`. Si la migración falla, el servicio no arranca y el health check falla, así que Render mantiene el
-  despliegue anterior. Contra: la migración corre también cada vez que el servicio despierta. Si ya está en `head`,
-  no hace cambios.
+  *background workers*. Render tampoco migra en el `startCommand`: **Rosa corre las migraciones desde su PC antes
+  de cada release** (pasos más abajo), y la API se conecta solo con un usuario que hereda `rol_api` (decisión de Rosa,
+  30/10/2026). Así Render nunca tiene credenciales del dueño del esquema.
 - El servicio debe escuchar en `0.0.0.0` y en el puerto `PORT` (por defecto, 10000).
 - Health check HTTP: una respuesta 2xx o 3xx en menos de 5 s marca la instancia como sana.
   `healthCheckPath: /api/v1/salud`. La página de health checks **no dice** si aplica en el plan gratuito, pero
@@ -73,20 +72,47 @@ Está en la raíz del repo. Usa solo campos de la especificación: `type: web`, 
   necesita (sección 6). El paquete se instala **editable**: `config/paths.py` calcula la raíz del repo desde la
   ubicación del paquete. Con una instalación normal, la raíz apunta a `site-packages` y la API no encuentra
   `configs/config.yaml` (comprobado en la PC).
-- **Start:** `python -m alembic upgrade head && python -m uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT`.
+- **Start:** `python -m uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT`. Sin migraciones.
 - La región no se puede cambiar después de crear el servicio. Conviene que el proyecto de Supabase quede en una
   región cercana (**no verifiqué** qué regiones de Supabase corresponden a `oregon`).
 
 ### Pasos
 
 1. En Render: *New → Blueprint* y elegir el repositorio. Render lee `render.yaml` y pide los secretos
-   (`sync: false`): `DATABASE_URL`, `MIGRATION_DATABASE_URL`, `CORS_ORIGINS`, `SUPABASE_URL` y
+   (`sync: false`): `DATABASE_URL`, `CORS_ORIGINS`, `SUPABASE_URL` y
    `SUPABASE_SECRET_KEY`. Render pide esos valores **solo al crear el Blueprint**; después se cambian en el
    Dashboard.
 2. `API_KEY` la genera Render (`generateValue`). Para el ciclo semanal, cópiala desde el Dashboard a un secreto de
    GitHub Actions.
 3. Comprobar `GET https://<servicio>.onrender.com/api/v1/salud` → 200 con `conexion_bd: true`, y
    `GET /api/v1/configuracion` → los horizontes publicados.
+
+### Migraciones antes de cada release (desde la PC de Rosa)
+
+Render no ejecuta `alembic`. Antes de mergear el PR `develop → main`:
+
+1. En la PC, con `develop` actualizado, poner la conexión del dueño del esquema (el usuario `postgres` del proyecto de
+   producción, por el session pooler) **solo en esa terminal**, sin guardarla en `.env`:
+
+   ```powershell
+   $env:MIGRATION_DATABASE_URL = "postgresql+psycopg://postgres.<ref>:<clave>@<pooler>:5432/postgres?sslmode=require"
+   .\.venv\Scripts\python -m alembic current
+   .\.venv\Scripts\python -m alembic upgrade head
+   .\.venv\Scripts\python -m alembic current
+   Remove-Item Env:MIGRATION_DATABASE_URL
+   ```
+
+   `alembic current` antes y después confirma la revisión. Si no hay migraciones nuevas, `upgrade head` no cambia
+   nada.
+2. Mergear el release. Render despliega cuando el CI pasa (`checksPass`).
+3. Entre la migración y el despliegue, la API anterior corre contra el esquema nuevo. 0004 y 0006 solo agregan
+   datos y permisos. 0005 sí cambia el esquema: agrega dos columnas anulables a `prediccion` y pasa
+   `hum_rel_media_pct` a `double precision`. Una producción nueva parte de cero y no tiene ese problema. Si alguna
+   vez una migración no fuera compatible con la API anterior, conviene migrar y mergear seguido, o aceptar unos
+   minutos de errores 503.
+4. Antes de una migración que cambie el esquema (no solo datos), hacer un respaldo manual con `pg_dump` de producción.
+
+La BD de desarrollo se migra igual, con su propia conexión de dueño.
 
 ## 4. Supabase (BD y Storage)
 
@@ -119,8 +145,8 @@ BD, su Storage y sus claves. **No verificado:** cuántos proyectos gratuitos per
 
 ### Esquema y roles (decisión D2)
 
-1. Migrar como dueño del esquema (el usuario `postgres` del proyecto) desde la PC:
-   `MIGRATION_DATABASE_URL=<postgres> .\.venv\Scripts\python -m alembic upgrade head`. La migración 0003 crea los
+1. Migrar como dueño del esquema (el usuario `postgres` del proyecto) desde la PC, con
+   los pasos de «Migraciones antes de cada release» (sección 3). La migración 0003 crea los
    roles `NOLOGIN` `rol_api` y `rol_pipeline`, activa RLS en las tablas y crea las políticas `servicio_*`.
    **No verificado** contra un proyecto real de Supabase: que el usuario `postgres` pueda crear esos roles.
 2. Crear los usuarios `LOGIN`, que heredan los roles y no son dueños de nada (SQL Editor de Supabase):
@@ -131,9 +157,8 @@ BD, su Storage y sus claves. **No verificado:** cuántos proyectos gratuitos per
    ```
 
    `DATABASE_URL` de Render usa `denguekay_api`. Las cargas y publicaciones desde la PC usan `denguekay_pipeline`.
-   `MIGRATION_DATABASE_URL` de Render usa el dueño: el `startCommand` lo necesita, porque `rol_api` no puede ejecutar
-   DDL ni leer `alembic_version`. **Decisión para Rosa:** si no quieres el usuario dueño en Render, quita
-   `alembic upgrade head` del `startCommand` y migra solo desde la PC antes de cada release.
+   Las migraciones las corre Rosa desde la PC con el dueño del esquema (sección 3). `rol_api` no puede ejecutar DDL
+   ni leer `alembic_version`, y Render no tiene otra credencial.
 3. **API REST automática de Supabase (hipótesis D2, verificada en parte):**
    - Con RLS activo y sin políticas, la clave publicable no accede a ningún dato («no data is accessible through the
      API when using a publishable key, until you create policies»). Las políticas `servicio_*` son solo para
@@ -189,12 +214,25 @@ El frontend (`apps/web/`) todavía es un plan, así que estos pasos son para cua
 3. `CORS_ORIGINS` en Render debe incluir el dominio de producción de Vercel, exacto y sin barra final. Los dominios
    de *preview* cambian por rama y no tienen comodín en la API (`*` se rechaza). Para probar un *preview* contra la
    API de producción, hay que agregar su dominio a mano. Otra opción: un *preview* apunta a una API local.
-4. **Plan Hobby (verificado):**
-   - un equipo Hobby no puede desplegar un repositorio privado de una organización de GitHub;
-   - el autor de cada commit debe ser el dueño del equipo Hobby.
-
-   Si el proyecto queda en el Hobby de Rosa, los commits de Nicolás no se despliegan. **Decisión para Rosa:** un
-   proyecto Vercel por cuenta, repositorio público o plan Pro.
+4. **Quién crea el proyecto (decisión de Rosa, 30/10/2026):** la cuenta de Vercel de Rosa, que es la que mergea a
+   `main`. Producción despliega desde `main`.
+5. **Plan Hobby (verificado en la documentación de Vercel):**
+   - El plan Hobby es gratuito y solo para uso personal y no comercial ([Hobby plan](https://vercel.com/docs/plans/hobby)).
+     Que una tesis universitaria entre en esa categoría es una lectura nuestra, no una afirmación de Vercel.
+   - Un equipo Hobby **no puede desplegar un repositorio privado de una organización de GitHub**. Además, en un
+     repositorio privado el autor de cada commit debe ser el dueño del equipo Hobby
+     ([Deploying Git repositories](https://vercel.com/docs/git), sección «Deploying private Git repositories»).
+   - El repositorio `panconlocro/Denguekay` es **público** y es de una **cuenta personal** (API pública de GitHub,
+     30/10/2026). Mientras siga así, esas dos restricciones no aplican. Esto corrige la fase 5, donde dije que los
+     commits de Nicolás no se desplegarían: eso solo vale si el repo pasa a privado.
+   - Para importar o conectar el repositorio de una cuenta personal hay que ser su **Owner** en GitHub; un
+     colaborador no puede ([Vercel for GitHub](https://vercel.com/docs/git/vercel-for-github), sección «Personal
+     account repositories»). Por eso el proyecto lo crea la cuenta dueña del repo.
+   - Si el repo pasara a privado, producción seguiría desplegándose, porque el commit que llega a `main` es el merge
+     commit de Rosa. Lo que dejaría de desplegarse son los *previews* de los commits de Nicolás.
+6. **Nicolás desarrolla en local contra la API local:** `uvicorn` en `http://127.0.0.1:8000` con la BD SQLite de
+   demostración (ver `guia_frontend.md`). El origen de Vite (`http://localhost:5173`) ya está en `config.yaml`. No
+   necesita Render, Supabase ni Vercel para trabajar.
 
 ## 6. Dependencias livianas y memoria
 
@@ -232,8 +270,8 @@ SQLAlchemy, Alembic, psycopg, python-dotenv, FastAPI, Pydantic, uvicorn y httpx.
 - **HU0018-3 (despliegue y configuración):** la configuración por entorno (sección 2), `render.yaml`, este documento
   y el job `humo-api` cubren lo que se puede hacer sin desplegar. Falta el despliegue real, que hace Rosa.
 - **HU0018-4 (mantenimiento y recuperación):**
-  - si el build, la migración o el health check fallan, Render conserva el último despliegue sano (despliegues sin
-    caída);
+  - si el build o el health check fallan, Render conserva el último despliegue sano (despliegues sin caída);
+  - las migraciones se corren desde la PC, con `alembic current` antes y después y un `pg_dump` previo (sección 3);
   - el SHA-256 de cada archivo del paquete se verifica al cargarlo;
   - la reversión de esquema está en `docs/backend/operacion.md`;
   - las ejecuciones quedan auditadas en `ejecucion`.
@@ -256,4 +294,5 @@ SQLAlchemy, Alembic, psycopg, python-dotenv, FastAPI, Pydantic, uvicorn y httpx.
   [Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security),
   [storage-js `StorageFileApi.ts`](https://github.com/supabase/storage-js/blob/main/src/packages/StorageFileApi.ts).
 - psycopg 3: [Prepared statements](https://www.psycopg.org/psycopg3/docs/advanced/prepare.html).
-- Vercel: [Deploying Git repositories](https://vercel.com/docs/git).
+- Vercel: [Deploying Git repositories](https://vercel.com/docs/git), [Hobby plan](https://vercel.com/docs/plans/hobby),
+  [Vercel for GitHub](https://vercel.com/docs/git/vercel-for-github) (consultadas el 30/10/2026).
