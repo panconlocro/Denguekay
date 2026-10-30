@@ -36,6 +36,11 @@ serving:
   # selección de parametro_sistema.seleccion_experimental, que fija la publicación
   # (python -m denguekay.serving.publish --seleccionar-experimental).
   servir_no_validadas: true
-  cors_origen: "http://localhost:5173"
+  # Orígenes del frontend admitidos por CORS (esquema://servidor[:puerto], sin barra final).
+  cors_origenes: ["http://localhost:5173"]
+  # Dónde están los paquetes de modelo: local (models/storage/) o supabase (Supabase Storage).
+  almacenamiento: local
+  # El entorno reemplaza estos tres valores: CORS_ORIGINS (separados por comas), SERVIR_NO_VALIDADAS
+  # y STORAGE_BACKEND (ver .env.example y docs/backend/despliegue.md).
   # Cortes de riesgo, umbrales de aceptación (bloque temporada_2024) y regla de
   # brote viven en parametro_sistema; los siembra la migración 0003_oe2.
