@@ -43,8 +43,8 @@ repositorio clonado. No necesitas `data/` ni PostgreSQL.
    ```
 
    Comprueba con `http://127.0.0.1:8000/api/v1/salud` (`"conexion_bd": true`) y
-   `http://127.0.0.1:8000/api/v1/configuracion`. El origen CORS permitido es `http://localhost:5173`, el del
-   servidor de desarrollo de Vite.
+   `http://127.0.0.1:8000/api/v1/configuracion`. El origen CORS permitido por defecto es `http://localhost:5173`, el del
+   servidor de desarrollo de Vite (`CORS_ORIGINS` en la API agrega otros, p. ej. el dominio de Vercel).
 
    Las lecturas no necesitan clave. Las escrituras (`POST /admin/*`) quedan fuera del frontend (C6).
 

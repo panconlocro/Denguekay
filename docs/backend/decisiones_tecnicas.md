@@ -38,7 +38,7 @@ no hay versión activa y `servir_no_validadas = true`, la inferencia usa
 - Escrituras con `X-API-Key` (comparación en tiempo constante); sin clave configurada, 503.
 - RLS y roles `rol_api` / `rol_pipeline` (NOLOGIN) creados por la migración en PostgreSQL. La API
   local se conecta como propietario de las tablas, al que RLS no aplica.
-- `.env` no se versiona; errores sin SQL ni credenciales; CORS restringido a `cors_origen`.
+- `.env` no se versiona; errores sin SQL ni credenciales; CORS restringido a `cors_origenes` (`config.yaml`; `CORS_ORIGINS` lo reemplaza).
 
 ## Rendimiento
 
