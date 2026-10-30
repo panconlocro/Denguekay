@@ -138,3 +138,56 @@ jobs:
           # 0006_v1: rol_pipeline solo actualiza la fila seleccion_experimental (necesita un usuario que asuma el rol).
           grep -qE "\(db\.test_oe2_schema\.TestEsquemaOE2PostgreSQL\.test_pipeline_solo_actualiza_la_seleccion_experimental\)" pruebas.log
           grep -A1 -E "\(db\.test_oe2_schema\.TestEsquemaOE2PostgreSQL\.test_pipeline_solo_actualiza_la_seleccion_experimental\)" pruebas.log | grep -qE "\.\.\. ok$"
+
+  humo-api:
+    # Prueba de humo del despliegue (fase 5): solo requirements-api.txt, como el build de Render (render.yaml).
+    name: API con requirements-api.txt / SQLite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: sqlite:///humo_api.db
+      API_KEY: clave-de-humo-del-ci
+      DENGUEKAY_XGB_DEVICE: cpu
+      DENGUEKAY_XGB_NJOBS: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-api.txt
+      - name: Instalar solo las dependencias de la API
+        run: python -m pip install -r requirements-api.txt
+      # Sin pip check: los metadatos del paquete declaran requirements.txt completo y aquí se instala sin dependencias.
+      - name: Instalar el paquete denguekay sin dependencias
+        run: python -m pip install --no-deps -e .
+      - name: Comprobar que no se instalaron dependencias pesadas
+        shell: bash
+        run: |
+          for paquete in mlflow great-expectations optuna matplotlib geopandas; do
+            if python -m pip show "$paquete" > /dev/null 2>&1; then
+              echo "$paquete no debe instalarse con requirements-api.txt" >&2
+              exit 1
+            fi
+          done
+      - name: Importar la API y los predictores registrados
+        run: python -c "import apps.api.main, denguekay.serving.inference, denguekay.serving.predictors.v0_compact_xgb, denguekay.serving.predictors.v2_e3_s4"
+      - name: Migrar la BD SQLite
+        run: python -m alembic upgrade head
+      - name: Arrancar la API y consultar rutas de lectura
+        shell: bash
+        run: |
+          python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000 > uvicorn.log 2>&1 &
+          pid=$!
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8000/api/v1/salud > /dev/null && break
+            sleep 1
+          done
+          for ruta in salud configuracion distritos "predicciones?horizonte=4"; do
+            curl -sf "http://127.0.0.1:8000/api/v1/$ruta" > /dev/null || { cat uvicorn.log; exit 1; }
+          done
+          # Memoria de la API sin modelo cargado (la medición con la v2 está en docs/backend/despliegue.md).
+          grep VmRSS "/proc/$pid/status"
+          kill "$pid"

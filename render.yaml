@@ -1,0 +1,47 @@
+# Blueprint de Render para la API (docs/backend/despliegue.md). No despliega nada por sí solo: Rosa lo
+# aplica a mano desde el Dashboard (New > Blueprint). Campos verificados en https://render.com/docs/blueprint-spec
+# (29/10/2026). Los secretos usan sync: false: Render los pide al crear el Blueprint y nunca están en el repo.
+services:
+  - type: web
+    name: denguekay-api
+    runtime: python
+    plan: free
+    region: oregon
+    # main = producción (ADR 0002). Solo despliega cuando el CI del commit pasa.
+    branch: main
+    autoDeployTrigger: checksPass
+    # Solo las dependencias de la API (sin MLflow, Great Expectations, Optuna, matplotlib ni geopandas).
+    # El paquete se instala editable: config/paths.py ubica configs/ desde la raíz del repositorio.
+    buildCommand: pip install -r requirements-api.txt && pip install --no-deps -e .
+    # El plan gratuito no tiene preDeployCommand (solo planes pagos): la migración corre antes de uvicorn.
+    # alembic usa MIGRATION_DATABASE_URL (dueño del esquema); la API, DATABASE_URL (usuario con rol_api).
+    startCommand: python -m alembic upgrade head && python -m uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/salud
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: DATABASE_URL
+        sync: false
+      - key: MIGRATION_DATABASE_URL
+        sync: false
+      # Pooler de Supabase en session mode (puerto 5432) admite sentencias preparadas; en transaction
+      # mode (6543) cambiar a "false".
+      - key: DB_PREPARED_STATEMENTS
+        value: "true"
+      - key: API_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SERVIR_NO_VALIDADAS
+        value: "true"
+      - key: STORAGE_BACKEND
+        value: supabase
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      # 0,1 CPU en el plan gratuito: XGBoost en CPU con un hilo.
+      - key: DENGUEKAY_XGB_DEVICE
+        value: cpu
+      - key: DENGUEKAY_XGB_NJOBS
+        value: "1"
