@@ -24,7 +24,6 @@ from denguekay.model.train import (
 from denguekay.model.tracking import log_or_warn
 from denguekay.config.paths import COMPACT_METRICS, GOLD, MODELS, SILVER_INTEGRATED
 from denguekay.data.validation.forecast_contract import KEY
-from denguekay.data.validation.gx_quality import validate_modeling_inputs
 
 
 SEASONS = (2021, 2022, 2023, 2024)
@@ -109,7 +108,10 @@ def run_compact_validation(
     if audit:
         audit_handoff(gold_dir=gold_dir)
     # Data quality (Great Expectations) before training; it fails if gold/silver
-    # breaks its suite. The summary is attached to the MLflow run.
+    # breaks its suite. The summary is attached to the MLflow run. Imported here so that serving
+    # (the API) does not load Great Expectations.
+    from denguekay.data.validation.gx_quality import validate_modeling_inputs
+
     quality = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None)
                if validate_data else None)
     manifest_path = gold_dir / "manifest_fase6.json"
