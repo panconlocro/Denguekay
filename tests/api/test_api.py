@@ -406,6 +406,22 @@ class TestAPIReal(unittest.TestCase):
         self.assertIn("| GET | `/salud` | 200 |", texto)
         self.assertNotIn(CLAVE, texto)
 
+    def test_prueba_humo_completa_con_los_tres_horizontes(self):
+        from apps.api.tools.smoke_test import markdown_full, run_full
+        resultados = run_full(self.cliente, CLAVE)
+        rutas = [r["ruta"] for r in resultados]
+        for h in (2, 3, 4):
+            for ruta in (f"/predicciones?horizonte={h}", f"/mapa-riesgo?horizonte={h}", f"/tablero/resumen?horizonte={h}",
+                         f"/series/200101?horizonte={h}", f"/alertas?horizonte={h}"):
+                self.assertIn(ruta, rutas)
+        self.assertEqual(sum(r["ruta"] == "/admin/inferencias" for r in resultados), 3)
+        self.assertEqual(resultados[-1]["http"], 401)
+        self.assertEqual([r["http"] for r in resultados if r["ruta"].endswith("/activar")], [409])
+        self.assertTrue(any(r["ruta"].endswith("/variables") for r in resultados))
+        texto = markdown_full(resultados, "http://testserver", "SQLite de prueba", ["alembic upgrade head"])
+        self.assertIn("1. alembic upgrade head", texto)
+        self.assertNotIn(CLAVE, texto)
+
     def test_api_no_lee_data(self):
         codigo = '''
 import sys
