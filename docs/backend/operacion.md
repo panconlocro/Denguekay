@@ -173,7 +173,9 @@ Con uvicorn levantado y `API_KEY` definida:
 ```
 
 Llama a cada endpoint de la Tabla 2 y a `GET /configuracion`, y escribe
-[evidencia_tb1.md](evidencia/evidencia_tb1.md) (sin credenciales). La evidencia SQL de la migración OE2
+[evidencia_tb1.md](evidencia/evidencia_tb1.md) (sin credenciales). Con `--completa` llama a todas las rutas del
+contrato v1 con h=2, 3 y 4, usando IDs reales de la BD, y escribe [evidencia_api_v1.md](evidencia/evidencia_api_v1.md).
+`--paso "<texto>"` (repetible) anota en la evidencia los pasos previos, sin credenciales. La evidencia SQL de la migración OE2
 (`0002_serving:0003_oe2`) se regenera con `.\.venv\Scripts\python -m denguekay.db.export_migration_sql`
 (no se conecta a ninguna BD). El SQL de cada migración posterior es una línea base en
 `tests/fixtures/contract_v1/`.

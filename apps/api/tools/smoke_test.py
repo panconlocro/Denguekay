@@ -160,8 +160,9 @@ Cada ruta del contrato v1; las que dependen del horizonte, con h=2, 3 y 4. «ms 
 {rows}
 
 Notas:
-- Las versiones no cumplen los umbrales de aceptación: se sirven como `experimental: true` (selección
-  experimental, `docs/backend/desviaciones_oe2.md`), y la activación responde 409 `no_cumple_umbrales`.
+- Las versiones se sirven por la selección experimental (`docs/backend/desviaciones_oe2.md`). `cumple_umbrales`
+  se lee por versión en `/modelos/activo`; la activación es por horizonte y en pareja, así que responde 409
+  `no_cumple_umbrales` si alguna de las dos versiones del horizonte no cumple.
 - Sin `X-API-Key`, `POST /admin/inferencias` responde 401.
 """
 

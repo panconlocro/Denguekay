@@ -317,7 +317,7 @@ tests/
     └── v2_serving/           # 6 distritos reales y lo que la v2 congelada calcula con los datos completos: orígenes,
                               #   predicciones, el modelo del bloque calendario_2025 y su entorno (no se regenera)
 docs/backend/                 # especificación OE2, desviaciones, operación, despliegue y contrato (openapi_v1.json congelado)
-└── evidencia/                # SQL de la migración, prueba de humo TB1 (versionado)
+└── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
 models/serving/               # BD SQLite y ejecuciones locales; no se versionan
 └── demo/                     # BD de demostración (D1), su storage y su MLflow; se comparte fuera de Git
