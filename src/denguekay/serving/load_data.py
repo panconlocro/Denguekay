@@ -8,7 +8,7 @@ recorded as an ``ejecucion`` of type ``ingesta``. It persists no feature enginee
 """
 
 import argparse
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, timedelta
 import hashlib
 import json
@@ -51,7 +51,6 @@ class LoadBatch:
     hashes: dict
     validacion_gx: dict
     fecha_corte_datos: date
-    seleccion_experimental: dict = field(default_factory=dict)
 
 
 def source_hashes():
@@ -179,8 +178,7 @@ def prepare_observations(silver, coverage, gold, sala):
     return result, cutoff
 
 
-def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation,
-                          experimental_selection=None):
+def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation):
     """Build the whole batch; kept apart from file reading so it can be tested with fixtures."""
     provinces, districts = prepare_districts(catalog, coordinates, census_population_2017(silver))
     observations, cutoff = prepare_observations(silver, coverage, gold, sala)
@@ -189,8 +187,7 @@ def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hash
         raise ValueError("Hay observaciones de distritos fuera del catálogo")
     # The calendar covers the history and one year of future inference targets.
     weeks = prepare_weeks(date(2017, 1, 1), pd.Timestamp(cutoff) + pd.Timedelta(days=371))
-    return LoadBatch(provinces, districts, weeks, observations, hashes, gx_validation, cutoff,
-                      experimental_selection or {})
+    return LoadBatch(provinces, districts, weeks, observations, hashes, gx_validation, cutoff)
 
 
 def read_silver(path=SILVER_INTEGRATED):
@@ -201,7 +198,6 @@ def prepare_load():
     """Validate the original files before preparing any write."""
     from denguekay.features.model_input_contract import audit_handoff
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
-    from denguekay.serving.settings import service_settings
     from denguekay.data.validation.gx_quality import read_gold, validate_modeling_inputs
 
     hashes = source_hashes()
@@ -211,8 +207,7 @@ def prepare_load():
     data = prepare_from_tables(
         load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS), read_silver(),
         pd.read_csv(SILVER_INTEGRATED.with_suffix(".coverage.csv"), dtype={"ubigeo": "string"}),
-        gold, pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}), hashes, quality,
-        service_settings().seleccion_experimental)
+        gold, pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}), hashes, quality)
     if hashes != source_hashes():
         raise ValueError("Las fuentes cambiaron durante la validación; vuelva a ejecutar la carga")
     return data
@@ -234,8 +229,6 @@ def existing_ingestion(sesion, fingerprint):
 
 def persist_load(sesion, data):
     """Insert/update the batch in the caller's transaction, without duplicating it."""
-    from denguekay.serving.parameters import seed_experimental_selection
-
     if not data.validacion_gx.get("exito"):
         raise ValueError("No se permite cargar entradas que no aprobaron GX")
     fingerprint = load_fingerprint(data)
@@ -252,8 +245,6 @@ def persist_load(sesion, data):
     upsert(sesion, WeeklyObservation.__table__,
            [{**o, "fecha_extraccion": instant, "id_ejecucion": run.id_ejecucion} for o in data.observaciones],
            ["ubigeo", "id_semana"])
-    if data.seleccion_experimental:
-        seed_experimental_selection(sesion, data.seleccion_experimental)
     last = max(o["id_semana"] for o in data.observaciones)
     summary = {"provincias": len(data.provincias), "distritos": len(data.distritos),
                "semanas_calendario": len(data.semanas), "observaciones": len(data.observaciones),

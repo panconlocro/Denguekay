@@ -1,0 +1,29 @@
+{
+ "bloque": "calendario_2025",
+ "corte_bloque": "2024-12-07",
+ "alfa": {
+  "2": 0.6160617334673676,
+  "3": 0.9252202994147944,
+  "4": 1.255566226660742
+ },
+ "platt": {
+  "2": [
+   0.9664638304940294,
+   0.43521649224752235
+  ],
+  "3": [
+   0.9624916218746834,
+   0.5594998042108728
+  ],
+  "4": [
+   0.9709564486445161,
+   0.6539210347191647
+  ]
+ },
+ "platt_max_diferencia_con_calibrate_chronologically": {
+  "2": 0.0,
+  "3": 0.0,
+  "4": 0.0
+ },
+ "nota": "Modelo del bloque calendario_2025 de frozen_configs.predict (65 distritos, semilla 17), su α dentro de la muestra y el Platt cronológico de ese bloque (coeficientes de LogisticRegression)"
+}

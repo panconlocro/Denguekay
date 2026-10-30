@@ -80,7 +80,7 @@ def leer_muestra():
             "gold": gold, "sala": leer_csv("sala_muestra.csv")}
 
 
-def datos_muestra(carpeta, seleccion_experimental=None):
+def datos_muestra(carpeta):
     """Ejecuta GX sobre gold real y prepara el lote de carga OE2 desde las fixtures."""
     # Importación diferida: evita cargar GX al importar este módulo.
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
@@ -98,4 +98,4 @@ def datos_muestra(carpeta, seleccion_experimental=None):
     hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in archivos + [UBIGEO_CATALOG, DISTRICT_COORDS]}
     return prepare_from_tables(load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS),
                                  muestra["silver"], muestra["cobertura"], muestra["gold"], muestra["sala"],
-                                 hashes, {"exito": calidad["exito"], "suites": [calidad]}, seleccion_experimental)
+                                 hashes, {"exito": calidad["exito"], "suites": [calidad]})

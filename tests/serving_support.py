@@ -5,12 +5,32 @@ import hashlib
 import json
 
 from backend_support import leer_csv
-from denguekay.serving.settings import service_settings
+from denguekay.serving.settings import ServiceSettings
 from denguekay.serving.predictors import v0_compact_xgb as v0
 from denguekay.serving.protocol import Protocol
 from denguekay.config.paths import BACKEND_FIXTURES
 
 CORTE = date(2025, 12, 27)
+# La v0 de las pruebas fija su configuración y su selección aquí: config.yaml ya publica la v2 y la
+# selección experimental la fija la publicación, no load_data (fase 4).
+V0_PAQUETE = {"tipo": "v0_compact_xgb", "horizontes": [2, 4],
+              "opciones": {"variantes": {"clasificacion": "base_6_poblacion_2017", "regresion": "base_6"}}}
+V0_SELECCION = {2: {"clasificacion": "clf-h2-v1", "regresion": "reg-h2-v1"},
+                4: {"clasificacion": "clf-h4-v1", "regresion": "reg-h4-v1"}}
+
+
+def configuracion_v0():
+    """Opciones de servicio con el paquete v0 de las pruebas."""
+    return ServiceSettings(paquete=V0_PAQUETE, servir_no_validadas=True, cors_origen="http://localhost:5173")
+
+
+def fijar_seleccion(motor, seleccion=None):
+    """Selección experimental en la BD temporal (la de la v0 por defecto), como haría publish."""
+    from denguekay.db.session import transaction
+    from denguekay.serving.parameters import set_experimental_selection
+
+    with transaction(motor) as sesion:
+        return set_experimental_selection(sesion, V0_SELECCION if seleccion is None else seleccion)
 
 
 def protocolo_muestra():
@@ -34,7 +54,7 @@ def protocolo_muestra():
 def preparar_muestra():
     """Entrena XGBoost real sobre filas reales de gold; no usa dobles ni probabilidades fijas."""
     protocolo = protocolo_muestra()
-    cfg = service_settings()
+    cfg = configuracion_v0()
     preparadas = v0.train_service_versions(protocolo, (2, 4), cfg.opciones["variantes"], CORTE)
     # El booster de prueba se ajustó sobre estos archivos, no sobre gold completo.
     for (h, _), preparada in preparadas.items():
@@ -49,8 +69,12 @@ def sample_package(cfg, protocol, trained):
 
 
 def publish_sample(engine, load, cfg, protocol, trained, storage, run_id, fingerprint):
-    """Full publication of the fixtures with the current inference (like ``publish --inferir``)."""
+    """Full publication of the fixtures with the current inference (like ``publish --inferir``).
+
+    The v0 selection is set first, as load_data seeded it before the publication until phase 4.
+    """
     from denguekay.serving.publish import publish_to_db
 
+    fijar_seleccion(engine)
     return publish_to_db(engine, load, sample_package(cfg, protocol, trained), run_id, fingerprint, storage, 0,
                          servir_no_validadas=cfg.servir_no_validadas, run_inference=True)

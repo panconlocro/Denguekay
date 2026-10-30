@@ -23,20 +23,19 @@ xgboost:
 
 serving:
   # Paquete de modelo que construye la publicación (denguekay.serving.predictors): tipo de predictor,
-  # horizontes y opciones propias del tipo. v0_compact_xgb = modelo v0 (protocolo compacto).
+  # horizontes y opciones propias del tipo. v2_e3_s4 = modelo v2 (CONFIG_2026, E3 multisalida S4_s3);
+  # nivel_intervalo debe coincidir con parametro_sistema.nivel_intervalo_casos. La v0 sigue registrada
+  # como tipo v0_compact_xgb (opciones: variantes del protocolo compacto).
   paquete:
-    tipo: v0_compact_xgb
-    horizontes: [2, 4]
+    tipo: v2_e3_s4
+    horizontes: [2, 3, 4]
     opciones:
-      variantes:
-        clasificacion: base_6_poblacion_2017
-        regresion: base_6
-  # Demo experimental (desviación temporal OE2): si no hay versión activa, se usa
-  # esta selección. Solo siembra parametro_sistema.seleccion_experimental.
+      configuracion: v2
+      nivel_intervalo: 0.80
+  # Demo experimental (desviación temporal OE2): si no hay versión activa, se sirve la
+  # selección de parametro_sistema.seleccion_experimental, que fija la publicación
+  # (python -m denguekay.serving.publish --seleccionar-experimental).
   servir_no_validadas: true
-  seleccion_experimental:
-    "2": {clasificacion: clf-h2-v1, regresion: reg-h2-v1}
-    "4": {clasificacion: clf-h4-v1, regresion: reg-h4-v1}
   cors_origen: "http://localhost:5173"
   # Cortes de riesgo, umbrales de aceptación (bloque temporada_2024) y regla de
   # brote viven en parametro_sistema; los siembra la migración 0003_oe2.

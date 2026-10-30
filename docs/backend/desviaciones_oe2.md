@@ -19,7 +19,7 @@ Tipos de desviación:
 
 | # | Tema | Decisión | Tipo |
 |---|---|---|---|
-| a | Modelos que no cumplen umbrales | Se respeta `CHECK (estado <> 'activa' OR cumple_umbrales)`: las versiones quedan `candidata`. Nueva clave `parametro_sistema.seleccion_experimental` con el código de la versión de clasificación y de regresión por horizonte, sembrada desde `config.yaml`. La inferencia usa la versión `activa` si existe; si no, la de `seleccion_experimental` cuando `servir_no_validadas = true`; si es `false`, las predicciones se guardan `no_disponible` con motivo. La API devuelve `"experimental": true` en predicciones, alertas y tablero cuando la versión usada tiene `cumple_umbrales = false` (campo calculado, no columna). `ejecucion.detalle` registra que la ejecución fue experimental | Temporal |
+| a | Modelos que no cumplen umbrales | Se respeta `CHECK (estado <> 'activa' OR cumple_umbrales)`: las versiones quedan `candidata`. Nueva clave `parametro_sistema.seleccion_experimental` con el código de la versión de clasificación y de regresión por horizonte. Desde la fase 4 de la API v1 la fija la publicación (`publish --seleccionar-experimental`, en la misma transacción que registra el paquete); hasta entonces la sembraba `load_data` desde `config.yaml`. La inferencia usa la versión `activa` si existe; si no, la de `seleccion_experimental` cuando `servir_no_validadas = true`; si es `false`, las predicciones se guardan `no_disponible` con motivo. La API devuelve `"experimental": true` en predicciones, alertas y tablero cuando la versión usada tiene `cumple_umbrales = false` (campo calculado, no columna). `ejecucion.detalle` registra que la ejecución fue experimental | Temporal |
 | b | Predicciones OOS | Se guardan en `prediccion` como cortes pasados, con `id_version_clasificador` e `id_version_regresor` en NULL; el bloque y su origen van en `ejecucion.detalle`. No se crean versiones sin booster. Las métricas por bloque quedan en `version_modelo.metricas` de las versiones de servicio | Extensión (uso) |
 | c | Vector de características | Se reconstruye en memoria desde la BD (`observacion_semanal` + `distrito.poblacion_censo_2017` + calendario) y se elimina `prediccion.caracteristicas`. Condición: un test compara, para una muestra de distritos y cortes, el vector reconstruido con el de gold (tolerancia 1e-9), y otro comprueba que la probabilidad resultante coincide con la del pipeline actual. Si no coinciden, se detiene el refactor | Conforme al documento |
 | d | Tablas extra | `importancia_variable` se mantiene (HU0008-4) con FK a `version_modelo.id_version`. `carga_datos`, `ejecucion_prediccion` y `activacion_modelo` se absorben en `ejecucion` (`tipo` + `detalle`) | Extensión |
@@ -28,15 +28,15 @@ Tipos de desviación:
 | — | Persistencia | No es una `version_modelo` (el DDL solo admite `clasificacion` y `regresion`). La línea base se calcula al vuelo: casos de la semana de corte en `observacion_semanal` | Conforme al documento |
 | — | Idempotencia de cargas | La huella va en `ejecucion.detalle->>'huella'`. En PostgreSQL, índice por expresión sobre ese campo para `tipo = 'ingesta'` | Extensión |
 | — | Bloque de validación | La semilla `umbrales_aceptacion` incluye `"bloque": "temporada_2024"`; `cumple_umbrales` se calcula leyendo umbrales y bloque de la BD, no de `config.yaml` | Corrección del documento |
-| — | Horizonte 3 | La API responde `no_disponible` con motivo «sin modelo para h=3»; las escrituras con h=3 devuelven 409. Desde el contrato v1 (decisión C1 de `api_v1_decisiones.md`) la regla es genérica: los horizontes servidos salen de las versiones en uso de la BD y cualquier horizonte sin modelo responde «sin modelo para h=N» | Conforme al documento |
 | — | `alerta.motivo` | Se mantiene como columna opcional (nullable) que explica el retiro | Extensión |
 | — | Reproducibilidad del modelo | Una sola columna opcional `version_modelo.reproducibilidad` jsonb con `device`, `version_xgboost`, `plataforma`, `particion_temporal` y fechas de entrenamiento | Extensión |
 | — | `GET /configuracion` (contrato v1, C2; aprobada por Rosa el 29/10/2026) | Extensión de lectura con horizontes disponibles y por defecto, cortes, niveles, leyenda, corte vigente y nota experimental. Nueva clave `parametro_sistema.horizonte_por_defecto` = `{"horizonte": 4}`, sembrada por la migración de solo datos `0004_v1`; si falta, 503 `parametros_no_configurados` | Extensión |
 | — | Intervalo de casos (contrato v1, C3; aprobada por Rosa el 29/10/2026) | Campos anulables `casos_intervalo_inferior`, `casos_intervalo_superior`, `nivel_intervalo` (0,80) y `motivo_intervalo` en las predicciones y el mapa. La migración `0005_v1` agrega a `prediccion` dos columnas anulables `numeric(10,2)` con el CHECK `ck_prediccion_intervalo_coherente` (las dos juntas, solo en predicciones disponibles, `0 ≤ inferior ≤ superior`); las escribe el predictor que los estime. El nivel no es una columna: es `parametro_sistema.nivel_intervalo_casos` = `{"nivel": 0.80}` (sembrado por la 0005); el manifiesto de cada paquete declara su nivel y la inferencia rechaza (409) uno distinto. Cambiar el parámetro obliga a volver a inferir | Extensión |
 | — | Humedad en `double precision` (M5; aprobada por Rosa el 29/10/2026) | `observacion_semanal.hum_rel_media_pct` pasa de `numeric(5,2)` a `double precision` (migración `0005_v1`) y `load_data` deja de redondearla: con dos decimales, la media de 5 semanas de A3 difería de gold hasta 0,0043 y la paridad ≤ 1e-9 de la v2 era imposible. El CHECK `BETWEEN 0 AND 100` se mantiene. En SQLite (solo pruebas) el tipo declarado no cambia porque SQLite guarda el `REAL` completo | Corrección del documento |
+| f″ | Selección experimental por la publicación (P4; aprobada por Rosa el 29/10/2026) | Qué modelo se sirve es un dato operativo: lo fija `publish --seleccionar-experimental`, no una migración (en la transacción del registro; si la publicación se reutiliza, en una transacción propia). La migración `0006_v1` (solo permisos, sin datos de modelos) crea vacía la fila `seleccion_experimental` si falta, da a `rol_pipeline` `UPDATE (valor, fecha_actualizacion)` en `parametro_sistema` y lo acota por RLS a esa fila: la política de servicio de la tabla pasa a ser solo de lectura y `pipeline_seleccion_experimental` permite esa actualización. Sin selección para un horizonte, la API responde como cuando no hay modelo | Corrección del documento |
 | f′ | Permisos de `rol_pipeline` (D2; aprobada por Rosa el 29/10/2026) | Amplía la decisión f: `rol_pipeline` recibe además INSERT y UPDATE en `prediccion` (migración `0005_v1`) para las predicciones OOS de cada paquete. La inferencia vigente la hace la API (`rol_api`), no la publicación | Corrección del documento |
 | — | Paquete de modelo (M2; aprobada por Rosa el 29/10/2026) | `version_modelo.ruta_artefacto` apunta al manifiesto `modelos/<codigo_paquete>/manifest.json` y `sha256_artefacto` es su SHA-256. El manifiesto declara el tipo de predictor, horizontes, variables, nivel del intervalo y el SHA-256 de cada archivo; la inferencia verifica todos al cargar (409 `artefacto_invalido`). Sin columnas nuevas | Extensión (uso) |
-| — | Versión del contrato (C5) | `info.version` del OpenAPI = versión del contrato (`1.0.0`, semver), cabecera `X-Version-Contrato` en todas las respuestas; `version_api` de `/salud` sigue siendo la versión de la aplicación | Extensión |
+| — | Versión del contrato (C5) | `info.version` del OpenAPI = versión del contrato (semver; `1.1.0` desde la fase 4), cabecera `X-Version-Contrato` en todas las respuestas; `version_api` de `/salud` sigue siendo la versión de la aplicación | Extensión |
 | — | Geometría del mapa (C4) | El contrato admite `Point`, `Polygon` y `MultiPolygon`; hoy se sirven centroides (`Point`) | Conforme al documento |
 
 ## 2. Observaciones de datos (no son desviaciones de diseño)
@@ -104,7 +104,7 @@ Tipos de desviación:
 | Tablero | `GET /tablero/resumen` | `GET /tablero` | **Adaptar**, sin alias |
 | Mapa | `GET /mapa-riesgo` (GeoJSON) | `GET /mapa` + `GET /distritos/geojson` | **Adaptar**: un solo GeoJSON con el riesgo en `properties` |
 | Modelo activo | `GET /modelos/activo` | `GET /modelos` (lista) | **Adaptar**; se elimina la lista. Sin versión activa, responde la selección experimental marcada `experimental: true` |
-| Inferencia | `POST /admin/inferencias` (semana de corte) | `POST /predicciones/recalcular` | **Adaptar**; h=3 → 409 |
+| Inferencia | `POST /admin/inferencias` (semana de corte) | `POST /predicciones/recalcular` | **Adaptar**; un horizonte sin modelo → 409 |
 | Activación | `POST /admin/modelos/{version}/activar` | `POST /modelos/{id}/activar` | **Adaptar**; separada de la inferencia; una versión con `cumple_umbrales = false` no se activa (409) |
 | Campo `experimental` | No existe | `estado_validacion` | **Temporal** (a): calculado en predicciones, alertas y tablero |
 | Filtros de alertas | horizonte, distrito, nivel | horizonte, ubigeo, estado | **Adaptar**: se añade `nivel`; `estado` queda como filtro extra |
@@ -156,7 +156,8 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
   pipeline (`FECHA_SOCIO_2017`).
 - **Códigos de versión:** `clf-h{h}-v{n}` / `reg-h{h}-v{n}`; un booster idéntico (mismo SHA-256 y
   mismo dataset) reutiliza su versión. `seleccion_experimental` no se actualiza sola: si una
-  nueva publicación crea `v2`, hay que actualizar ese parámetro en la BD.
+  nueva publicación crea `v2`, hay que actualizar ese parámetro en la BD (desde la fase 4 de la API v1,
+  con `publish --seleccionar-experimental`).
 - **Predicciones OOS:** se importan los bloques temporada 2022, 2023, 2024 y calendario 2025
   (los mismos que publicaba el backend anterior); no generan alertas (son históricas) y su
   marca `experimental` sale de las versiones de servicio del mismo horizonte.
@@ -185,9 +186,9 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
 - **Corte vigente:** el último `id_semana_corte` generado por una inferencia operativa (publicación
   o API), no por la importación OOS. `/predicciones` acepta `corte` (anio*100+semana) para consultar
   cortes pasados; cada predicción indica `tipo` = `vigente` o `retrospectiva`.
-- **h=3:** las lecturas responden 200 con `disponible: false` y motivo «sin modelo para h=3»
-  (listas vacías; en el mapa, todos los distritos «Sin datos»); `POST /admin/inferencias` con h=3
-  responde 409.
+- **h=3** (nota histórica de TB1; desviación retirada en la fase 4 de la API v1, cuando la v2 sirve h=3):
+  las lecturas respondían 200 con `disponible: false` y motivo «sin modelo para h=3» (listas vacías; en el mapa,
+  todos los distritos «Sin datos»); `POST /admin/inferencias` con h=3 respondía 409.
 - **`/mapa-riesgo`:** GeoJSON `FeatureCollection` con un `Point` (centroide) por distrito; la
   referencia del proyecto no tiene polígonos, así que el bucket `geodatos` no se usa en TB1.
   Metadatos (horizonte, cortes, leyenda, `experimental`) van como miembros extra (RFC 7946).
@@ -242,6 +243,9 @@ Extensiones del esquema (sección 5, Tablas 9–14):
       `ck_prediccion_intervalo_coherente`;
     - `observacion_semanal.hum_rel_media_pct` en `double precision` (corrección: `numeric(5,2)` redondeaba la humedad que usa A3);
     - `GRANT INSERT, UPDATE ON prediccion TO rol_pipeline` (predicciones OOS de cada paquete).
+8c. Migración `0006_v1` (fase 4): fila `seleccion_experimental` vacía si falta; `GRANT UPDATE (valor,
+    fecha_actualizacion) ON parametro_sistema TO rol_pipeline`, acotado por RLS a la fila `seleccion_experimental`
+    (política `pipeline_seleccion_experimental`; `servicio_parametro_sistema` pasa a `FOR SELECT`).
 
 API (Tabla 2):
 9. Endpoints extra: GET `/distritos/{ubigeo}`, `/observaciones`, `/alertas/{id}`, `/modelos/{id}`,
@@ -249,8 +253,9 @@ API (Tabla 2):
 10. Parámetros: `corte` en `/predicciones`; `desde`/`hasta` en `/series`; filtro extra `estado` en
     `/alertas`; cuerpo `{horizonte, id_semana_corte}` en `POST /admin/inferencias`; `{version}` =
     `id_version` en la activación.
-11. Campo calculado `experimental` en predicciones, alertas, tablero y modelos; h=3 responde
-    `no_disponible` («sin modelo para h=3») en lecturas y 409 en la inferencia.
+11. Campo calculado `experimental` en predicciones, alertas, tablero y modelos. Un horizonte sin modelo
+    responde `no_disponible` («sin modelo para h=N») en lecturas y 409 en la inferencia; con la v2 los tres
+    horizontes del documento tienen modelo (la desviación de h=3 se retiró en la fase 4).
 12. `/mapa-riesgo` devuelve centroides (`Point`), no polígonos.
 
 Operación y datos:
@@ -270,11 +275,15 @@ Origen: encargo de arquitectura multi-horizonte (`research/04_horizon_architectu
   - una fila de `version_modelo` por `(tarea, horizonte)` que apunta al mismo manifiesto;
   - la activación por horizonte y en pareja;
   - la regla de brote (`parametro_sistema.regla_brote`) como entrada disponible para los predictores (`ServingInputs.outbreak_rule`).
-- **Para la fase 4** (servir la v2):
-  - el cálculo en memoria del umbral de brote de las semanas futuras, dentro del predictor v2;
+- **Implementado en la fase 4** (servir la v2, predictor `v2_e3_s4`):
+  - el umbral de brote de las semanas objetivo, calculado en memoria con `outbreak_label.future_outbreak_threshold`
+    desde `observacion_semanal.casos_dengue` (no desde la columna redondeada); un test exige el mismo valor que gold;
   - `algoritmo = 'xgboost_multisalida_bn'`, `grupo_artefacto` = código del paquete y `umbral_probabilidad = 0,500`;
   - importancias SHAP por horizonte calculadas al publicar (no en la API);
-  - códigos `v2-clf-h2-1`.
+  - códigos `v2-clf-h2-1` … `v2-reg-h4-1`;
+  - el paquete: `booster.json`, `dispersion.json` (α por horizonte) y `platt.json` (a y b por horizonte); el
+    intervalo de casos es el central de la NB2 al 0,80 y **no está calibrado** (Platt solo calibra la probabilidad);
+  - h=3 tiene modelo: se retira la desviación «sin modelo para h=3».
 - La v0 también es un paquete (cuatro boosters), con sus cuatro filas sobre el mismo manifiesto.
 
 La tabla siguiente es la propuesta original:

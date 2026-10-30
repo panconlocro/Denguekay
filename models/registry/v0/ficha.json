@@ -1,14 +1,14 @@
 {
   "version": "v0",
-  "estado": "servida",
-  "estado_detalle": "Es la que sirve hoy el backend (versiones clf-h2-v1, reg-h2-v1, clf-h4-v1 y reg-h4-v1), marcadas experimental: true porque no cumplen los umbrales de aceptación. Desde la fase 3 de la API v1 la ejecuta el predictor v0_compact_xgb (denguekay.serving.predictors) a partir de un paquete con los cuatro boosters.",
+  "estado": "registrada",
+  "estado_detalle": "Se sirvió hasta la fase 4 de la API v1 (versiones clf-h2-v1, reg-h2-v1, clf-h4-v1 y reg-h4-v1, experimental: true). Desde la fase 4 se sirve la v2; la v0 sigue registrada como predictor v0_compact_xgb (denguekay.serving.predictors) para reproducir lo publicado antes y para la prueba de no regresión (tests/serving/test_v0_parity.py). Sus OOS de la serie histórica las reemplazan las de la v2 (decisión M6).",
   "predictor": "v0_compact_xgb",
   "tag": "model/v0",
   "commit": "3d59090",
   "modelo": "E1·S1: un XGBoost directo por horizonte y tarea (clasificación de brote y regresión de casos), h=2 y h=4; h=3 responde 409",
   "configuracion": {
     "modulo": "configs/config.yaml",
-    "clave": "serving.paquete.opciones.variantes",
+    "clave": "serving.paquete.opciones.variantes con serving.paquete.tipo = v0_compact_xgb (desde la fase 4 config.yaml publica la v2)",
     "constante": null,
     "variantes": {"clasificacion": "base_6_poblacion_2017", "regresion": "base_6"},
     "hiperparametros": "denguekay.model.train.BASE_PARAMS"

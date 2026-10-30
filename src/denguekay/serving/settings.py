@@ -20,7 +20,6 @@ HORIZONS = (2, 3, 4)  # admitted by the DDL CHECK
 class ServiceSettings:
     paquete: dict
     servir_no_validadas: bool
-    seleccion_experimental: dict
     cors_origen: str
 
     @property
@@ -54,10 +53,4 @@ def service_settings(path=CONFIG):
         raise ValueError("serving.paquete.opciones debe ser un diccionario")
     if not isinstance(options.servir_no_validadas, bool):
         raise ValueError("servir_no_validadas debe ser un booleano")
-    selection = options.seleccion_experimental
-    if not isinstance(selection, dict) or any(
-            not isinstance(v, dict) or set(v) != {"clasificacion", "regresion"} for v in selection.values()):
-        raise ValueError("seleccion_experimental debe indicar clasificacion y regresion por horizonte")
-    if any(len(code) > 20 for v in selection.values() for code in v.values()):
-        raise ValueError("Los códigos de versión tienen como máximo 20 caracteres")
     return options

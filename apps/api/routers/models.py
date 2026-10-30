@@ -23,7 +23,7 @@ def modelo(identificador: Identifier, request: Request, response: Response, sesi
 
 
 @router.get("/modelos/{identificador}/variables", response_model=VariablesRespuesta,
-            summary="Importancias gain de una versión (extensión, HU0008-4)")
+            summary="Importancias de las variables de una versión (extensión, HU0008-4)")
 def variables(identificador: Identifier, request: Request, response: Response, sesion: DbSession):
     """Las importancias no implican causalidad; su ausencia se informa sin rellenar con ceros."""
     return cached_read(request, response, sesion, lambda: q.variables(sesion, identificador))

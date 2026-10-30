@@ -3,7 +3,9 @@
 Steps: load (ingestion), the type's fit and its MLflow logging (retraining), the package (manifest and
 files) in Storage, its ``candidata`` versions (one per task and horizon) and its OOS predictions as past
 cutoffs. The current inference is done by the API (``POST /admin/inferencias``, decision D2); ``--inferir``
-also runs it in this process for local use.
+also runs it in this process for local use. ``--seleccionar-experimental`` makes the package's versions the
+experimental selection of its horizons (``parametro_sistema.seleccion_experimental``) in the same transaction:
+which model is served is operational data, set by publication and not by a migration.
 """
 
 import argparse
@@ -56,9 +58,18 @@ def infer_current(motor, horizons, storage, servir_no_validadas):
                 for h in horizons]
 
 
+def select_published(motor, summary, horizons):
+    """Experimental selection with the versions of an already registered (reused) publication."""
+    codes = {(v["horizonte"], v["tarea"]): v["codigo"] for v in summary["versiones"]}
+    selection = {h: {task: codes[h, task] for (vh, task) in sorted(codes) if vh == h} for h in horizons}
+    with transaction(motor) as sesion:
+        return parametros.set_experimental_selection(sesion, selection)
+
+
 def publish_to_db(motor, load, built, run_id, fingerprint, storage, start, *, servir_no_validadas=True,
-                  run_inference=False):
-    """Package in Storage, versions and OOS in a single transaction; optionally the current inference."""
+                  run_inference=False, select_experimental=False):
+    """Package in Storage, versions and OOS in a single transaction; optionally the experimental selection
+    of its horizons and the current inference (which then uses that selection)."""
     with transaction(motor) as sesion:
         run = Run(tipo="reentrenamiento", estado="en_curso", detalle={"huella": fingerprint})
         sesion.add(run)
@@ -67,6 +78,8 @@ def publish_to_db(motor, load, built, run_id, fingerprint, storage, start, *, se
         path, sha256 = save_package(storage, built, meets)
         versions = save_versions(sesion, built, path, sha256, run_id, meets)
         oos = import_oos(sesion, built.oos, built.oos_detail, versions) if built.oos is not None else []
+        selection = (parametros.set_experimental_selection(sesion, selection_of(versions, built.horizons))
+                     if select_experimental else None)
         current = ([infer(sesion, h, storage=storage, servir_no_validadas=servir_no_validadas, origin="publicacion")
                     for h in built.horizons] if run_inference else [])
         summary = {"mlflow_run_id": run_id, "fecha_corte_datos": str(load.fecha_corte_datos),
@@ -74,7 +87,7 @@ def publish_to_db(motor, load, built, run_id, fingerprint, storage, start, *, se
                    "versiones": [{"codigo": v.codigo, "tarea": v.tarea, "horizonte": v.horizonte,
                                   "cumple_umbrales": v.cumple_umbrales, "estado": v.estado,
                                   "ruta_artefacto": v.ruta_artefacto} for v in versions.values()],
-                   "oos": oos, "inferencias_vigentes": current}
+                   "oos": oos, "seleccion_experimental": selection, "inferencias_vigentes": current}
         run.estado, run.fin = "exitosa", utc_now()
         run.id_semana_corte = current[0]["id_semana_corte"] if current else None
         run.detalle = {"huella": fingerprint, "resumen": summary,
@@ -83,7 +96,12 @@ def publish_to_db(motor, load, built, run_id, fingerprint, storage, start, *, se
         return {"id_ejecucion": run.id_ejecucion, "reutilizada": False, **summary}
 
 
-def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False):
+def selection_of(versions, horizons):
+    """{horizon: {task: code}} of a package's versions."""
+    return {h: {task: v.codigo for (vh, task), v in sorted(versions.items()) if vh == h} for h in horizons}
+
+
+def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False, select_experimental=False):
     """Validate, fit, log to MLflow and commit the publication in the database."""
     start = time.perf_counter()
     cfg = cfg or service_settings()
@@ -106,6 +124,8 @@ def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False
         if previous is not None:
             summary = {"id_ejecucion": previous.id_ejecucion, "reutilizada": True, **previous.detalle["resumen"]}
     if previous is not None:
+        if select_experimental:
+            summary["seleccion_experimental"] = select_published(motor, summary, horizons)
         if run_inference:
             summary["inferencias_vigentes"] = infer_current(motor, horizons, storage, cfg.servir_no_validadas)
         return summary
@@ -121,7 +141,8 @@ def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False
         if load.hashes != source_hashes() or code_hashes() != {k: v for k, v in hashes.items() if k.startswith("src/denguekay/")}:
             raise ValueError("Las entradas o el código cambiaron durante la ejecución; publicación rechazada")
         summary = publish_to_db(motor, load, built, run_id, fingerprint, storage, start,
-                                servir_no_validadas=cfg.servir_no_validadas, run_inference=run_inference)
+                                servir_no_validadas=cfg.servir_no_validadas, run_inference=run_inference,
+                                select_experimental=select_experimental)
         (directory / "publicacion.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2, default=str) + "\n",
                                                     encoding="utf-8")
         return summary
@@ -131,17 +152,20 @@ def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False
 
 
 def main(argv=None):
-    """``python -m denguekay.serving.publish [--horizontes 2 4] [--inferir]``."""
+    """``python -m denguekay.serving.publish [--horizontes 2 3 4] [--seleccionar-experimental] [--inferir]``."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--horizontes", nargs="+", type=int, choices=(2, 3, 4), default=None,
                         help="Por defecto, los del paquete configurado en config.yaml (serving.paquete)")
+    parser.add_argument("--seleccionar-experimental", action="store_true",
+                        help="Fija las versiones publicadas como selección experimental de sus horizontes")
     parser.add_argument("--inferir", action="store_true",
                         help="Además corre la inferencia vigente en este proceso (uso local; en despliegue la hace la API)")
     args = parser.parse_args(argv)
     motor = None
     try:
         motor = make_engine()
-        print(json.dumps(publish(motor, args.horizontes, run_inference=args.inferir), ensure_ascii=False, default=str))
+        print(json.dumps(publish(motor, args.horizontes, run_inference=args.inferir,
+                                 select_experimental=args.seleccionar_experimental), ensure_ascii=False, default=str))
         return 0
     except SQLAlchemyError:
         print("No se pudo publicar: revise la conexión, migraciones y permisos de la BD", file=sys.stderr)

@@ -32,7 +32,7 @@ DESCRIPTIONS = {
     "AlertaRespuesta": "Alerta alto/muy_alto con cambio respecto del corte anterior y su predicción",
     "ModeloEnUso": "Versión en uso (activa o selección experimental) por tarea y horizonte",
     "ModeloDetalle": "Métricas por bloque, variables, hashes y reproducibilidad de una versión",
-    "VariablesRespuesta": "Importancias gain reales; no constituyen relaciones causales",
+    "VariablesRespuesta": "Importancias de la versión; el método con que se calcularon va en nota. No constituyen relaciones causales",
     "InferenciaRespuesta": "Resumen de la ejecución de inferencia confirmada en la BD",
     "ActivacionRespuesta": "Activación auditada como ejecución de mantenimiento",
 }

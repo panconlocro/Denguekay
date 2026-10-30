@@ -277,7 +277,8 @@ src/denguekay/serving/
 ├── inputs.py                 # ServingInputs: casos, clima, población, calendario y regla, desde la BD
 ├── predictors/               # motor enchufable (decisión M1): puerto Predictor y registro de tipos
 │   ├── base.py               #   puerto, columnas de salida, BuiltPackage y validación de la salida
-│   └── v0_compact_xgb.py     #   predictor y constructor del paquete de la v0 (4 boosters XGBoost)
+│   ├── v0_compact_xgb.py     #   predictor y constructor del paquete de la v0 (4 boosters XGBoost; registrada)
+│   └── v2_e3_s4.py           #   predictor y constructor del paquete de la v2 (E3 multisalida, NB2 + Platt; servida)
 ├── models.py                 # registro genérico de las versiones de un paquete (una por tarea y horizonte)
 ├── artifacts.py              # hashes y error de artefacto inválido
 ├── risk.py                   # nivel de riesgo y cambio de alerta
@@ -299,8 +300,10 @@ apps/api/                     # FastAPI: rutas de la Tabla 2 del documento OE2
 ├── routers/                  # reference (salud, configuración, distritos), data, surveillance, models y admin
 └── tools/                    # benchmark.py, export_openapi.py (--contrato), smoke_test.py
 tests/
-├── backend_support.py, serving_support.py, equivalence_support.py, contract_v1_support.py, pluggable_support.py
-├── db/, serving/, api/       # tests del backend (api/test_contract_v1.py: contrato con datos; serving/test_v0_parity.py)
+├── backend_support.py, serving_support.py, equivalence_support.py, contract_v1_support.py, pluggable_support.py,
+│   v2_support.py
+├── db/, serving/, api/       # tests del backend (api/test_contract_v1.py: contrato con datos; serving/test_v0_parity.py
+│                             #   y serving/test_v2_parity.py)
 ├── test_equivalence.py       # guardas de la reestructuración (V1/V2 bit a bit, esquema en 0003_oe2)
 ├── test_contract_v1_guards.py # guardas del contrato v1: OpenAPI, esquema por migración y smoke v1
 ├── test_layout.py            # sin restos del paquete src y dependencias en un solo sentido
@@ -308,7 +311,9 @@ tests/
     ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
     ├── equivalence/          # línea base del ADR 0001 (no se regenera; smoke.json es historia)
     ├── contract_v1/          # línea base v1: esquema de cada migración nueva y smoke v1 (no se regenera)
-    └── pluggable_predictor/  # línea base de la v0 antes del motor enchufable, sus boosters congelados y su entorno (no se regenera)
+    ├── pluggable_predictor/  # línea base de la v0 antes del motor enchufable, sus boosters congelados y su entorno (no se regenera)
+    └── v2_serving/           # 6 distritos reales y lo que la v2 congelada calcula con los datos completos: orígenes,
+                              #   predicciones, el modelo del bloque calendario_2025 y su entorno (no se regenera)
 docs/backend/                 # especificación OE2, desviaciones, operación y contrato (openapi_v1.json congelado)
 └── evidencia/                # SQL de la migración, prueba de humo TB1 (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
@@ -338,6 +343,31 @@ la implementación y mediciones reales. La copia de benchmark SQLite vive en
 suite completa con fixtures versionadas, sin descargar gold/silver ni desplegar:
 en Linux, Windows y macOS sobre SQLite, y en Linux contra un servicio PostgreSQL 18
 desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten.
+
+### Guardas y tolerancias por plataforma
+
+Las guardas que comparan con una línea base grabada siguen una sola regla:
+
+- **Entorno de referencia, bit a bit.** La línea base se graba una vez en un entorno conocido: Windows x86-64,
+  CPU con `n_jobs=2` y la versión de XGBoost de su `entorno.json`. Ahí la comparación es exacta: las guardas
+  V1/V2 de `tests/test_equivalence.py`, la paridad con reentrenamiento de la v0 y de la v2, y el serving de los
+  modelos congelados. Estas guardas no se relajan.
+- **Otras plataformas, tolerancia mínima justificada y declarada en el test.** La comparación sigue corriendo
+  y el mensaje de error da la diferencia máxima por columna; no se convierte en un skip:
+  - las llaves, los enteros y la aritmética exacta (p. ej. la media de cuatro enteros) son exactos en todas
+    las plataformas;
+  - los flotantes calculados con funciones trascendentes o reducciones (seno y coseno del calendario,
+    `log1p`, medias de clima, desviación estándar del umbral de brote) usan `rtol=0, atol=1e-12`. La libm y
+    las sumas vectorizadas de Linux y macOS pueden cambiar el último bit (se vio 1 ULP en
+    `semana_epi_coseno`);
+  - las predicciones de XGBoost con un modelo congelado usan `rtol=1e-6` (más un `atol=1e-8` para valores
+    cercanos a 0). XGBoost predice en float32 (precisión relativa ≈ 1,2e-7), y el build arm64 de macOS
+    redondea distinto (se vio 7,5e-9 en casos);
+  - las tolerancias ya acordadas con Rosa se mantienen en todas las plataformas: la precipitación de A3,
+    guardada en `numeric(7,2)`, usa 1e-9.
+- **Reentrenar no es comparable entre sistemas operativos** (decisión D1 del ADR 0001). Las pruebas que
+  reentrenan quedan clavadas al entorno de grabación y, fuera de él, se omiten con el motivo.
+
 
 ---
 

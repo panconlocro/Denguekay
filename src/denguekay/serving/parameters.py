@@ -3,7 +3,6 @@
 from sqlalchemy import select
 
 from denguekay.db.models import SystemParameter, utc_now
-from denguekay.db.session import upsert
 
 
 class MissingParameter(ValueError):
@@ -55,10 +54,17 @@ def experimental_selection(sesion):
     return {int(h): v for h, v in (value or {}).items()}
 
 
-def seed_experimental_selection(sesion, selection):
-    """Seed from config.yaml without overwriting an existing value (ON CONFLICT DO NOTHING)."""
-    upsert(sesion, SystemParameter.__table__, [{
-        "clave": "seleccion_experimental", "valor": {str(h): v for h, v in selection.items()},
-        "descripcion": "Desviación temporal: versiones candidatas que se sirven como experimentales "
-                       "mientras no haya una versión activa que cumpla los umbrales",
-        "fecha_actualizacion": utc_now()}], ["clave"], update=())
+def set_experimental_selection(sesion, selection):
+    """Set the selection of some horizons ({horizon: {task: code}}), keeping the other horizons.
+
+    Only UPDATE of the ``seleccion_experimental`` row (migration 0006_v1 seeds it empty and lets
+    ``rol_pipeline`` update that row alone); which model is served is operational data, not a migration.
+    """
+    row = sesion.get(SystemParameter, "seleccion_experimental")
+    if row is None:
+        raise MissingParameter("Falta el parámetro seleccion_experimental en parametro_sistema")
+    value = dict(row.valor or {})
+    value.update({str(h): dict(v) for h, v in selection.items()})
+    row.valor, row.fecha_actualizacion = value, utc_now()
+    sesion.flush()
+    return {int(h): v for h, v in value.items()}
