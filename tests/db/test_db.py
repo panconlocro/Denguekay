@@ -49,7 +49,8 @@ class TestConfiguracionBD(unittest.TestCase):
                 self.assertEqual(migration_url().username, "dueno")
             with mock.patch.dict(os.environ, {"MIGRATION_DATABASE_URL": " "}):
                 self.assertEqual(migration_url().get_backend_name(), "sqlite")
-            with mock.patch.dict(os.environ, {"MIGRATION_DATABASE_URL": "mysql://x/y"}),                     self.assertRaisesRegex(InvalidDatabaseSettings, "MIGRATION_DATABASE_URL"):
+            with mock.patch.dict(os.environ, {"MIGRATION_DATABASE_URL": "mysql://x/y"}), \
+                    self.assertRaisesRegex(InvalidDatabaseSettings, "MIGRATION_DATABASE_URL"):
                 migration_url()
 
     def test_sentencias_preparadas_desactivables_para_el_pooler(self):
@@ -57,11 +58,13 @@ class TestConfiguracionBD(unittest.TestCase):
             for valor, esperado in (("", True), ("true", True), ("FALSE", False), ("0", False)):
                 with self.subTest(valor=valor), mock.patch.dict(os.environ, {"DB_PREPARED_STATEMENTS": valor}):
                     self.assertIs(prepared_statements(), esperado)
-            with mock.patch.dict(os.environ, {"DB_PREPARED_STATEMENTS": "a veces"}),                     self.assertRaises(InvalidDatabaseSettings):
+            with mock.patch.dict(os.environ, {"DB_PREPARED_STATEMENTS": "a veces"}), \
+                    self.assertRaises(InvalidDatabaseSettings):
                 prepared_statements()
             url = "postgresql+psycopg://usuario:clave@localhost:6543/pruebas"
             for valor, preparadas in (("false", False), ("true", True)):
-                with self.subTest(valor=valor), mock.patch.dict(os.environ, {"DB_PREPARED_STATEMENTS": valor}),                         mock.patch("denguekay.db.session.create_engine") as crear:
+                with self.subTest(valor=valor), mock.patch.dict(os.environ, {"DB_PREPARED_STATEMENTS": valor}), \
+                        mock.patch("denguekay.db.session.create_engine") as crear:
                     make_engine(url)
                     argumentos = crear.call_args.kwargs["connect_args"]
                     self.assertEqual("prepare_threshold" in argumentos, not preparadas)

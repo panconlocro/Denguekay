@@ -16,7 +16,9 @@ PowerShell**, desde la raíz del repo. Diseño: [especificación OE2](especifica
 | `DENGUEKAY_PG_PRUEBAS_URL` | BD PostgreSQL **desechable** para los tests (su nombre debe contener «prueba») | variable de usuario |
 | `MLFLOW_TRACKING_URI` | Opcional; por defecto `mlflow.db` en la raíz | entorno |
 
-Las variables del proceso tienen prioridad sobre `.env`. Ningún comando imprime credenciales.
+Las variables del proceso tienen prioridad sobre `.env`. Ningún comando imprime credenciales. Ojo: si `.env` define
+`MIGRATION_DATABASE_URL`, `alembic upgrade head` migra esa BD aunque el proceso traiga otro `DATABASE_URL`; para
+migrar una BD temporal, define también `MIGRATION_DATABASE_URL` en el proceso (o déjala vacía en `.env`).
 
 ## Levantar el demo
 

@@ -11,7 +11,8 @@ de Rosa y Nicolás (UPC), con metodología CRISP-DM.
   el backend es la [v0](models/registry/v0/ficha.md), como experimental. Historial en
   [models/registry/CHANGELOG.md](models/registry/CHANGELOG.md).
 - **Backend:** PostgreSQL con el esquema del documento OE2, carga validada con Great Expectations,
-  seguimiento en MLflow y una API FastAPI. En TB1 todo corre en local (sin Supabase ni Render).
+  seguimiento en MLflow y una API FastAPI. El repo está preparado para desplegar en Render, Supabase y Vercel
+  ([despliegue](docs/backend/despliegue.md)); el despliegue lo hace Rosa a mano.
 - **Frontend:** planificado en [apps/web/](apps/web/README.md) (React + Vite).
 
 ## Estructura
