@@ -1,6 +1,6 @@
 {
- "descripcion": "Segundos de CPU (user+system) del proceso uvicorn por petición, medidos con psutil.Process.cpu_times(). BD: copia de la BD de demostración (v2 servida en h=2, 3 y 4). Entorno solo con requirements-api.txt, un worker, DENGUEKAY_XGB_DEVICE=cpu y DENGUEKAY_XGB_NJOBS=1, Cache-Control: no-cache en las lecturas. Estimación con 0,1 CPU = segundos de CPU / 0,1 (supone un núcleo tan rápido como el de esta PC y sin espera de E/S). La resolución del reloj de CPU de Windows es de unos 15,6 ms: las lecturas por debajo de eso marcan 0.",
- "fecha": "2026-10-30",
+ "descripcion": "Segundos de CPU (user+system) del proceso uvicorn por petición, medidos con psutil.Process.cpu_times(). BD: copia de la BD de demostración (v2 servida en h=2, 3 y 4). Entorno solo con requirements-api.txt, un worker, DENGUEKAY_XGB_DEVICE=cpu y DENGUEKAY_XGB_NJOBS=1, Cache-Control: no-cache en las lecturas. Estimación con 0,1 CPU = segundos de CPU / 0,1 (supone un núcleo tan rápido como el de esta PC y sin espera de E/S). La resolución del reloj de CPU de Windows es de unos 15,6 ms: las lecturas por debajo de eso marcan 0. Las tres primeras entradas son POST /admin/inferencias con h=2, 3 y 4, en ese orden (cada una repetida 3 veces). GET /alertas/{identificador} no se perfiló: la BD de demostración no tiene alertas.",
+ "fecha": "2026-10-29",
  "plataforma": "Windows-11-10.0.26300-SP0",
  "python": "3.12.10",
  "cpu_s_arranque_hasta_primera_salud": 1.359,
@@ -25,7 +25,10 @@
    "wall_s_primera": 3.5566,
    "wall_s_mediana_siguientes": 2.0686,
    "estimado_0_1_cpu_s_primera": 49.84,
-   "estimado_0_1_cpu_s_tibia": 29.92
+   "estimado_0_1_cpu_s_tibia": 29.92,
+   "cuerpo": {
+    "horizonte": 2
+   }
   },
   {
    "metodo": "POST",
@@ -38,7 +41,10 @@
    "wall_s_primera": 1.9399,
    "wall_s_mediana_siguientes": 1.9381,
    "estimado_0_1_cpu_s_primera": 32.5,
-   "estimado_0_1_cpu_s_tibia": 30.23
+   "estimado_0_1_cpu_s_tibia": 30.23,
+   "cuerpo": {
+    "horizonte": 3
+   }
   },
   {
    "metodo": "POST",
@@ -51,7 +57,10 @@
    "wall_s_primera": 1.9459,
    "wall_s_mediana_siguientes": 1.9272,
    "estimado_0_1_cpu_s_primera": 27.97,
-   "estimado_0_1_cpu_s_tibia": 27.81
+   "estimado_0_1_cpu_s_tibia": 27.81,
+   "cuerpo": {
+    "horizonte": 4
+   }
   },
   {
    "metodo": "GET",

@@ -125,6 +125,9 @@ def run_full(client, key):
     alerts = client.get("/api/v1/alertas?tamano_pagina=1").json()["elementos"]
     if alerts:
         call("GET", f"/alertas/{alerts[0]['id_alerta']}")
+    else:  # no alert is made up: the route is checked with an ID that does not exist (404 expected)
+        missing = 2_000_000_000
+        call("GET", f"/alertas/{missing}", label=f"/alertas/{missing} (sin alertas guardadas: 404 esperado)")
     in_use = call("GET", "/modelos/activo").json()["elementos"]
     for version in in_use:
         call("GET", f"/modelos/{version['id_version']}")

@@ -221,8 +221,8 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
 
 ## 7. Cambios que debe reflejar el documento OE2
 
-Lista consolidada al cierre del encargo de la API v1 (fase 6, 30/10/2026). Cada punto remite a la decisión
-que lo aprobó (sección 1 y `docs/backend/api_v1_decisiones.md`).
+Lista consolidada al cierre del encargo de la API v1 (fase 6, 29/10/2026). Cada punto remite a la decisión
+que lo aprobó (sección 1 y `docs/backend/api_v1_decisiones.md`, incluidas las precisiones de las fases 5 y 6).
 
 Correcciones del DDL (Anexo B):
 1. **Permisos:** `GRANT INSERT, UPDATE ON ejecucion TO rol_api` (la API registra inferencias y

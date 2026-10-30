@@ -418,6 +418,9 @@ class TestAPIReal(unittest.TestCase):
         self.assertEqual(resultados[-1]["http"], 401)
         self.assertEqual([r["http"] for r in resultados if r["ruta"].endswith("/activar")], [409])
         self.assertTrue(any(r["ruta"].endswith("/variables") for r in resultados))
+        detalle = [r for r in resultados if r["ruta"].startswith("/alertas/")]
+        self.assertEqual(len(detalle), 1)  # with or without saved alerts, the detail route is called once
+        self.assertIn(detalle[0]["http"], (200, 404))
         texto = markdown_full(resultados, "http://testserver", "SQLite de prueba", ["alembic upgrade head"])
         self.assertIn("1. alembic upgrade head", texto)
         self.assertNotIn(CLAVE, texto)

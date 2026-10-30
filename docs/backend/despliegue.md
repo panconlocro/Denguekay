@@ -15,7 +15,7 @@ semanal en GitHub Actions llama a `POST /api/v1/admin/inferencias`; ese flujo no
 | Servicio | Rama | Cómo |
 |---|---|---|
 | Render (API de producción) | `main` | `render.yaml`: `branch: main` y `autoDeployTrigger: checksPass`, que despliega cuando el CI del commit pasa |
-| Supabase (BD y Storage de producción) | — | No se despliega desde Git: las migraciones corren al arrancar la API (sección 3) |
+| Supabase (BD y Storage de producción) | — | No se despliega desde Git: Rosa corre las migraciones desde su PC antes de cada release (sección 3) |
 | Supabase (BD y Storage de desarrollo) | `develop` y ramas | Proyecto aparte; Rosa migra y publica desde su PC |
 | Vercel (frontend) | `main` = producción; las demás ramas generan *preview deployments* | Comportamiento por defecto de Vercel con Git |
 
@@ -56,7 +56,7 @@ variable vacía se ignora. Plantilla sin secretos: `.env.example`.
 - **Sin `preDeployCommand`:** la página de despliegues lo ofrece solo para *paid web services*, *private services* y
   *background workers*. Render tampoco migra en el `startCommand`: **Rosa corre las migraciones desde su PC antes
   de cada release** (pasos más abajo), y la API se conecta solo con un usuario que hereda `rol_api` (decisión de Rosa,
-  30/10/2026). Así Render nunca tiene credenciales del dueño del esquema.
+  29/10/2026). Así Render nunca tiene credenciales del dueño del esquema.
 - El servicio debe escuchar en `0.0.0.0` y en el puerto `PORT` (por defecto, 10000).
 - Health check HTTP: una respuesta 2xx o 3xx en menos de 5 s marca la instancia como sana.
   `healthCheckPath: /api/v1/salud`. La página de health checks **no dice** si aplica en el plan gratuito, pero
@@ -214,7 +214,7 @@ El frontend (`apps/web/`) todavía es un plan, así que estos pasos son para cua
 3. `CORS_ORIGINS` en Render debe incluir el dominio de producción de Vercel, exacto y sin barra final. Los dominios
    de *preview* cambian por rama y no tienen comodín en la API (`*` se rechaza). Para probar un *preview* contra la
    API de producción, hay que agregar su dominio a mano. Otra opción: un *preview* apunta a una API local.
-4. **Quién crea el proyecto (decisión de Rosa, 30/10/2026):** la cuenta de Vercel de Rosa, que es la que mergea a
+4. **Quién crea el proyecto (decisión de Rosa, 29/10/2026):** la cuenta de Vercel de Rosa, que es la que mergea a
    `main`. Producción despliega desde `main`.
 5. **Plan Hobby (verificado en la documentación de Vercel):**
    - El plan Hobby es gratuito y solo para uso personal y no comercial ([Hobby plan](https://vercel.com/docs/plans/hobby)).
@@ -223,7 +223,7 @@ El frontend (`apps/web/`) todavía es un plan, así que estos pasos son para cua
      repositorio privado el autor de cada commit debe ser el dueño del equipo Hobby
      ([Deploying Git repositories](https://vercel.com/docs/git), sección «Deploying private Git repositories»).
    - El repositorio `panconlocro/Denguekay` es **público** y es de una **cuenta personal** (API pública de GitHub,
-     30/10/2026). Mientras siga así, esas dos restricciones no aplican. Esto corrige la fase 5, donde dije que los
+     29/10/2026). Mientras siga así, esas dos restricciones no aplican. Esto corrige la fase 5, donde dije que los
      commits de Nicolás no se desplegarían: eso solo vale si el repo pasa a privado.
    - Para importar o conectar el repositorio de una cuenta personal hay que ser su **Owner** en GitHub; un
      colaborador no puede ([Vercel for GitHub](https://vercel.com/docs/git/vercel-for-github), sección «Personal
@@ -281,7 +281,7 @@ SQLAlchemy, Alembic, psycopg, python-dotenv, FastAPI, Pydantic, uvicorn y httpx.
 
 ## 8. Inferencia en Render: qué calcula cada endpoint y cuánto tardaría
 
-Fase 6, pedido de Rosa (30/10/2026). Es una **estimación, no una medición en Render**. Perfil completo:
+Fase 6, pedido de Rosa (29/10/2026). Es una **estimación, no una medición en Render**. Perfil completo:
 [evidencia/perfil_cpu_api_v2.json](evidencia/perfil_cpu_api_v2.json).
 
 ### Qué hace cada endpoint
@@ -312,16 +312,18 @@ La estimación con 0,1 CPU es CPU / 0,1. Supone un núcleo tan rápido como el d
 |---|---|---|
 | `POST /admin/inferencias`, primera de cada horizonte (carga el paquete) | 2,8 a 5,0 s | **28 a 50 s** |
 | `POST /admin/inferencias`, siguientes (paquete en caché) | 2,8 a 3,0 s | **28 a 30 s** |
-| Lecturas (`/predicciones`, `/mapa-riesgo`, `/tablero`, `/series`) | ≤ 0,03 s | ≤ 0,3 s |
+| Lecturas (`/predicciones`, `/mapa-riesgo`, `/tablero`, `/series`, `/alertas`, `/modelos`) | ≤ 0,031 s | ≤ 0,31 s |
 | `GET /configuracion`, primera petición después de arrancar | 0,20 s | 2,0 s |
 | Arranque del proceso hasta el primer `/salud` (imports y app) | 1,36 s | 13,6 s, más el minuto que Render documenta para despertar un servicio dormido |
 
 El reloj de CPU de Windows tiene una resolución de unos 15,6 ms, así que las lecturas más rápidas marcan 0.
+`GET /alertas/{identificador}` no se perfiló: la BD de demostración no tiene alertas guardadas. Hace la misma
+consulta por clave que `/modelos/{id}`.
 
-**Conclusión.** Las lecturas quedan dentro de los 5 s del SLA (HU0016-3), salvo el arranque en frío. La inferencia
+**Conclusión.** Las lecturas medidas quedan dentro de los 5 s del SLA (HU0016-3), salvo el arranque en frío. La inferencia
 **no**: con unos 30 s por horizonte, la superaría unas 6 a 10 veces.
 
-- La prueba de humo en PostgreSQL midió 2,4 a 4,1 s de reloj por horizonte en la PC
+- La prueba de humo en PostgreSQL midió 2,6 a 4,0 s de reloj por horizonte en la PC
   ([evidencia_api_v1.md](evidencia/evidencia_api_v1.md)).
 - **No verificado:** el tiempo máximo que Render espera una respuesta HTTP. Si corta antes, el cliente recibe un
   error aunque el servidor termine la inferencia.
@@ -353,7 +355,7 @@ El reloj de CPU de Windows tiene una resolución de unos 15,6 ms, así que las l
 6. **Pendiente para decidir:** quién carga los datos semanales antes de la inferencia. `load_data` lee `data/` en la
    PC de Rosa, y `data/` no está en el repo ni en el CI.
 
-## Fuentes (consultadas el 29 y el 30/10/2026)
+## Fuentes (consultadas el 29/10/2026)
 
 - Render: [Free instances](https://render.com/docs/free), [Deploys (pre-deploy command)](https://render.com/docs/deploys),
   [Blueprint spec](https://render.com/docs/blueprint-spec), [Python version](https://render.com/docs/python-version),
@@ -369,4 +371,4 @@ El reloj de CPU de Windows tiene una resolución de unos 15,6 ms, así que las l
   [storage-js `StorageFileApi.ts`](https://github.com/supabase/storage-js/blob/main/src/packages/StorageFileApi.ts).
 - psycopg 3: [Prepared statements](https://www.psycopg.org/psycopg3/docs/advanced/prepare.html).
 - Vercel: [Deploying Git repositories](https://vercel.com/docs/git), [Hobby plan](https://vercel.com/docs/plans/hobby),
-  [Vercel for GitHub](https://vercel.com/docs/git/vercel-for-github) (consultadas el 30/10/2026).
+  [Vercel for GitHub](https://vercel.com/docs/git/vercel-for-github) (consultadas el 29/10/2026).
