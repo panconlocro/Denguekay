@@ -6,14 +6,27 @@ Fixtures: tests/fixtures/v2_serving/ (tests/v2_support.py), recorded once with t
 
 - ``TestV2VariableParity``: the vector the predictor builds from the database (base_6, B3, A3 and the
   outbreak threshold of t+2, t+3 and t+4) equals ``frozen_configs.origins`` (gold h=2 + B3 in memory) and the
-  gold threshold, district by district, for every origin whose t+2 is in 2022 or later. Exact, except
-  ``precip_total_mm_media5_h2``: the database stores the precipitation in numeric(7,2) and the mean of 5
-  weeks differs from gold by up to 5.7e-14 (measured; it changes no prediction), so that column alone
-  uses the agreed tolerance of 1e-9. Origins whose t+2 is in 2021 need 2016 for the threshold: they are
-  unavailable with their reason (decision M4).
+  gold threshold, district by district, for every origin whose t+2 is in 2022 or later. Origins whose t+2
+  is in 2021 need 2016 for the threshold: they are unavailable with their reason (decision M4).
 - ``TestV2ServingParity``: the model of block calendario_2025 trained on the full gold is frozen; served from
   the database it gives the probability (NB2 + Platt) and the cases of ``frozen_configs.predict`` +
-  ``calibrate_chronologically`` (≤ 1e-9). Both run on every system of the CI.
+  ``calibrate_chronologically``. Both run on every system of the CI.
+
+Tolerances per platform (docs/architecture.md, «Guardas»). The expected values were computed on the
+recording platform (Windows x86-64, ``entorno.json``):
+
+- **Variables.** Keys and integer columns (lags, positive weeks, weeks since the last case) and
+  ``hist_media_4`` (the mean of four integers) are always exact. The floats computed with transcendental
+  functions or reductions (sine and cosine of the calendar, ``log1p`` in B3, the A3 climate means and the
+  outbreak threshold, which uses a standard deviation) are exact on the recording platform; elsewhere the
+  libm and the vectorised sums of Linux and macOS can change the last bit (1 ULP seen in
+  ``semana_epi_coseno``), so they use ``assert_allclose`` with ``rtol=0, atol=1e-12``. The A3 precipitation
+  keeps the agreed 1e-9 everywhere: the database stores it in numeric(7,2) and its mean differs from gold by
+  up to 5.7e-14 (measured; it changes no prediction).
+- **Serving of the frozen model.** Exact (difference 0) in the recording environment (same system, machine
+  and XGBoost version). Elsewhere XGBoost predicts in float32 (relative precision about 1.2e-7) and the arm64
+  build of macOS rounds differently, so it compares with ``rtol=1e-6, atol=1e-8`` (``atol`` for values near
+  0). It still compares on every platform and reports the largest difference.
 - ``TestV2RefitParity``: it recomputes everything from data/ with the current code and the publication's
   ``fit_service``; only in the recording environment and with local data, otherwise skipped with the reason.
 """
@@ -40,8 +53,13 @@ from denguekay.serving.predictors.base import InferenceUnavailable
 from denguekay.serving.storage import LocalStorage
 
 COLUMNS = list(CONFIG_2026["columnas"])
-TOLERANT = {"precip_total_mm_media5_h2": 1e-9}
-TOLERANCE = 1e-9
+# Integer columns and the mean of four integers: exact on every platform.
+EXACT = {"hist_lag_a", "hist_lag_b", "hist_media_4", "hist_semanas_pos_4", "propia_semanas_desde_ultimo_caso"}
+# The database rounds the precipitation to 2 decimals (numeric(7,2)): agreed tolerance on every platform.
+AGREED = {"precip_total_mm_media5_h2": 1e-9}
+# Off the recording platform: computed floats may differ in the last bit (libm, vectorised reductions).
+CROSS_PLATFORM_ATOL = 1e-12
+SERVING_RTOL, SERVING_ATOL = 1e-6, 1e-8  # float32 predictions of XGBoost off the recording environment
 
 
 class DatabaseCase(unittest.TestCase):
@@ -88,22 +106,31 @@ class TestV2VariableParity(DatabaseCase):
                 self.assertEqual(sorted(vectors.index), sorted(rows.index), close)
                 for column in COLUMNS:
                     got, want = vectors.loc[rows.index, column].to_numpy(float), rows[column].to_numpy(float)
-                    diff = np.abs(got - want)
-                    worst[column] = max(worst[column], float(diff.max()))
-                    if column in TOLERANT:
-                        self.assertLessEqual(diff.max(), TOLERANT[column], (close, column))
-                    else:
-                        np.testing.assert_array_equal(got, want, err_msg=f"{close} {column}")
+                    worst[column] = max(worst[column], float(np.abs(got - want).max()))
+                    self.check(got, want, column, f"{close} {column}")
                 for h in v2.HORIZONS:
-                    for ubigeo in rows.index:
-                        if (close, h, ubigeo) in self.thresholds.index:
-                            self.assertEqual(vectors.loc[ubigeo, h], self.thresholds[close, h, ubigeo], (close, ubigeo, h))
-                            thresholds += 1
+                    keys = [(close, h, u) for u in rows.index if (close, h, u) in self.thresholds.index]
+                    got = np.array([vectors.loc[u, h] for _, _, u in keys], float)
+                    want = np.array([self.thresholds[k] for k in keys], float)
+                    if keys:
+                        worst[f"umbral_h{h}"] = max(worst.get(f"umbral_h{h}", 0.0), float(np.abs(got - want).max()))
+                        self.check(got, want, f"umbral_h{h}", f"{close} umbral h={h}")
+                    thresholds += len(keys)
                 compared += len(rows)
-        self.assertGreater(compared, 6 * 200)
-        self.assertGreater(thresholds, 3 * 6 * 150)
-        # The measured difference of the rounded precipitation (numeric(7,2)): far below the tolerance.
-        self.assertLess(worst["precip_total_mm_media5_h2"], 1e-12)
+        self.assertGreater(compared, 6 * 200, worst)
+        self.assertGreater(thresholds, 3 * 6 * 150, worst)
+        # The measured difference of the rounded precipitation (numeric(7,2)): far below the agreed tolerance.
+        self.assertLess(worst["precip_total_mm_media5_h2"], 1e-12, worst)
+
+    def check(self, got, want, column, where):
+        """Exact, agreed or cross-platform tolerance by column (see the module docstring)."""
+        message = f"{where}: diferencia máxima {float(np.abs(got - want).max())!r}"
+        if column in AGREED:
+            self.assertLessEqual(float(np.abs(got - want).max()), AGREED[column], message)
+        elif column in EXACT or vs.recording_platform():
+            np.testing.assert_array_equal(got, want, err_msg=message)
+        else:
+            np.testing.assert_allclose(got, want, rtol=0, atol=CROSS_PLATFORM_ATOL, err_msg=message)
 
     def test_origins_with_targets_in_2021_are_unavailable(self):
         with transaction(self.engine) as session:
@@ -126,6 +153,7 @@ class TestV2ServingParity(DatabaseCase):
 
     def test_frozen_block_model_served_from_the_database(self):
         worst = {"probabilidad_brote": 0.0, "casos_estimados": 0.0}
+        served_values, expected_values = [], []
         compared = 0
         with transaction(self.engine) as session:
             for (close, h), rows in self.expected.groupby(["origen_cierre", "horizonte"]):
@@ -137,10 +165,17 @@ class TestV2ServingParity(DatabaseCase):
                     for column, want in (("probabilidad_brote", row.probabilidad_calibrada),
                                          ("casos_estimados", row.casos_predichos)):
                         worst[column] = max(worst[column], abs(getattr(served, column) - want))
+                        served_values.append(getattr(served, column))
+                        expected_values.append(want)
                     self.assertLessEqual(served.casos_intervalo_inferior, served.casos_intervalo_superior)
                 compared += len(rows)
         self.assertEqual(compared, len(self.expected))
-        self.assertLessEqual(max(worst.values()), TOLERANCE, worst)
+        if vs.same_environment():
+            self.assertEqual(max(worst.values()), 0.0, f"diferencia máxima por columna {worst}")
+        else:
+            np.testing.assert_allclose(np.array(served_values, float), np.array(expected_values, float),
+                                       rtol=SERVING_RTOL, atol=SERVING_ATOL,
+                                       err_msg=f"diferencia máxima por columna {worst}")
 
     def test_database_rows_round_the_served_values(self):
         close = self.expected.origen_cierre.max()
@@ -154,8 +189,12 @@ class TestV2ServingParity(DatabaseCase):
                     Prediction.ubigeo == row.ubigeo, Prediction.id_semana_corte == cutoff.id_semana,
                     Prediction.horizonte == int(row.horizonte)))
                 self.assertEqual(stored.estado, "disponible")
-                self.assertAlmostEqual(float(stored.probabilidad_brote), round(row.probabilidad_calibrada, 4), places=10)
-                self.assertAlmostEqual(float(stored.casos_estimados), round(row.casos_predichos, 2), places=10)
+                # Off the recording environment a float32 difference can move the rounding by one unit.
+                slack = 0 if vs.same_environment() else 1
+                self.assertLessEqual(abs(float(stored.probabilidad_brote) - round(row.probabilidad_calibrada, 4)),
+                                     slack * 1e-4 + 1e-12)
+                self.assertLessEqual(abs(float(stored.casos_estimados) - round(row.casos_predichos, 2)),
+                                     slack * 1e-2 + 1e-12)
 
     def test_platt_coefficients_reproduce_the_chronological_calibration(self):
         self.assertEqual(self.meta["platt_max_diferencia_con_calibrate_chronologically"], {"2": 0.0, "3": 0.0, "4": 0.0})

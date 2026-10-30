@@ -150,6 +150,12 @@ def recording_environment():
     return json.loads(ENVIRONMENT.read_text(encoding="utf-8"))
 
 
+def recording_platform():
+    """Same operating system and machine as the recording (libm and vectorised sums give the same bits)."""
+    recorded = recording_environment()
+    return (platform.system(), platform.machine()) == (recorded["sistema"], recorded["maquina"])
+
+
 def same_environment():
     import xgboost
 

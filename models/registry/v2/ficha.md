@@ -38,7 +38,15 @@ Predictor `v2_e3_s4` (`denguekay.serving.predictors`), desde la fase 4 de la API
 - **Paridad** (`tests/serving/test_v2_parity.py`, fixtures en `tests/fixtures/v2_serving/`): el vector de la BD es
   igual al de gold + B3, exacto salvo la precipitación de A3 (≤ 1e-9; diferencia medida 5,7e-14, porque la BD la
   guarda en `numeric(7,2)`), y el modelo congelado del bloque `calendario_2025` servido desde la BD da las mismas
-  predicciones que `frozen_configs.predict` + Platt (≤ 1e-9; medido: 0).
+  predicciones que `frozen_configs.predict` + Platt.
+- **Tolerancias por plataforma** (regla en `docs/architecture.md`, «Guardas y tolerancias por plataforma»):
+  - en el entorno de grabación (Windows x86-64, CPU con `n_jobs=2`) todo es bit a bit, salvo la precipitación
+    de A3 (medido: 0 en el serving);
+  - en Linux y macOS los enteros siguen exactos;
+  - los flotantes calculados (seno y coseno, `log1p`, clima de A3, umbral) usan `atol=1e-12`, porque la libm
+    cambia el último bit;
+  - el serving usa `rtol=1e-6, atol=1e-8`, porque XGBoost predice en float32; en macOS arm64 se vio hasta
+    7,5e-9.
 
 ## Huellas
 

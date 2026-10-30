@@ -344,6 +344,31 @@ suite completa con fixtures versionadas, sin descargar gold/silver ni desplegar:
 en Linux, Windows y macOS sobre SQLite, y en Linux contra un servicio PostgreSQL 18
 desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten.
 
+### Guardas y tolerancias por plataforma
+
+Las guardas que comparan con una línea base grabada siguen una sola regla:
+
+- **Entorno de referencia, bit a bit.** La línea base se graba una vez en un entorno conocido: Windows x86-64,
+  CPU con `n_jobs=2` y la versión de XGBoost de su `entorno.json`. Ahí la comparación es exacta: las guardas
+  V1/V2 de `tests/test_equivalence.py`, la paridad con reentrenamiento de la v0 y de la v2, y el serving de los
+  modelos congelados. Estas guardas no se relajan.
+- **Otras plataformas, tolerancia mínima justificada y declarada en el test.** La comparación sigue corriendo
+  y el mensaje de error da la diferencia máxima por columna; no se convierte en un skip:
+  - las llaves, los enteros y la aritmética exacta (p. ej. la media de cuatro enteros) son exactos en todas
+    las plataformas;
+  - los flotantes calculados con funciones trascendentes o reducciones (seno y coseno del calendario,
+    `log1p`, medias de clima, desviación estándar del umbral de brote) usan `rtol=0, atol=1e-12`. La libm y
+    las sumas vectorizadas de Linux y macOS pueden cambiar el último bit (se vio 1 ULP en
+    `semana_epi_coseno`);
+  - las predicciones de XGBoost con un modelo congelado usan `rtol=1e-6` (más un `atol=1e-8` para valores
+    cercanos a 0). XGBoost predice en float32 (precisión relativa ≈ 1,2e-7), y el build arm64 de macOS
+    redondea distinto (se vio 7,5e-9 en casos);
+  - las tolerancias ya acordadas con Rosa se mantienen en todas las plataformas: la precipitación de A3,
+    guardada en `numeric(7,2)`, usa 1e-9.
+- **Reentrenar no es comparable entre sistemas operativos** (decisión D1 del ADR 0001). Las pruebas que
+  reentrenan quedan clavadas al entorno de grabación y, fuera de él, se omiten con el motivo.
+
+
 ---
 
 ## 4. `pipelines/notebooks/` — pipeline de datos, numerados en orden de ejecución

@@ -13,7 +13,7 @@
     "importancias": "|SHAP| medio por horizonte de la salida correspondiente, calculado al publicar",
     "oos": "predicciones OOS del protocolo por bloques (temporadas 2022–2024 y calendario 2025), calibradas con Platt cronológico; reemplazan a las de la v0 en la serie (M6)",
     "sin_historia_previa": "los orígenes cuyo t+2 cae en 2021 o antes necesitan casos anteriores a 2017 (umbral o B3) y quedan no disponibles con su motivo (M4)",
-    "paridad": "tests/serving/test_v2_parity.py: variables BD = gold + B3 (exacto salvo la precipitación de A3, ≤ 1e-9; diferencia medida 5,7e-14) y serving del modelo congelado del bloque calendario_2025 = frozen_configs.predict + Platt (≤ 1e-9)"
+    "paridad": "tests/serving/test_v2_parity.py: variables BD = gold + B3 y serving del modelo congelado del bloque calendario_2025 = frozen_configs.predict + Platt. En el entorno de grabación (Windows x86-64, CPU n_jobs=2) es bit a bit, salvo la precipitación de A3 (≤ 1e-9; medido 5,7e-14). En otras plataformas: enteros exactos; flotantes calculados con atol 1e-12 (libm); serving con rtol 1e-6 y atol 1e-8 (float32 de XGBoost). Regla en docs/architecture.md"
   },
   "tag": "model/v2",
   "commit": "424a148",
