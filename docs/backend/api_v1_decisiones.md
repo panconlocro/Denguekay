@@ -526,6 +526,21 @@ implementa.
   `tests/test_equivalence.py` (V1 y V2 bit a bit) se corrió completo en la PC de Rosa, en CPU con `n_jobs=2` y en
   CUDA, con todas las extracciones; el resultado está en el resumen de la fase y en el PR.
 
+### Precisiones de las fases 5 y 6 (29/10/2026, decididas por Rosa)
+
+- **Configuración por entorno (fase 5, punto 1 del encargo):** `config.yaml` da los valores por defecto y el entorno
+  los reemplaza (`CORS_ORIGINS`, `SERVIR_NO_VALIDADAS`, `STORAGE_BACKEND`); `DATABASE_URL`, `API_KEY` y las
+  credenciales de Storage solo vienen del entorno. Agregadas en la fase 5: `MIGRATION_DATABASE_URL` (dueño del
+  esquema para `alembic`) y `DB_PREPARED_STATEMENTS` (transaction mode del pooler de Supabase). La API se instala con
+  `requirements-api.txt`.
+- **Migraciones (fase 6):** Render no corre `alembic upgrade head` ni tiene `MIGRATION_DATABASE_URL`; Rosa migra
+  desde su PC antes de cada release y Render solo usa un usuario que hereda `rol_api`. Pasos en `despliegue.md` §3.
+- **Vercel (fase 6):** el proyecto lo crea la cuenta que mergea a `main` (la de Rosa); producción despliega desde
+  `main`; Nicolás desarrolla en local contra la API local. Restricciones del plan Hobby en `despliegue.md` §5.
+- **Inferencia en Render (fase 6, pendiente de decisión):** la inferencia de la v2 se estima en 28 a 50 s por
+  horizonte con 0,1 CPU. La propuesta de mover la inferencia al ciclo semanal sin cambiar el contrato está en
+  `despliegue.md` §8; no está implementada.
+
 ## 4. Pendiente fuera de este encargo
 
 - **Los 8 distritos sin historia antes de 2017 (§1.9.3)** (`200206`, `200208`, `200303`, `200305`, `200307`,
