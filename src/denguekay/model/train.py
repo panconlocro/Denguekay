@@ -16,14 +16,14 @@ import pandas as pd
 from xgboost import XGBClassifier, XGBRegressor, __version__ as XGBOOST_VERSION
 
 from denguekay.data.seasons import assign_season
-from denguekay.features.model_input_contract import audit_handoff, predictor_families
+from denguekay.features.model_input_contract import audit_gold_backup, gold_backup_files, predictor_families
 from denguekay.model.device import xgboost_settings
 from denguekay.evaluation.metrics import (
     alerts_from_counts, alert_metrics, count_metrics,
     select_f1_threshold,
 )
 from denguekay.model.tracking import log_or_warn
-from denguekay.config.paths import GOLD, MODELS, RESEARCH_FIRST_MODELS, SILVER_INTEGRATED
+from denguekay.config.paths import GOLD_BACKUP, MODELS, RESEARCH_FIRST_MODELS, SILVER_INTEGRATED
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.validation.forecast_contract import KEY
 
@@ -247,7 +247,7 @@ def evaluate_fold(
 
 
 def run_experiment(
-    *, gold_dir: Path = GOLD, output_dir: Path = MODELS / "experimentos",
+    *, gold_dir: Path = GOLD_BACKUP, output_dir: Path = MODELS / "experimentos",
     metrics_path: Path = RESEARCH_FIRST_MODELS / "docs" / "metricas" / "primer_xgboost.json",
     audit: bool = True, validate_data: bool = True,
     log_mlflow: bool = True,
@@ -260,14 +260,15 @@ def run_experiment(
     labels prior to its first origin.
     """
     gold_dir, output_dir, metrics_path = map(Path, (gold_dir, output_dir, metrics_path))
+    gold_backup_files(gold_dir)  # study 03 reads the gold before the cleanup; a clear error if it is missing
     if audit:
-        audit_handoff(gold_dir=gold_dir)
+        audit_gold_backup(gold_dir)
     # Data quality (Great Expectations) before training; it fails if gold/silver
     # breaks its suite. The summary is attached to the MLflow run. Imported here so that serving
     # (the API) does not load Great Expectations.
     from denguekay.data.validation.gx_quality import validate_modeling_inputs
 
-    quality = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None)
+    quality = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None, backup=True)
                if validate_data else None)
     manifest = json.loads((gold_dir / "manifest_fase6.json").read_text(encoding="utf-8"))
     if manifest["regla_brote"]["minimo_casos"] != MIN_OUTBREAK_CASES:
@@ -364,7 +365,7 @@ def run_experiment(
 def main() -> None:
     """Run the first experiment from ``python -m denguekay.model.train``."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gold-dir", type=Path, default=GOLD)
+    parser.add_argument("--gold-dir", type=Path, default=GOLD_BACKUP)
     parser.add_argument("--salida-dir", type=Path, default=MODELS / "experimentos")
     parser.add_argument("--metricas", type=Path,
                         default=RESEARCH_FIRST_MODELS / "docs" / "metricas" / "primer_xgboost.json")

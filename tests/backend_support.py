@@ -91,7 +91,8 @@ def datos_muestra(carpeta):
     muestra = leer_muestra()
     calidad = validate_dataframe(
         muestra["gold"], suite_name="backend_gold_h2", asset_name="backend_gold_h2",
-        expectations=expectations_for_gold(2, sorted(muestra["gold"].ubigeo.unique())),
+        # The fixtures keep the schema with all the candidates (they are frozen by the smoke v1 guard).
+        expectations=expectations_for_gold(2, sorted(muestra["gold"].ubigeo.unique()), persisted=False),
         context=get_context(carpeta / "gx"), update_docs=False)
     archivos = [BACKEND_FIXTURES / n for n in ("silver_muestra.csv", "cobertura_muestra.csv", "gold_h2_muestra.csv",
                                              "gold_temporal_h2_muestra.csv", "sala_muestra.csv")]

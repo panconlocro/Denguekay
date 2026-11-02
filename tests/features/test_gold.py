@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from denguekay.features.gold import build_gold, generate_gold, validate_gold
+from denguekay.features.gold import build_gold, generate_gold, persisted_columns, validate_gold
 from denguekay.features.outbreak_label import SeasonalOutbreakConfig
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, coverage_path
@@ -106,50 +106,51 @@ class GoldTests(unittest.TestCase):
             cobertura = self.panel[["ubigeo", "anio", "semana", "casos_Dengue"]].copy()
             cobertura["source"] = "verified"
             cobertura.to_csv(coverage_path(fuente), index=False)
-            primer = generate_gold(fuente, salida, catalogo)
-            hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in salida.iterdir()}
-            segundo = generate_gold(fuente, salida, catalogo)
-            self.assertEqual(primer, segundo)
-            self.assertEqual(hashes, {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-                                      for p in salida.iterdir()})
-            self.assertEqual(len(hashes), 3)
-            self.assertEqual(pd.read_csv(salida / "integrado_h4_gold.csv", dtype={"ubigeo": "string"}).ubigeo.nunique(), 6)
             historia = raiz / "historia.csv"
             pd.DataFrame([
                 {"ubigeo": f"20010{d + 1}", "anio": y, "semana": 1, "casos_Dengue": 0}
                 for d in range(6) for y in range(2012, 2017)
             ]).to_csv(historia, index=False)
-            etiquetado = raiz / "gold_etiquetado"
-            generate_gold(fuente, etiquetado, catalogo,
-                         outbreak=SeasonalOutbreakConfig(2.0, minimo_casos=2),
-                         history_path=historia)
-            etiquetas_por_h = {}
-            for h in (2, 4):
-                g = pd.read_csv(etiquetado / f"integrado_h{h}_gold.csv",
-                                dtype={"ubigeo": "string"},
-                                parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
-                validate_gold(g, self.panel, h, with_outbreak=True, min_outbreak_cases=2)
-                etiquetas_por_h[h] = g[["ubigeo", "anio", "semana", "umbral_brote_casos", "brote"]]
-                self.assertTrue(g.brote.isin([0, 1]).all())
-                self.assertEqual(g.loc[g.ubigeo.eq("200101") & g.anio.eq(2017), "brote"].sum(), 2)
-                roto = g.copy()
-                indice = roto.index[roto.brote.eq(1)][0]
-                roto.loc[indice, "brote"] = 0
-                with self.assertRaisesRegex(ValueError, "no coincide"):
-                    validate_gold(roto, self.panel, h, with_outbreak=True, min_outbreak_cases=2)
-            pd.testing.assert_frame_equal(etiquetas_por_h[2], etiquetas_por_h[4])
+            regla = {"outbreak": SeasonalOutbreakConfig(2.0, minimo_casos=2), "history_path": historia}
+            primer = generate_gold(fuente, salida, catalogo, **regla)
+            hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in salida.iterdir()}
+            segundo = generate_gold(fuente, salida, catalogo, **regla)
+            self.assertEqual(primer, segundo)
+            self.assertEqual(hashes, {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                                      for p in salida.iterdir()})
+            self.assertEqual(sorted(hashes), ["integrado_h2_gold.csv", "manifest_fase6.json"])
+            g = pd.read_csv(salida / "integrado_h2_gold.csv", dtype={"ubigeo": "string"},
+                            parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
+            self.assertEqual(list(g.columns), persisted_columns(2))
+            self.assertEqual(len(g.columns), 20)
+            self.assertEqual(g.ubigeo.nunique(), 6)
+            comprobar = {"with_outbreak": True, "min_outbreak_cases": 2, "persisted": True}
+            validate_gold(g, self.panel, 2, **comprobar)
+            self.assertTrue(g.brote.isin([0, 1]).all())
+            self.assertEqual(g.loc[g.ubigeo.eq("200101") & g.anio.eq(2017), "brote"].sum(), 2)
+            roto = g.copy()
+            indice = roto.index[roto.brote.eq(1)][0]
+            roto.loc[indice, "brote"] = 0
+            with self.assertRaisesRegex(ValueError, "no coincide"):
+                validate_gold(roto, self.panel, 2, **comprobar)
+            sin_arranque = g.copy()
+            sin_arranque.loc[g.index[g.origen_cierre.notna()][0], "propia_semanas_desde_ultimo_caso"] = np.nan
+            with self.assertRaisesRegex(ValueError, "Nulos"):
+                validate_gold(sin_arranque, self.panel, 2, **comprobar)
+            with self.assertRaisesRegex(ValueError, "Esquema gold"):
+                validate_gold(g.drop(columns="propia_pendiente_4"), self.panel, 2, **comprobar)
             catalogo_incorrecto = pd.read_csv(catalogo, dtype={"ubigeo": "string"})
             catalogo_incorrecto.loc[0, "distrito"] = "OTRO DISTRITO"
             catalogo_incorrecto.to_csv(catalogo, index=False)
             with self.assertRaisesRegex(ValueError, "does not match"):
-                generate_gold(fuente, raiz / "geografia_invalida", catalogo)
+                generate_gold(fuente, raiz / "geografia_invalida", catalogo, **regla)
             self.assertFalse((raiz / "geografia_invalida").exists())
             self.panel[["provincia", "distrito", "ubigeo"]].drop_duplicates().to_csv(catalogo, index=False)
             malo = self.panel.copy()
             malo.loc[0, "hum_rel_media"] = np.nan
             malo.to_csv(fuente, index=False)
             with self.assertRaisesRegex(ValueError, "incomplete|Non-numeric"):
-                generate_gold(fuente, raiz / "fallido", catalogo)
+                generate_gold(fuente, raiz / "fallido", catalogo, **regla)
             self.assertFalse((raiz / "fallido").exists())
 
 

@@ -13,7 +13,7 @@ also attached to every MLflow run. They only read ``data/``; they never write to
 
 Usage from the repository root::
 
-    python -m denguekay.data.validation.gx_quality            # integrated silver + gold h2/h4
+    python -m denguekay.data.validation.gx_quality            # integrated silver + gold
     python -m denguekay.data.validation.gx_quality --sin-gold # integrated silver only
 """
 
@@ -28,6 +28,7 @@ import great_expectations as gx
 import pandas as pd
 
 from denguekay.features.gold import HORIZONS
+from denguekay.features.model_input_contract import BACKUP_HORIZONS
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.config.paths import GOLD, GX_DIR, SILVER_INTEGRATED, UBIGEO_CATALOG
 from denguekay.data.validation.gold_expectations import expectations_for_gold
@@ -168,16 +169,17 @@ def read_gold(gold_dir: Path, horizon: int, stem: str = SILVER_INTEGRATED.stem) 
 
 def validate_gold_gx(
     gold_dir: Path = GOLD, *, horizons=HORIZONS, context=None,
-    catalog_path: Path = UBIGEO_CATALOG, raise_on_failure: bool = True,
+    catalog_path: Path = UBIGEO_CATALOG, raise_on_failure: bool = True, persisted: bool = True,
 ) -> dict[str, dict]:
-    """Validate each gold per horizon with its ``gold_h{h}`` suite."""
+    """Validate each gold per horizon with its ``gold_h{h}`` suite (``persisted=False``: the backup)."""
     context = context or get_context()
     ubigeos = catalog_ubigeos(catalog_path)
     output = {}
     for h in horizons:
         gold, file = read_gold(gold_dir, h)
         summary = validate_dataframe(
-            gold, suite_name=f"gold_h{h}", expectations=expectations_for_gold(h, ubigeos),
+            gold, suite_name=f"gold_h{h}" if persisted else f"gold_respaldo_h{h}",
+            expectations=expectations_for_gold(h, ubigeos, persisted=persisted),
             asset_name=f"gold_h{h}", context=context, raise_on_failure=raise_on_failure)
         summary["archivo"] = file.name
         output[f"gold_h{h}"] = summary
@@ -202,19 +204,19 @@ def validate_integrated_gx(
 
 def validate_modeling_inputs(
     *, gold_dir: Path = GOLD, silver_path: Path | None = None,
-    gx_directory: Path = GX_DIR, raise_on_failure: bool = True,
+    gx_directory: Path = GX_DIR, raise_on_failure: bool = True, backup: bool = False,
 ) -> dict:
     """Validate the inputs of an experiment before training.
 
-    It always validates gold h2 and h4, and also integrated silver when the
-    experiment reads it (``silver_path``). Returns a summary that can be
-    attached to MLflow.
+    It always validates gold (with ``backup``, h=2 and h=4 of the backup, for study 03), and also integrated
+    silver when the experiment reads it (``silver_path``). Returns a summary that can be attached to MLflow.
     """
     context = get_context(gx_directory)
     suites = {}
     if silver_path is not None:
         suites["silver_integrado"] = validate_integrated_gx(silver_path, context=context, raise_on_failure=raise_on_failure)
-    suites.update(validate_gold_gx(gold_dir, context=context, raise_on_failure=raise_on_failure))
+    options = {"horizons": BACKUP_HORIZONS, "persisted": False} if backup else {}
+    suites.update(validate_gold_gx(gold_dir, context=context, raise_on_failure=raise_on_failure, **options))
     return {
         "herramienta": f"great_expectations {gx.__version__}",
         "exito": all(s["exito"] for s in suites.values()),

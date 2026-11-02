@@ -65,9 +65,12 @@ ventana del test de 2026.
 
 ## Gold
 
-Matrices en memoria desde gold h=2 (`meteo_socio_epi_piura_2017_2025_h2_gold.csv`,
-`0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3`), incluidas las columnas A3, y B3 desde el
-silver epidemiológico histórico.
+Matrices en memoria con `build_gold` h=2, incluidas las columnas A3, y B3 desde el silver epidemiológico
+histórico. El archivo `meteo_socio_epi_piura_2017_2025_h2_gold.csv`
+(`a5d16663d4030b891d0fbbca81b4a0abfe478e11eb3bb85a9f59d49dc4eb27a3`) es el gold limpio del
+02/11/2026: 20 columnas con las llaves, el objetivo, la etiqueta y las variables de la v2. Sus 17 columnas previas son
+idénticas bit a bit a las del gold anterior (`0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3`) y B3 es idéntica
+a `frozen_configs.origins`. El modelo no cambió: entrena y sirve igual, con B3 en memoria.
 
 ## Métricas de selección
 

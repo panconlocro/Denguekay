@@ -9,7 +9,7 @@ import pandas as pd
 
 from denguekay.model.train import evaluate_fold, prepare_gold, split_season, split_calendar_year
 from denguekay.evaluation.compact_validation import run_compact_validation, compact_variants
-from denguekay.config.paths import (GOLD, GOLD_MANIFEST, COMPACT_METRICS, COMPACT_PREDICTIONS,
+from denguekay.config.paths import (GOLD_BACKUP, COMPACT_METRICS, COMPACT_PREDICTIONS,
                              SERVING_REGENERATED_PROTOCOL, SILVER_INTEGRATED)
 from denguekay.data.validation.forecast_contract import KEY
 
@@ -27,7 +27,13 @@ class Protocol:
 
 def load_protocol(horizons, variants, *, metrics_path=COMPACT_METRICS,
                     predictions_path=COMPACT_PREDICTIONS):
-    """If the CSV is missing, regenerate it in models/serving without overwriting Rosa's."""
+    """If the CSV is missing, regenerate it in models/serving without overwriting Rosa's.
+
+    The v0 protocol reads the gold before the cleanup (``GOLD_BACKUP``), checked with the same hashes.
+    """
+    from denguekay.features.model_input_contract import gold_backup_files
+
+    manifest_path, *_ = gold_backup_files()
     if not predictions_path.exists():
         metrics_path = SERVING_REGENERATED_PROTOCOL / "metricas.json"
         predictions_path = SERVING_REGENERATED_PROTOCOL / "predicciones_por_bloque.csv"
@@ -42,14 +48,14 @@ def load_protocol(horizons, variants, *, metrics_path=COMPACT_METRICS,
                   "casos_Dengue", "brote", "umbral_brote_casos", "probabilidad_brote", "casos_predichos"}
     if not required <= set(pred) or pred.duplicated([*KEY, "horizonte", "variante", "bloque"]).any():
         raise ValueError("El CSV OOS tiene columnas ausentes o llaves duplicadas")
-    if report["sha256_manifest_gold"] != hashlib.sha256(GOLD_MANIFEST.read_bytes()).hexdigest():
+    if report["sha256_manifest_gold"] != hashlib.sha256(manifest_path.read_bytes()).hexdigest():
         raise ValueError("El protocolo temporal no corresponde al manifiesto gold actual")
     # Imported here so that serving (the API) does not load Great Expectations.
     from denguekay.data.validation.gx_quality import read_gold
 
     data, partitions = {}, {}
     for h in horizons:
-        gold, file = read_gold(GOLD, h)
+        gold, file = read_gold(GOLD_BACKUP, h)
         block_h = report["horizontes"].get(str(h))
         if not block_h or block_h["sha256_gold"] != hashlib.sha256(file.read_bytes()).hexdigest():
             raise ValueError(f"Las métricas h={h} no corresponden al gold actual")

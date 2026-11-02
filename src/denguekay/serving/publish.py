@@ -135,7 +135,7 @@ def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False
         report_path = directory / "reporte_servicio.json"
         report_path.write_text(json.dumps(built.report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         run_id = log_report("serving", built.report, metrics_path=report_path,
-            output_dir=directory, gold_dir=GOLD, data_quality=load.validacion_gx,
+            output_dir=directory, gold_dir=getattr(builder, "GOLD_DIR", GOLD), data_quality=load.validacion_gx,
             description="Ajuste de servicio. La evaluación temporal adjunta es importada del protocolo previo, no un entrenamiento OOS de esta corrida.")
         if load.hashes != source_hashes() or code_hashes() != {k: v for k, v in hashes.items() if k.startswith("src/denguekay/")}:
             raise ValueError("Las entradas o el código cambiaron durante la ejecución; publicación rechazada")

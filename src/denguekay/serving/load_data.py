@@ -58,7 +58,7 @@ def source_hashes():
     sources = [UBIGEO_CATALOG, DISTRICT_COORDS, SILVER_INTEGRATED,
                SILVER_INTEGRATED.with_suffix(".coverage.csv"), SILVER_EPI_HISTORICAL,
                SILVER_SALA, GOLD_MANIFEST]
-    sources += [GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv" for h in (2, 4)]
+    sources.append(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv")
     return {str(p.relative_to(ROOT)).replace("\\", "/"):
             hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
 

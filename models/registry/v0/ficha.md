@@ -35,8 +35,12 @@ V0 no tiene huella de configuración. Su identidad es el SHA-256 de cada booster
 | 2 | `meteo_socio_epi_piura_2017_2025_h2_gold.csv` | `0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3` |
 | 4 | `meteo_socio_epi_piura_2017_2025_h4_gold.csv` | `f9fbed66572e8641eee82ce1a148562f5121cf8dbd111498f73a8aa78f5f19c6` |
 
-Manifiesto: `33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57`. Serving rechaza publicar si el
-gold actual no coincide con estos hashes.
+Manifiesto: `33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57`.
+
+Desde el gold limpio (02/11/2026), estos archivos solo existen en `data/gold/respaldo_pre_b3/`. `load_protocol` los
+lee de ahí y sigue rechazando publicar si no coinciden con estos hashes; si falta el respaldo, da un error explícito.
+**El respaldo es la única copia del gold h=4 y Rosa debe guardarlo fuera de la PC** (no está en Git). Lo mismo vale
+para `run_experiment` y `run_compact_validation` (estudio 03).
 
 ## Métricas de selección
 

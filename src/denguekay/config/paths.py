@@ -44,6 +44,8 @@ SILVER_INTEGRATED = SILVER_INTEGRATED_DIR / "meteo_socio_epi_piura_2017_2025.csv
 UBIGEO_CATALOG = REFERENCE / "catalogo_ubigeos_piura.csv"
 DISTRICT_COORDS = REFERENCE / "distritos_piura_coords.csv"
 GOLD_MANIFEST = GOLD / "manifest_fase6.json"
+# Gold before the cleanup (all the candidates, h=2 and h=4): the input of the v0 and of study 03. Only copy.
+GOLD_BACKUP = GOLD / "respaldo_pre_b3"
 
 MODELS = ROOT / "models"
 SERVING_MODELS = MODELS / "serving"

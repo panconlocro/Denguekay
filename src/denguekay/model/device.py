@@ -96,11 +96,11 @@ def _compare_times() -> None:
     from denguekay.model import train
     from denguekay.config.paths import GOLD, SILVER_INTEGRATED
 
-    gold = pd.read_csv(GOLD / f"{SILVER_INTEGRATED.stem}_h4_gold.csv", dtype={"ubigeo": "string"},
+    gold = pd.read_csv(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv", dtype={"ubigeo": "string"},
                        parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
-    data, _ = train.prepare_gold(gold, 4)
+    data, _ = train.prepare_gold(gold, 2)
     training, _, _ = train.split_season(data, 2024)
-    columns = train.variant_columns(4)["historia_4_mas_2"]
+    columns = train.variant_columns(2)["historia_4_mas_2"]
     base = {k: v for k, v in train.BASE_PARAMS.items() if k != "device"}
     options = ["cpu"] + (["cuda"] if cuda_available() else [])
     print(f"Fold de prueba: {len(training)} filas, {len(columns)} columnas, 2 modelos")

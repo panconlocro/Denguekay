@@ -9,7 +9,7 @@ import pandas as pd
 from denguekay.model import horizon_strategies as eh
 from denguekay.evaluation import variants as fh
 from denguekay.model import probabilistic_output as sp
-from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
+from denguekay.config.paths import GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
 
@@ -93,9 +93,11 @@ class TestConDatos(unittest.TestCase):
         with self.assertRaises(ValueError):
             sp.predict_e3(self.ins["matrices"], 17, "S4_s2", columns=[*eh.GENERIC, "no_existe"])
 
-    def test_inventario_de_gold_h2(self):
-        gold = pd.read_csv(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv", dtype={"ubigeo": "string"},
-                           parse_dates=["semana_inicio"])
+    def test_inventario_de_candidatas_h2(self):
+        from denguekay.features.gold import build_gold
+        from denguekay.model.train import MIN_OUTBREAK_CASES
+
+        gold = build_gold(self.panel, 2, self.ins["etiquetas"], min_outbreak_cases=MIN_OUTBREAK_CASES)
         inv = fh.candidate_inventory(gold, self.ins["matrices"][2])
         self.assertEqual(len(inv), 34)
         self.assertEqual(int(inv.en_base_6.sum()), 6)
