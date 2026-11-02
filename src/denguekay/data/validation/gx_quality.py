@@ -13,7 +13,7 @@ also attached to every MLflow run. They only read ``data/``; they never write to
 
 Usage from the repository root::
 
-    python -m denguekay.data.validation.gx_quality            # integrated silver + gold h2/h4
+    python -m denguekay.data.validation.gx_quality            # integrated silver + gold
     python -m denguekay.data.validation.gx_quality --sin-gold # integrated silver only
 """
 

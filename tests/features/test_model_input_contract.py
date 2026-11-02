@@ -44,6 +44,18 @@ class ContratoXGBoostTests(unittest.TestCase):
                     columnas, {"columnas_no_predictoras": list(PERSISTED_NON_PREDICTORS)}, 2,
                 )
 
+    def test_la_v0_y_el_estudio_03_leen_el_respaldo(self):
+        from denguekay.config.paths import GOLD_BACKUP
+        from denguekay.evaluation.compact_validation import run_compact_validation
+        from denguekay.model.train import run_experiment
+        from denguekay.serving.predictors import v0_compact_xgb as v0
+
+        self.assertEqual(v0.GOLD_DIR, GOLD_BACKUP)
+        with tempfile.TemporaryDirectory() as carpeta:
+            for correr in (run_experiment, run_compact_validation):
+                with self.subTest(correr=correr.__name__), self.assertRaisesRegex(FileNotFoundError, "respaldo de gold"):
+                    correr(gold_dir=Path(carpeta), audit=False, validate_data=False, log_mlflow=False)
+
     def test_respaldo_ausente_o_alterado_da_error_explicito(self):
         with tempfile.TemporaryDirectory() as carpeta:
             raiz = Path(carpeta)

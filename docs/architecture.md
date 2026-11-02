@@ -10,7 +10,7 @@ Esta guía explica cómo está organizado el repo y **dónde va cada archivo nue
 flowchart LR
   fuentes[Open-Meteo, censo,<br/>Excel epi, Sala MINSA] --> nb[pipelines/notebooks<br/>01–09]
   nb --> silver[(data/silver/integrado)]
-  silver --> gold_nb[10_silver_to_gold] --> gold[(data/gold h2/h4)]
+  silver --> gold_nb[10_silver_to_gold] --> gold[(data/gold)]
   silver --> weekly[denguekay.pipelines<br/>weekly_update] --> silver
   gold --> model[denguekay.features / model / evaluation]
   model --> registry[models/registry<br/>v0 · v1 · v2]
@@ -208,7 +208,7 @@ data/
 │   └── merge.py                # merges meteo + socio + epi y relleno selectivo
 └── validation/
     ├── integrated_expectations.py  # cobertura y validación del integrado + suite GX silver_integrado
-    ├── gold_expectations.py        # suite GX gold_h2/gold_h4 (esquema, llave, rangos, sin fuga temporal)
+    ├── gold_expectations.py        # suite GX gold_h2 (esquema, llave, rangos, sin fuga temporal)
     ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
     └── forecast_contract.py        # origen temporal y disponibilidad al pronosticar
 ```
