@@ -56,13 +56,15 @@ Desde el 29/10/2026 hay dos ramas permanentes ([ADR 0002](docs/decisions/0002-de
 
 Los tags son anotados (`git tag -a`) y se suben con `git push origin <tag>`.
 
-Se ponen en el commit que se congela, esté en la rama que esté; los merge commits conservan ese
-hash al llegar a `develop` y a `main`.
+`model/vN` y `study/<nombre>` se ponen en el commit que se congela, esté en la rama que esté; los merge
+commits conservan ese hash al llegar a `develop` y a `main`. `api/vX.Y.Z` se pone después del release, en el
+merge commit de `main`.
 
 | Tag | Cuándo se crea | Apunta a |
 |---|---|---|
 | `model/vN` | al congelar una versión de modelo | el commit que congela la configuración |
 | `study/<nombre>` | al cerrar un estudio (nombre en inglés y kebab-case) | el último commit del estudio |
+| `api/vX.Y.Z` | en cada release `develop → main` que cambia la API; `X.Y.Z` es la versión del contrato (`info.version`, `X-Version-Contrato`) | el merge commit del release en `main` |
 | `archive/<rama>` | antes de borrar una rama histórica | la punta de la rama |
 
 Tags vigentes: `model/v0` (backend TB1, `3d59090`), `model/v1` (`d6bd0be`),
