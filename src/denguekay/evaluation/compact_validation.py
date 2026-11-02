@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from xgboost import __version__ as XGBOOST_VERSION
 
-from denguekay.features.model_input_contract import audit_handoff
+from denguekay.features.model_input_contract import audit_gold_backup
 from denguekay.evaluation.metrics import select_f1_threshold
 from denguekay.features.gold import SOCIO_2017_DATE
 from denguekay.model.train import (
@@ -22,7 +22,7 @@ from denguekay.model.train import (
     prepare_gold, split_calendar_year, split_season,
 )
 from denguekay.model.tracking import log_or_warn
-from denguekay.config.paths import COMPACT_METRICS, GOLD, MODELS, SILVER_INTEGRATED
+from denguekay.config.paths import COMPACT_METRICS, GOLD_BACKUP, MODELS, SILVER_INTEGRATED
 from denguekay.data.validation.forecast_contract import KEY
 
 
@@ -97,7 +97,7 @@ def choose_in_validation(
 
 
 def run_compact_validation(
-    *, gold_dir: Path = GOLD,
+    *, gold_dir: Path = GOLD_BACKUP,
     output_dir: Path = MODELS / "experimentos" / "validacion_temporal_compacta",
     metrics_path: Path = COMPACT_METRICS,
     audit: bool = True, validate_data: bool = True,
@@ -105,14 +105,14 @@ def run_compact_validation(
 ) -> dict:
     """Train the predefined matrices with chronological calibration per season."""
     gold_dir, output_dir, metrics_path = map(Path, (gold_dir, output_dir, metrics_path))
-    if audit:
-        audit_handoff(gold_dir=gold_dir)
+    if audit:  # study 03 reads the gold before the cleanup; a clear error if the backup is missing
+        audit_gold_backup(gold_dir)
     # Data quality (Great Expectations) before training; it fails if gold/silver
     # breaks its suite. The summary is attached to the MLflow run. Imported here so that serving
     # (the API) does not load Great Expectations.
     from denguekay.data.validation.gx_quality import validate_modeling_inputs
 
-    quality = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None)
+    quality = (validate_modeling_inputs(gold_dir=gold_dir, silver_path=None, backup=True)
                if validate_data else None)
     manifest_path = gold_dir / "manifest_fase6.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -230,7 +230,7 @@ def run_compact_validation(
 def main() -> None:
     """Run ``python -m denguekay.evaluation.compact_validation``."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gold-dir", type=Path, default=GOLD)
+    parser.add_argument("--gold-dir", type=Path, default=GOLD_BACKUP)
     parser.add_argument("--salida-dir", type=Path,
                         default=MODELS / "experimentos" / "validacion_temporal_compacta")
     parser.add_argument("--metricas", type=Path,

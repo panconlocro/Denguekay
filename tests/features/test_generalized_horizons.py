@@ -15,7 +15,7 @@ from denguekay.features.model_input_contract import predictor_families
 from denguekay.features.outbreak_label import SeasonalOutbreakConfig
 from denguekay.features.gold import HORIZONS, build_labels, build_gold
 from denguekay.features.history_calendar import build_history_calendar
-from denguekay.config.paths import GOLD, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
+from denguekay.config.paths import GOLD_BACKUP, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from denguekay.data.validation.forecast_contract import EXPERIMENTAL_HORIZONS
 
 HAY_DATOS = SILVER_INTEGRATED.exists() and GOLD_MANIFEST.exists() and SILVER_EPI_HISTORICAL.exists()
@@ -50,8 +50,8 @@ class TestHistoriaGeneralizada(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "entre 1 y 6"):
                 predictor_families(h)
 
-    def test_gold_persistido_sigue_solo_en_2_y_4(self):
-        self.assertEqual(HORIZONS, (2, 4))
+    def test_gold_persistido_solo_en_h2(self):
+        self.assertEqual(HORIZONS, (2,))
 
 
 @unittest.skipUnless(HAY_DATOS, "Requiere silver integrado, historia epi y gold locales")
@@ -67,10 +67,12 @@ class TestGoldGeneralizadoConDatos(unittest.TestCase):
             minimo_casos=regla["minimo_casos"])
         cls.etiquetas = build_labels(cls.panel, cls.config)
 
-    def test_regresion_reproduce_gold_actual_h2_h4(self):
-        for h in HORIZONS:
+    @unittest.skipUnless(GOLD_BACKUP.exists(), "requiere data/gold/respaldo_pre_b3/")
+    def test_build_gold_reproduce_el_respaldo_h2_h4(self):
+        """En memoria se siguen calculando todas las candidatas: build_gold es el gold anterior a la limpieza."""
+        for h in (2, 4):
             with self.subTest(h=h):
-                archivo = GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv"
+                archivo = GOLD_BACKUP / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv"
                 disco = pd.read_csv(archivo, dtype={"ubigeo": "string"},
                                     parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"],
                                     float_precision="round_trip")

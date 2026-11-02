@@ -15,9 +15,9 @@ import pandas as pd
 import xgboost as xgb
 from xgboost import __version__ as XGBOOST_VERSION
 
-from denguekay.config.paths import GOLD, SILVER_INTEGRATED
+from denguekay.config.paths import GOLD_BACKUP, SILVER_INTEGRATED
 from denguekay.evaluation.compact_validation import compact_variants
-from denguekay.features.gold import HORIZONS as GOLD_HORIZONS
+from denguekay.features.model_input_contract import BACKUP_HORIZONS as GOLD_HORIZONS
 from denguekay.features.sociodemographics import DIRECT
 from denguekay.model.device import xgboost_settings
 from denguekay.model.future_rows import build_future_rows
@@ -164,8 +164,8 @@ def validate(horizons, options):
     for h in horizons:
         if h not in GOLD_HORIZONS:
             raise ValueError(f"No hay gold ni contrato de modelado para horizonte {h}; no se inventarán predicciones")
-        if not (GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv").exists():
-            raise ValueError(f"Falta el gold para horizonte {h}")
+        if not (GOLD_BACKUP / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv").exists():
+            raise ValueError(f"Falta el gold del respaldo para horizonte {h}: la v0 lee data/gold/respaldo_pre_b3/")
 
 
 def prepare(horizons, options):

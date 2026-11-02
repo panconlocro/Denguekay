@@ -11,18 +11,20 @@ from pathlib import Path
 import pandas as pd
 
 from denguekay.data.loading import load_integrated
-from denguekay.features.gold import HORIZONS, gold_columns, validate_gold
+from denguekay.features.gold import (HORIZONS, PERSISTED_NON_PREDICTORS, persisted_columns, persisted_predictors,
+                                     validate_gold)
 from denguekay.data.validation.forecast_contract import EXPERIMENTAL_HORIZONS
 from denguekay.features.sociodemographics import DIRECT
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.config.paths import (
-    GOLD, RESEARCH, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED, UBIGEO_CATALOG,
+    GOLD, GOLD_BACKUP, RESEARCH, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED, UBIGEO_CATALOG,
 )
 from denguekay.data.validation.forecast_contract import KEY
 from denguekay.data.validation.integrated_expectations import (
     coverage_path, load_case_coverage, validate_complete, validate_geography,
 )
 
+BACKUP_HORIZONS = (2, 4)  # the gold of the v0 and of study 03
 NON_PREDICTORS = (
     "casos_Dengue", "brote", "umbral_brote_casos", "ubigeo", "anio",
     "semana", "provincia", "distrito", "distrito_key", "semana_inicio",
@@ -65,18 +67,34 @@ def predictor_families(horizon: int) -> dict[str, list[str]]:
 def validate_model_columns(
     gold: pd.DataFrame, manifest: dict, horizon: int,
 ) -> dict[str, list[str]]:
-    """Reject unexpected columns, predictor labels and inconsistent lineage."""
-    if gold.columns.duplicated().any() or set(gold) != set(gold_columns(horizon, with_outbreak=True)):
-        raise ValueError("El esquema gold no coincide con el horizonte etiquetado")
-    families = predictor_families(horizon)
-    candidates = [col for cols in families.values() for col in cols]
-    if len(candidates) != len(set(candidates)):
-        raise ValueError("Una candidata aparece en más de una familia")
-    if set(manifest.get("columnas_no_predictoras", [])) != set(NON_PREDICTORS):
+    """Reject unexpected columns, predictor labels and inconsistent lineage of the persisted gold."""
+    if gold.columns.duplicated().any() or set(gold) != set(persisted_columns(horizon)):
+        raise ValueError("El esquema gold no coincide con el persistido")
+    if set(manifest.get("columnas_no_predictoras", [])) != set(PERSISTED_NON_PREDICTORS):
         raise ValueError("El manifiesto no enumera todas las exclusiones del modelo")
-    if set(candidates) & set(NON_PREDICTORS) or set(candidates) | set(NON_PREDICTORS) != set(gold):
-        raise ValueError("Las candidatas y exclusiones no particionan gold")
-    return families
+    return persisted_predictors(horizon)
+
+
+def gold_backup_files(gold_dir: Path = GOLD_BACKUP) -> list[Path]:
+    """Manifest and gold h=2 and h=4 before the cleanup; a clear error if the backup is missing."""
+    gold_dir = Path(gold_dir)
+    files = [gold_dir / "manifest_fase6.json",
+             *(gold_dir / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv" for h in BACKUP_HORIZONS)]
+    missing = [f.name for f in files if not f.is_file()]
+    if missing:
+        raise FileNotFoundError(
+            f"Falta el respaldo de gold en {gold_dir} ({', '.join(missing)}): la v0 y el estudio 03 leen de ahí y es "
+            "la única copia. Restáurelo desde su copia externa (docs/pipeline.md).")
+    return files
+
+
+def audit_gold_backup(gold_dir: Path = GOLD_BACKUP) -> None:
+    """Check that the backup is complete and matches its own manifest."""
+    manifest_path, *golds = gold_backup_files(gold_dir)
+    records = json.loads(manifest_path.read_text(encoding="utf-8"))["horizontes"]
+    for h, file in zip(BACKUP_HORIZONS, golds):
+        if records.get(str(h), {}).get("sha256") != _sha256(file):
+            raise ValueError(f"El hash del respaldo de gold h={h} no coincide con su manifiesto")
 
 
 def _sha256(path: Path) -> str:
@@ -116,7 +134,6 @@ def audit_handoff(
         raise ValueError("La historia usada para etiquetar brote difiere del manifiesto")
     summary = {"fuente": silver_path.name, "sha256_fuente": _sha256(silver_path),
                "regla_brote": rule, "horizontes": {}}
-    labels = []
     for h in HORIZONS:
         record = manifest.get("horizontes", {}).get(str(h), {})
         file = gold_dir / f"{silver_path.stem}_h{h}_gold.csv"
@@ -124,7 +141,7 @@ def audit_handoff(
             raise ValueError(f"El hash o nombre de gold h={h} no coincide con el manifiesto")
         gold = pd.read_csv(file, dtype={"ubigeo": "string"},
                            parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
-        validation = validate_gold(gold, panel, h, with_outbreak=True,
+        validation = validate_gold(gold, panel, h, with_outbreak=True, persisted=True,
                                  min_outbreak_cases=rule["minimo_casos"])
         families = validate_model_columns(gold, manifest, h)
         candidates = [col for cols in families.values() for col in cols]
@@ -143,9 +160,6 @@ def audit_handoff(
                 str(y): int(n) for y, n in gold.groupby("anio").brote.sum().items()
             },
         }
-        labels.append(gold[KEY + ["brote", "umbral_brote_casos"]].sort_values(KEY).reset_index(drop=True))
-    if not labels[0].equals(labels[1]):
-        raise ValueError("Las etiquetas difieren entre horizontes")
     if summary["horizontes"]["2"]["positivos_por_anio"] != manifest.get("positivos_brote_por_anio"):
         raise ValueError("Los conteos de brote difieren del manifiesto")
     return summary
@@ -167,7 +181,7 @@ def summarize_ablations(metrics_dir: Path = RESEARCH / "02_feature_engineering" 
         if len(by_model) != len(results):
             raise ValueError(f"{file} tiene filas de ablación duplicadas")
         phase_summary = {}
-        for h in HORIZONS:
+        for h in BACKUP_HORIZONS:  # the two horizons of those phases
             models = sorted({m for h0, _, m in by_model if h0 == h}
                             - {"persistencia", "historia_calendario"})
             summary_h = {}

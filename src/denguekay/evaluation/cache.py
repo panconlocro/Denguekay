@@ -24,7 +24,7 @@ import tempfile
 from pathlib import Path
 
 from denguekay.config.paths import (
-    CONFIG, ARCHITECTURE_EXPERIMENTS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED,
+    CONFIG, ARCHITECTURE_EXPERIMENTS, ROOT, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED,
 )
 
 CACHE_DIR = ARCHITECTURE_EXPERIMENTS / "cache"
@@ -48,8 +48,9 @@ def files_fingerprint(files: list[Path]) -> str:
 
 def study_inputs() -> list[Path]:
     """Data, configuration and code that determine the results of the study."""
-    data = [SILVER_INTEGRATED, SILVER_EPI_HISTORICAL, GOLD_MANIFEST,
-             *sorted(GOLD.glob(f"{SILVER_INTEGRATED.stem}_h*_gold.csv"))]
+    from denguekay.features.model_input_contract import gold_backup_files
+
+    data = [SILVER_INTEGRATED, SILVER_EPI_HISTORICAL, *gold_backup_files()]
     code = sorted((ROOT / "src" / "denguekay").rglob("*.py"))
     return [*data, CONFIG, *code]
 
