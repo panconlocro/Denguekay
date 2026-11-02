@@ -2,8 +2,8 @@
 # requirements.txt (lo comprueba tests/api/test_dependencies.py). Sin herramientas de investigación,
 # MLflow, Great Expectations, Optuna, matplotlib ni geopandas.
 # Instalación: pip install -r requirements-api.txt && pip install --no-deps .
-pandas
-scipy
+pandas>=3.0.6,<3.2
+scipy>=1.18,<1.19
 xgboost>=3,<4
 scikit-learn>=1.6,<2
 pyyaml
