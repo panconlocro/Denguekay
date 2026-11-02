@@ -32,7 +32,8 @@ calculando en memoria con `build_gold`. De ahí salen las matrices de la v2 y lo
 `evaluation/cache.py`, leen de ahí con los mismos hashes y dan un error explícito si falta.
 
 **Es la única copia del gold h=4 y no está en Git: Rosa debe guardarla fuera de la PC.** `data/gold/*` está ignorado.
-El h=2 anterior se puede reconstruir con `build_gold`, pero la v0 exige los archivos exactos.
+`build_gold` reproduce los valores de h=2 y h=4 (hay un test que lo comprueba), pero la v0 exige los archivos exactos y
+sus hashes.
 
 ## Actualización selectiva del dataset
 

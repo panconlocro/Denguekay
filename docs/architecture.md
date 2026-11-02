@@ -161,7 +161,7 @@ gold/
 ├── .gitkeep
 ├── meteo_socio_epi_piura_2017_2025_h2_gold.csv
 ├── manifest_fase6.json
-└── respaldo_pre_b3/           # gold anterior (h=2, h=4, manifiesto y SHA256SUMS.txt) para la v0 y el estudio 03; única copia
+└── respaldo_pre_b3/           # gold anterior (h=2, h=4, manifiesto y SHA256SUMS.txt) para la v0 y el estudio 03; única copia, guardarla fuera de la PC
 ```
 **Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
 

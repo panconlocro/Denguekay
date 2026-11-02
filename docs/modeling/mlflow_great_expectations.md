@@ -10,7 +10,7 @@ Antes, cada módulo `ejecutar_*` leía gold, entrenaba y escribía el JSON de m�
 
 ```text
 gold (+ silver integrado si el módulo lo usa)
-  → auditar_traspaso()                      (igual que antes)
+  → audit_gold_backup()                     (estudio 03; lee data/gold/respaldo_pre_b3/)
   → Great Expectations: suites silver_integrado, gold_h2 (estudio 03: gold_respaldo_h2 y gold_respaldo_h4)
         ↳ si alguna expectativa falla, el experimento se detiene antes de entrenar
   → entrenamiento y evaluación              (igual que antes)
@@ -66,14 +66,14 @@ candidatas, para el estudio 03):
 - Identificadores, objetivos, calendario y rasgos sociodemográficos sin nulos. Los predictores rezagados (casos, vecinos, jerarquía, clima) pueden ser nulos solo en el arranque de cada distrito: se exige al menos 95 % poblado (hoy los nulos son menos del 2 %; la comprobación exacta del arranque sigue en `preparar_gold`).
 - Rangos: conteos ≥ 0, semanas positivas entre 0 y 4, seno/coseno entre −1 y 1, humedad 0–100, todas las fracciones 0–1, log-poblaciones > 0.
 
-Con los datos actuales las tres suites pasan al 100 %.
+Con los datos actuales las suites pasan al 100 %.
 
 ### 3.3 Cómo ejecutarlas
 
 Desde la raíz del repo:
 
 ```powershell
-.\.venv\Scripts\python -m denguekay.data.validation.gx_quality             # silver integrado + gold h2/h4
+.\.venv\Scripts\python -m denguekay.data.validation.gx_quality             # silver integrado + gold
 .\.venv\Scripts\python -m denguekay.data.validation.gx_quality --sin-gold  # solo silver integrado
 ```
 
@@ -199,5 +199,6 @@ Cualquiera de los siete módulos sirve de ejemplo.
 ## 7. Verificación realizada
 
 - **Tests:** `tests/model/test_tracking.py` cubre el aplanado de métricas, la detección de folds con distintos nombres, que la media solo use validación y el registro anidado real en una base SQLite temporal. `tests/data/test_gx_quality.py` comprueba que datos sintéticos válidos pasan y que las suites detectan llave duplicada, `ubigeo` sin cero inicial, `brote` inválido, fracción fuera de rango, fuga temporal, columna faltante, temperatura mínima mayor que la máxima, humedad imposible, casos negativos y coordenadas fuera de Piura. La suite completa (`python -m unittest discover -s tests`) pasa.
-- **Datos reales:** las suites `silver_integrado`, `gold_h2` y `gold_h4` pasan al 100 % con los CSV actuales.
+- **Datos reales:** las suites `silver_integrado`, `gold_h2`, `gold_respaldo_h2` y `gold_respaldo_h4` pasan al 100 % con
+  los CSV actuales.
 - **Antes/después:** se ejecutaron los siete módulos con el código original y con el instrumentado, en el mismo equipo. Los siete JSON de métricas resultaron idénticos. En MLflow quedaron 25 runs para `primer_xgboost`, 43 para `ablacion_espacial`, 37 para `ablacion_clima`, 99 para `ablacion_sociodemografica`, 269 para `ablacion_fracciones`, 49 para `ablacion_poblacion_sin_seguro` y 31 para `validacion_temporal_compacta`. En todas las elecciones, la variante con mayor `validacion_media` coincidió con la que eligió el propio módulo. En `ablacion_sociodemografica` y `ablacion_fracciones`, la comparación se hizo dentro de cada familia (`fija:`/`anual:`), que es como eligen esos módulos.

@@ -27,6 +27,8 @@ from denguekay.serving.package import package_code
 from denguekay.serving.predictors.base import OOS_COLUMNS, OUTPUT_COLUMNS, BuiltPackage, InferenceUnavailable, VersionSpec
 from denguekay.serving.protocol import load_protocol, variant_metrics
 
+GOLD_DIR = GOLD_BACKUP  # publication logs the gold this package was evaluated with
+
 KIND = "v0_compact_xgb"
 CODE_PREFIX = "v0"
 TASKS = ("clasificacion", "regresion")

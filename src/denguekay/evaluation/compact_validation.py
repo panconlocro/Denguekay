@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from xgboost import __version__ as XGBOOST_VERSION
 
-from denguekay.features.model_input_contract import audit_gold_backup
+from denguekay.features.model_input_contract import audit_gold_backup, gold_backup_files
 from denguekay.evaluation.metrics import select_f1_threshold
 from denguekay.features.gold import SOCIO_2017_DATE
 from denguekay.model.train import (
@@ -105,7 +105,8 @@ def run_compact_validation(
 ) -> dict:
     """Train the predefined matrices with chronological calibration per season."""
     gold_dir, output_dir, metrics_path = map(Path, (gold_dir, output_dir, metrics_path))
-    if audit:  # study 03 reads the gold before the cleanup; a clear error if the backup is missing
+    gold_backup_files(gold_dir)  # study 03 reads the gold before the cleanup; a clear error if it is missing
+    if audit:
         audit_gold_backup(gold_dir)
     # Data quality (Great Expectations) before training; it fails if gold/silver
     # breaks its suite. The summary is attached to the MLflow run. Imported here so that serving
