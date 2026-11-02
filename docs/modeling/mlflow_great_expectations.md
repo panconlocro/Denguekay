@@ -9,9 +9,9 @@ Todavía **no hay modelo final**. Por eso no se usa el *Model Registry* de MLflo
 Antes, cada módulo `ejecutar_*` leía gold, entrenaba y escribía el JSON de métricas y las predicciones. Ahora, con los mismos comandos y notebooks:
 
 ```text
-gold h2/h4 (+ silver integrado si el módulo lo usa)
+gold (+ silver integrado si el módulo lo usa)
   → auditar_traspaso()                      (igual que antes)
-  → Great Expectations: suites silver_integrado, gold_h2, gold_h4
+  → Great Expectations: suites silver_integrado, gold_h2 (estudio 03: gold_respaldo_h2 y gold_respaldo_h4)
         ↳ si alguna expectativa falla, el experimento se detiene antes de entrenar
   → entrenamiento y evaluación              (igual que antes)
   → metricas/*.json del informe + models/experimentos/*   (igual que antes)
@@ -55,9 +55,11 @@ Las suites son **complementarias** a los controles estrictos que ya existían (`
 - Clima con rangos **físicamente plausibles**, no ajustados a los datos: temperaturas entre −10 y 45 °C con `temp_max ≥ temp_media ≥ temp_min`; precipitación y lluvia entre 0 y 1500 mm/semana con `lluvia ≤ precipitación`; humedad relativa entre 0 y 100 %; viento 0–200; radiación 0–350; ET0 0–100.
 - Población ≥ 1, fracciones entre 0 y 1, casos ≥ 0.
 
-**`gold_h2` y `gold_h4`** (92 expectativas cada una):
+**`gold_h2`** (gold limpio de 20 columnas) y **`gold_respaldo_h2` y `gold_respaldo_h4`** (el respaldo con todas las
+candidatas, para el estudio 03):
 
-- Esquema **exacto**: las columnas coinciden con `gold_columns(h, with_outbreak=True)`.
+- Esquema **exacto**: las columnas coinciden con `persisted_columns(2)`, o con `gold_columns(h, with_outbreak=True)`
+  en el respaldo.
 - Llave única, `ubigeo` válido y del catálogo, 65 distritos, `anio ≥ 2017`, `semana` 1–53.
 - Objetivos: `casos_Dengue ≥ 0`, `umbral_brote_casos ≥ 0`, `brote ∈ {0, 1}`.
 - **Sin fuga temporal**: `semana_inicio > origen_cierre` en toda fila con origen.

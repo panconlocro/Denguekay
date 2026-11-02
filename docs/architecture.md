@@ -63,7 +63,7 @@ Denguekay/
 │   ├── bronze/
 │   ├── silver/
 │   │   └── integrado/         # merges entre fuentes, sin features
-│   ├── gold/                  # dos datasets por horizonte y manifiesto de fase 6
+│   ├── gold/                  # dataset limpio (alineación h=2), manifiesto y respaldo del gold anterior
 │   └── reference/
 │
 ├── src/denguekay/             # paquete instalable del producto (código en inglés)
@@ -160,12 +160,12 @@ silver/
 gold/
 ├── .gitkeep
 ├── meteo_socio_epi_piura_2017_2025_h2_gold.csv
-├── meteo_socio_epi_piura_2017_2025_h4_gold.csv
-└── manifest_fase6.json
+├── manifest_fase6.json
+└── respaldo_pre_b3/           # gold anterior (h=2, h=4, manifiesto y SHA256SUMS.txt) para la v0 y el estudio 03; única copia
 ```
 **Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
 
-El plan de construcción está en `research/02_feature_engineering/docs/plan.md`. La entrada silver se conserva sin modificar; la fase 6 aprobada genera y valida las dos salidas gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene candidatos y la etiqueta `brote` (media histórica + 1,5 DE), sin estadísticas predictoras aprendidas con datos de prueba. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
+El plan de construcción está en `research/02_feature_engineering/docs/plan.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
 
 ### `data/reference/` — catálogos que casi no cambian
 ```

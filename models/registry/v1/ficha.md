@@ -39,6 +39,8 @@ la configuración congelada se demuestra con predicciones idénticas bit a bit
 
 ## Gold
 
+Este hash es el del gold anterior a la limpieza del 02/11/2026, que queda en `data/gold/respaldo_pre_b3/`.
+
 Matrices en memoria desde gold h=2 (`meteo_socio_epi_piura_2017_2025_h2_gold.csv`,
 `0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3`) y B3 desde el silver epidemiológico
 histórico.

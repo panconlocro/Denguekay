@@ -10,9 +10,9 @@ Datos: panel **distrito × semana epidemiológica**, 65 distritos de Piura, 2017
 bronze  -> crudo tal cual llegó de la fuente
 silver  -> limpio, un dataset por fuente
 silver/integrado -> fuentes silver unidas (meteo+socio+epi), SIN features derivadas
-gold    -> dataset con feature engineering: h2 y h4 (+ manifest_fase6.json). Lo regenera el equipo (notebook 10 del pipeline).
+gold    -> solo llaves, objetivo, etiqueta y variables de la configuración vigente: un archivo con alineación h=2 (+ manifest_fase6.json). Lo regenera el equipo (notebook 10 del pipeline). El gold anterior está en gold/respaldo_pre_b3/ (única copia; lo leen la v0 y el estudio 03).
 ```
-Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/features/gold.py` y el notebook 10 (`pipelines/notebooks/10_silver_to_gold.ipynb`); Claude propone los cambios. **Dataset de trabajo para el EDA:** `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar siempre con `denguekay.data.loading.load_integrated()`).
+Gold ya existe (alineación h=2; las demás candidatas y horizontes se calculan en memoria con `build_gold`). Solo lo regenera el equipo desde `src/denguekay/features/gold.py` y el notebook 10 (`pipelines/notebooks/10_silver_to_gold.ipynb`); Claude propone los cambios. **Dataset de trabajo para el EDA:** `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar siempre con `denguekay.data.loading.load_integrated()`).
 
 ## Reglas duras
 1. **Estructura:** antes de crear cualquier archivo lee `docs/architecture.md` y respétalo. Si algo nuevo no cabe en esa estructura, propón el cambio a Rosa y actualiza ese documento en el mismo cambio; no inventes carpetas por tu cuenta.

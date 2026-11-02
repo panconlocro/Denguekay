@@ -547,5 +547,6 @@ implementa.
   `200308`, `200403`, `200502`): **pendiente de verificar por Rosa.** No cambia nada en este encargo (con M4,
   opción c, la API no usa historia previa a 2017). Sí afecta a la etiqueta de brote de 2017–2021 y a B3 del
   modelo, que hoy tratan esos años como cero.
-- **B3 en gold (M7):** propuesta de cambio en `src/denguekay/features/gold.py`, que se decide aparte junto con
-  el protocolo de la v0.
+- **B3 en gold (M7): hecho el 02/11/2026** (rama `feat/gold-b3`), con un alcance mayor que el propuesto: gold persiste
+  un solo archivo con la alineación h=2 y 20 columnas (llaves, objetivo, etiqueta y `base_6`, A3 y B3). La v2 sigue
+  calculando B3 en memoria. La v0 lee el gold anterior de `data/gold/respaldo_pre_b3/` con los mismos hashes.
