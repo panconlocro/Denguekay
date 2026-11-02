@@ -83,18 +83,27 @@ def validate_predictions(pred: pd.DataFrame) -> pd.DataFrame:
 # Chronological calibration
 # ---------------------------------------------------------------------------
 
+def platt_logit(p) -> np.ndarray:
+    """Logit of the probability clipped to [EPS, 1 - EPS]: the input of Platt."""
+    p = np.clip(np.asarray(p, float), EPS, 1 - EPS)
+    return np.log(p / (1 - p))
+
+
+def fit_platt(p: np.ndarray, y: np.ndarray) -> LogisticRegression:
+    """Platt: logistic regression of ``y`` on ``platt_logit(p)``; its ``coef_`` and ``intercept_`` define it."""
+    return LogisticRegression(C=1e6, max_iter=1000).fit(platt_logit(p).reshape(-1, 1), np.asarray(y, int))
+
+
 def fit_calibrator(p: np.ndarray, y: np.ndarray, method: str = CALIBRATION_METHOD):
     """Return a monotonic function p -> calibrated p fitted with (p, y)."""
     p, y = np.asarray(p, float), np.asarray(y, int)
     if len(np.unique(y)) < 2:
         raise ValueError("El calibrador necesita dos clases")
     if method == "platt":
-        logit = np.log(np.clip(p, EPS, 1 - EPS) / (1 - np.clip(p, EPS, 1 - EPS)))
-        model = LogisticRegression(C=1e6, max_iter=1000).fit(logit.reshape(-1, 1), y)
+        model = fit_platt(p, y)
 
         def calibrate(q):
-            q = np.clip(np.asarray(q, float), EPS, 1 - EPS)
-            return model.predict_proba(np.log(q / (1 - q)).reshape(-1, 1))[:, 1]
+            return model.predict_proba(platt_logit(q).reshape(-1, 1))[:, 1]
         return calibrate
     if method == "isotonica":
         model = IsotonicRegression(y_min=0, y_max=1, out_of_bounds="clip").fit(p, y)

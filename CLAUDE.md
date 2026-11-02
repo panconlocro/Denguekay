@@ -1,7 +1,7 @@
 # Denguekay — contexto y reglas para Claude Code
 
 ## Qué es este proyecto
-Tesis de la UPC (Rosa y Nicolás): aplicación web de Machine Learning para **predecir brotes de dengue en Piura, Perú, con al menos 4 semanas de anticipación**. Metodología CRISP-DM; el **Hito 2** es Data Understanding / EDA. Stack: Python, pandas, scikit-learn, XGBoost, Great Expectations, Open-Meteo, Supabase; todo corre local en VS Code (ya no Colab). **MLflow** (seguimiento de experimentos) y **Great Expectations** (calidad de datos) están integrados en el modelado; ver `docs/modeling/mlflow_great_expectations.md`. DVC sigue descartado: no lo agregues.
+Tesis de la UPC (Rosa y Nicolás): aplicación web de Machine Learning para **predecir brotes de dengue en Piura, Perú, con al menos 4 semanas de anticipación**. Metodología CRISP-DM. La etapa actual es **OE3** (desarrollo completo); el EDA (Hito 2, Data Understanding) y OE2 están cerrados. Stack: Python, pandas, scikit-learn, XGBoost, Great Expectations, Open-Meteo, Supabase; todo corre local en VS Code (ya no Colab). **MLflow** (seguimiento de experimentos) y **Great Expectations** (calidad de datos) están integrados en el modelado; ver `docs/modeling/mlflow_great_expectations.md`. DVC sigue descartado: no lo agregues.
 
 Datos: panel **distrito × semana epidemiológica**, 65 distritos de Piura, 2017-2025. Fuentes: clima (Open-Meteo), sociodemografía (censo) y casos de dengue (Excel epidemiológico hasta 2024 + Sala Situacional MINSA para 2025).
 
@@ -10,9 +10,9 @@ Datos: panel **distrito × semana epidemiológica**, 65 distritos de Piura, 2017
 bronze  -> crudo tal cual llegó de la fuente
 silver  -> limpio, un dataset por fuente
 silver/integrado -> fuentes silver unidas (meteo+socio+epi), SIN features derivadas
-gold    -> dataset con feature engineering: h2 y h4 (+ manifest_fase6.json). Lo regenera el equipo (notebook 10 del pipeline).
+gold    -> solo llaves, objetivo, etiqueta y variables de la configuración vigente: un archivo con alineación h=2 (+ manifest_fase6.json). Lo regenera el equipo (notebook 10 del pipeline). El gold anterior está en gold/respaldo_pre_b3/ (única copia; lo leen la v0 y el estudio 03).
 ```
-Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/features/gold.py` y el notebook 10 (`pipelines/notebooks/10_silver_to_gold.ipynb`); Claude propone los cambios. **Dataset de trabajo para el EDA:** `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar siempre con `denguekay.data.loading.load_integrated()`).
+Gold ya existe (alineación h=2; las demás candidatas y horizontes se calculan en memoria con `build_gold`). Solo lo regenera el equipo desde `src/denguekay/features/gold.py` y el notebook 10 (`pipelines/notebooks/10_silver_to_gold.ipynb`); Claude propone los cambios. **Dataset de trabajo para el EDA:** `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` (cargar siempre con `denguekay.data.loading.load_integrated()`).
 
 ## Reglas duras
 1. **Estructura:** antes de crear cualquier archivo lee `docs/architecture.md` y respétalo. Si algo nuevo no cabe en esa estructura, propón el cambio a Rosa y actualiza ese documento en el mismo cambio; no inventes carpetas por tu cuenta.
@@ -36,14 +36,14 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/feat
   - **Código en inglés:** identificadores (snake_case), comentarios y docstrings. El producto ya está traducido (fase 3 de la reestructuración); por la decisión D2, los handlers de la API, sus parámetros y los esquemas Pydantic conservan sus nombres en español porque forman el contrato OpenAPI.
   - **Sin cambios hasta nuevo aviso:** el esquema de BD sigue el documento OE2 (nombres en español de `docs/backend/ddl_oe2.sql`) y las columnas de los datos conservan sus nombres actuales.
   - **Documentación en español:** `docs/`, markdown de notebooks, informes, títulos y etiquetas de gráficos (con unidades: °C, mm, casos por 100 000 hab.).
-- `pipelines/notebooks/` contiene solo el pipeline (01–09 y `10_silver_to_gold`, que regenera gold), numerado según el paso. La investigación (EDA, feature engineering y estudios de modelado: los antiguos notebooks 10–21 y 23–35, su código, tests, informes, métricas y figuras) está congelada en `research/<estudio>/`, con un README por estudio que dice cómo reproducirlo desde su tag. No se vuelve a correr en `main`, no corre en el CI y el producto nunca la importa. Un estudio nuevo va en `research/06_<nombre>/`.
+- `pipelines/notebooks/` contiene solo el pipeline (01–09 y `10_silver_to_gold`, que regenera gold), numerado según el paso. La investigación (EDA, feature engineering y estudios de modelado: los antiguos notebooks 10–21 y 23–35, su código, tests, informes, métricas y figuras) está congelada en `research/<estudio>/`, con un README por estudio que dice cómo reproducirlo desde su tag. No se vuelve a correr en `develop` ni en `main`, no corre en el CI y el producto nunca la importa. Un estudio nuevo va en `research/06_<nombre>/`.
 - Salidas del EDA (cerrado): figuras en `research/01_eda/docs/figuras/<fase>/`, cifras clave en `research/01_eda/docs/metricas/<fase>.json`, conclusiones en `research/01_eda/docs/hallazgos.md`.
 
 ## Control de versiones (detalle en `CONTRIBUTING.md`)
-- Solo `main` es permanente; no hagas commits directos en ella. Cada cambio va en una rama `feat/`, `fix/`, `refactor/`, `docs/`, `chore/` o `exp/`, con nombre en inglés y kebab-case, y entra a `main` por PR con el CI en verde.
+- Dos ramas permanentes (ADR 0002): `main` = producción (solo recibe PR desde `develop` en un release o desde `fix/` en un hotfix) y `develop` = integración. No hagas commits directos en ninguna de las dos. Cada cambio va en una rama `feat/`, `fix/`, `refactor/`, `docs/`, `chore/` o `exp/` que **sale de `develop`**, con nombre en inglés y kebab-case, y vuelve a `develop` por PR con el CI en verde. El release `develop → main` lo decide Rosa.
 - Commits con Conventional Commits en inglés (`feat(api): add risk map endpoint`).
 - Merge siempre con «Create a merge commit». **Nunca reescribas historia publicada** (squash, rebase, `--amend`, `push --force`): los informes citan hashes.
-- Tags anotados: `model/vN` al congelar una versión de modelo, `study/<nombre>` al cerrar un estudio. Las ramas anteriores a la limpieza están en los tags `archive/*`.
+- Tags anotados: `model/vN` al congelar una versión de modelo, `study/<nombre>` al cerrar un estudio, `api/vX.Y.Z` (versión del contrato) en el merge commit de `main` de un release que cambia la API. Las ramas anteriores a la limpieza están en los tags `archive/*`.
 
 ## Cómo se trabaja con Rosa
 - Rosa trabaja **fase por fase y confirma cada una antes de seguir**. Al terminar una fase presentas el resumen y te detienes.
@@ -53,14 +53,14 @@ Gold ya existe (h=2 y h=4). Solo lo regenera el equipo desde `src/denguekay/feat
 ## Herramientas del proyecto
 - Skill `eda-dengue` y subagente `revisor-eda`: método del EDA y auditor que recalcula cada cifra citada. Están versionados en `_claude_setup/` (no instalados en `.claude/`; se instalan con `scripts/install_claude_setup.ps1`) y apuntan al EDA congelado en `research/01_eda/`. Úsalos para cualquier análisis exploratorio nuevo.
 - Subagentes versionados en `.claude/agents/`: `revisor-backend` y `revisor-modelado`.
-- Decisiones de arquitectura del repo: `docs/decisions/` (ADR 0001: reestructuración en monorepo, con las decisiones D1–D6).
-- Registro de modelos: `models/registry/` (ficha de v0, v1 y v2 y `CHANGELOG.md`). La v2 es la configuración vigente y la v0 la que se sirve; las configuraciones se cargan desde el paquete con `denguekay.model.registry`. Una versión nueva lleva su ficha y su entrada en el CHANGELOG.
+- Decisiones de arquitectura del repo: `docs/decisions/` (ADR 0001: reestructuración en monorepo, con las decisiones D1–D6; ADR 0002: ramas `develop` y `main`).
+- Registro de modelos: `models/registry/` (ficha de v0, v1 y v2 y `CHANGELOG.md`). La v2 es la configuración vigente y la que se sirve, como selección experimental; la v0 queda registrada (predictor `v0_compact_xgb`); las configuraciones se cargan desde el paquete con `denguekay.model.registry`. Una versión nueva lleva su ficha y su entrada en el CHANGELOG.
 
 
 <!-- inicio: backend OE2 -->
 ## Backend (refactor OE2, TB1)
 - **Fuente de verdad del esquema y la API:** `docs/backend/especificacion_oe2.md` y `docs/backend/ddl_oe2.sql` (copiados del documento OE2: sección 5, Anexo B y Tabla 2). El código se adapta al documento, no al revés. Toda diferencia se justifica en `docs/backend/desviaciones_oe2.md` y se le consulta a Rosa antes.
-- **Alcance TB1: todo local.** PostgreSQL local + SQLite para tests, uvicorn local, artefactos en `models/storage/` mediante un adaptador local. Prohibido configurar o desplegar Supabase/Render en esta etapa.
+- **Alcance del despliegue:** El repo queda preparado para desplegar en Render, Supabase y Vercel (configuración, adaptadores y `despliegue.md`), pero no se despliega ni se conecta a servicios reales desde el código ni desde los tests. El despliegue lo hace Rosa manualmente.
 - Stack: FastAPI + Pydantic v2, SQLAlchemy 2 + Alembic, psycopg 3. Las migraciones en `src/denguekay/db/migrations/` son la autoridad del esquema; nunca `create_all` al arrancar la API.
 - Comandos (PowerShell, desde la raíz):
   - `.\.venv\Scripts\python -m alembic upgrade head`

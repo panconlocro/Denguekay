@@ -4,6 +4,10 @@ Each function returns a value that must stay identical while the repository is r
 frozen-model predictions, the API contract, the migrated schema and the smoke test against a
 real uvicorn process. ``python tests/equivalence_support.py record`` wrote the baseline in
 ``tests/fixtures/equivalence/`` once, before any module moved; it refuses to overwrite it.
+
+Since the API v1 brief (docs/backend/api_v1_decisiones.md, G1) the schema guards check the ADR 0001
+head ``0003_oe2``; later migrations have their own baselines in ``tests/fixtures/contract_v1/``
+(``contract_v1_support.py``). The OpenAPI and smoke baselines stay here as history.
 """
 
 import argparse
@@ -28,6 +32,9 @@ POSTGRESQL_SCHEMA_BASELINE = BASELINE_DIR / "schema_postgresql.json"
 SMOKE_BASELINE = BASELINE_DIR / "smoke.json"
 
 SMOKE_API_KEY = "clave-local-de-equivalencia"
+# Last revision of the restructure (tag restructure-done); its schema baseline never changes.
+ADR_0001_HEAD = "0003_oe2"
+ADR_0001_SQL_RANGE = f"0002_serving:{ADR_0001_HEAD}"
 PREDICTION_KEY = ["ubigeo", "semana_inicio", "horizonte", "bloque"]
 PREDICTION_VALUES = ["casos_predichos", "probabilidad_brote"]
 # XGBoost is deterministic for a fixed device and thread count, but CPU and CUDA (and different
@@ -131,12 +138,12 @@ def committed_openapi():
 
 # --- schema after ``alembic upgrade head`` ---------------------------------------------------
 
-def offline_postgresql_sql():
-    """``alembic upgrade 0002_serving:head --sql`` for PostgreSQL, without a connection."""
+def offline_postgresql_sql(revision_range=ADR_0001_SQL_RANGE):
+    """``alembic upgrade <range> --sql`` for PostgreSQL, without a connection."""
     from denguekay.db.export_migration_sql import export
 
     with tempfile.TemporaryDirectory() as folder:
-        return export(Path(folder) / "offline.sql").read_text(encoding="utf-8").replace("\r\n", "\n")
+        return export(Path(folder) / "offline.sql", revision_range).read_text(encoding="utf-8").replace("\r\n", "\n")
 
 
 def committed_offline_sql():
@@ -145,8 +152,8 @@ def committed_offline_sql():
     return OE2_MIGRATION_SQL.read_text(encoding="utf-8").replace("\r\n", "\n")
 
 
-def sqlite_schema():
-    """``sqlite_master`` of an empty SQLite database migrated to head, in a stable order."""
+def sqlite_schema(target=ADR_0001_HEAD):
+    """``sqlite_master`` of an empty SQLite database migrated to ``target``, in a stable order."""
     from sqlalchemy import text
     from sqlalchemy.engine import URL
 
@@ -156,7 +163,7 @@ def sqlite_schema():
     with tempfile.TemporaryDirectory() as folder:
         engine = make_engine(URL.create("sqlite", database=str(Path(folder) / "schema.db")))
         try:
-            migrar(engine)
+            migrar(engine, target)
             with engine.connect() as connection:
                 rows = connection.execute(text(
                     "SELECT type, name, tbl_name, sql FROM sqlite_master "
@@ -208,8 +215,8 @@ POSTGRESQL_CATALOG = {
 }
 
 
-def postgresql_schema(url):
-    """Catalog of the disposable PostgreSQL database migrated from base to head; leaves it at base."""
+def postgresql_schema(url, target=ADR_0001_HEAD):
+    """Catalog of the disposable PostgreSQL database migrated from base to ``target``; leaves it at base."""
     from sqlalchemy import text
 
     from backend_support import migrar
@@ -218,7 +225,7 @@ def postgresql_schema(url):
     engine = make_engine(url)
     try:
         migrar(engine, "base")
-        migrar(engine)
+        migrar(engine, target)
         with engine.connect() as connection:
             catalog = {name: [[None if v is None else str(v) for v in row] for row in connection.execute(text(sql))]
                        for name, sql in POSTGRESQL_CATALOG.items()}
@@ -241,22 +248,21 @@ def build_smoke_database(folder):
     from sqlalchemy.engine import URL
 
     from backend_support import datos_muestra, motor_temporal
-    from serving_support import preparar_muestra
+    from serving_support import preparar_muestra, publish_sample
     from denguekay.db.session import transaction
     from denguekay.serving.storage import LocalStorage
     from denguekay.serving.load_data import persist_load
-    from denguekay.serving.publish import publish_to_db
 
     cfg, protocol, prepared = preparar_muestra()
-    data = datos_muestra(folder, cfg.seleccion_experimental)
+    data = datos_muestra(folder)
     data = replace(data, observaciones=[o for o in data.observaciones if o["id_semana"] >= 202530])
     storage = folder / "storage"
     engine = motor_temporal(folder)
     try:
         with transaction(engine) as session:
             persist_load(session, data)
-        publish_to_db(engine, data, protocol, prepared, (2, 4), cfg, "run-equivalencia", "huella-equivalencia",
-                       LocalStorage(storage), 0)
+        publish_sample(engine, data, cfg, protocol, prepared, LocalStorage(storage),
+                         "run-equivalencia", "huella-equivalencia")
     finally:
         engine.dispose()
     return str(URL.create("sqlite", database=str(folder / "pruebas.db"))), storage

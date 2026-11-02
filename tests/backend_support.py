@@ -80,7 +80,7 @@ def leer_muestra():
             "gold": gold, "sala": leer_csv("sala_muestra.csv")}
 
 
-def datos_muestra(carpeta, seleccion_experimental=None):
+def datos_muestra(carpeta):
     """Ejecuta GX sobre gold real y prepara el lote de carga OE2 desde las fixtures."""
     # Importación diferida: evita cargar GX al importar este módulo.
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
@@ -91,11 +91,12 @@ def datos_muestra(carpeta, seleccion_experimental=None):
     muestra = leer_muestra()
     calidad = validate_dataframe(
         muestra["gold"], suite_name="backend_gold_h2", asset_name="backend_gold_h2",
-        expectations=expectations_for_gold(2, sorted(muestra["gold"].ubigeo.unique())),
+        # The fixtures keep the schema with all the candidates (they are frozen by the smoke v1 guard).
+        expectations=expectations_for_gold(2, sorted(muestra["gold"].ubigeo.unique()), persisted=False),
         context=get_context(carpeta / "gx"), update_docs=False)
     archivos = [BACKEND_FIXTURES / n for n in ("silver_muestra.csv", "cobertura_muestra.csv", "gold_h2_muestra.csv",
                                              "gold_temporal_h2_muestra.csv", "sala_muestra.csv")]
     hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in archivos + [UBIGEO_CATALOG, DISTRICT_COORDS]}
     return prepare_from_tables(load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS),
                                  muestra["silver"], muestra["cobertura"], muestra["gold"], muestra["sala"],
-                                 hashes, {"exito": calidad["exito"], "suites": [calidad]}, seleccion_experimental)
+                                 hashes, {"exito": calidad["exito"], "suites": [calidad]})

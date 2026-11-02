@@ -48,7 +48,9 @@ class TestCacheExperimentos(unittest.TestCase):
             ce.files_fingerprint([self.dir / "no_existe.csv"])
 
     def test_insumos_cubren_datos_configuracion_y_codigo(self):
-        nombres = {p.name for p in ce.study_inputs()}
+        respaldo = [Path("manifest_fase6.json")]  # the study reads the backup, which is not in the repository
+        with mock.patch("denguekay.features.model_input_contract.gold_backup_files", return_value=respaldo):
+            nombres = {p.name for p in ce.study_inputs()}
         self.assertTrue({"config.yaml", "manifest_fase6.json", "probabilistic_output.py",
                          "protocol.py", "forecast_contract.py"} <= nombres)
 

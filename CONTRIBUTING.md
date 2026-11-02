@@ -5,8 +5,15 @@ Reglas de control de versiones del equipo. Rigen desde la limpieza del 27/10/202
 
 ## Ramas
 
-- `main` es la única rama permanente. Nadie hace commits directos en `main`.
-- Cada cambio va en una rama corta que sale de `main`, con nombre en inglés y
+Desde el 29/10/2026 hay dos ramas permanentes ([ADR 0002](docs/decisions/0002-develop-branch.md)):
+
+- `main` = producción. Cada merge a `main` despliega (cuando exista el despliegue de OE2). Solo
+  recibe PR desde `develop` (release) o desde una rama `fix/` (hotfix).
+- `develop` = integración. Es la rama por defecto (una vez configurada en GitHub, ver el ADR) y de
+  donde sale todo el trabajo.
+- Nadie hace commits directos en `main` ni en `develop`.
+- Cada cambio va en una rama corta que sale de `develop` (`git fetch` y
+  `git switch -c <prefijo>/<nombre> origin/develop`), con nombre en inglés y
   kebab-case, y uno de estos prefijos:
 
   | Prefijo | Uso | Ejemplo |
@@ -18,7 +25,12 @@ Reglas de control de versiones del equipo. Rigen desde la limpieza del 27/10/202
   | `chore/` | mantenimiento, dependencias, CI, configuración | `chore/git-conventions` |
   | `exp/` | experimento o estudio de modelado | `exp/climate-lags` |
 
-- La rama se borra después del merge.
+- La rama se borra después del merge (GitHub lo hace solo).
+- **Release:** PR `develop → main` con merge commit, cuando Rosa lo decida (por sprint o entrega).
+- **Hotfix:** `fix/<nombre>` desde `main` → PR a `main`; luego PR `main → develop` con merge commit.
+- **Experimentos de Rosa:** `exp/<nombre>` desde `develop`; los estudios van en
+  `research/06_<nombre>/` y nunca tocan `apps/`.
+- **Frontend de Nicolás:** `feat/web-<pantalla>` desde `develop`, solo dentro de `apps/web/`.
 
 ## Commits
 
@@ -31,12 +43,12 @@ Reglas de control de versiones del equipo. Rigen desde la limpieza del 27/10/202
 
 ## Pull requests
 
-- Todo entra a `main` por un PR, y solo se mergea con el CI en verde
-  (`.github/workflows/backend.yml`: la suite completa en Linux, Windows y macOS,
-  más las pruebas sobre PostgreSQL).
+- Todo entra a `develop` (o, en un release o hotfix, a `main`) por un PR, y solo se mergea con
+  el CI en verde (`.github/workflows/backend.yml`: la suite completa en Linux, Windows y macOS,
+  más las pruebas sobre PostgreSQL). El CI corre en cada PR y en cada push a `main` y `develop`.
 - **Siempre con «Create a merge commit».** Nunca «Squash and merge» ni «Rebase and merge»:
   los informes y preregistros citan hashes concretos (por ejemplo, `d6bd0be` o `424a148`),
-  y esos dos métodos crean commits nuevos y dejan esas citas sin destino en `main`.
+  y esos dos métodos crean commits nuevos y dejan esas citas sin destino en `develop` y `main`.
 - Por la misma razón, la historia publicada no se reescribe: nada de `rebase`,
   `commit --amend` ni `push --force` sobre commits que ya estén en el remoto.
 
@@ -44,15 +56,21 @@ Reglas de control de versiones del equipo. Rigen desde la limpieza del 27/10/202
 
 Los tags son anotados (`git tag -a`) y se suben con `git push origin <tag>`.
 
+`model/vN` y `study/<nombre>` se ponen en el commit que se congela, esté en la rama que esté; los merge
+commits conservan ese hash al llegar a `develop` y a `main`. `api/vX.Y.Z` se pone después del release, en el
+merge commit de `main`.
+
 | Tag | Cuándo se crea | Apunta a |
 |---|---|---|
 | `model/vN` | al congelar una versión de modelo | el commit que congela la configuración |
 | `study/<nombre>` | al cerrar un estudio (nombre en inglés y kebab-case) | el último commit del estudio |
+| `api/vX.Y.Z` | en cada release `develop → main` que cambia la API; `X.Y.Z` es la versión del contrato (`info.version`, `X-Version-Contrato`) | el merge commit del release en `main` |
 | `archive/<rama>` | antes de borrar una rama histórica | la punta de la rama |
 
 Tags vigentes: `model/v0` (backend TB1, `3d59090`), `model/v1` (`d6bd0be`),
 `model/v2` (`424a148`, vigente), `study/horizon-architecture` (`808c340`),
-`study/fe-hyperparameters` (`e4bc7b7`) y `pre-restructure` (`3ad8312`).
+`study/fe-hyperparameters` (`e4bc7b7`), `pre-restructure` (`3ad8312`) y `restructure-done`
+(`8dc1735`, cierre del ADR 0001).
 Las ramas anteriores a la limpieza viven como `archive/*`, con `/` cambiado por `-` en el
 nombre. Para recuperar una: `git switch -c experiment/model-architecture archive/experiment-model-architecture`.
 

@@ -183,3 +183,22 @@ la ficha de V0 y en `docs/backend/operacion.md`.
 - La investigación deja de correr en el CI; reproducirla exige su tag.
 - Quien tenga trabajo local en el backend debe rehacer sus rutas después de la fase 3 (cada resumen
   de fase lista las rutas que cambian).
+
+### Después del cierre: las guardas y la API v1 (29/10/2026, aprobado por Rosa)
+
+El encargo de la API v1 (`docs/backend/prompt_api_v1.md`, decisión G1 de
+`docs/backend/api_v1_decisiones.md`) cambia la API y el esquema a propósito. Las guardas de este ADR quedan
+así, sin regenerar ninguna línea base de `tests/fixtures/equivalence/`:
+
+- **V1 y V2 bit a bit** (`TestFrozenPredictions`): siguen igual.
+- **Esquema migrado** (`TestMigratedSchema`): se mantiene, pero comprueba la cabeza de este ADR,
+  `0003_oe2` (SQL offline `0002_serving:0003_oe2`, esquema SQLite y catálogo PostgreSQL). Las migraciones
+  ya publicadas no cambian.
+- **Contrato OpenAPI**: se reemplaza por la guarda del contrato v1 (`docs/backend/openapi_v1.json`, con
+  semver), en `tests/test_contract_v1_guards.py`.
+- **Prueba de humo** (`smoke.json`, 15 rutas): deja de correr, porque la app actual ya no es la de
+  entonces. Queda como historia en el tag `restructure-done`.
+- **Líneas base nuevas** en `tests/fixtures/contract_v1/`: el esquema en la cabeza de cada migración nueva
+  (desde `0004_v1`) y una prueba de humo v1 (16 rutas, con `/configuracion`). Se graban una vez con
+  `python tests/contract_v1_support.py record`, que no sobrescribe, y nunca se regeneran para que un test
+  pase.

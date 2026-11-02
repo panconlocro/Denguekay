@@ -15,7 +15,7 @@ from denguekay.db.models import Run
 Ubigeo = Annotated[str, StringConstraints(pattern=r"^[0-9]{6}$"),
                    Field(description="Código distrital de seis dígitos, conservado como texto")]
 Identifier = Annotated[int, Path(ge=1, description="Identificador positivo del registro guardado en la BD")]
-Horizon = Annotated[int, Query(ge=2, le=4, description="Anticipación en semanas: 2 o 4 con modelo; 3 responde no_disponible")]
+Horizon = Annotated[int, Query(ge=2, le=4, description="Anticipación en semanas (2, 3 o 4); un horizonte sin modelo responde disponible=false")]
 PageNumber = Annotated[int, Query(ge=1, description="Página, comenzando en uno")]
 PageSize = Annotated[int, Query(ge=1, le=100, description="Cantidad máxima de elementos por página")]
 key_header = APIKeyHeader(name="X-API-Key", auto_error=False,

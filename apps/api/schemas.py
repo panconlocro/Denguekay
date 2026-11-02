@@ -3,12 +3,14 @@
 Schema names and docstrings are part of the OpenAPI contract (decision D2): they stay in Spanish."""
 
 from datetime import date, datetime, timezone
-from typing import Generic, Literal, TypeVar
+from typing import Annotated, Generic, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 T = TypeVar("T")
 Nivel = Literal["bajo", "medio", "alto", "muy_alto"]
+EstadoPrediccion = Literal["disponible", "no_disponible"]
+Posicion = Annotated[list[float], Field(min_length=2, max_length=3, description="[longitud, latitud] en grados (WGS 84)")]
 
 
 class Esquema(BaseModel):
@@ -88,11 +90,15 @@ class PrediccionRespuesta(Disponibilidad):
     semana_corte: SemanaRespuesta
     semana_objetivo: SemanaRespuesta
     tipo: Literal["vigente", "retrospectiva"] = Field(description="vigente = último corte publicado del horizonte")
-    estado: Literal["disponible", "no_disponible"]
+    estado: EstadoPrediccion
     probabilidad_brote: float | None = Field(ge=0, le=1)
     nivel_riesgo: Nivel | None
     nivel_riesgo_etiqueta: str | None
     casos_estimados: float | None = Field(ge=0)
+    casos_intervalo_inferior: float | None = Field(ge=0, description="Límite inferior del intervalo de casos; null si el modelo no lo estima")
+    casos_intervalo_superior: float | None = Field(ge=0, description="Límite superior del intervalo de casos; null si el modelo no lo estima")
+    nivel_intervalo: float | None = Field(gt=0, lt=1, description="Probabilidad nominal del intervalo (0,80)")
+    motivo_intervalo: str | None = Field(description="Por qué el intervalo es null")
     casos_persistencia: int | None = Field(description="Línea base: casos observados en la semana de corte")
     alerta_modelo: bool | None = Field(description="probabilidad >= umbral F1 de la versión; independiente de la alerta")
     experimental: bool = Field(description="La versión usada no cumple los umbrales de aceptación")
@@ -137,6 +143,54 @@ class TableroRespuesta(Metadatos):
     nota: str
 
 
+class ElementoLeyenda(Esquema):
+    nivel: Nivel | None = Field(description="null = Sin datos")
+    etiqueta: str
+    desde: float | None = Field(description="Probabilidad mínima del nivel (incluida)")
+    hasta: float | None = Field(description="Probabilidad máxima del nivel (excluida, salvo 1)")
+
+
+class GeometriaPunto(Esquema):
+    type: Literal["Point"]
+    coordinates: Posicion
+
+
+class GeometriaPoligono(Esquema):
+    type: Literal["Polygon"]
+    coordinates: list[list[Posicion]]
+
+
+class GeometriaMultiPoligono(Esquema):
+    type: Literal["MultiPolygon"]
+    coordinates: list[list[list[Posicion]]]
+
+
+Geometria = Annotated[GeometriaPunto | GeometriaPoligono | GeometriaMultiPoligono, Field(discriminator="type")]
+
+
+class PropiedadesDistrito(Esquema):
+    ubigeo: str = Field(pattern=r"^[0-9]{6}$")
+    distrito: str
+    provincia: str
+    estado: EstadoPrediccion
+    nivel_riesgo: Nivel | None
+    nivel_riesgo_etiqueta: str = Field(description="Etiqueta del nivel o «Sin datos»")
+    probabilidad_brote: float | None = Field(ge=0, le=1)
+    casos_estimados: float | None = Field(ge=0)
+    casos_intervalo_inferior: float | None = Field(ge=0)
+    casos_intervalo_superior: float | None = Field(ge=0)
+    nivel_intervalo: float | None = Field(gt=0, lt=1)
+    experimental: bool
+    motivo: str | None
+
+
+class FeatureDistrito(Esquema):
+    type: Literal["Feature"] = "Feature"
+    id: str = Field(pattern=r"^[0-9]{6}$", description="ubigeo del distrito")
+    geometry: Geometria = Field(description="Hoy Point (centroide); Polygon o MultiPolygon cuando haya límites con licencia")
+    properties: PropiedadesDistrito
+
+
 class MapaRiesgoRespuesta(Metadatos):
     """GeoJSON FeatureCollection; los demás campos son miembros extra permitidos por RFC 7946."""
     type: Literal["FeatureCollection"] = "FeatureCollection"
@@ -144,8 +198,8 @@ class MapaRiesgoRespuesta(Metadatos):
     semana_corte: SemanaRespuesta | None
     semana_objetivo: SemanaRespuesta | None
     experimental: bool
-    leyenda: list[dict]
-    features: list[dict]
+    leyenda: list[ElementoLeyenda]
+    features: list[FeatureDistrito]
 
 
 class AlertaRespuesta(Esquema):
@@ -208,12 +262,42 @@ class VariablesRespuesta(Metadatos):
 class SaludRespuesta(Metadatos):
     estado: str
     conexion_bd: bool
-    version_api: str
+    version_api: str = Field(description="Versión de la aplicación; la del contrato va en X-Version-Contrato")
     ultima_ejecucion: dict | None
 
 
+class CortesRiesgo(Esquema):
+    medio: float = Field(gt=0, lt=1)
+    alto: float = Field(gt=0, lt=1)
+    muy_alto: float = Field(gt=0, lt=1)
+
+
+class NivelRiesgo(Esquema):
+    nivel: Nivel
+    etiqueta: str
+
+
+class HorizonteConfiguracion(Disponibilidad):
+    horizonte: int = Field(ge=2, le=4)
+    semana_corte_vigente: SemanaRespuesta | None = Field(description="Último corte publicado; null si no hay")
+    experimental: bool = Field(description="El modelo en uso para el horizonte no cumple los umbrales")
+
+
+class ConfiguracionRespuesta(Metadatos):
+    """Todo lo que el frontend necesita para no tener valores en código duro."""
+    version_contrato: str
+    horizontes_disponibles: list[int] = Field(description="Horizontes con un modelo en uso")
+    horizonte_por_defecto: int = Field(ge=2, le=4, description="parametro_sistema.horizonte_por_defecto")
+    horizontes: list[HorizonteConfiguracion]
+    cortes_riesgo: CortesRiesgo
+    niveles: list[NivelRiesgo]
+    leyenda: list[ElementoLeyenda]
+    experimental: bool
+    nota: str
+
+
 class SolicitudInferencia(Esquema):
-    horizonte: int = Field(ge=2, le=4, description="2 o 4; 3 responde 409 (sin modelo)")
+    horizonte: int = Field(ge=2, le=4, description="2, 3 o 4; un horizonte sin modelo responde 409")
     id_semana_corte: int | None = Field(default=None, ge=201701, le=209953,
                                         description="Semana de corte (anio*100+semana); por defecto, la última observada")
 

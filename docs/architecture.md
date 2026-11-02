@@ -10,7 +10,7 @@ Esta guía explica cómo está organizado el repo y **dónde va cada archivo nue
 flowchart LR
   fuentes[Open-Meteo, censo,<br/>Excel epi, Sala MINSA] --> nb[pipelines/notebooks<br/>01–09]
   nb --> silver[(data/silver/integrado)]
-  silver --> gold_nb[10_silver_to_gold] --> gold[(data/gold h2/h4)]
+  silver --> gold_nb[10_silver_to_gold] --> gold[(data/gold)]
   silver --> weekly[denguekay.pipelines<br/>weekly_update] --> silver
   gold --> model[denguekay.features / model / evaluation]
   model --> registry[models/registry<br/>v0 · v1 · v2]
@@ -47,12 +47,14 @@ Denguekay/
 ├── AGENTS.md                  # contexto y reglas para Codex
 ├── .codex/skills/             # workflows de Codex (feature engineering)
 ├── .gitignore
-├── .env.example               # conexión y secretos sin valores reales
+├── .env.example               # variables de entorno (BD, clave, CORS, Storage) sin valores reales
 ├── alembic.ini                # migraciones del backend, sin credenciales
 ├── pyproject.toml             # paquete instalable denguekay (pip install -e .); dependencias = requirements.txt
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
-├── .github/workflows/         # tests (SQLite y PostgreSQL) y cobertura en push/PR; sin despliegue
+├── .github/workflows/         # tests (SQLite y PostgreSQL), cobertura y humo de la API liviana; sin despliegue
 ├── requirements.txt
+├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
+├── render.yaml                # Blueprint de Render para la API (docs/backend/despliegue.md); no despliega por sí solo
 ├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan) e install_claude_setup.ps1
 ├── configs/
 │   └── config.yaml
@@ -61,7 +63,7 @@ Denguekay/
 │   ├── bronze/
 │   ├── silver/
 │   │   └── integrado/         # merges entre fuentes, sin features
-│   ├── gold/                  # dos datasets por horizonte y manifiesto de fase 6
+│   ├── gold/                  # dataset limpio (alineación h=2), manifiesto y respaldo del gold anterior
 │   └── reference/
 │
 ├── src/denguekay/             # paquete instalable del producto (código en inglés)
@@ -95,7 +97,7 @@ Denguekay/
 ├── mlartifacts/               # artefactos de MLflow (generado, no se versiona)
 └── docs/
     ├── modeling/              # guía de MLflow/GX, diccionario de variables y métricas que lee serving (V0)
-    ├── decisions/             # ADR numerados (0001: reestructuración en monorepo)
+    ├── decisions/             # ADR numerados (0001: monorepo; 0002: ramas develop y main)
     └── backend/               # operación y evidencia del backend por fase
 ```
 
@@ -158,12 +160,12 @@ silver/
 gold/
 ├── .gitkeep
 ├── meteo_socio_epi_piura_2017_2025_h2_gold.csv
-├── meteo_socio_epi_piura_2017_2025_h4_gold.csv
-└── manifest_fase6.json
+├── manifest_fase6.json
+└── respaldo_pre_b3/           # gold anterior (h=2, h=4, manifiesto y SHA256SUMS.txt) para la v0 y el estudio 03; única copia, guardarla fuera de la PC
 ```
 **Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
 
-El plan de construcción está en `research/02_feature_engineering/docs/plan.md`. La entrada silver se conserva sin modificar; la fase 6 aprobada genera y valida las dos salidas gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene candidatos y la etiqueta `brote` (media histórica + 1,5 DE), sin estadísticas predictoras aprendidas con datos de prueba. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
+El plan de construcción está en `research/02_feature_engineering/docs/plan.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
 
 ### `data/reference/` — catálogos que casi no cambian
 ```
@@ -206,7 +208,7 @@ data/
 │   └── merge.py                # merges meteo + socio + epi y relleno selectivo
 └── validation/
     ├── integrated_expectations.py  # cobertura y validación del integrado + suite GX silver_integrado
-    ├── gold_expectations.py        # suite GX gold_h2/gold_h4 (esquema, llave, rangos, sin fuga temporal)
+    ├── gold_expectations.py        # suite GX gold_h2 (esquema, llave, rangos, sin fuga temporal)
     ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
     └── forecast_contract.py        # origen temporal y disponibilidad al pronosticar
 ```
@@ -262,22 +264,29 @@ evaluation/
 ### `db/`, `serving/` y `pipelines/`
 ```text
 src/denguekay/db/
-├── settings.py               # DATABASE_URL desde .env o entorno
+├── settings.py               # DATABASE_URL (API), MIGRATION_DATABASE_URL (alembic) y DB_PREPARED_STATEMENTS desde .env o entorno
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # revisiones Alembic; 0003_oe2 es el esquema vigente
+└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
-├── settings.py               # horizontes, variantes y selección experimental (config.yaml)
-├── parameters.py             # lectura de parametro_sistema (autoridad de umbrales y cortes)
-├── storage.py                # puerto Storage + adaptador local models/storage/
-├── protocol.py               # importa y verifica los resultados temporales de Rosa
-├── models.py                 # ajuste final con train.py y registro de versiones
-├── artifacts.py              # booster en Storage, verificación SHA-256 e inferencia
+├── settings.py               # paquete a publicar, CORS, selección experimental y almacenamiento (config.yaml; el entorno los reemplaza)
+├── parameters.py             # lectura de parametro_sistema (umbrales, cortes, horizonte por defecto, nivel del intervalo)
+├── storage.py                # puerto Storage: adaptador local models/storage/ y SupabaseStorage (HTTP, caché por SHA-256)
+├── protocol.py               # importa y verifica los resultados temporales de Rosa (protocolo compacto de la v0)
+├── package.py                # paquete de modelo: manifiesto + archivos con SHA-256 (decisión M2)
+├── inputs.py                 # ServingInputs: casos, clima, población, calendario y regla, desde la BD
+├── predictors/               # motor enchufable (decisión M1): puerto Predictor y registro de tipos
+│   ├── base.py               #   puerto, columnas de salida, BuiltPackage y validación de la salida
+│   ├── v0_compact_xgb.py     #   predictor y constructor del paquete de la v0 (4 boosters XGBoost; registrada)
+│   └── v2_e3_s4.py           #   predictor y constructor del paquete de la v2 (E3 multisalida, NB2 + Platt; servida)
+├── models.py                 # registro genérico de las versiones de un paquete (una por tarea y horizonte)
+├── artifacts.py              # hashes y error de artefacto inválido
 ├── risk.py                   # nivel de riesgo y cambio de alerta
-├── inference.py              # vector desde la BD, UPSERT de predicciones, alertas, OOS
-└── publish.py                # CLI: carga, ajuste, MLflow, versiones, OOS e inferencia
+├── inference.py              # paquete -> predictor -> UPSERT de predicciones y alertas; OOS
+├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
+└── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
 └── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
 ```
@@ -287,22 +296,31 @@ src/denguekay/pipelines/
 ```text
 apps/api/                     # FastAPI: rutas de la Tabla 2 del documento OE2
 ├── main.py                   # create_app() y app (uvicorn apps.api.main:app)
+├── contract.py               # versión del contrato (semver), versión de la aplicación y horizontes del DDL
 ├── dependencies.py, errors.py, queries.py, cache.py, openapi.py
 ├── schemas.py                # esquemas Pydantic (contrato; nombres en español, D2)
-├── routers/                  # reference, data, surveillance, models y admin
-└── tools/                    # benchmark.py, export_openapi.py, smoke_test.py
+├── routers/                  # reference (salud, configuración, distritos), data, surveillance, models y admin
+└── tools/                    # benchmark.py, export_openapi.py (--contrato), smoke_test.py
 tests/
-├── backend_support.py, serving_support.py, equivalence_support.py
-├── db/, serving/, api/       # tests del backend
-├── test_equivalence.py       # guardas de equivalencia de la reestructuración
+├── backend_support.py, serving_support.py, equivalence_support.py, contract_v1_support.py, pluggable_support.py,
+│   v2_support.py
+├── db/, serving/, api/       # tests del backend (api/test_contract_v1.py: contrato con datos; serving/test_v0_parity.py
+│                             #   y serving/test_v2_parity.py)
+├── test_equivalence.py       # guardas de la reestructuración (V1/V2 bit a bit, esquema en 0003_oe2)
+├── test_contract_v1_guards.py # guardas del contrato v1: OpenAPI, esquema por migración y smoke v1
 ├── test_layout.py            # sin restos del paquete src y dependencias en un solo sentido
 └── fixtures/
     ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
-    └── equivalence/          # línea base: predicciones V1/V2, esquemas, prueba de humo
-docs/backend/                 # especificación OE2, desviaciones, operación y contrato
-└── evidencia/                # SQL de la migración, prueba de humo TB1 (versionado)
-models/storage/               # artefactos (buckets modelos/geodatos/reportes); no se versiona
+    ├── equivalence/          # línea base del ADR 0001 (no se regenera; smoke.json es historia)
+    ├── contract_v1/          # línea base v1: esquema de cada migración nueva y smoke v1 (no se regenera)
+    ├── pluggable_predictor/  # línea base de la v0 antes del motor enchufable, sus boosters congelados y su entorno (no se regenera)
+    └── v2_serving/           # 6 distritos reales y lo que la v2 congelada calcula con los datos completos: orígenes,
+                              #   predicciones, el modelo del bloque calendario_2025 y su entorno (no se regenera)
+docs/backend/                 # especificación OE2, desviaciones, operación, despliegue y contrato (openapi_v1.json congelado)
+└── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU (versionado)
+models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
 models/serving/               # BD SQLite y ejecuciones locales; no se versionan
+└── demo/                     # BD de demostración (D1), su storage y su MLflow; se comparte fuera de Git
 ```
 
 El esquema y la API siguen `docs/backend/especificacion_oe2.md` y `ddl_oe2.sql`;
@@ -322,10 +340,38 @@ Fase 4: `docs/backend/arquitectura.md`, `decisiones_tecnicas.md`,
 `trazabilidad_hu.md`, `fase4_calidad.md`, `fase4_verificacion.json` y los reportes `benchmark_*.json` documentan
 la implementación y mediciones reales. La copia de benchmark SQLite vive en
 `models/serving/fase4.sqlite`; las mediciones locales por defecto van en
-`models/serving/benchmark.json`. `.github/workflows/backend.yml` ejecuta la
+`models/serving/benchmark.json`. El encargo de la API v1 independiente del modelo está en
+`docs/backend/prompt_api_v1.md`, y su inventario y decisiones en `docs/backend/api_v1_decisiones.md`. `.github/workflows/backend.yml` ejecuta la
 suite completa con fixtures versionadas, sin descargar gold/silver ni desplegar:
 en Linux, Windows y macOS sobre SQLite, y en Linux contra un servicio PostgreSQL 18
-desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten.
+desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten. El job `humo-api` instala solo
+`requirements-api.txt`, migra una SQLite y arranca `uvicorn`, como el build de Render. El despliegue (Render,
+Supabase y Vercel) está en `docs/backend/despliegue.md`; lo hace Rosa a mano.
+
+### Guardas y tolerancias por plataforma
+
+Las guardas que comparan con una línea base grabada siguen una sola regla:
+
+- **Entorno de referencia, bit a bit.** La línea base se graba una vez en un entorno conocido: Windows x86-64,
+  CPU con `n_jobs=2` y la versión de XGBoost de su `entorno.json`. Ahí la comparación es exacta: las guardas
+  V1/V2 de `tests/test_equivalence.py`, la paridad con reentrenamiento de la v0 y de la v2, y el serving de los
+  modelos congelados. Estas guardas no se relajan.
+- **Otras plataformas, tolerancia mínima justificada y declarada en el test.** La comparación sigue corriendo
+  y el mensaje de error da la diferencia máxima por columna; no se convierte en un skip:
+  - las llaves, los enteros y la aritmética exacta (p. ej. la media de cuatro enteros) son exactos en todas
+    las plataformas;
+  - los flotantes calculados con funciones trascendentes o reducciones (seno y coseno del calendario,
+    `log1p`, medias de clima, desviación estándar del umbral de brote) usan `rtol=0, atol=1e-12`. La libm y
+    las sumas vectorizadas de Linux y macOS pueden cambiar el último bit (se vio 1 ULP en
+    `semana_epi_coseno`);
+  - las predicciones de XGBoost con un modelo congelado usan `rtol=1e-6` (más un `atol=1e-8` para valores
+    cercanos a 0). XGBoost predice en float32 (precisión relativa ≈ 1,2e-7), y el build arm64 de macOS
+    redondea distinto (se vio 7,5e-9 en casos);
+  - las tolerancias ya acordadas con Rosa se mantienen en todas las plataformas: la precipitación de A3,
+    guardada en `numeric(7,2)`, usa 1e-9.
+- **Reentrenar no es comparable entre sistemas operativos** (decisión D1 del ADR 0001). Las pruebas que
+  reentrenan quedan clavadas al entorno de grabación y, fuera de él, se omiten con el motivo.
+
 
 ---
 
@@ -359,7 +405,7 @@ numeración original:
 | 32–35 | `research/05_fe_hyperparameters/` |
 
 Cada estudio tiene un README con su pregunta, su decisión, la versión de modelo resultante y el tag
-desde el que se reproduce. No se vuelven a correr en `main` ni en el CI.
+desde el que se reproduce. No se vuelven a correr en `develop`, en `main` ni en el CI.
 
 **Va acá:** un notebook nuevo del pipeline, con un número que refleje en qué paso entra (un notebook de análisis va en el estudio de `research/` al que pertenece). Si agregas un paso intermedio, usa notación tipo `04b_` en vez de renumerar todo lo que sigue.
 
@@ -382,7 +428,7 @@ módulo.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
 - **`docs/pipeline.md`**: cómo se corre el pipeline de datos, el actualizador selectivo y la procedencia de los datos de 2025.
 - **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
-- **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR).
+- **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR): 0001, reestructuración en monorepo; 0002, ramas `develop` (integración) y `main` (producción).
 - **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`. La skill local `.codex/skills/feature-engineering-dengue/` y `AGENTS.md` describen el flujo de Codex.
 ---
 
@@ -430,12 +476,15 @@ great_expectations/gx/
 | Métrica o protocolo de evaluación | `src/denguekay/evaluation/` |
 | ORM, conexión o migración de la BD | `src/denguekay/db/` |
 | Carga/predicción/publicación del backend | `src/denguekay/serving/` |
+| Tipo de modelo nuevo para servir (predictor y su paquete) | `src/denguekay/serving/predictors/<tipo>.py` y su entrada en `predictors.PREDICTORS` (pasos en `docs/backend/operacion.md`) |
 | Router o esquema de la API | `apps/api/` (herramientas de línea de comandos en `apps/api/tools/`) |
 | Paso del pipeline como módulo (no notebook) | `src/denguekay/pipelines/` |
 | Ruta nueva del proyecto | `src/denguekay/config/paths.py` |
 | Documentación y evidencia del backend | `docs/backend/` |
 | Muestra real para pruebas del backend | `tests/fixtures/backend/` |
 | Guarda de equivalencia de la reestructuración | `tests/test_equivalence.py` (línea base en `tests/fixtures/equivalence/`) |
+| Guarda del contrato v1 o línea base de una migración nueva | `tests/test_contract_v1_guards.py` (línea base en `tests/fixtures/contract_v1/`, se graba con `python tests/contract_v1_support.py record`) |
+| Guía y contrato para el frontend | `docs/backend/guia_frontend.md`, `docs/backend/openapi_v1.json` |
 | Test de un módulo del paquete | `tests/<subpaquete>/test_<módulo>.py` |
 | Notebook que orquesta un paso del pipeline | `pipelines/notebooks/`, numerado |
 | Dato tal cual vino de la fuente | `data/bronze/<fuente>/` |

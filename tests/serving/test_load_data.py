@@ -13,14 +13,13 @@ from denguekay.db.models import (District, Run, WeeklyObservation, SystemParamet
                             EpiWeek)
 from denguekay.db.session import transaction
 from denguekay.serving import load_data as carga
-from denguekay.serving.settings import service_settings
 
 
 class TestCargaOE2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.fixture = tempfile.TemporaryDirectory()
-        cls.data = datos_muestra(Path(cls.fixture.name), service_settings().seleccion_experimental)
+        cls.data = datos_muestra(Path(cls.fixture.name))
 
     @classmethod
     def tearDownClass(cls):
@@ -63,8 +62,8 @@ class TestCargaOE2(unittest.TestCase):
             self.assertEqual(ejecucion.detalle["hashes_entrada"], self.data.hashes)
             self.assertTrue(ejecucion.detalle["validacion_gx"]["exito"])
             self.assertEqual(o2025.id_ejecucion, ejecucion.id_ejecucion)
-            seleccion = s.get(SystemParameter, "seleccion_experimental").valor
-            self.assertEqual(seleccion["4"]["clasificacion"], "clf-h4-v1")
+            # Fase 4: load_data ya no siembra la selección; la fila la crea vacía la migración 0006_v1.
+            self.assertEqual(s.get(SystemParameter, "seleccion_experimental").valor, {})
 
     def test_ceros_se_conservan_y_casos_de_gold_coinciden(self):
         self.cargar()
@@ -97,7 +96,7 @@ class TestCargaOE2(unittest.TestCase):
             self.assertEqual(s.get(District, "200101").nombre, "PIURA")
             self.assertEqual(self.contar(s, Run), 2)
 
-    def test_semilla_experimental_no_pisa_un_valor_existente(self):
+    def test_la_carga_no_toca_la_seleccion_experimental(self):
         self.cargar()
         with transaction(self.motor) as s:
             s.get(SystemParameter, "seleccion_experimental").valor = {"2": {"clasificacion": "x", "regresion": "y"}}

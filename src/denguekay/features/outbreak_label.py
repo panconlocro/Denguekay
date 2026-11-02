@@ -104,7 +104,7 @@ def label_seasonal_outbreak(
 
 
 def future_outbreak_threshold(
-    panel: pd.DataFrame, history: pd.DataFrame, targets: pd.DataFrame, *,
+    panel: pd.DataFrame, history: pd.DataFrame | None, targets: pd.DataFrame, *,
     multiplicador: float, anios_previos: int = 5,
 ) -> pd.Series:
     """Outbreak threshold of any target week, inside or outside the panel.
@@ -125,7 +125,9 @@ def future_outbreak_threshold(
     if not isinstance(anios_previos, int) or anios_previos < 2:
         raise ValueError("anios_previos >= 2 es obligatorio")
     actual = _validate_cases(panel, "panel")
-    previous_value = _validate_cases(history, "historia")
+    # Without history (``None`` or empty: the serving database starts in 2017, decision M4) a target that
+    # needs years before the panel fails below with «Faltan años de historia».
+    previous_value = actual.iloc[:0] if history is None or history.empty else _validate_cases(history, "historia")
     destination = targets[["ubigeo", "anio", "semana"]].copy()
     destination["ubigeo"] = destination.ubigeo.astype("string").str.zfill(6)
     destination["anio"] = pd.to_numeric(destination.anio, errors="raise").astype(int)

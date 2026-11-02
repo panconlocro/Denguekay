@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from denguekay.db.settings import get_url
+from denguekay.db.settings import get_url, prepared_statements
 
 
 def make_engine(url=None):
@@ -22,6 +22,8 @@ def make_engine(url=None):
             options["poolclass"] = StaticPool
     else:
         options["connect_args"] = {"connect_timeout": 10}
+        if not prepared_statements():
+            options["connect_args"]["prepare_threshold"] = None  # psycopg 3: never prepare
     engine = create_engine(url, **options)
     if url.get_backend_name() == "sqlite":
         @event.listens_for(engine, "connect")

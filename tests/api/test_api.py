@@ -13,7 +13,7 @@ from sqlalchemy import func, select, text
 from sqlalchemy.engine import URL
 
 from backend_support import datos_muestra, entorno_bd, motor_temporal
-from serving_support import preparar_muestra
+from serving_support import preparar_muestra, publish_sample
 from apps.api.cache import ReadCache
 from apps.api.main import create_app
 from denguekay.db.models import Alert, Run, Prediction, ModelVersion
@@ -21,7 +21,6 @@ from denguekay.db.session import make_engine, transaction
 from denguekay.serving.storage import LocalStorage
 from denguekay.serving.load_data import persist_load
 from denguekay.serving.inference import update_alerts
-from denguekay.serving.publish import publish_to_db
 from denguekay.config.paths import ROOT
 
 CLAVE = "clave-local-de-prueba"
@@ -30,7 +29,8 @@ TABLA_2 = {("get", "/salud"), ("get", "/distritos"), ("get", "/predicciones"), (
            ("get", "/tablero/resumen"), ("get", "/mapa-riesgo"), ("get", "/alertas"), ("get", "/modelos/activo"),
            ("post", "/admin/inferencias"), ("post", "/admin/modelos/{version}/activar")}
 EXTENSIONES = {("get", "/distritos/{ubigeo}"), ("get", "/observaciones"), ("get", "/alertas/{identificador}"),
-               ("get", "/modelos/{identificador}"), ("get", "/modelos/{identificador}/variables")}
+               ("get", "/modelos/{identificador}"), ("get", "/modelos/{identificador}/variables"),
+               ("get", "/configuracion")}
 
 
 class TestAPIReal(unittest.TestCase):
@@ -40,7 +40,7 @@ class TestAPIReal(unittest.TestCase):
         cls.base = tempfile.TemporaryDirectory()
         ruta = Path(cls.base.name)
         cls.cfg, cls.protocolo, cls.preparadas = preparar_muestra()
-        datos = datos_muestra(ruta, cls.cfg.seleccion_experimental)
+        datos = datos_muestra(ruta)
         datos = replace(datos, observaciones=[o for o in datos.observaciones if o["id_semana"] >= 202530])
         cls.storage = LocalStorage(ruta / "storage")
         plantilla = ruta / "plantilla"
@@ -48,8 +48,8 @@ class TestAPIReal(unittest.TestCase):
         motor = motor_temporal(plantilla)
         with transaction(motor) as s:
             persist_load(s, datos)
-        publish_to_db(motor, datos, cls.protocolo, cls.preparadas, (2, 4), cls.cfg, "run-prueba",
-                       "huella-api", cls.storage, 0)
+        cls.publicacion = publish_sample(motor, datos, cls.cfg, cls.protocolo, cls.preparadas, cls.storage,
+                                           "run-prueba", "huella-api")
         with transaction(motor) as s:
             # Una predicción real elevada a muy_alto para ejercitar alertas (los datos de fin de año dan riesgo bajo).
             p = s.scalar(select(Prediction).where(Prediction.ubigeo == "200101", Prediction.horizonte == 2,
@@ -205,7 +205,8 @@ class TestAPIReal(unittest.TestCase):
         self.assertEqual(len(self.get("/modelos/activo?horizonte=2")["elementos"]), 2)
         self.assertFalse(self.get("/modelos/activo?horizonte=3")["disponible"])
         detalle = self.get(f"/modelos/{r['elementos'][0]['id_version']}")
-        self.assertEqual(detalle["ruta_artefacto"], f"modelos/{detalle['codigo']}.json")
+        self.assertEqual(detalle["ruta_artefacto"], self.publicacion["paquete"]["ruta"])
+        self.assertEqual(detalle["sha256_artefacto"], self.publicacion["paquete"]["sha256"])
         self.assertIn("temporada_2024", detalle["metricas"]["bloques"])
         variables = self.get(f"/modelos/{detalle['id_version']}/variables")
         self.assertTrue(variables["elementos"])
@@ -236,7 +237,7 @@ class TestAPIReal(unittest.TestCase):
             with self.subTest(cuerpo=cuerpo):
                 r = self.post("/admin/inferencias", cuerpo)
                 self.assertEqual((r.status_code, r.json()["codigo"]), (estado, codigo))
-        ruta = Path(self.base.name) / "storage" / "modelos" / "clf-h2-v1.json"
+        ruta = Path(self.base.name) / "storage" / "modelos" / self.publicacion["paquete"]["codigo"] / "h2_clasificacion.json"
         original = ruta.read_bytes()
         try:
             ruta.write_bytes(original + b" ")
@@ -265,12 +266,24 @@ class TestAPIReal(unittest.TestCase):
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(r.json()["activada"]["estado"], "activa")
         self.assertIsNone(r.json()["archivada"])
+        self.assertIn("reg-h2-v1", r.json()["nota"])  # pareja del mismo paquete (decisión M3)
         self.assertEqual(self.post(f"/admin/modelos/{clf}/activar").json()["codigo"], "ya_activa")
+        self.assertEqual(self.post(f"/admin/modelos/{self.version('reg-h2-v1')}/activar").json()["codigo"], "ya_activa")
         with transaction(self.motor) as s:
             s.get(ModelVersion, self.version("reg-h4-v1")).estado = "rechazada"
             s.get(ModelVersion, self.version("reg-h4-v1")).cumple_umbrales = True
         self.assertEqual(self.post(f"/admin/modelos/{self.version('reg-h4-v1')}/activar").json()["codigo"], "version_rechazada")
-        self.post(f"/admin/modelos/{self.version('reg-h2-v1')}/activar")
+        # La pareja no se activa a medias: ni con la hermana rechazada ni con una hermana que no cumple.
+        with transaction(self.motor) as s:
+            s.get(ModelVersion, self.version("clf-h4-v1")).cumple_umbrales = True
+        r = self.post(f"/admin/modelos/{self.version('clf-h4-v1')}/activar")
+        self.assertEqual((r.status_code, r.json()["codigo"]), (409, "version_rechazada"))
+        with transaction(self.motor) as s:
+            s.get(ModelVersion, self.version("reg-h4-v1")).estado = "candidata"
+            s.get(ModelVersion, self.version("reg-h4-v1")).cumple_umbrales = False
+        r = self.post(f"/admin/modelos/{self.version('clf-h4-v1')}/activar")
+        self.assertEqual((r.status_code, r.json()["codigo"]), (409, "no_cumple_umbrales"))
+        self.assertIn("reg-h4-v1", r.json()["mensaje"])
         en_uso = self.get("/modelos/activo?horizonte=2")["elementos"]
         self.assertEqual({m["seleccion"] for m in en_uso}, {"activa"})
         inferencia = self.post("/admin/inferencias", {"horizonte": 2}).json()
@@ -297,7 +310,7 @@ class TestAPIReal(unittest.TestCase):
             self.assertEqual(set(r.json()), {"codigo", "mensaje", "detalle"})
         with TestClient(create_app(self.motor, self.cfg, api_key="", storage=self.storage)) as c:
             self.assertEqual(c.post("/api/v1/admin/inferencias", json={"horizonte": 2}).status_code, 503)
-        for origen, permitido in ((self.cfg.cors_origen, True), ("https://origen-no-autorizado.invalid", False)):
+        for origen, permitido in ((self.cfg.cors_origenes[0], True), ("https://origen-no-autorizado.invalid", False)):
             r = self.cliente.get("/api/v1/distritos", headers={"Origin": origen})
             self.assertEqual("access-control-allow-origin" in r.headers, permitido)
 
@@ -361,7 +374,7 @@ class TestAPIReal(unittest.TestCase):
             r = exportar_openapi.export(self.motor)
         finally:
             exportar_openapi.OPENAPI_JSON = original
-        self.assertEqual(r["rutas"], 15)
+        self.assertEqual(r["rutas"], 16)
         self.assertTrue(destino.is_file())
 
     def test_base_vacia_sin_cero_ficticio(self):
@@ -388,9 +401,28 @@ class TestAPIReal(unittest.TestCase):
         self.assertEqual(estados["GET", "/mapa-riesgo?horizonte=4"], 200)
         self.assertEqual(estados["POST", "/admin/inferencias (sin X-API-Key)"], 401)
         self.assertEqual([r["http"] for r in resultados if r["ruta"].endswith("/activar")], [409])
-        self.assertEqual(sum(r["http"] == 200 for r in resultados), 10)
+        self.assertEqual(sum(r["http"] == 200 for r in resultados), 11)
         texto = markdown(resultados, "http://testserver", "SQLite de prueba")
         self.assertIn("| GET | `/salud` | 200 |", texto)
+        self.assertNotIn(CLAVE, texto)
+
+    def test_prueba_humo_completa_con_los_tres_horizontes(self):
+        from apps.api.tools.smoke_test import markdown_full, run_full
+        resultados = run_full(self.cliente, CLAVE)
+        rutas = [r["ruta"] for r in resultados]
+        for h in (2, 3, 4):
+            for ruta in (f"/predicciones?horizonte={h}", f"/mapa-riesgo?horizonte={h}", f"/tablero/resumen?horizonte={h}",
+                         f"/series/200101?horizonte={h}", f"/alertas?horizonte={h}"):
+                self.assertIn(ruta, rutas)
+        self.assertEqual(sum(r["ruta"] == "/admin/inferencias" for r in resultados), 3)
+        self.assertEqual(resultados[-1]["http"], 401)
+        self.assertEqual([r["http"] for r in resultados if r["ruta"].endswith("/activar")], [409])
+        self.assertTrue(any(r["ruta"].endswith("/variables") for r in resultados))
+        detalle = [r for r in resultados if r["ruta"].startswith("/alertas/")]
+        self.assertEqual(len(detalle), 1)  # with or without saved alerts, the detail route is called once
+        self.assertIn(detalle[0]["http"], (200, 404))
+        texto = markdown_full(resultados, "http://testserver", "SQLite de prueba", ["alembic upgrade head"])
+        self.assertIn("1. alembic upgrade head", texto)
         self.assertNotIn(CLAVE, texto)
 
     def test_api_no_lee_data(self):

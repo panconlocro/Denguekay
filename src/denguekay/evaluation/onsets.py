@@ -176,6 +176,19 @@ def _slope(y: pd.DataFrame, window: int = 4) -> pd.DataFrame:
     return sum(y.shift(window - 1 - i) * weights[i] for i in range(window))
 
 
+def own_history(y: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Weeks since the last week with cases (capped) and the 4-week slope of ``log(1 + cases)``.
+
+    ``y`` holds cases per week (rows, in order and without gaps) and district (columns). Each district only
+    uses its own weeks <= ``w``, so it also serves the vector of the serving origin (B3).
+    """
+    last = pd.DataFrame(np.where(y.to_numpy() > 0, np.arange(len(y))[:, None], np.nan),
+                          index=y.index, columns=y.columns).ffill()
+    start = np.arange(len(y))[:, None] - last
+    return {"propia_semanas_desde_ultimo_caso": start.fillna(MAX_WEEKS_WITHOUT_CASE).clip(upper=MAX_WEEKS_WITHOUT_CASE),
+            "propia_pendiente_4": _slope(np.log1p(y))}
+
+
 def core_ranking(series: pd.DataFrame, cutoff: pd.Timestamp) -> pd.Series:
     """Cases accumulated per district in weeks closed at the cutoff, from highest to lowest."""
     closed = series[(series.semana_inicio + pd.Timedelta(days=6)).le(cutoff)]
@@ -246,11 +259,7 @@ def weekly_status(panel: pd.DataFrame, series: pd.DataFrame, cutoff: pd.Timestam
     ly = np.log1p(y)
     vals["propia_log_casos"] = ly
     vals["propia_con_casos"] = active
-    last = pd.DataFrame(np.where(y.to_numpy() > 0, np.arange(len(y))[:, None], np.nan),
-                          index=y.index, columns=ids).ffill()
-    start = np.arange(len(y))[:, None] - last
-    vals["propia_semanas_desde_ultimo_caso"] = start.fillna(MAX_WEEKS_WITHOUT_CASE).clip(upper=MAX_WEEKS_WITHOUT_CASE)
-    vals["propia_pendiente_4"] = _slope(ly)
+    vals.update(own_history(y))
     vals["propia_aceleracion"] = (ly - ly.shift(1)) - (ly.shift(1) - ly.shift(2))
     weeks = s.drop_duplicates("semana_inicio").set_index("semana_inicio").loc[y.index]
     season = with_season(weeks).to_numpy()

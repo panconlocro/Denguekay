@@ -116,6 +116,24 @@ def add(origins: pd.DataFrame, weekly: pd.DataFrame, columns: list[str]) -> pd.D
     return origins.drop(columns=[c for c in columns if c in origins]).join(joined[columns])
 
 
+def with_onset_columns(gold: pd.DataFrame, panel: pd.DataFrame, history: pd.DataFrame) -> pd.DataFrame:
+    """``gold`` with B3 at the origin of each row (rows without an origin stay null).
+
+    B3 depends on no fit or cutoff, so it does not need ``weekly_status``; it uses the same functions as the
+    serving vector. ``history`` is trimmed like in ``OnsetFeatures``: it only contributes years before the panel.
+    """
+    history = history.loc[history.anio.lt(int(panel.anio.min()))]
+    series = panel[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"]].copy()
+    series["semana_inicio"] = pd.to_datetime(series.semana_inicio)
+    series["temporada"] = di.with_season(series)
+    cases = series.pivot(index="semana_inicio", columns="ubigeo", values="casos_Dengue").sort_index()
+    own = pd.concat({name: table.stack(future_stack=True) for name, table in di.own_history(cases).items()}, axis=1)
+    weekly = own.rename_axis(["semana_inicio", "ubigeo"]).reset_index().merge(
+        series[["ubigeo", "semana_inicio", "temporada"]], on=["ubigeo", "semana_inicio"], validate="one_to_one")
+    weekly = weekly.merge(previous_season(series, history), on=["ubigeo", "temporada"], validate="many_to_one")
+    return add(gold, weekly, COLUMNS["B3"])
+
+
 class OnsetFeatures:
     """Compute and keep in memory the weekly tables per cutoff."""
 

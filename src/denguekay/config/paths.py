@@ -44,6 +44,8 @@ SILVER_INTEGRATED = SILVER_INTEGRATED_DIR / "meteo_socio_epi_piura_2017_2025.csv
 UBIGEO_CATALOG = REFERENCE / "catalogo_ubigeos_piura.csv"
 DISTRICT_COORDS = REFERENCE / "distritos_piura_coords.csv"
 GOLD_MANIFEST = GOLD / "manifest_fase6.json"
+# Gold before the cleanup (all the candidates, h=2 and h=4): the input of the v0 and of study 03. Only copy.
+GOLD_BACKUP = GOLD / "respaldo_pre_b3"
 
 MODELS = ROOT / "models"
 SERVING_MODELS = MODELS / "serving"
@@ -66,6 +68,10 @@ GX_DIR = ROOT / "great_expectations"
 DOCS = ROOT / "docs"
 BACKEND_DOCS = DOCS / "backend"
 OPENAPI_JSON = BACKEND_DOCS / "openapi.json"
+# Frozen v1 contract without database examples (guard of tests/test_contract_v1_guards.py).
+OPENAPI_V1_JSON = BACKEND_DOCS / "openapi_v1.json"
+# Demo database for the frontend (decision D1); not versioned.
+DEMO_DIR = SERVING_MODELS / "demo"
 # Versioned evidence of the OE2 refactor (no credentials).
 BACKEND_EVIDENCE = BACKEND_DOCS / "evidencia"
 OE2_MIGRATION_SQL = BACKEND_EVIDENCE / "migracion_0003_oe2_postgresql.sql"

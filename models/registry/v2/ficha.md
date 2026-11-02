@@ -1,8 +1,8 @@
-# V2 · C3+A3·E3·S4_s3 (vigente)
+# V2 · C3+A3·E3·S4_s3 (vigente y servida)
 
 | Campo | Valor |
 |---|---|
-| Estado | **Vigente**: configuración congelada para la evaluación prospectiva de 2026. Todavía no se sirve (integrarla en serving es un encargo aparte) |
+| Estado | **Vigente y servida**: configuración congelada para la evaluación prospectiva de 2026; desde la fase 4 de la API v1 se sirve como selección experimental (`experimental: true`), con h=2, 3 y 4 |
 | Tag | `model/v2` (`424a148`), congelada el 2026-10-27 |
 | Configuración | `denguekay.model.frozen_configs.CONFIG_2026` (antes `CONFIGURACION_2026`); se carga con `denguekay.model.registry.configuration("v2")` |
 | Reemplaza a | [V1](../v1/ficha.md) |
@@ -15,6 +15,38 @@ La V1 más A3: `hum_rel_media_media5_h2` y `precip_total_mm_media5_h2` (clima de
 el origen), 11 columnas. Se excluyen los 65 orígenes con nulos de arranque de A3 (semana del 2017-02-05). Todo
 lo demás queda idéntico a la V1: E3 · S4_s3 · α dentro de la muestra · hiperparámetros heredados · Platt ·
 p ≥ 0,50 · semilla 17.
+
+## Servicio
+
+Predictor `v2_e3_s4` (`denguekay.serving.predictors`), desde la fase 4 de la API v1 (`docs/backend/api_v1_decisiones.md`):
+
+- **Paquete:** `modelos/<codigo_paquete>/manifest.json` con `booster.json` (el regresor multisalida),
+  `dispersion.json` (α por horizonte) y `platt.json` (a y b por horizonte). Seis versiones (clasificación y
+  regresión × h=2, 3 y 4) que apuntan al mismo manifiesto: `v2-clf-h2-1` … `v2-reg-h4-1`, algoritmo
+  `xgboost_multisalida_bn`, `umbral_probabilidad` 0,50.
+- **Ajuste:** `fit_e3` con todos los orígenes cuyos tres objetivos cerraron al corte de los datos (semilla 17).
+  La publicación recalcula el protocolo por bloques y comprueba la huella de comportamiento cuando gold h=2 es el
+  congelado.
+- **Probabilidad:** NB2 con la α dentro de la muestra, `k` calculado desde los casos de la BD (no desde la columna
+  redondeada) y Platt con las OOS de las temporadas cerradas 2021–2024, guardado como coeficientes.
+- **Intervalo de casos:** intervalo central de la NB2(μ, α) al 0,80 (cuantiles 0,10 y 0,90). **No está
+  calibrado:** Platt corrige la probabilidad, no la distribución de los casos.
+- **Importancias:** |SHAP| medio por horizonte, calculado al publicar.
+- **OOS:** las del protocolo (temporadas 2022–2024 y calendario 2025), calibradas; reemplazan a las de la v0 en
+  la serie (M6).
+- **Sin historia previa a 2017** (M4): los orígenes cuyo t+2 cae en 2021 o antes quedan no disponibles con su motivo.
+- **Paridad** (`tests/serving/test_v2_parity.py`, fixtures en `tests/fixtures/v2_serving/`): el vector de la BD es
+  igual al de gold + B3, exacto salvo la precipitación de A3 (≤ 1e-9; diferencia medida 5,7e-14, porque la BD la
+  guarda en `numeric(7,2)`), y el modelo congelado del bloque `calendario_2025` servido desde la BD da las mismas
+  predicciones que `frozen_configs.predict` + Platt.
+- **Tolerancias por plataforma** (regla en `docs/architecture.md`, «Guardas y tolerancias por plataforma»):
+  - en el entorno de grabación (Windows x86-64, CPU con `n_jobs=2`) todo es bit a bit, salvo la precipitación
+    de A3 (medido: 0 en el serving);
+  - en Linux y macOS los enteros siguen exactos;
+  - los flotantes calculados (seno y coseno, `log1p`, clima de A3, umbral) usan `atol=1e-12`, porque la libm
+    cambia el último bit;
+  - el serving usa `rtol=1e-6, atol=1e-8`, porque XGBoost predice en float32; en macOS arm64 se vio hasta
+    7,5e-9.
 
 ## Huellas
 
@@ -33,9 +65,12 @@ ventana del test de 2026.
 
 ## Gold
 
-Matrices en memoria desde gold h=2 (`meteo_socio_epi_piura_2017_2025_h2_gold.csv`,
-`0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3`), incluidas las columnas A3, y B3 desde el
-silver epidemiológico histórico.
+Matrices en memoria con `build_gold` h=2, incluidas las columnas A3, y B3 desde el silver epidemiológico
+histórico. El archivo `meteo_socio_epi_piura_2017_2025_h2_gold.csv`
+(`a5d16663d4030b891d0fbbca81b4a0abfe478e11eb3bb85a9f59d49dc4eb27a3`) es el gold limpio del
+02/11/2026: 20 columnas con las llaves, el objetivo, la etiqueta y las variables de la v2. Sus 17 columnas previas son
+idénticas bit a bit a las del gold anterior (`0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3`) y B3 es idéntica
+a `frozen_configs.origins`. El modelo no cambió: entrena y sirve igual, con B3 en memoria.
 
 ## Métricas de selección
 

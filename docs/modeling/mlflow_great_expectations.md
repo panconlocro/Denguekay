@@ -9,9 +9,9 @@ Todavía **no hay modelo final**. Por eso no se usa el *Model Registry* de MLflo
 Antes, cada módulo `ejecutar_*` leía gold, entrenaba y escribía el JSON de métricas y las predicciones. Ahora, con los mismos comandos y notebooks:
 
 ```text
-gold h2/h4 (+ silver integrado si el módulo lo usa)
-  → auditar_traspaso()                      (igual que antes)
-  → Great Expectations: suites silver_integrado, gold_h2, gold_h4
+gold (+ silver integrado si el módulo lo usa)
+  → audit_gold_backup()                     (estudio 03; lee data/gold/respaldo_pre_b3/)
+  → Great Expectations: suites silver_integrado, gold_h2 (estudio 03: gold_respaldo_h2 y gold_respaldo_h4)
         ↳ si alguna expectativa falla, el experimento se detiene antes de entrenar
   → entrenamiento y evaluación              (igual que antes)
   → metricas/*.json del informe + models/experimentos/*   (igual que antes)
@@ -55,23 +55,25 @@ Las suites son **complementarias** a los controles estrictos que ya existían (`
 - Clima con rangos **físicamente plausibles**, no ajustados a los datos: temperaturas entre −10 y 45 °C con `temp_max ≥ temp_media ≥ temp_min`; precipitación y lluvia entre 0 y 1500 mm/semana con `lluvia ≤ precipitación`; humedad relativa entre 0 y 100 %; viento 0–200; radiación 0–350; ET0 0–100.
 - Población ≥ 1, fracciones entre 0 y 1, casos ≥ 0.
 
-**`gold_h2` y `gold_h4`** (92 expectativas cada una):
+**`gold_h2`** (gold limpio de 20 columnas) y **`gold_respaldo_h2` y `gold_respaldo_h4`** (el respaldo con todas las
+candidatas, para el estudio 03):
 
-- Esquema **exacto**: las columnas coinciden con `gold_columns(h, with_outbreak=True)`.
+- Esquema **exacto**: las columnas coinciden con `persisted_columns(2)`, o con `gold_columns(h, with_outbreak=True)`
+  en el respaldo.
 - Llave única, `ubigeo` válido y del catálogo, 65 distritos, `anio ≥ 2017`, `semana` 1–53.
 - Objetivos: `casos_Dengue ≥ 0`, `umbral_brote_casos ≥ 0`, `brote ∈ {0, 1}`.
 - **Sin fuga temporal**: `semana_inicio > origen_cierre` en toda fila con origen.
 - Identificadores, objetivos, calendario y rasgos sociodemográficos sin nulos. Los predictores rezagados (casos, vecinos, jerarquía, clima) pueden ser nulos solo en el arranque de cada distrito: se exige al menos 95 % poblado (hoy los nulos son menos del 2 %; la comprobación exacta del arranque sigue en `preparar_gold`).
 - Rangos: conteos ≥ 0, semanas positivas entre 0 y 4, seno/coseno entre −1 y 1, humedad 0–100, todas las fracciones 0–1, log-poblaciones > 0.
 
-Con los datos actuales las tres suites pasan al 100 %.
+Con los datos actuales las suites pasan al 100 %.
 
 ### 3.3 Cómo ejecutarlas
 
 Desde la raíz del repo:
 
 ```powershell
-.\.venv\Scripts\python -m denguekay.data.validation.gx_quality             # silver integrado + gold h2/h4
+.\.venv\Scripts\python -m denguekay.data.validation.gx_quality             # silver integrado + gold
 .\.venv\Scripts\python -m denguekay.data.validation.gx_quality --sin-gold  # solo silver integrado
 ```
 
@@ -197,5 +199,6 @@ Cualquiera de los siete módulos sirve de ejemplo.
 ## 7. Verificación realizada
 
 - **Tests:** `tests/model/test_tracking.py` cubre el aplanado de métricas, la detección de folds con distintos nombres, que la media solo use validación y el registro anidado real en una base SQLite temporal. `tests/data/test_gx_quality.py` comprueba que datos sintéticos válidos pasan y que las suites detectan llave duplicada, `ubigeo` sin cero inicial, `brote` inválido, fracción fuera de rango, fuga temporal, columna faltante, temperatura mínima mayor que la máxima, humedad imposible, casos negativos y coordenadas fuera de Piura. La suite completa (`python -m unittest discover -s tests`) pasa.
-- **Datos reales:** las suites `silver_integrado`, `gold_h2` y `gold_h4` pasan al 100 % con los CSV actuales.
+- **Datos reales:** las suites `silver_integrado`, `gold_h2`, `gold_respaldo_h2` y `gold_respaldo_h4` pasan al 100 % con
+  los CSV actuales.
 - **Antes/después:** se ejecutaron los siete módulos con el código original y con el instrumentado, en el mismo equipo. Los siete JSON de métricas resultaron idénticos. En MLflow quedaron 25 runs para `primer_xgboost`, 43 para `ablacion_espacial`, 37 para `ablacion_clima`, 99 para `ablacion_sociodemografica`, 269 para `ablacion_fracciones`, 49 para `ablacion_poblacion_sin_seguro` y 31 para `validacion_temporal_compacta`. En todas las elecciones, la variante con mayor `validacion_media` coincidió con la que eligió el propio módulo. En `ablacion_sociodemografica` y `ablacion_fracciones`, la comparación se hizo dentro de cada familia (`fija:`/`anual:`), que es como eligen esos módulos.

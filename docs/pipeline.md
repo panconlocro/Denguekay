@@ -1,11 +1,11 @@
 # Pipeline de datos
 
 Cómo se construye el panel distrito × semana: los notebooks de `pipelines/notebooks/` (01–09: bronze →
-silver → integrado; `10_silver_to_gold`: gold h=2 y h=4) y el actualizador semanal
+silver → integrado; `10_silver_to_gold`: gold) y el actualizador semanal
 `denguekay.pipelines.weekly_update`. Los notebooks escriben en `data/`: se ejecutan a propósito, nunca
 como parte de los tests.
 
-Para regenerar los dos CSV de `data/gold/` desde el silver completo:
+Para regenerar el CSV de `data/gold/` desde el silver completo:
 
 ```powershell
 .\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace pipelines/notebooks/10_silver_to_gold.ipynb
@@ -14,6 +14,26 @@ Para regenerar los dos CSV de `data/gold/` desde el silver completo:
 El gold conserva `casos_Dengue` como conteo junto a la etiqueta `brote` (semana distrital con casos por
 encima de la media de esa semana en los cinco años previos + 1,5 DE, con un mínimo de 2 casos) y su umbral
 auditable `umbral_brote_casos`. El entrenamiento excluye esas tres columnas de los predictores.
+
+Gold persiste solo lo que debe estar en gold (regla 3 de `CLAUDE.md`): un archivo con la alineación h=2, una fila por
+distrito y semana objetivo, y 20 columnas:
+
+- llaves, semana y origen: `ubigeo`, `anio`, `semana`, `semana_inicio`, `origen_inicio`, `origen_cierre`;
+- objetivo y etiqueta: `casos_Dengue`, `umbral_brote_casos`, `brote`;
+- variables de la configuración vigente (v2): `base_6`, A3 y B3. B3 se calcula en el origen de cada fila.
+
+Las demás candidatas (vecinos, provincia y región, sociodemografía, población) y los otros horizontes se siguen
+calculando en memoria con `build_gold`. De ahí salen las matrices de la v2 y los experimentos.
+
+### Respaldo del gold anterior
+
+`data/gold/respaldo_pre_b3/` guarda el gold anterior a la limpieza: h=2, h=4, su manifiesto y `SHA256SUMS.txt`. La v0
+(`load_protocol`) y las herramientas del estudio 03 (`run_experiment`, `run_compact_validation`), además de
+`evaluation/cache.py`, leen de ahí con los mismos hashes y dan un error explícito si falta.
+
+**Es la única copia del gold h=4 y no está en Git: Rosa debe guardarla fuera de la PC.** `data/gold/*` está ignorado.
+`build_gold` reproduce los valores de h=2 y h=4 (hay un test que lo comprueba), pero la v0 exige los archivos exactos y
+sus hashes.
 
 ## Actualización selectiva del dataset
 

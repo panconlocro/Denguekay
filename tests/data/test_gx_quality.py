@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from denguekay.features.gold import gold_columns
+from denguekay.features.gold import gold_columns, persisted_columns
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS
 from denguekay.data.validation.gx_quality import DataValidationError, get_context, validate_dataframe
 from denguekay.data.validation.gold_expectations import expectations_for_gold
@@ -16,13 +16,14 @@ from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, i
 UBIGEOS = ["200101", "200102"]
 
 
-def gold_sintetico(h: int = 2, semanas: int = 60) -> pd.DataFrame:
+def gold_sintetico(h: int = 2, semanas: int = 60, columnas=None) -> pd.DataFrame:
+    columnas = columnas or persisted_columns(h)
     filas = []
     fechas = pd.date_range("2023-07-02", periods=semanas, freq="W-SUN")
     for ubigeo in UBIGEOS:
         for i, fecha in enumerate(fechas):
             con_origen = i >= h
-            fila = {c: 0.3 for c in gold_columns(h, with_outbreak=True)}
+            fila = {c: 0.3 for c in columnas}
             fila.update({
                 "provincia": "Piura", "distrito": "Piura", "distrito_key": "PIURA", "ubigeo": ubigeo,
                 "anio": int(fecha.year), "semana": int(fecha.isocalendar().week), "semana_inicio": fecha,
@@ -36,7 +37,7 @@ def gold_sintetico(h: int = 2, semanas: int = 60) -> pd.DataFrame:
                 "socio_fracciones_interpoladas_con_2025": True,
             })
             filas.append(fila)
-    return pd.DataFrame(filas)[gold_columns(h, with_outbreak=True)]
+    return pd.DataFrame(filas)[columnas]
 
 
 def integrado_sintetico() -> pd.DataFrame:
@@ -76,24 +77,32 @@ class SuitesGXTests(unittest.TestCase):
         return {(f["expectativa"], f.get("column") or str(f.get("column_list") or f.get("column_A")))
                 for f in resumen["fallidas"]}
 
+    def test_esquema_del_respaldo_con_todas_las_candidatas(self):
+        datos = gold_sintetico(columnas=gold_columns(2, with_outbreak=True))
+        resumen = validate_dataframe(datos, suite_name="gold_respaldo_h2_test", asset_name="gold_respaldo_h2_test",
+                                     expectations=expectations_for_gold(2, UBIGEOS, persisted=False),
+                                     context=self.contexto, update_docs=False)
+        self.assertTrue(resumen["exito"], resumen)
+        self.assertGreater(len(self.fallidas(self.validar_gold(datos))), 0)  # no es el esquema persistido
+
     def test_gold_valido_pasa(self):
         resumen = self.validar_gold(gold_sintetico())
         self.assertTrue(resumen["exito"], resumen["fallidas"])
-        self.assertGreater(resumen["evaluadas"], 50)
+        self.assertGreater(resumen["evaluadas"], 40)
 
     def test_gold_detecta_llave_ubigeo_etiqueta_y_fuga(self):
         datos = gold_sintetico()
         datos = pd.concat([datos, datos.iloc[[0]]], ignore_index=True)        # llave duplicada
         datos.loc[1, "ubigeo"] = "20101"                                       # ubigeo sin cero
         datos.loc[2, "brote"] = 2                                              # etiqueta inválida
-        datos.loc[3, "fraccion_rural_2017"] = 1.5                              # fracción fuera de [0, 1]
+        datos.loc[3, "propia_semanas_desde_ultimo_caso"] = 60                  # B3 sobre su tope de 52
         datos.loc[4, "origen_cierre"] = datos.loc[4, "semana_inicio"]          # fuga temporal
         fallidas = self.fallidas(self.validar_gold(datos))
         esperadas = {
             ("expect_compound_columns_to_be_unique", "['ubigeo', 'anio', 'semana']"),
             ("expect_column_values_to_match_regex", "ubigeo"),
             ("expect_column_values_to_be_in_set", "brote"),
-            ("expect_column_values_to_be_between", "fraccion_rural_2017"),
+            ("expect_column_values_to_be_between", "propia_semanas_desde_ultimo_caso"),
             ("expect_column_pair_values_a_to_be_greater_than_b", "semana_inicio"),
         }
         self.assertTrue(esperadas <= fallidas, fallidas)

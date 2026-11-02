@@ -1,8 +1,9 @@
-"""Generate the offline SQL (alembic upgrade --sql) of the OE2 migration as evidence.
+"""Generate the offline SQL (alembic upgrade --sql) of a migration range as evidence.
 
 It does not connect to any database nor read .env: it uses a dummy URL only to
-choose the PostgreSQL dialect. It covers 0002_serving -> head because the
-historical migration 0002 queries data and does not support offline mode from base.
+choose the PostgreSQL dialect. The default covers 0002_serving -> 0003_oe2 (the OE2
+evidence file) because the historical migration 0002 queries data and does not
+support offline mode from base; later migrations have their own range and file.
 """
 
 import contextlib
@@ -16,7 +17,7 @@ from denguekay.config.paths import ALEMBIC_CONFIG, OE2_MIGRATION_SQL
 DIALECT_URL = "postgresql+psycopg://offline@localhost/sin_conexion"
 
 
-def export(destination=OE2_MIGRATION_SQL, revision_range="0002_serving:head"):
+def export(destination=OE2_MIGRATION_SQL, revision_range="0002_serving:0003_oe2"):
     output = io.StringIO()
     config = Config(str(ALEMBIC_CONFIG), stdout=output)
     config.attributes["url"] = DIALECT_URL

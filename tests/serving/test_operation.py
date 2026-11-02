@@ -29,6 +29,15 @@ class TestOperacionServing(unittest.TestCase):
             self.assertNotIn("\\", ruta)
 
     def test_cli_no_configurado_y_horizonte_no_disponible_no_publican(self):
+        """With the v0 package (no gold for h=3) the CLI rejects h=3 before reading any source."""
+        from unittest import mock
+
+        from serving_support import configuracion_v0
+
+        with mock.patch("denguekay.serving.publish.service_settings", configuracion_v0):
+            self._cli_no_configurado_y_horizonte_no_disponible()
+
+    def _cli_no_configurado_y_horizonte_no_disponible(self):
         with entorno_bd(""), redirect_stderr(StringIO()) as error:
             self.assertEqual(publicar_cli(["--horizontes", "3"]), 1)
         self.assertIn("Falta DATABASE_URL", error.getvalue())

@@ -7,9 +7,27 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 
 | Versión | Estado | Tag | Ficha |
 |---|---|---|---|
-| v2 | vigente (no servida todavía) | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
+| v2 | vigente y servida (experimental) | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
-| v0 | servida hoy (experimental) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
+| v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
+
+## 2026-11-02 · Gold limpio con B3
+
+- Ningún modelo cambió. `data/gold/` pasa a tener un solo archivo con la alineación h=2 y 20 columnas: llaves, objetivo,
+  etiqueta y las variables de la v2 (`base_6`, A3 y B3). Las demás candidatas se calculan en memoria con `build_gold`.
+- Gold h=2: `a5d16663d4030b891d0fbbca81b4a0abfe478e11eb3bb85a9f59d49dc4eb27a3`. Sus 17 columnas previas son idénticas
+  bit a bit a las del gold anterior, y B3 es idéntica a `frozen_configs.origins`. La v2 sigue calculando B3 en memoria.
+- La v0 y el estudio 03 leen el gold anterior (h=2, h=4 y manifiesto) de `data/gold/respaldo_pre_b3/`, con los mismos
+  hashes. Es la única copia y hay que guardarla fuera de la PC.
+
+## 2026-10-29 · v2 servida (API v1, fase 4)
+
+- La v2 se sirve con el predictor `v2_e3_s4` (h=2, 3 y 4) como selección experimental: no cumple la HU0007-4.
+  El modelo no cambió: es `CONFIG_2026` con la semilla 17, y la paridad con `frozen_configs.predict` se prueba en
+  `tests/serving/test_v2_parity.py`.
+- Lo nuevo es del servicio: el ajuste al corte de los datos, Platt con las temporadas cerradas 2021–2024 guardado
+  como coeficientes, el intervalo de casos NB2 al 0,80 (no calibrado) e importancias SHAP por horizonte.
+- Sus OOS 2022–2025 reemplazan a las de la v0 en la serie. La v0 queda registrada como predictor `v0_compact_xgb`.
 
 ## 2026-10-28 · Registro creado (reestructuración, fase 4)
 

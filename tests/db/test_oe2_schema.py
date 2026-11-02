@@ -6,6 +6,7 @@ en PostgreSQL; al terminar, esa BD vuelve a la revisión base.
 """
 
 from datetime import date, datetime, timezone
+import json
 from pathlib import Path
 import re
 import tempfile
@@ -40,14 +41,14 @@ FK = r"foreign key"
 UNICA = r"unique|duplicate key"
 
 
-def bajar_una_revision(motor):
-    """alembic downgrade -1 sobre el motor de la prueba."""
+def bajar_una_revision(motor, destino="0002_serving"):
+    """alembic downgrade hasta ``destino`` (por defecto, la revisión anterior a 0003_oe2)."""
     from alembic import command
     from alembic.config import Config
     from denguekay.config.paths import ALEMBIC_CONFIG
     config = Config(str(ALEMBIC_CONFIG))
     config.attributes["motor"] = motor
-    command.downgrade(config, "-1")
+    command.downgrade(config, destino)
 
 
 def fila_version(**cambios):
@@ -152,7 +153,13 @@ class EsquemaOE2:
     def test_semillas_de_parametros(self):
         with transaction(self.motor) as s:
             valores = {p.clave: p.valor for p in s.scalars(select(SystemParameter))}
-        self.assertEqual(set(valores), {"regla_brote", "cortes_riesgo", "umbrales_aceptacion"})
+        # Semillas del DDL (0003_oe2), el horizonte por defecto (0004_v1), el nivel del intervalo (0005_v1) y la
+        # fila vacía de la selección experimental (0006_v1: la fija la publicación, sin datos de modelos).
+        self.assertEqual(set(valores), {"regla_brote", "cortes_riesgo", "umbrales_aceptacion", "horizonte_por_defecto",
+                                        "nivel_intervalo_casos", "seleccion_experimental"})
+        self.assertEqual(valores["seleccion_experimental"], {})
+        self.assertEqual(valores["horizonte_por_defecto"], {"horizonte": 4})
+        self.assertEqual(valores["nivel_intervalo_casos"], {"nivel": 0.80})
         self.assertEqual(valores["regla_brote"], {"anios_previos": 5, "k_desviaciones": 1.5, "minimo_casos": 2})
         self.assertEqual(valores["cortes_riesgo"], {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75})
         self.assertEqual(valores["umbrales_aceptacion"]["bloque"], "temporada_2024")
@@ -321,6 +328,50 @@ class TestEsquemaOE2SQLite(EsquemaOE2, unittest.TestCase):
         self.assertLessEqual(TABLAS_OE2, set(inspect(self.motor).get_table_names()))
         self.setUp()  # el downgrade borró los datos de apoyo
 
+    def test_migracion_0004_solo_datos_y_reversible(self):
+        """0004_v1 siembra horizonte_por_defecto y su downgrade lo quita sin tocar el esquema."""
+        consulta = text("SELECT valor FROM parametro_sistema WHERE clave = 'horizonte_por_defecto'")
+        tablas = set(inspect(self.motor).get_table_names())
+        bajar_una_revision(self.motor, "0003_oe2")
+        with self.motor.connect() as conexion:
+            self.assertIsNone(conexion.execute(consulta).first())
+        self.assertEqual(set(inspect(self.motor).get_table_names()), tablas)
+        migrar(self.motor)
+        with self.motor.connect() as conexion:
+            self.assertEqual(json.loads(conexion.execute(consulta).scalar_one()), {"horizonte": 4})
+
+    def test_migracion_0005_intervalo_y_reversible(self):
+        """0005_v1 agrega el intervalo con su CHECK y el nivel; el downgrade los quita."""
+        columnas = lambda: {c["name"] for c in inspect(self.motor).get_columns("prediccion")}
+        intervalo = {"casos_intervalo_inferior", "casos_intervalo_superior"}
+        self.assertLessEqual(intervalo, columnas())
+        with self.motor.connect() as conexion:
+            sql = conexion.execute(text("SELECT sql FROM sqlite_master WHERE name = 'prediccion'")).scalar_one()
+        self.assertIn("ck_prediccion_intervalo_coherente", sql)
+        bajar_una_revision(self.motor, "0004_v1")
+        self.assertFalse(intervalo & columnas())
+        with self.motor.connect() as conexion:
+            self.assertIsNone(conexion.execute(text(
+                "SELECT valor FROM parametro_sistema WHERE clave = 'nivel_intervalo_casos'")).first())
+        migrar(self.motor)
+        self.assertLessEqual(intervalo, columnas())
+
+    def test_migracion_0006_fila_vacia_y_reversible(self):
+        """0006_v1 crea la fila vacía; el downgrade solo la borra si sigue vacía (una selección fijada se conserva)."""
+        consulta = text("SELECT valor FROM parametro_sistema WHERE clave = 'seleccion_experimental'")
+        bajar_una_revision(self.motor, "0005_v1")
+        with self.motor.connect() as conexion:
+            self.assertIsNone(conexion.execute(consulta).first())
+        migrar(self.motor)
+        with transaction(self.motor) as s:
+            s.get(SystemParameter, "seleccion_experimental").valor = {"2": {"clasificacion": "a", "regresion": "b"}}
+        bajar_una_revision(self.motor, "0005_v1")
+        with self.motor.connect() as conexion:
+            self.assertEqual(json.loads(conexion.execute(consulta).scalar_one())["2"]["regresion"], "b")
+        migrar(self.motor)
+        with transaction(self.motor) as s:
+            s.get(SystemParameter, "seleccion_experimental").valor = {}
+
 
 @unittest.skipUnless(url_pg_pruebas(), "Sin DENGUEKAY_PG_PRUEBAS_URL: se omiten las pruebas en PostgreSQL")
 class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
@@ -377,7 +428,8 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
             with self.subTest(tabla=tabla):
                 self.assertTrue(rls[tabla])
         politicas = {r[0] for r in self.consulta("SELECT policyname FROM pg_policies WHERE schemaname = 'public'")}
-        self.assertEqual(politicas, {f"servicio_{t}" for t in TABLAS_OE2 | {"importancia_variable"}})
+        self.assertEqual(politicas, {f"servicio_{t}" for t in TABLAS_OE2 | {"importancia_variable"}}
+                         | {"pipeline_seleccion_experimental"})
         roles = dict(self.consulta("SELECT rolname, rolcanlogin FROM pg_roles WHERE rolname IN ('rol_api', 'rol_pipeline')"))
         self.assertEqual(roles, {"rol_api": False, "rol_pipeline": False})
 
@@ -394,6 +446,38 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
         columnas = self.consulta("SELECT has_column_privilege('rol_api', 'version_modelo', 'estado', 'UPDATE'), "
                                  "has_column_privilege('rol_api', 'version_modelo', 'metricas', 'UPDATE')")[0]
         self.assertEqual(columnas, (True, False))
+
+    def test_pipeline_solo_actualiza_la_seleccion_experimental(self):
+        """0006_v1: rol_pipeline actualiza la fila seleccion_experimental y ninguna otra de parametro_sistema."""
+        puede = self.consulta("SELECT rolsuper OR pg_has_role(current_user, 'rol_pipeline', 'SET') "
+                              "FROM pg_roles WHERE rolname = current_user")[0][0]
+        if not puede:
+            self.skipTest("El usuario de la BD de pruebas no puede asumir rol_pipeline (en el CI es superusuario)")
+        nuevo = '{"2": {"clasificacion": "v2-clf-h2-1", "regresion": "v2-reg-h2-1"}}'
+        with self.motor.connect() as conexion:
+            transaccion = conexion.begin()
+            try:
+                conexion.execute(text("SET LOCAL ROLE rol_pipeline"))
+                filas = conexion.execute(text(f"UPDATE parametro_sistema SET valor = '{nuevo}'::jsonb "
+                                              "WHERE clave = 'seleccion_experimental'")).rowcount
+                self.assertEqual(filas, 1)
+                # El RLS filtra las demás filas: la actualización no toca ninguna.
+                filas = conexion.execute(text("UPDATE parametro_sistema SET valor = '{}'::jsonb "
+                                              "WHERE clave = 'cortes_riesgo'")).rowcount
+                self.assertEqual(filas, 0)
+                with self.assertRaisesRegex(Exception, "row-level security|permission denied"):
+                    with conexion.begin_nested():
+                        conexion.execute(text("UPDATE parametro_sistema SET clave = 'otra' "
+                                              "WHERE clave = 'seleccion_experimental'"))
+                with self.assertRaisesRegex(Exception, "permission denied"):
+                    with conexion.begin_nested():
+                        conexion.execute(text("INSERT INTO parametro_sistema (clave, valor) VALUES ('x', '{}'::jsonb)"))
+            finally:
+                transaccion.rollback()
+        def tiene(rol, columna):
+            return self.consulta(f"SELECT has_column_privilege('{rol}', 'parametro_sistema', '{columna}', 'UPDATE')")[0][0]
+        self.assertEqual((tiene("rol_pipeline", "valor"), tiene("rol_pipeline", "clave"), tiene("rol_api", "valor")),
+                         (True, False, False))
 
     def test_huella_de_ingesta_unica(self):
         # setUp ya creó una ingesta exitosa con huella h1.

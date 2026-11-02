@@ -1,18 +1,20 @@
-# V0 · XGBoost directo por horizonte (servida hoy)
+# V0 · XGBoost directo por horizonte (registrada; se sirvió hasta la fase 4)
 
 | Campo | Valor |
 |---|---|
-| Estado | **Servida** por el backend TB1, como `experimental: true` |
+| Estado | **Registrada.** Se sirvió como `experimental: true` hasta la fase 4 de la API v1; desde entonces se sirve la [v2](../v2/ficha.md) y sus OOS reemplazan a las de la v0 en la serie (M6) |
 | Tag | `model/v0` (`3d59090`) |
 | Modelo | E1·S1: un XGBoost por horizonte y tarea, h=2 y h=4 (h=3 responde 409) |
-| Versiones en la BD | `clf-h2-v1`, `reg-h2-v1`, `clf-h4-v1`, `reg-h4-v1` |
+| Predictor | `v0_compact_xgb` (`denguekay.serving.predictors`), desde la fase 3 de la API v1: un paquete con los cuatro boosters (`modelos/<codigo_paquete>/manifest.json`); las predicciones son idénticas a las de antes del motor enchufable (`tests/serving/test_v0_parity.py`) |
+| Versiones en la BD | `clf-h2-v1`, `reg-h2-v1`, `clf-h4-v1`, `reg-h4-v1` (en una BD republicada tras la 0005, los siguientes números) |
 | Estudio | [`research/03_first_models_and_ablations`](../../../research/03_first_models_and_ablations/README.md), informe [validacion_temporal_compacta.md](../../../research/03_first_models_and_ablations/docs/validacion_temporal_compacta.md); tag `archive/training` (`573219d`) |
 | Métricas de selección | [`validacion_temporal_compacta.json`](validacion_temporal_compacta.json) (en esta carpeta; lo lee serving) |
 
 ## Configuración
 
-No es una configuración congelada de `denguekay.model.frozen_configs`. Las variantes se leen de
-`configs/config.yaml` (`serving.variantes`) y los hiperparámetros son `denguekay.model.train.BASE_PARAMS`
+No es una configuración congelada de `denguekay.model.frozen_configs`. Las variantes son las opciones de su tipo
+de paquete (`serving.paquete.opciones.variantes` con `tipo: v0_compact_xgb` en `configs/config.yaml`, que desde la
+fase 4 publica la v2) y los hiperparámetros son `denguekay.model.train.BASE_PARAMS`
 (160 árboles, profundidad 3, learning rate 0,05, semilla 17):
 
 | Tarea | Variante | Columnas (h=4; en h=2 los rezagos son 2 y 3) |
@@ -33,8 +35,12 @@ V0 no tiene huella de configuración. Su identidad es el SHA-256 de cada booster
 | 2 | `meteo_socio_epi_piura_2017_2025_h2_gold.csv` | `0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3` |
 | 4 | `meteo_socio_epi_piura_2017_2025_h4_gold.csv` | `f9fbed66572e8641eee82ce1a148562f5121cf8dbd111498f73a8aa78f5f19c6` |
 
-Manifiesto: `33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57`. Serving rechaza publicar si el
-gold actual no coincide con estos hashes.
+Manifiesto: `33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57`.
+
+Desde el gold limpio (02/11/2026), estos archivos solo existen en `data/gold/respaldo_pre_b3/`. `load_protocol` los
+lee de ahí y sigue rechazando publicar si no coinciden con estos hashes; si falta el respaldo, da un error explícito.
+**El respaldo es la única copia del gold h=4 y Rosa debe guardarlo fuera de la PC** (no está en Git). Lo mismo vale
+para `run_experiment` y `run_compact_validation` (estudio 03).
 
 ## Métricas de selección
 

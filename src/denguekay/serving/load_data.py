@@ -8,7 +8,7 @@ recorded as an ``ejecucion`` of type ``ingesta``. It persists no feature enginee
 """
 
 import argparse
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, timedelta
 import hashlib
 import json
@@ -29,11 +29,16 @@ from denguekay.data.keys import normalize
 from denguekay.config.paths import (DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL,
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
-TRANSFORMATION = 2  # version of this transformation; part of the ingestion fingerprint
+# Version of this transformation; part of the ingestion fingerprint. 3: humidity is no longer rounded (M5).
+TRANSFORMATION = 3
 SEASON_START_WEEK = 35  # same rule as the modelling (src/denguekay/model/train.py)
 COVERAGE = {"verified": "verificado", "missing": "sin_registro", "no_record": "sin_registro"}
 CLIMATE = {"temp_media": "temp_media_c", "temp_min": "temp_min_c", "temp_max": "temp_max_c",
          "precip_total_mm": "precip_total_mm", "hum_rel_media": "hum_rel_media_pct"}
+# Decimals kept per climate column (numeric(5,2) / numeric(7,2) of the DDL); None = full value
+# (hum_rel_media_pct is double precision since 0005_v1, so A3 matches gold, decision M5).
+CLIMATE_DECIMALS = {"temp_media_c": 2, "temp_min_c": 2, "temp_max_c": 2, "precip_total_mm": 2,
+                    "hum_rel_media_pct": None}
 
 
 @dataclass(frozen=True)
@@ -46,7 +51,6 @@ class LoadBatch:
     hashes: dict
     validacion_gx: dict
     fecha_corte_datos: date
-    seleccion_experimental: dict = field(default_factory=dict)
 
 
 def source_hashes():
@@ -54,7 +58,7 @@ def source_hashes():
     sources = [UBIGEO_CATALOG, DISTRICT_COORDS, SILVER_INTEGRATED,
                SILVER_INTEGRATED.with_suffix(".coverage.csv"), SILVER_EPI_HISTORICAL,
                SILVER_SALA, GOLD_MANIFEST]
-    sources += [GOLD / f"{SILVER_INTEGRATED.stem}_h{h}_gold.csv" for h in (2, 4)]
+    sources.append(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv")
     return {str(p.relative_to(ROOT)).replace("\\", "/"):
             hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
 
@@ -119,7 +123,9 @@ def prepare_weeks(start, end):
 
 
 def _optional(value, decimals=2):
-    return None if pd.isna(value) else round(float(value), decimals)
+    if pd.isna(value):
+        return None
+    return float(value) if decimals is None else round(float(value), decimals)
 
 
 def prepare_observations(silver, coverage, gold, sala):
@@ -166,13 +172,13 @@ def prepare_observations(silver, coverage, gold, sala):
                     "umbral_brote_casos": round(float(row.umbral_brote_casos), 2),
                     "fuente_casos": "sala_situacional" if row.anio == 2025 else "excel_historico",
                     "estado_cobertura": COVERAGE.get(row.source, "pendiente")}
-        record.update({destination: _optional(getattr(row, origin)) for origin, destination in CLIMATE.items()})
+        record.update({destination: _optional(getattr(row, origin), CLIMATE_DECIMALS[destination])
+                       for origin, destination in CLIMATE.items()})
         result.append(record)
     return result, cutoff
 
 
-def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation,
-                          experimental_selection=None):
+def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation):
     """Build the whole batch; kept apart from file reading so it can be tested with fixtures."""
     provinces, districts = prepare_districts(catalog, coordinates, census_population_2017(silver))
     observations, cutoff = prepare_observations(silver, coverage, gold, sala)
@@ -181,8 +187,7 @@ def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hash
         raise ValueError("Hay observaciones de distritos fuera del catálogo")
     # The calendar covers the history and one year of future inference targets.
     weeks = prepare_weeks(date(2017, 1, 1), pd.Timestamp(cutoff) + pd.Timedelta(days=371))
-    return LoadBatch(provinces, districts, weeks, observations, hashes, gx_validation, cutoff,
-                      experimental_selection or {})
+    return LoadBatch(provinces, districts, weeks, observations, hashes, gx_validation, cutoff)
 
 
 def read_silver(path=SILVER_INTEGRATED):
@@ -193,7 +198,6 @@ def prepare_load():
     """Validate the original files before preparing any write."""
     from denguekay.features.model_input_contract import audit_handoff
     from denguekay.data.processing.epi_sala import load_ubigeo_catalog
-    from denguekay.serving.settings import service_settings
     from denguekay.data.validation.gx_quality import read_gold, validate_modeling_inputs
 
     hashes = source_hashes()
@@ -203,8 +207,7 @@ def prepare_load():
     data = prepare_from_tables(
         load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS), read_silver(),
         pd.read_csv(SILVER_INTEGRATED.with_suffix(".coverage.csv"), dtype={"ubigeo": "string"}),
-        gold, pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}), hashes, quality,
-        service_settings().seleccion_experimental)
+        gold, pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}), hashes, quality)
     if hashes != source_hashes():
         raise ValueError("Las fuentes cambiaron durante la validación; vuelva a ejecutar la carga")
     return data
@@ -226,8 +229,6 @@ def existing_ingestion(sesion, fingerprint):
 
 def persist_load(sesion, data):
     """Insert/update the batch in the caller's transaction, without duplicating it."""
-    from denguekay.serving.parameters import seed_experimental_selection
-
     if not data.validacion_gx.get("exito"):
         raise ValueError("No se permite cargar entradas que no aprobaron GX")
     fingerprint = load_fingerprint(data)
@@ -244,8 +245,6 @@ def persist_load(sesion, data):
     upsert(sesion, WeeklyObservation.__table__,
            [{**o, "fecha_extraccion": instant, "id_ejecucion": run.id_ejecucion} for o in data.observaciones],
            ["ubigeo", "id_semana"])
-    if data.seleccion_experimental:
-        seed_experimental_selection(sesion, data.seleccion_experimental)
     last = max(o["id_semana"] for o in data.observaciones)
     summary = {"provincias": len(data.provincias), "distritos": len(data.distritos),
                "semanas_calendario": len(data.semanas), "observaciones": len(data.observaciones),

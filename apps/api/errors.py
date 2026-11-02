@@ -6,6 +6,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
+from denguekay.serving.parameters import MissingParameter
+
 
 class APIError(Exception):
     def __init__(self, estado, codigo, mensaje, detalle=None):
@@ -33,6 +35,10 @@ def register_error_handlers(app):
     @app.exception_handler(SQLAlchemyError)
     async def database_unavailable(request: Request, error: SQLAlchemyError):
         return error_response(503, "bd_no_disponible", "La base de datos no está disponible")
+
+    @app.exception_handler(MissingParameter)
+    async def missing_parameter(request: Request, error: MissingParameter):
+        return error_response(503, "parametros_no_configurados", str(error))
 
     @app.exception_handler(HTTPException)
     async def invalid_route(request: Request, error: HTTPException):

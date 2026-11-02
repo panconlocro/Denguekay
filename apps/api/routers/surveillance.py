@@ -16,13 +16,15 @@ router = APIRouter(tags=["Vigilancia"])
 @router.get("/tablero/resumen", response_model=TableroRespuesta, summary="Resumen del corte vigente (HU0012)")
 def tablero(request: Request, response: Response, sesion: DbSession, horizonte: Horizon):
     """Niveles de riesgo, alertas activas y casos; la suma regional es null si falta algún distrito."""
-    return cached_read(request, response, sesion, lambda: q.dashboard(sesion, horizonte))
+    return cached_read(request, response, sesion, lambda: q.dashboard(
+        sesion, horizonte, request.app.state.cfg.servir_no_validadas))
 
 
 @router.get("/mapa-riesgo", response_model=MapaRiesgoRespuesta, summary="Mapa de riesgo GeoJSON (HU0014)")
 def mapa_riesgo(request: Request, response: Response, sesion: DbSession, horizonte: Horizon):
-    """FeatureCollection con un Point (centroide) por distrito y su nivel de riesgo o Sin datos."""
-    return cached_read(request, response, sesion, lambda: q.risk_map(sesion, horizonte))
+    """FeatureCollection con una geometría por distrito (hoy Point, el centroide) y su nivel de riesgo o Sin datos."""
+    return cached_read(request, response, sesion, lambda: q.risk_map(
+        sesion, horizonte, request.app.state.cfg.servir_no_validadas))
 
 
 @router.get("/alertas", response_model=Pagina[AlertaRespuesta], summary="Listar alertas (HU0015)")

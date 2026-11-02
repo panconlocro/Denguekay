@@ -2,12 +2,14 @@
 
 The baseline (tests/fixtures/equivalence/) was recorded before any module moved. A guard that
 fails means a behaviour change, not a stale baseline: never re-record it to make a test pass.
+
+API v1 (decision G1 of docs/backend/api_v1_decisiones.md, approved by Rosa on 29/10/2026): the
+OpenAPI guard is replaced by the v1 contract guard (tests/test_contract_v1_guards.py), the schema
+guards check the ADR 0001 head 0003_oe2, and the ADR 0001 smoke test (smoke.json, 15 routes) no
+longer runs: it is history, reproducible from the tag restructure-done.
 """
 
 import json
-import os
-from pathlib import Path
-import tempfile
 import unittest
 
 import equivalence_support as eq
@@ -38,29 +40,9 @@ class TestFrozenPredictions(unittest.TestCase):
         self.check(eq.CUDA_SETUP)
 
 
-class TestOpenAPIContract(unittest.TestCase):
-    def test_contract_matches_committed_openapi(self):
-        """Paths, operationIds, parameters and schemas; examples depend on the exporting DB."""
-        self.assertEqual(eq.openapi_contract(), eq.strip_examples(eq.committed_openapi()))
-
-    @unittest.skipUnless(os.environ.get("DENGUEKAY_EQ_OPENAPI_BD") == "1",
-                         "exportación completa solo con DENGUEKAY_EQ_OPENAPI_BD=1 y DATABASE_URL de la BD local")
-    def test_full_export_from_local_database_is_identical(self):
-        """Read-only: exports with the examples of the configured DB to a temporary file."""
-        from apps.api.tools import export_openapi as exportar_openapi
-
-        original = exportar_openapi.OPENAPI_JSON
-        with tempfile.TemporaryDirectory() as folder:
-            exportar_openapi.OPENAPI_JSON = Path(folder) / "docs" / "backend" / "openapi.json"
-            try:
-                exportar_openapi.export()
-                exported = exportar_openapi.OPENAPI_JSON.read_text(encoding="utf-8")
-            finally:
-                exportar_openapi.OPENAPI_JSON = original
-        self.assertEqual(exported.replace("\r\n", "\n"), original.read_text(encoding="utf-8").replace("\r\n", "\n"))
-
-
 class TestMigratedSchema(unittest.TestCase):
+    """The schema at the ADR 0001 head (0003_oe2) is the baseline; published migrations never change."""
+
     def test_offline_postgresql_sql_matches_evidence(self):
         self.assertEqual(eq.offline_postgresql_sql(), eq.committed_offline_sql())
 
@@ -70,11 +52,6 @@ class TestMigratedSchema(unittest.TestCase):
     @unittest.skipUnless(url_pg_pruebas(), "Sin DENGUEKAY_PG_PRUEBAS_URL: se omiten las pruebas en PostgreSQL")
     def test_postgresql_schema_matches_baseline(self):
         self.assertEqual(eq.postgresql_schema(url_pg_pruebas()), read_json(eq.POSTGRESQL_SCHEMA_BASELINE))
-
-
-class TestUvicornSmoke(unittest.TestCase):
-    def test_uvicorn_serves_and_smoke_test_matches_baseline(self):
-        self.assertEqual(eq.smoke_results(), read_json(eq.SMOKE_BASELINE))
 
 
 if __name__ == "__main__":

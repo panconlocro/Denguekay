@@ -3,12 +3,14 @@
 import numpy as np
 import pandas as pd
 
-from denguekay.features.gold import SOCIO_2017_DATE, HORIZONS
+from denguekay.features.gold import SOCIO_2017_DATE
 from denguekay.features.history_calendar import build_history_calendar
 from denguekay.features.sociodemographics import reference_2017, build_sociodemography
 from denguekay.evaluation.compact_validation import compact_variants
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.validation.forecast_contract import KEY, audit_origin, available_observations
+
+FUTURE_HORIZONS = (2, 4)  # the registered predictors: the v0 (h=2 and h=4) and the v2 (h=2)
 
 
 def build_future_rows(panel, horizon, *, columns=None, cutoff_date=None, reference=None):
@@ -20,10 +22,10 @@ def build_future_rows(panel, horizon, *, columns=None, cutoff_date=None, referen
     variables or reference values. Returns (complete rows, reasons of the
     unavailable rows).
     """
-    # Operations only serve the horizons with persisted gold (h=2 and h=4);
+    # Operations only serve the horizons of the registered predictors;
     # the others exist only in memory for experiments.
-    if horizon not in HORIZONS:
-        raise ValueError("La inferencia futura solo admite los horizontes con gold persistido")
+    if horizon not in FUTURE_HORIZONS:
+        raise ValueError(f"La inferencia futura solo admite los horizontes {FUTURE_HORIZONS}")
     variants = compact_variants(horizon)
     columns = columns or variants["base_6_poblacion_2017"]
     allowed = set(variants["base_6_poblacion_2017"])
