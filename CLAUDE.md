@@ -43,7 +43,7 @@ Gold ya existe (alineación h=2; las demás candidatas y horizontes se calculan 
 - Dos ramas permanentes (ADR 0002): `main` = producción (solo recibe PR desde `develop` en un release o desde `fix/` en un hotfix) y `develop` = integración. No hagas commits directos en ninguna de las dos. Cada cambio va en una rama `feat/`, `fix/`, `refactor/`, `docs/`, `chore/` o `exp/` que **sale de `develop`**, con nombre en inglés y kebab-case, y vuelve a `develop` por PR con el CI en verde. El release `develop → main` lo decide Rosa.
 - Commits con Conventional Commits en inglés (`feat(api): add risk map endpoint`).
 - Merge siempre con «Create a merge commit». **Nunca reescribas historia publicada** (squash, rebase, `--amend`, `push --force`): los informes citan hashes.
-- Tags anotados: `model/vN` al congelar una versión de modelo, `study/<nombre>` al cerrar un estudio. Las ramas anteriores a la limpieza están en los tags `archive/*`.
+- Tags anotados: `model/vN` al congelar una versión de modelo, `study/<nombre>` al cerrar un estudio, `api/vX.Y.Z` (versión del contrato) en el merge commit de `main` de un release que cambia la API. Las ramas anteriores a la limpieza están en los tags `archive/*`.
 
 ## Cómo se trabaja con Rosa
 - Rosa trabaja **fase por fase y confirma cada una antes de seguir**. Al terminar una fase presentas el resumen y te detienes.
