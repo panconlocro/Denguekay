@@ -1,4 +1,4 @@
-pandas
+pandas>=3.0.6,<3.2
 geopandas
 requests
 pyarrow
@@ -8,7 +8,7 @@ openpyxl
 websockets>=14,<17
 matplotlib
 seaborn
-scipy
+scipy>=1.18,<1.19
 statsmodels
 ipykernel
 nbformat
