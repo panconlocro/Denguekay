@@ -34,7 +34,15 @@ API v1 cambian dos cosas:
 5. **Frontend de Nicolás.** `feat/web-<pantalla>` desde `develop`, solo dentro de `apps/web/`.
 6. **Tags.** `model/vN` y `study/<nombre>` se ponen en el commit que se congela, esté en la rama que
    esté. Como todo entra con merge commit, esos commits conservan su hash cuando llegan a `develop` y a
-   `main`.
+   `main`. `api/vX.Y.Z` lleva la versión del contrato de la API (`info.version`, `X-Version-Contrato`) y se pone en
+   el merge commit del release en `main`:
+
+   | Tag | Cuándo se crea | Apunta a |
+   |---|---|---|
+   | `model/vN` | al congelar una versión de modelo | el commit que congela la configuración |
+   | `study/<nombre>` | al cerrar un estudio | el último commit del estudio |
+   | `api/vX.Y.Z` | en cada release `develop → main` que cambia la API | el merge commit del release en `main` |
+
 7. Siguen vigentes las reglas de `CONTRIBUTING.md`: solo «Create a merge commit», nunca reescribir
    historia publicada (`rebase`, `commit --amend`, `push --force`), Conventional Commits en inglés.
 
