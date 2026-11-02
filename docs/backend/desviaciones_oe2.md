@@ -296,7 +296,7 @@ Despliegue (diseño físico, sección 3 del documento):
     con `requirements-api.txt`, sin las dependencias de investigación.
 21. Conexión a Supabase por el *shared pooler* (IPv4; Render no tiene IPv6 saliente); en transaction mode se
     desactivan las sentencias preparadas (`DB_PREPARED_STATEMENTS=false`). Detalle: `despliegue.md`.
-22. **Propuesta pendiente de aprobación (no implementada):** el ciclo semanal ejecuta un comando de inferencia (la
+22. **Aprobado por Rosa (02/11/2026), sin implementar; se hace en el encargo de despliegue:** el ciclo semanal ejecuta un comando de inferencia (la
     misma `serving.inference.infer`) en GitHub Actions, en lugar de llamar a `POST /admin/inferencias`. Con 0,1 CPU,
     la inferencia de la v2 se estima en 28 a 50 s por horizonte, frente a los 5 s de la HU0016-3. El contrato no
     cambia (`despliegue.md` §8).

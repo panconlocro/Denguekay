@@ -537,9 +537,9 @@ implementa.
   desde su PC antes de cada release y Render solo usa un usuario que hereda `rol_api`. Pasos en `despliegue.md` §3.
 - **Vercel (fase 6):** el proyecto lo crea la cuenta que mergea a `main` (la de Rosa); producción despliega desde
   `main`; Nicolás desarrolla en local contra la API local. Restricciones del plan Hobby en `despliegue.md` §5.
-- **Inferencia en Render (fase 6, pendiente de decisión):** la inferencia de la v2 se estima en 28 a 50 s por
-  horizonte con 0,1 CPU. La propuesta de mover la inferencia al ciclo semanal sin cambiar el contrato está en
-  `despliegue.md` §8; no está implementada.
+- **Inferencia en Render (fase 6; aprobada por Rosa el 02/11/2026, se implementa en el encargo de despliegue):** la inferencia de la v2 se estima en 28 a 50 s por
+  horizonte con 0,1 CPU. La inferencia pasa al ciclo semanal, fuera de Render, y la API solo lee, sin cambiar el
+  contrato (`despliegue.md` §8). Aún no está implementado.
 
 ## 4. Pendiente fuera de este encargo
 

@@ -328,7 +328,9 @@ consulta por clave que `/modelos/{id}`.
 - **No verificado:** el tiempo máximo que Render espera una respuesta HTTP. Si corta antes, el cliente recibe un
   error aunque el servidor termine la inferencia.
 
-### Propuesta (no implementada): que el ciclo semanal calcule y la API solo lea
+### Propuesta aprobada (02/11/2026, sin implementar): que el ciclo semanal calcule y la API solo lea
+
+Se implementa en el encargo de despliegue.
 
 1. **Un comando de inferencia fuera de la API**, por ejemplo `python -m denguekay.serving.infer_current
    --horizontes 2 3 4`.
