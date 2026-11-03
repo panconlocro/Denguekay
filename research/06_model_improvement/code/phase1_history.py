@@ -15,6 +15,7 @@ predictions (guard G2).
 import numpy as np
 import pandas as pd
 
+from denguekay.config.paths import MODELS
 from denguekay.data.seasons import assign_season
 from denguekay.data.validation.forecast_contract import KEY
 from denguekay.features import onset_features as fi
@@ -175,3 +176,141 @@ def compare_predictions(pred: pd.DataFrame, saved: pd.DataFrame) -> dict:
     diff = {c: float(np.abs(m[c] - m[f"{c}_guardada"]).max()) for c in ("casos_predichos", "probabilidad_brote")}
     return {"filas": len(a), "filas_guardadas": len(b), "cruzadas": len(m), "diferencia_maxima": diff,
             "pasa": len(m) == len(a) == len(b) and all(v == 0 for v in diff.values())}
+
+
+# ---------------------------------------------------------------------------
+# Whole comparison 1a
+# ---------------------------------------------------------------------------
+
+V1_SAVED = MODELS / "experimentos" / "fe_hiperparametros" / "fase4" / "predicciones_s4s3_dentro_muestra.csv.gz"
+OUTPUT_DIR = MODELS / "experimentos" / "mejora_modelo" / "fase1a"   # not versioned
+REPORT_SEASONS = (2010, 2015, 2016, 2017, 2022, 2023, 2024)
+
+
+def read_saved(path) -> pd.DataFrame:
+    """Saved predictions read back exactly (the default CSV parser can move the last bit)."""
+    return pd.read_csv(path, dtype={"ubigeo": "string"}, float_precision="round_trip")
+
+
+def phase1a_inputs() -> dict:
+    """Long series, labels, matrices and origins (L) and the gold inputs and V1 origins (R)."""
+    import json
+
+    from denguekay.config.paths import GOLD_MANIFEST
+    from denguekay.evaluation import variants as fh
+    from denguekay.model import frozen_configs as cf
+
+    from phase0_diagnosis import load_integrated, long_case_series, long_labels
+
+    panel = load_integrated()
+    cases, audit = long_case_series(panel)
+    labels = long_labels(cases)
+    matrices = long_matrices(cases, labels)
+    rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
+    ins = fh.inputs(panel, rule)
+    series = labels[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue", "brote"]].copy()
+    series["semana_inicio"] = pd.to_datetime(series.semana_inicio)
+    return {"panel": panel, "casos": cases, "auditoria_historia": audit, "etiquetas": labels, "serie": series,
+            "matrices_L": matrices, "origenes_L": long_origins(cases, matrices[2]),
+            "matrices_R": ins["matrices"], "origenes_R": cf.origins(panel, ins, rule, configuration=cf.CONFIG_2026_V1),
+            "serie_gold": ins["serie"]}
+
+
+def guards(inp: dict, exception: dict) -> dict:
+    """G1 (with the amendment), G2 (R seed 17 against the saved V1) and G3 (labels against gold)."""
+    from denguekay.model import frozen_configs as cf
+
+    g1 = compare_origins(inp["origenes_L"], inp["origenes_R"], exception=exception, cases=inp["casos"])
+    c = cf.CONFIG_2026_V1
+    r17 = predict_blocks(inp["matrices_R"], inp["origenes_R"], seasonal_blocks(2021), cf.DEPLOYMENT_SEED,
+                         c["columnas"], c["hiperparametros"])
+    saved = read_saved(V1_SAVED)
+    g2 = compare_predictions(r17, saved[saved.semilla.eq(cf.DEPLOYMENT_SEED)])
+    gold = inp["serie_gold"][["ubigeo", "anio", "semana", "brote"]]
+    check = inp["etiquetas"].merge(gold, on=["ubigeo", "anio", "semana"], suffixes=("_larga", "_gold"))
+    g3 = {"filas": len(check), "filas_gold": len(gold), "distintas": int(check.brote_larga.ne(check.brote_gold).sum())}
+    g3["pasa"] = g3["filas"] == g3["filas_gold"] and g3["distintas"] == 0
+    return {"G1": g1, "G2": g2, "G3": g3}
+
+
+def run_variant(matrices, origins, blocks, series, seeds) -> dict:
+    """Predictions and protocol evaluation per seed for the V1 configuration."""
+    from denguekay.evaluation import protocol as pa
+    from denguekay.model import frozen_configs as cf
+
+    c = cf.CONFIG_2026_V1
+    preds, evals = {}, {}
+    for seed in seeds:
+        preds[seed] = predict_blocks(matrices, origins, blocks, seed, c["columnas"], c["hiperparametros"])
+        evals[seed] = pa.evaluate(preds[seed], series)
+    return {"predicciones": preds, "evaluaciones": evals}
+
+
+def _blocks_of(seasons) -> list[str]:
+    return [f"temporada_{s}" for s in seasons]
+
+
+def decision_1a(L: dict, R: dict) -> dict:
+    """Preregistered verdict of comparison 1a (``preregistration.decide_phase1a``)."""
+    import preregistration as pr
+    from denguekay.evaluation import protocol as pa
+
+    med_l = pa.seed_median([e["metricas"] for e in L["evaluaciones"].values()])
+    med_r = pa.seed_median([e["metricas"] for e in R["evaluaciones"].values()])
+    ranges = pa.tie_threshold(pa.seed_ranges([e["metricas"] for e in L["evaluaciones"].values()]),
+                              pa.seed_ranges([e["metricas"] for e in R["evaluaciones"].values()]))
+    seed = pr.SEEDS[0]
+    lead = pr.lead_time_difference_multi(L["evaluaciones"][seed]["antelacion"], R["evaluaciones"][seed]["antelacion"],
+                                         "alerta_050", seasons=pr.PHASE1A_SEASONS)
+    blocks = _blocks_of(pr.PHASE1A_SEASONS)
+    verdict = pr.decide_phase1a(med_l[med_l.bloque.isin(blocks)], med_r[med_r.bloque.isin(blocks)],
+                                ranges[ranges.bloque.isin(blocks)], lead)
+    adopt = bool(verdict.veredicto.isin(pr.PHASE1A_ADOPT).all())
+    deltas = med_l.merge(med_r, on=["horizonte", "bloque"], suffixes=("_L", "_R"))
+    deltas = deltas[deltas.bloque.isin([*blocks, f"temporada_{pr.CONTRAST_SEASON}"])]
+    cols = ["horizonte", "bloque", "positivos_L"] + [f"{m}_{v}" for m in ("f1_050", "recall_050", "precision_050",
+                                                                           "auprc", "brier", "razon_mae", "razon_rmse")
+                                                      for v in ("L", "R")]
+    return {"veredicto": verdict, "antelacion": lead, "umbral_empate": ranges[ranges.bloque.isin(blocks)],
+            "metricas_L_R": deltas[cols], "adopta_L": adopt, "medianas_L": med_l, "medianas_R": med_r}
+
+
+def seed_median_of(tables: dict[int, pd.DataFrame], keys: list[str]) -> pd.DataFrame:
+    every = pd.concat(tables, names=["semilla"]).reset_index(level=0)
+    numeric = [c for c in every.select_dtypes("number").columns if c not in keys + ["semilla"]]
+    g = every.groupby(keys, observed=True)[numeric]
+    return g.median().join((g.max() - g.min()).add_suffix("_rango")).reset_index()
+
+
+def readings_1a(L: dict, R: dict, V1: dict, series: pd.DataFrame, med_l: pd.DataFrame) -> dict:
+    """Readings that do not decide (preregistered list)."""
+    import preregistration as pr
+    from denguekay.evaluation import protocol as pa
+    from denguekay.model import frozen_configs as cf
+
+    report = _blocks_of(REPORT_SEASONS)
+    seed = pr.SEEDS[0]
+    rng_l = pa.seed_ranges([e["metricas"] for e in L["evaluaciones"].values()])
+    by_season = med_l[med_l.bloque.isin(report)].merge(
+        rng_l[["horizonte", "bloque", "f1_050", "razon_mae"]].rename(
+            columns={"f1_050": "f1_050_rango", "razon_mae": "razon_mae_rango"}), on=["horizonte", "bloque"])
+    hu = sp.hu0007_4_compliance(med_l[med_l.bloque.isin(report)]).merge(
+        med_l[["horizonte", "bloque", "positivos"]], on=["horizonte", "bloque"])
+    hu["evaluable"] = hu.positivos.map(lambda n: cf.evaluable(int(n), "brote"))
+    med_v1 = pa.seed_median([e["metricas"] for e in V1["evaluaciones"].values()])
+    med_r = pa.seed_median([e["metricas"] for e in R["evaluaciones"].values()])
+    cmp_cols = ["horizonte", "bloque", "positivos", "f1_050", "recall_050", "brier", "brier_sin_calibrar", "razon_mae"]
+    calib = med_v1[cmp_cols].merge(med_r[cmp_cols], on=["horizonte", "bloque", "positivos"], suffixes=("_V1", "_R"))
+    calib = calib[calib.bloque.isin(_blocks_of((2022, 2023, 2024)))]
+    recall = seed_median_of({s: sp.recall_by_week_type(e["datos"], series) for s, e in L["evaluaciones"].items()},
+                            ["horizonte", "bloque", "tipo"])
+    lead = L["evaluaciones"][seed]["antelacion_ic"]
+    lead = lead[lead.bloque.isin(report + ["seleccion_2022_2023"])]
+    lead = lead[lead.alerta.isin(["alerta_050", "alerta_persistencia"])]
+    phases = seed_median_of({s: e["errores_por_fase"] for s, e in L["evaluaciones"].items()},
+                            ["horizonte", "bloque", "fase"])
+    calibration = L["evaluaciones"][seed]["calibracion"]
+    return {"metricas_por_temporada_L": by_season, "hu0007_4_L": hu, "calibracion_V1_frente_a_R": calib,
+            "recall_por_tipo_L": recall[recall.bloque.isin(report)], "antelacion_L_semilla_17": lead,
+            "conteo_por_fase_L": phases[phases.bloque.isin(report)],
+            "calibradores_L_semilla_17": calibration}
