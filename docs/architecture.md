@@ -132,6 +132,8 @@ Nada de limpieza, nada de validación. Un subfolder por fuente:
 ```
 bronze/
 ├── meteo/cache_meteo/       # un parquet por distrito, tal cual responde Open-Meteo
+├── meteo/cache_meteo_era5_2017_2025/  # estudio 06 (1b): 2017-2025 con ERA5 fijado, solo para comparar
+├── meteo/cache_meteo_2000_2016/       # estudio 06 (1b): historia 2000-2016, caché aparte
 ├── socio/                   # el Excel del censo/proyecciones, sin tocar
 └── epi/                     # Excel y respuestas crudas de la Sala Situacional MINSA
 ```
@@ -142,6 +144,7 @@ Silver tiene dos niveles:
 ```
 silver/
 ├── meteo_semanal_distrital.csv     # por fuente
+├── meteo_semanal_distrital_2000_2016.csv  # estudio 06 (1b): historia, aparte del de 2017-2025
 ├── socio_anual.csv
 ├── epi_piura_semanal.csv
 ├── epi_sala_semanal.csv            # exportación normalizada por ejecución
