@@ -157,6 +157,9 @@ Preregistro `PHASE2` (commit `3bbfa10`, aprobado por Rosa sin cambios antes de c
   detectar. Veto en los tres horizontes.
 - La AUPRC de Platt, Platt agrupado y beta es idéntica a la de la referencia en todas las celdas, como se espera de
   un calibrador monótono.
+- **Cierre (confirmado por Rosa, 2026-11-03):** L queda con Platt por horizonte y recorte 1e-6. Beta estuvo cerca en
+  h4 (F1 a favor en 3 de 5 temporadas: 2010, 2015 y 2022), pero **no se adopta**: no alcanza la regla
+  preregistrada (4 de 5 y ganar en 2 de 3 horizontes).
 - **Consecuencia:** la base sigue siendo L tal como salió de la 1a; la ganancia frente a la V1 tal cual no cambia
   (2022 · h3 +0,046, h4 +0,106). El cuello de botella del recall en inicios limpios (0,12–0,19 en 2022–2023) no es
   de calibración: queda para la fase 3.
