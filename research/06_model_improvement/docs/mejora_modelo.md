@@ -215,3 +215,19 @@ en `models/experimentos/mejora_modelo/fase3/` (no versionado); MLflow `denguekay
 - **Cierre:** si 3c′ empata o pierde, la fase 3 se cierra con L como base.
 - B1 y B2 sobre la serie larga y G10: `code/phase3_onsets.py` (`long_spatial_table`, `spatial_prepare_block`) y
   `tests/test_phase3_onsets.py`; B2 usa el ranking del núcleo de cada corte de bloque.
+
+### Resultado de 3c′ y cierre de la fase 3 (2026-11-03)
+
+Notebook `06_fase3c_contexto_espacial.ipynb`; cifras en `metricas/fase3c.json`; MLflow
+`denguekay/mejora_modelo_fase3_inicios` (`588ac341bfed43dfaa4ba2190898426b`). Dispositivo: cuda, `n_jobs` = 12.
+
+- **Veredicto: empate en h2, h3 y h4; no se adopta.** Lectura sin 2010: empate en los tres.
+- F1: en contra en 2 de 5 temporadas por horizonte (2010 y 2015: h3 −0,046 y −0,081; h4 −0,051 y −0,094, con 234 y
+  557 semanas brote); en 2016, 2022 y 2023 dentro del umbral de empate.
+- Antelación: h2 y h4 +0,031 (IC95 0,000 a 0,062), h3 +0,016 (IC95 −0,016 a 0,047), con 1–2 temporadas a favor.
+- Recall de brote nuevo: 2023 0,22 / 0,24 / 0,19 frente a 0,17 / 0,19 / 0,17 de L; 2022 · h2 0,16 frente a 0,12;
+  en 2010 y 2016 igual o menor salvo 2016 · h4 (0,09 frente a 0,06). El recall de brotes en curso baja en 2010 y 2015 (h4: 0,37 y 0,27 frente a 0,45 y
+  0,36).
+- El Brier mejora en 3 de 5 temporadas en cada horizonte (no decide; es guarda).
+- **Cierre de la fase 3:** ninguna variante (3a1, 3a2, 3b, 3c′) se adopta; **L sigue siendo la base**. Lo único que
+  movió el recall de inicios fue el peso de muestra de 3a1, como intercambio con el orden y los brotes en curso.
