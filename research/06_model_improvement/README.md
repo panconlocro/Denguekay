@@ -19,6 +19,15 @@
 Experimentos de MLflow: `denguekay/mejora_modelo_fase0_diagnostico` `denguekay/mejora_modelo_fase1a_historia` ,
 `denguekay/mejora_modelo_fase2_calibracion` , `denguekay/mejora_modelo_fase3_inicios` y `denguekay/mejora_modelo_fase5_conteo`.
 
+## Dependencias fuera de `requirements.txt`
+
+La fase 6 usa LightGBM, que el producto no necesita: se instala solo en el `.venv`, con la versión fijada
+(`statsmodels` ya está en `requirements.txt`; la fase 6 corrió con la 0.15.0):
+
+```powershell
+.\.venv\Scripts\python -m pip install lightgbm==4.7.0
+```
+
 ## Cómo reproducir
 
 Desde la raíz del repositorio, con `data/` completo y las predicciones de la V2 del estudio 05 en

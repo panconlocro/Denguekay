@@ -132,5 +132,18 @@ class TestPhase1Record(unittest.TestCase):
         self.assertEqual(pr.PHASE1["comparacion_1a"]["temporadas_que_deciden"], [2022, 2023])
 
 
+class TestPhase6Record(unittest.TestCase):
+    def test_families_and_v1_translation(self):
+        from denguekay.model import frozen_configs as cf
+
+        hp = cf.CONFIG_2026_V1["hiperparametros"]
+        self.assertEqual(set(pr.PHASE6["familias"]), {"6a_nb_glm", "6b_lightgbm"})
+        self.assertEqual(pr.PHASE6_LGBM["n_estimators"], hp["n_estimators"])
+        self.assertEqual(pr.PHASE6_LGBM["max_depth"], hp["max_depth"])
+        self.assertEqual(pr.PHASE6_LGBM["num_leaves"], 2 ** hp["max_depth"])
+        self.assertEqual(pr.PHASE6_LGBM["poisson_max_delta_step"], hp["max_delta_step"])
+        self.assertEqual(pr.PHASE6_LGBM["lambda_l2"], hp["reg_lambda"])
+
+
 if __name__ == "__main__":
     unittest.main()

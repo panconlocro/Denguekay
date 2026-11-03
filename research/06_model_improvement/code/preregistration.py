@@ -469,6 +469,62 @@ def adopt_phase5(verdict: pd.DataFrame) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Phase 6 (reading, does not decide; approved by Rosa on 2026-11-03 before running)
+# ---------------------------------------------------------------------------
+
+PHASE6_GLM_LOG1P = ("hist_lag_a", "hist_lag_b", "hist_media_4")
+PHASE6_GLM_MAXITER = 200
+PHASE6_LGBM = {"n_estimators": 160, "max_depth": 3, "num_leaves": 8, "learning_rate": 0.05,
+               "min_sum_hessian_in_leaf": 5.0, "min_child_samples": 1, "bagging_fraction": 0.8, "bagging_freq": 1,
+               "feature_fraction": 0.9, "lambda_l2": 5.0, "lambda_l1": 0.0, "poisson_max_delta_step": 0.7}
+PHASE6_PRIME_CLIMATE = ("hum_rel_media_media5_h2", "precip_total_mm_media5_h2")  # A3 of the V2
+
+PHASE6 = {
+    "fecha": "2026-11-03",
+    "estado": "aprobado por Rosa (2026-11-03) tal cual, commiteado antes de correr ninguna familia de la fase 6",
+    "por_que": "saber si XGBoost es el límite o si lo son los datos. Es una lectura: ninguna familia se adopta en "
+               "este estudio",
+    "base": "L + 5a: L (C3 · E3 · S4_s3 desde 2005, hiperparámetros de la V1) con las predicciones guardadas de "
+            "la 1a y la mezcla 5a del conteo (dos μ: casos desde la μ mezclada, probabilidad desde la μ del modelo)",
+    "comun": "los mismos orígenes largos desde 2005 y la misma matriz C3 (9 columnas de rezagos de casos y "
+             "calendario de la V1, sin clima); los mismos bloques (2008-2024 + calendario_2025) y cortes de "
+             "entrenamiento (`phase3_onsets._training`); probabilidad NB2 con α dentro de la muestra (estimador "
+             "de L, `negative_binomial_dispersion`) -> Platt por horizonte con recorte 1e-6 -> alerta p >= 0,50; "
+             "el conteo con la mezcla 5a aplicada a cada familia, y además la μ sin mezclar",
+    "familias": {
+        "6a_nb_glm": "un GLM NB2 por horizonte (statsmodels `NegativeBinomial`, loglike nb2, máxima verosimilitud, "
+                     f"maxiter {PHASE6_GLM_MAXITER}) con intercepto y offset log(hist_lag_a + 0,5) (el margen de "
+                     f"S4_s3). Columnas: las 9 de C3; {', '.join(PHASE6_GLM_LOG1P)} entran como log(x + 1); todas "
+                     "se estandarizan con la media y la desviación del entrenamiento de cada bloque. Sin "
+                     "penalización; determinista (una corrida, repetida en las 5 claves de semilla). Un bloque "
+                     "que no converge se marca y se reporta; no se ajusta nada",
+        "6b_lightgbm": "LightGBM `objective=poisson`, un modelo por horizonte (no hay árboles multisalida: "
+                       "diferencia declarada frente a E3), con init_score = margen de L. Hiperparámetros de la V1 "
+                       f"traducidos: {PHASE6_LGBM}; deterministic=True, force_row_wise, CPU, 5 semillas. Sin "
+                       "búsqueda de hiperparámetros",
+    },
+    "lectura": "cada familia frente a L + 5a, por bloque y horizonte con su número de positivos: F1, AUPRC, Brier, "
+               "razón MAE y RMSE juntas, antelación; veredictos con la regla de 5 temporadas de la fase 3 "
+               "(`decide_multi_season`, F1) y de la fase 5 (`decide_phase5`, razón MAE), marcados como lectura; "
+               "2010 aparte, sin 2010 (3 de 4) y 2024 como contraste",
+    "interpretacion": "si las dos empatan o pierden: indicio (no prueba) de que el límite son los datos. Si alguna "
+                      "gana: hipótesis para un estudio posterior, sin lenguaje causal. Nada se adopta",
+    "guardas_antes_de_mirar_resultados": [
+        "G14: en cada bloque y familia, las filas de entrenamiento y el corte son los de L (alfas_L.csv)",
+        "G15: test de no fuga por perturbación de las dos familias (cambiar etiquetas y casos posteriores al "
+        "corte no cambia las predicciones del bloque)",
+        "G16: LightGBM con la misma semilla da dos veces lo mismo, y la evaluación de L + 5a reproduce las "
+        "métricas de fase5.json",
+        "si una guarda falla, se detiene la fase y se explica; no se ajusta nada para que pase",
+    ],
+    "fase_6_prima": "preparada, no se corre ahora: el mismo código con C3 + rezagos de clima "
+                    f"({', '.join(PHASE6_PRIME_CLIMATE)}, la A3 de la V2) calculados sobre el clima largo "
+                    "2000-2025, cuando la 1b lo entregue. Lleva su propio preregistro antes de correr",
+    "mlflow": "denguekay/mejora_modelo_fase6_otras_familias",
+}
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 
