@@ -124,14 +124,16 @@ def _fit(train: pd.DataFrame, seed: int, col_reg: list[str], extra: dict, margin
 def predict_blocks_weighted(matrices: dict[int, pd.DataFrame], origins: pd.DataFrame,
                             blocks: list[tuple[str, str, int]], seed: int, columns: list[str],
                             hyperparameters: dict, weights_fn=None, state: np.ndarray | None = None,
-                            onset_columns: list[str] | None = None, prepare_block=None) -> pd.DataFrame:
+                            onset_columns: list[str] | None = None, prepare_block=None,
+                            hyperparameters_fn=None) -> pd.DataFrame:
     """E3 · S4_s3 OOS predictions per block, like ``phase1_history.predict_blocks``.
 
     ``weights_fn(train) -> weights`` (3a). ``state`` (3b): 0/1 per origin; one model per state, each
     trained with the training origins of its state, predicting the origins of its state. A state with
     fewer than ``MIN_REGIME_ROWS`` training origins in a block falls back to the single model there.
     ``onset_columns`` (3c): extra columns of the state-0 model; ``prepare_block(origins, cutoff)`` adds
-    the columns fitted per block (B2).
+    the columns fitted per block (B2). ``hyperparameters_fn(train, margin_all, columns, seed) -> dict``
+    (phase 5) chooses the hyperparameters of each block with its training origins only.
     """
     f = sp.FORMULATIONS[FORMULATION]
     col_reg = list(columns)
@@ -142,6 +144,8 @@ def predict_blocks_weighted(matrices: dict[int, pd.DataFrame], origins: pd.DataF
         test_sets, cutoff = eh._common_cutoffs(matrices, kind, period)
         o = prepare_block(origins, cutoff) if prepare_block is not None else origins
         train = _training(o, cutoff)
+        chosen = hyperparameters_fn(train, margin_all, col_reg, seed) if hyperparameters_fn is not None else None
+        block_extra = sp.e3_parameters(chosen) if chosen is not None else extra
         counts = np.full((len(o), len(H)), np.nan)
         alpha_rows = np.full((len(o), len(H)), np.nan)
         groups = [(None, np.ones(len(o), bool), col_reg)]
@@ -152,12 +156,13 @@ def predict_blocks_weighted(matrices: dict[int, pd.DataFrame], origins: pd.DataF
             fallback = s is not None and len(sub) < MIN_REGIME_ROWS
             use, use_cols = (train, col_reg) if fallback else (sub, cols)
             w = weights_fn(use) if weights_fn is not None else None
-            reg, alphas = _fit(use, seed, use_cols, extra, margin_all, w)
+            reg, alphas = _fit(use, seed, use_cols, block_extra, margin_all, w)
             idx = np.flatnonzero(mask)
             counts[idx] = sp.predict_count(reg, o.iloc[idx][use_cols], f["conteo"], margin_all[idx])
             alpha_rows[idx] = alphas
             record.append({"bloque": block, "regimen": s, "filas_entrenamiento": len(use), "respaldo": fallback,
-                           **{f"alpha_h{h}": a for h, a in zip(H, alphas)}, "corte": cutoff})
+                           **{f"alpha_h{h}": a for h, a in zip(H, alphas)}, "corte": cutoff,
+                           **({f"hp_{k}": v for k, v in chosen.items()} if chosen is not None else {})})
         for step, h in enumerate(H):
             pred = pd.DataFrame({"ubigeo": o.ubigeo, "semana_inicio": o[f"semana_inicio_h{h}"],
                                  "origen_cierre_mimo": o.origen_cierre, "casos_predichos": counts[:, step],

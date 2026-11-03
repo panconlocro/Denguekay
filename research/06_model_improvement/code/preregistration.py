@@ -359,6 +359,116 @@ def adopt_phase3(verdict: pd.DataFrame) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Phase 5 · counts (preregistered before running any phase 5 variant)
+# ---------------------------------------------------------------------------
+
+PHASE5_PRIMARY = "razon_mae"
+PHASE5_GUARDS = ("razon_rmse", "f1_050", "auprc", "brier")
+PHASE5_DIRECTION = {"razon_mae": -1, "razon_rmse": -1, "f1_050": 1, "auprc": 1, "brier": -1}
+PHASE5_MIN_HORIZONS_WON = 2
+PHASE5_SIMPLICITY = ("5a", "5c", "5b")  # a tie in a cross keeps the earlier (simpler) one
+
+PHASE5 = {
+    "fecha": "2026-11-03",
+    "estado": "aprobado por Rosa (2026-11-03) con una lectura agregada (probabilidad desde la μ mezclada), "
+              "commiteado antes de correr ninguna variante de la fase 5",
+    "base": "L: C3 · E3 · S4_s3 desde 2005, hiperparámetros de la V1 (max_delta_step 0,7), Platt por horizonte "
+            "con 1e-6 (cierre de las fases 2 y 3); predicciones guardadas de la 1a, 5 semillas",
+    "por_que": "la HU0007-4 pide razón MAE y RMSE <= 0,85; L solo la cumple en 2023 · h4 y 2017 · h3/h4",
+    "variantes": {
+        "5a_mezcla": "conteo = w·μ + (1 - w)·persistencia, por horizonte y bloque. w de la grilla 0,00-1,00 (paso "
+                     "0,01) que minimiza el MAE en las predicciones fuera de muestra de los bloques anteriores "
+                     "del mismo horizonte cuya etiqueta cerró antes del primer origen del bloque (los datos "
+                     "disponibles al corte, como el Platt cronológico); empate -> el w mayor (más cerca de L); "
+                     "sin filas previas (2008), w = 1. Solo cambia el conteo: la probabilidad sigue saliendo del μ "
+                     "de L, así que F1, AUPRC, Brier y antelación quedan iguales por construcción. No se "
+                     "reentrena",
+        "5b_max_delta_step": "por bloque y semilla, max_delta_step de la grilla {0,7; 1; 2; 3; 5; 10} elegido "
+                             "con una validación interna dentro del entrenamiento del bloque: valida con los "
+                             "orígenes cuyo objetivo h=2 cae en la última temporada del entrenamiento y entrena "
+                             "con los que tienen el objetivo h=4 en temporadas anteriores (sin solapamiento); "
+                             "criterio: MAE medio de h2-h4; empate -> el más cercano a 0,7. Después se reentrena "
+                             "con todo el entrenamiento del bloque. Cambia μ y la probabilidad",
+        "5c_peso_temporada": "3a2 de la fase 3 (peso por temporada [0,25, 1]), con sus predicciones guardadas "
+                             "(fase3/predicciones_3a2.csv.gz). Entra porque en la fase 3 mejoró la razón MAE "
+                             "(3-4 de 5 temporadas a favor por horizonte). No es ciega: esas cifras ya se "
+                             "vieron, así que su veredicto con la regla de esta fase es en buena parte previsible",
+    },
+    "regla": "decide_phase5: la misma mecánica de 5 temporadas con la razón MAE como métrica primaria (mejora "
+             "con >= 4 temporadas a favor y ninguna en contra, umbral de empate = mayor rango entre semillas de "
+             "las dos variantes). Guardas que vetan con >= 3 de 5 en contra: razón RMSE (MAE y RMSE siempre "
+             "juntos), F1, AUPRC y Brier. La antelación veta si empeora (IC95 superior < 0 y >= 4 temporadas en "
+             "contra con la banda ±1/n). Veredictos: gana / pierde / compensa (empate) / empate, simétricos",
+    "adopcion": f"gana en >= {PHASE5_MIN_HORIZONS_WON} de 3 horizontes y ninguno «pierde» ni «compensa "
+                "(empate)». Si se adoptan varias, se cruzan con la misma regla; un empate deja la más simple "
+                "(5a < 5c < 5b). Las combinaciones quedan para la fase 7",
+    "guardas_antes_de_mirar_resultados": [
+        "G11: la mezcla con w = 1 en todos los bloques devuelve exactamente el conteo de L; test de no fuga del "
+        "ajuste de w (cambiar etiquetas y casos que cierran después del corte no cambia w)",
+        "G12: 5b con la grilla {0,7} reproduce bit a bit las predicciones de L (semilla 17, cuda, n_jobs = 12); "
+        "test de no fuga de la selección (solo usa orígenes de entrenamiento)",
+        "G13: las predicciones guardadas de 3a2 tienen las 5 semillas y las mismas filas que L",
+        "si una guarda falla, se detiene la fase y se explica; no se ajusta nada para que pase",
+    ],
+    "lecturas_que_no_deciden": [
+        "conteo por fase de la curva (valle, subida, pico, bajada), siempre MAE y RMSE juntos",
+        "HU0007-4 de regresión por celda (razón MAE y RMSE <= 0,85)",
+        "w por horizonte y bloque (5a) y max_delta_step elegido por bloque y semilla (5b)",
+        "2010 aparte, lectura sin 2010 (3 de 4) y 2024 como contraste",
+        "5a con la misma μ (Rosa): la probabilidad NB2 se calcula con la μ mezclada y la α de L del bloque, "
+        "horizonte y semilla, y luego Platt por horizonte con 1e-6; F1, AUPRC y Brier frente a L, para saber si "
+        "casos, probabilidad e intervalo pueden salir de la misma μ. Antes se comprueba que NB2 con la μ y la α "
+        "de L reproduce la probabilidad guardada de L",
+    ],
+    "mlflow": "denguekay/mejora_modelo_fase5_conteo",
+}
+
+
+def decide_phase5(candidate: pd.DataFrame, reference: pd.DataFrame, ranges: pd.DataFrame,
+                  lead_time_diff: pd.DataFrame, seasons: tuple[int, ...] = DECIDING_SEASONS,
+                  min_in_favour: int = MIN_IN_FAVOUR, guard_veto: int = GUARD_VETO_AGAINST) -> pd.DataFrame:
+    """Phase 5 verdict per horizon: the razón MAE decides; RMSE ratio, F1, AUPRC, Brier and lead time guard."""
+    blocks = [block_name(s) for s in seasons]
+    rows = []
+    for h in sorted(candidate.horizonte.unique()):
+        c = candidate[candidate.horizonte.eq(h)].set_index("bloque")
+        r = reference[reference.horizonte.eq(h)].set_index("bloque")
+        e = ranges[ranges.horizonte.eq(h)].set_index("bloque")
+        counts = {m: _season_signs({b: d * (c.at[b, m] - r.at[b, m]) for b in blocks}, {b: e.at[b, m] for b in blocks})
+                  for m, d in PHASE5_DIRECTION.items()}
+        f, a = counts[PHASE5_PRIMARY]
+        improves, worsens = f >= min_in_favour and a == 0, a >= min_in_favour and f == 0
+        lead = lead_time_diff[lead_time_diff.horizonte.eq(h)].iloc[0]
+        lf, la = _season_signs({b: float(lead[f"diferencia_{b}"]) for b in blocks},
+                               {b: 1 / float(lead[f"episodios_{b}"]) for b in blocks})
+        lead_worse = bool(lead.ic95_superior < 0 and la >= min_in_favour and lf == 0)
+        lead_better = bool(lead.ic95_inferior > 0 and lf >= min_in_favour and la == 0)
+        veto_a = [m for m in PHASE5_GUARDS if counts[m][1] >= guard_veto] + (["antelacion"] if lead_worse else [])
+        veto_b = [m for m in PHASE5_GUARDS if counts[m][0] >= guard_veto] + (["antelacion"] if lead_better else [])
+        if improves and not veto_a:
+            verdict = "gana"
+        elif worsens and not veto_b:
+            verdict = "pierde"
+        elif improves or worsens:
+            verdict = "compensa (empate)"
+        else:
+            verdict = "empate"
+        rows.append({"horizonte": h, "veredicto": verdict, "vetos": ", ".join(veto_a) or None,
+                     "vetos_contra_referencia": ", ".join(veto_b) or None,
+                     **{f"a_favor_{m}": v[0] for m, v in counts.items()},
+                     **{f"en_contra_{m}": v[1] for m, v in counts.items()},
+                     "a_favor_antelacion": lf, "en_contra_antelacion": la})
+    return pd.DataFrame(rows)
+
+
+def adopt_phase5(verdict: pd.DataFrame) -> bool:
+    """Adoption of a phase 5 variant: >= 2 horizons won and none lost or offset."""
+    won = int(verdict.veredicto.eq("gana").sum())
+    bad = verdict.veredicto.isin(["pierde", "compensa (empate)"]).any()
+    return won >= PHASE5_MIN_HORIZONS_WON and not bad
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 
