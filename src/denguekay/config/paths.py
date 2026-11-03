@@ -28,10 +28,15 @@ REFERENCE = DATA / "reference"
 # Bronze subfolders per source
 BRONZE_METEO = BRONZE / "meteo"
 CACHE_METEO = BRONZE_METEO / "cache_meteo"   # formerly on Drive, now local
+# Separate caches of study 06 (phase 1b): weather with the model fixed, so the
+# "resume" of a download never mistakes them for the 2017-2025 cache.
+CACHE_METEO_ERA5_2017_2025 = BRONZE_METEO / "cache_meteo_era5_2017_2025"
+CACHE_METEO_2000_2016 = BRONZE_METEO / "cache_meteo_2000_2016"
 BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
 BRONZE_SALA = BRONZE_EPI / "sala"
 SILVER_SALA = SILVER / "epi_sala_semanal.csv"
+SILVER_METEO_2000_2016 = SILVER / "meteo_semanal_distrital_2000_2016.csv"   # study 06, phase 1b
 
 # Integrated silver: silver sources already joined (meteo + socio + epi),
 # still WITHOUT feature engineering. Gold is reserved for the dataset with

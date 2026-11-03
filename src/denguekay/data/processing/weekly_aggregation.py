@@ -6,6 +6,8 @@ weeks (Sunday-Saturday, MMWR calendar) and joins the district catalogue to
 have name/lat/lon in the output.
 """
 
+from pathlib import Path
+
 import pandas as pd
 
 from denguekay.config.paths import CACHE_METEO
@@ -54,9 +56,9 @@ FINAL_COLUMNS = [
 ]
 
 
-def load_daily_from_cache(expected_districts: int) -> pd.DataFrame:
-    """Gather every parquet of the local cache into a single daily DataFrame."""
-    files = sorted(CACHE_METEO.glob("distrito_*.parquet"))
+def load_daily_from_cache(expected_districts: int, cache_dir: Path = CACHE_METEO) -> pd.DataFrame:
+    """Gather every parquet of a local cache (default cache_meteo/) into a single daily DataFrame."""
+    files = sorted(cache_dir.glob("distrito_*.parquet"))
     print(len(files), "archivos")
     assert len(files) == expected_districts, (
         "Aún faltan distritos: corre descargar_batch_pendientes() de nuevo."

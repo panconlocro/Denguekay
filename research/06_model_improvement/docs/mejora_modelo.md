@@ -55,6 +55,10 @@ Notebook `02_fase1a_historia.ipynb`; cifras en `metricas/fase1a.json`; prediccio
 | 2023 | 3 | 1039 | 0,835 / 0,578 / 0,828 | 0,930 / 0,928 | 0,073 / 0,120 | 0,791 / 0,808 |
 | 2023 | 4 | 1039 | 0,811 / 0,216 / 0,803 | 0,922 / 0,917 | 0,081 / 0,159 | 0,748 / 0,764 |
 
+- **Ganancia de referencia (decisión de Rosa al confirmar la 1a, 2026-11-03):** la comparación preregistrada L
+  frente a R está **inflada por el calibrador de R**, que se aplasta al calibrar con 2018–2021 (ver abajo). La
+  ganancia que se toma como referencia es la de L frente a la **V1 tal cual**: F1 +0,046 en 2022 · h3 y +0,106 en
+  2022 · h4; en 2023 es marginal (+0,005 a +0,008). Entrenar desde 2005 pasa a ser la base de las fases siguientes.
 - **Lectura, no cambia la decisión: la victoria frente a R es sobre todo de calibración.**
   - R calibra con 2018–2021 (155 semanas brote en unas 13 500 filas) y su probabilidad calibrada se aplasta: F1 0
     en 2022 · h3 y h4. La misma R con el Platt de la V1 (solo 2021) da 0,658 y 0,546. Extender el calibrador
@@ -78,6 +82,26 @@ Notebook `02_fase1a_historia.ipynb`; cifras en `metricas/fase1a.json`; prediccio
   - Regresión: cumple en 2023 · h4 (0,748 / 0,839) y 2017 · h3 / h4; 2017 entra como lectura (se usó para elegir
     B3). En el resto la razón RMSE es > 0,85.
   - L no tiene A3, así que no es comparable con la V2 en regresión: la V2 cumple 2023 · h3 y h4. Eso es la 1b.
+
+### 1b · Propuesta para el equipo (2026-11-03; no se descargó nada)
+
+- **`openmeteo.py`:** `fetch_district` y `download_pending_batch` aceptan `start_date`, `end_date` y `models`.
+  Por defecto no cambia nada: 2017-2025, sin parámetro `models` (el «Best match» del API) y caché
+  `cache_meteo/`. Otro rango o un modelo fijo exige su propio `cache_dir` (si no, `ValueError`), porque la
+  reanudación solo mira si existe el archivo del distrito. Con un modelo fijo, si el API devuelve columnas
+  renombradas, la descarga se detiene. Tests en `tests/data/test_openmeteo.py`.
+- **Cachés nuevos** (`denguekay.config.paths`): `cache_meteo_era5_2017_2025/` (comparación) y
+  `cache_meteo_2000_2016/` (historia); salida semanal de la historia en
+  `silver/meteo_semanal_distrital_2000_2016.csv`. Anotados en `docs/architecture.md`.
+- **Notebook 02 del pipeline:** celda A (ERA5 fijo 2017-2025, se corre ya) y celda B (2000-2016, bloqueada
+  hasta la decisión de Rosa sobre el modelo). **Notebook 03 del pipeline:** agrega la historia a semanas con la
+  misma función que 2017-2025.
+- **Comparación:** `notebooks/03_fase1b_consistencia_clima.ipynb` (código en `code/phase1b_climate.py`) compara
+  por variable y por año la diferencia ERA5 − actual (media, MAE, máximo, correlación, semanas iguales). Probado
+  solo leyendo, con el caché actual contra sí mismo: 30 485 semanas, diferencia 0 en las 9 variables.
+- **Modelo fijado:** ERA5 (0,25°, desde 1940). Según la documentación de Open-Meteo, ERA5-Land no trae
+  radiación solar y el «Best match» combina IFS HRES, ERA5 y ERA5-Land. La página no muestra el identificador
+  exacto del parámetro `models`; el notebook usa `"era5"` y pide confirmarlo antes de descargar.
 
 ### Limitación conocida de la V1 y la V2
 
