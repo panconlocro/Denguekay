@@ -28,6 +28,57 @@ Notebook `01_diagnostico_techo.ipynb`, cifras en `metricas/fase0.json`, MLflow
   134 filas de entrenamiento (todas de 2017) forman parte de la diferencia L − R, junto con las temporadas
   2005–2016.
 
+### Resultados de la 1a (2026-11-03)
+
+Notebook `02_fase1a_historia.ipynb`; cifras en `metricas/fase1a.json`; predicciones y α en
+`models/experimentos/mejora_modelo/fase1a/` (no versionado); MLflow `denguekay/mejora_modelo_fase1a_historia`
+(`8372af480d9646529005126b404573e2`). Dispositivo: cuda, `n_jobs` = 12.
+
+- **Guardas:** G1 (con la enmienda) pasa: 0 filas distintas en las 9 columnas; las 134 exceptuadas coinciden con
+  el recálculo. G2 pasa bit a bit (diferencia 0 en μ y en la probabilidad NB2). G3 pasa: 0 etiquetas distintas
+  en 30 485. G4 es un test y pasa.
+  - G2 se lee con `float_precision="round_trip"`: con el lector por defecto de pandas, las mismas predicciones
+    escritas y releídas en CSV difieren en 1,1e-13, sin que cambie el modelo.
+- **Corridas fallidas:** las dos primeras ejecuciones del notebook se cayeron al guardar (los `attrs` de pandas y
+  un booleano de numpy en el JSON) y no mostraron ninguna cifra. Se corrigió el código (`e69da56`, `377f519`) y
+  se volvió a correr igual.
+- **Veredicto preregistrado (2022 y 2023): L gana en h=2, 3 y 4.** F1 mejora más que el umbral de empate en las
+  dos temporadas y la antelación también (IC95 de la diferencia: h2 0,084 a 0,221; h3 0,168 a 0,337; h4 0,189 a
+  0,358; 95 inicios limpios). No hay vetos contra L. **Se adopta el entrenamiento desde 2005.**
+
+| Temporada | h | Semanas brote | F1 L / R / V1 tal cual | AUPRC L / R | Brier L / R | Razón MAE L / R |
+|---|---|---|---|---|---|---|
+| 2022 | 2 | 431 | 0,712 / 0,154 / 0,711 | 0,781 / 0,789 | 0,054 / 0,084 | 0,962 / 1,001 |
+| 2022 | 3 | 431 | 0,704 / 0,000 / 0,658 | 0,771 / 0,781 | 0,056 / 0,102 | 0,959 / 1,021 |
+| 2022 | 4 | 431 | 0,652 / 0,000 / 0,546 | 0,743 / 0,753 | 0,060 / 0,110 | 0,952 / 1,040 |
+| 2023 | 2 | 1039 | 0,857 / 0,778 / 0,852 | 0,947 / 0,947 | 0,062 / 0,082 | 0,847 / 0,881 |
+| 2023 | 3 | 1039 | 0,835 / 0,578 / 0,828 | 0,930 / 0,928 | 0,073 / 0,120 | 0,791 / 0,808 |
+| 2023 | 4 | 1039 | 0,811 / 0,216 / 0,803 | 0,922 / 0,917 | 0,081 / 0,159 | 0,748 / 0,764 |
+
+- **Lectura, no cambia la decisión: la victoria frente a R es sobre todo de calibración.**
+  - R calibra con 2018–2021 (155 semanas brote en unas 13 500 filas) y su probabilidad calibrada se aplasta: F1 0
+    en 2022 · h3 y h4. La misma R con el Platt de la V1 (solo 2021) da 0,658 y 0,546. Extender el calibrador
+    hacia atrás sin más historia de entrenamiento empeora.
+  - La AUPRC de L no mejora: en 2022 queda 0,008–0,010 por debajo de R (fuera del umbral de empate en 1 de 2
+    temporadas por horizonte). El orden de las semanas no mejora; mejora la escala.
+  - Frente a la V1 tal cual, la ganancia de F1 se concentra en 2022 · h3 (+0,046) y h4 (+0,106); en 2023 es
+    +0,005 a +0,008.
+  - El calibrador de L para 2022 usa 47 000 filas y 2 340–2 353 semanas brote; el de la V1, 3 380 filas y 90.
+    Con L, el Brier calibrado queda por debajo del sin calibrar en 2022 y 2023 (en la V2 era al revés en 2022).
+  - El conteo sí cambia por el entrenamiento (μ no depende de Platt): la razón MAE baja 0,02–0,09 en 2022 y 2023.
+- **Inicios limpios:** el recall de las 2 primeras semanas de brotes nuevos sigue bajo: 0,12–0,19 en 2022–2023,
+  0,02–0,13 en 2010, 2015 y 2016. Antelación (≥ 2 semanas, semilla 17) en 2022–2023 frente a la persistencia: h2
+  0,168 / 0,116; h3 0,263 / 0,137; h4 0,284 / 0,211 (IC separados, no pareados). En 2010 y 2015 L no se
+  distingue de la persistencia (0,03–0,07 las dos).
+- **2010 (aparte; entrena con 2005–2009):** F1 0,722 / 0,631 / 0,476 en h2 / h3 / h4, 234 semanas brote y 30
+  inicios limpios. El h=4 de 2010 y 2015 (F1 0,476 y 0,480) es la celda más débil de las temporadas que deciden.
+- **HU0007-4 de L** (mediana de semillas; todas las celdas son evaluables):
+  - Clasificación: cumple en 2023 · h2 y 2024 · h2 / h3 / h4. No cumple en 2010, 2015, 2016, 2017 ni 2022.
+    Falla el recall.
+  - Regresión: cumple en 2023 · h4 (0,748 / 0,839) y 2017 · h3 / h4; 2017 entra como lectura (se usó para elegir
+    B3). En el resto la razón RMSE es > 0,85.
+  - L no tiene A3, así que no es comparable con la V2 en regresión: la V2 cumple 2023 · h3 y h4. Eso es la 1b.
+
 ### Limitación conocida de la V1 y la V2
 
 La V1 y la V2 tienen el mismo defecto de inicio de panel en `propia_semanas_desde_ultimo_caso`: en las primeras
