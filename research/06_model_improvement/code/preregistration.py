@@ -331,6 +331,26 @@ PHASE3 = {
 }
 
 
+PHASE3_AMENDMENT = {
+    "fecha": "2026-11-03",
+    "aprobada_por": "Rosa, después de ver 3a1, 3a2 y 3b y antes de entrenar 3c",
+    "reemplaza": "3c_B1_B2_en_inicios (B1 + B2 solo en el modelo de inicios de 3b)",
+    "variante": "3c_prima: L + B1 + B2 en el modelo único (C3 + B1 + B2 = 22 columnas), mismos hiperparámetros, "
+                "α dentro de la muestra, Platt por horizonte con 1e-6; B1 sin ajuste y B2 con el ranking del "
+                "núcleo de cada corte de bloque, en memoria sobre la serie larga (casos desde 2000, etiqueta desde "
+                "2005)",
+    "referencia": "L",
+    "regla": "la misma de PHASE3: decide_multi_season y adopt_phase3",
+    "motivo": "3b dejó el recall de brote nuevo en 0-0,06 y bajó la antelación en h2, h3 y h4; 3c sobre 3b "
+              "partiría de una base que empeora lo que intenta arreglar",
+    "no_es_ciega": "la enmienda se hizo después de ver los resultados de 3a y 3b; es anterior a cualquier corrida "
+                   "de 3c_prima y se declara en el informe",
+    "cierre": "si 3c_prima empata o pierde (no se adopta), la fase 3 se cierra con L como base",
+    "guardas": "G10 (tests de no fuga de B1 y B2 y equivalencia con weekly_status en 2017-2025) pasa antes de "
+               "entrenar; G8 ya pasó",
+}
+
+
 def adopt_phase3(verdict: pd.DataFrame) -> bool:
     """Adoption of a phase 3 variant: >= 2 horizons won and none lost or offset."""
     won = int(verdict.veredicto.eq("gana").sum())

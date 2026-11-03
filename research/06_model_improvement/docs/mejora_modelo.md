@@ -181,13 +181,16 @@ en `models/experimentos/mejora_modelo/fase3/` (no versionado); MLflow `denguekay
 | 3a2 · peso por temporada | empate | empate | empate |
 | 3b · dos regímenes | compensa (veto razón MAE) | compensa (vetos AUPRC, razón MAE) | empate |
 
-- **3a1:** sube lo que la fase buscaba y rompe el resto.
-  - Antelación: h2 +0,078 (IC95 0,041 a 0,114, 4 temporadas a favor), h3 y h4 +0,047 (IC95 0,010 a 0,083, 3 a favor).
-  - Recall de brote nuevo: 2023 0,30 / 0,29 / 0,26 frente a 0,17 / 0,19 / 0,17 de L; 2016 · h2 0,21 frente a 0,13;
-    2022 · h2 0,22 frente a 0,12.
-  - Pero la AUPRC cae en las 5 temporadas en los tres horizontes, el Brier empeora en 3–4 y la razón MAE en 3
-    (hasta +0,24 en 2016 · h4). En 2010 y 2015 · h4 el F1 cae a 0,135 y 0,349 (L: 0,476 y 0,480) porque el recall
-    de brotes en curso baja a 0,09 y 0,24. Con 234 y 557 semanas brote.
+- **3a1 es un intercambio, no un fracaso:** gana recall de inicios a cambio del orden de las semanas y del recall en
+  brotes en curso. La regla preregistrada no lo adopta porque las guardas pesan ese costo.
+  - Lo que gana: antelación h2 +0,078 (IC95 0,041 a 0,114, 4 temporadas a favor), h3 y h4 +0,047 (IC95 0,010 a
+    0,083, 3 a favor). Recall de brote nuevo: 2023 0,30 / 0,29 / 0,26 frente a 0,17 / 0,19 / 0,17 de L; 2016 · h2
+    0,21 frente a 0,13; 2022 · h2 0,22 frente a 0,12.
+  - Lo que cuesta: la AUPRC baja en las 5 temporadas en los tres horizontes, el Brier empeora en 3–4 y la razón
+    MAE en 3 (hasta +0,24 en 2016 · h4). En 2010 y 2015 · h4 el recall de brotes en curso baja a 0,09 y 0,24 (L:
+    0,45 y 0,36) y el F1 a 0,135 y 0,349 (L: 0,476 y 0,480), con 234 y 557 semanas brote.
+  - Queda como evidencia de que el peso de muestra mueve el balance entre inicios y brotes en curso; el factor 5
+    se fijó a priori y no se ajustó.
 - **3a2:** sin efecto en F1 ni AUPRC fuera del umbral de empate; la razón MAE mejora en 3–4 temporadas (y −0,11 a
   −0,17 en 2024, contraste), la antelación baja un poco (−0,026 a −0,036). Empate.
 - **3b:** empeora los inicios. La antelación baja en los tres horizontes (h3 −0,181, IC95 −0,233 a −0,130) y el
@@ -197,6 +200,18 @@ en `models/experimentos/mejora_modelo/fase3/` (no versionado); MLflow `denguekay
     queda un poco mejor que L en 2016 y 2022, peor en 2015 y en 2023 · h3 y h4; el del régimen en curso (n = 7 688,
     5 652 positivos) mejora en 2010 y 2015. El régimen en curso usó el modelo único en 1 bloque por semilla (menos
     de 100 orígenes de entrenamiento).
-- **Lectura:** el peso a los inicios es la única variante que mueve el recall de brotes nuevos, pero a costa del
-  ranking, del conteo y de los brotes en curso. No se adopta. 3c (B1 + B2 en el modelo de inicios de 3b) queda
-  pendiente de que Rosa revise B1 y B2 sobre la serie larga.
+- **Lectura:** el peso a los inicios es la única variante que mueve el recall de brotes nuevos; lo hace a cambio del
+  orden, del conteo y de los brotes en curso. No se adopta.
+
+### Enmienda de 3c (2026-11-03, después de ver 3a1, 3a2 y 3b; antes de entrenar 3c)
+
+- **Qué cambia:** 3c deja de ser «3b con B1 + B2 en el modelo de inicios» y pasa a ser una sola variante,
+  **3c′ = L + B1 + B2 en el modelo único** (C3 + B1 + B2, mismas α, hiperparámetros y calibración), comparada
+  contra L con la misma regla y la misma adopción (`adopt_phase3`).
+- **Por qué:** 3b dejó el recall de brote nuevo en 0–0,06 y bajó la antelación en los tres horizontes. Construir 3c
+  sobre 3b la haría partir de una base que empeora lo que intenta arreglar. Decisión de Rosa.
+- **Cuándo:** la enmienda se hizo **después de ver los resultados de 3a y 3b**, así que no es ciega a ellos; sí es
+  anterior a cualquier corrida de 3c′. Se declara aquí por eso.
+- **Cierre:** si 3c′ empata o pierde, la fase 3 se cierra con L como base.
+- B1 y B2 sobre la serie larga y G10: `code/phase3_onsets.py` (`long_spatial_table`, `spatial_prepare_block`) y
+  `tests/test_phase3_onsets.py`; B2 usa el ranking del núcleo de cada corte de bloque.

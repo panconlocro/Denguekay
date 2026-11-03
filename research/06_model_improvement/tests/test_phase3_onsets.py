@@ -117,6 +117,10 @@ class TestPhase3Record(unittest.TestCase):
         self.assertFalse(pr.adopt_phase3(v("gana", "empate", "empate")))
         self.assertFalse(pr.adopt_phase3(v("gana", "gana", "pierde")))
 
+    def test_amendment_3c_prime(self):
+        self.assertEqual(pr.PHASE3_AMENDMENT["referencia"], "L")
+        self.assertIn("3c_prima", pr.PHASE3_AMENDMENT["variante"])
+
     def test_constants_match_the_code(self):
         self.assertEqual(pr.PHASE3_ONSET_WEIGHT, p3.ONSET_WEIGHT)
         self.assertEqual(pr.PHASE3_SEASON_WEIGHT_CLIP, p3.SEASON_WEIGHT_CLIP)

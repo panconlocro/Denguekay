@@ -186,13 +186,15 @@ def phase3_inputs() -> dict:
     import phase1_history as p1
     from phase0_diagnosis import load_integrated, long_case_series, long_labels
 
-    cases, _ = long_case_series(load_integrated())
+    panel = load_integrated()
+    cases, _ = long_case_series(panel)
     labels = long_labels(cases)
     matrices = p1.long_matrices(cases, labels)
     origins = p1.long_origins(cases, matrices[2])
     series = labels[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue", "brote"]].copy()
     series["semana_inicio"] = pd.to_datetime(series.semana_inicio)
-    return {"casos": cases, "matrices": matrices, "origenes": origins, "serie": series}
+    return {"casos": cases, "matrices": matrices, "origenes": origins, "serie": series, "etiquetas": labels,
+            "panel": panel}
 
 
 def _config():
@@ -402,3 +404,22 @@ def spatial_prepare_block(geography: pd.DataFrame, cases: pd.DataFrame, labels: 
             cache[key] = long_spatial_table(geography, cases, labels, key)
         return add_spatial(origins, cache[key], b1 + b2)
     return prepare
+
+
+def run_3c_prime(inp: dict, seeds) -> dict:
+    """3c' (amendment): L + B1 + B2 in the single model, B2 with each block's core ranking."""
+    import phase1_history as p1
+    from denguekay.evaluation import protocol as pa
+
+    columns, hp = _config()
+    b1, b2 = _b1_b2_columns()
+    prepare = spatial_prepare_block(inp["panel"], inp["casos"], inp["etiquetas"])
+    blocks = p1.seasonal_blocks(p1.FIRST_BLOCK_SEASON_LONG)
+    preds, evals = {}, {}
+    for seed in seeds:
+        pred = predict_blocks_weighted(inp["matrices"], inp["origenes"], blocks, seed, [*columns, *b1, *b2], hp,
+                                       prepare_block=prepare)
+        pred.attrs.pop("ajustes")
+        preds[seed] = pred
+        evals[seed] = pa.evaluate(pred, inp["serie"])
+    return {"predicciones": preds, "evaluaciones": evals}
