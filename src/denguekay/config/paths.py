@@ -35,8 +35,10 @@ CACHE_METEO_2000_2016 = BRONZE_METEO / "cache_meteo_2000_2016"
 BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
 BRONZE_SALA = BRONZE_EPI / "sala"
+BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per download date
 SILVER_SALA = SILVER / "epi_sala_semanal.csv"
 SILVER_METEO_2000_2016 = SILVER / "meteo_semanal_distrital_2000_2016.csv"   # study 06, phase 1b
+SILVER_ENSO = SILVER / "enso_nino12_mensual.csv"   # monthly Niño 1+2 with the date it becomes usable
 
 # Integrated silver: silver sources already joined (meteo + socio + epi),
 # still WITHOUT feature engineering. Gold is reserved for the dataset with
