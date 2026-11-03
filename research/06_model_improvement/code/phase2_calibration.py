@@ -211,3 +211,111 @@ def read_l_predictions() -> dict[int, pd.DataFrame]:
     saved = pd.read_csv(L_SAVED, dtype={"ubigeo": "string"}, float_precision="round_trip")
     saved["ubigeo"] = saved.ubigeo.astype(object)
     return {int(s): g.drop(columns="semilla").reset_index(drop=True) for s, g in saved.groupby("semilla")}
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 run: inputs, preregistered comparisons and readings
+# ---------------------------------------------------------------------------
+
+VARIANTS = {  # name -> (method, pooled); the clip comes from step A
+    "platt": ("platt", False), "platt_agrupado": ("platt", True), "beta": ("beta", False),
+    "isotonica": ("isotonica", False),
+}
+
+
+def labels_series() -> pd.DataFrame:
+    """Long label series 2000-2025 (the same as ``phase1_history.phase1a_inputs()['serie']``)."""
+    from phase0_diagnosis import load_integrated, long_case_series, long_labels
+
+    cases, _ = long_case_series(load_integrated())
+    labels = long_labels(cases)
+    series = labels[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue", "brote"]].copy()
+    series["semana_inicio"] = pd.to_datetime(series.semana_inicio)
+    return series
+
+
+def _medians(variant: dict) -> pd.DataFrame:
+    return pa.seed_median([e["metricas"] for e in variant["evaluaciones"].values()])
+
+
+def _ranges(variant: dict) -> pd.DataFrame:
+    return pa.seed_ranges([e["metricas"] for e in variant["evaluaciones"].values()])
+
+
+def compare(candidate: dict, reference: dict, seasons=None, min_in_favour=None, guard_veto=None) -> dict:
+    """Preregistered verdict of a candidate against the reference (``decide_phase2`` by default)."""
+    import preregistration as pr
+
+    seasons = seasons or pr.DECIDING_SEASONS
+    blocks = [pr.block_name(s) for s in seasons]
+    med_c, med_r = _medians(candidate), _medians(reference)
+    ranges = pa.tie_threshold(_ranges(candidate), _ranges(reference))
+    seed = pr.SEEDS[0]
+    lead = pr.lead_time_difference_multi(candidate["evaluaciones"][seed]["antelacion"],
+                                         reference["evaluaciones"][seed]["antelacion"], "alerta_050",
+                                         seasons=seasons)
+    args = (med_c[med_c.bloque.isin(blocks)], med_r[med_r.bloque.isin(blocks)], ranges[ranges.bloque.isin(blocks)],
+            lead)
+    if min_in_favour is None:
+        verdict = pr.decide_phase2(*args)
+    else:  # readings (without 2010): plain multi-season rule with other counts
+        verdict = pr.decide_multi_season(*args, seasons=seasons, min_in_favour=min_in_favour, guard_veto=guard_veto)
+    deltas = med_c.merge(med_r, on=["horizonte", "bloque"], suffixes=("_cand", "_ref"))
+    cols = ["horizonte", "bloque", "positivos_cand"] + [f"{m}_{v}" for m in (
+        "f1_050", "recall_050", "precision_050", "auprc", "brier", "log_loss", "brier_sin_calibrar",
+        "log_loss_sin_calibrar") for v in ("cand", "ref")]
+    report = [*blocks, pr.block_name(pr.CONTRAST_SEASON)]
+    return {"veredicto": verdict, "antelacion": lead, "umbral_empate": ranges[ranges.bloque.isin(blocks)],
+            "metricas": deltas[deltas.bloque.isin(report)][cols]}
+
+
+def calibration_against(variant: dict) -> pd.Series:
+    """Seasons against per horizon in the calibrated-versus-uncalibrated guard (deciding seasons)."""
+    import preregistration as pr
+
+    g = calibration_guard(variant["evaluaciones"], [pr.block_name(s) for s in pr.DECIDING_SEASONS])
+    return g.groupby("horizonte").en_contra.sum()
+
+
+def readings(variant: dict, series: pd.DataFrame) -> dict:
+    """Readings that do not decide: per season metrics, near-threshold weeks, recall by week type, HU0007-4."""
+    import preregistration as pr
+    from denguekay.model import frozen_configs as cf
+    from denguekay.model import probabilistic_output as sp
+    from phase1_history import REPORT_SEASONS, seed_median_of
+
+    report = [pr.block_name(s) for s in REPORT_SEASONS]
+    med = _medians(variant)
+    med = med[med.bloque.isin(report)]
+    near = seed_median_of({s: e["datos"][e["datos"].brote.eq(1) & e["datos"].bloque.isin(report)]
+                           .assign(cerca=lambda d: d.probabilidad_calibrada.between(0.40, 0.50, inclusive="left"))
+                           .groupby(["horizonte", "bloque"]).cerca.agg(["sum", "size"]).reset_index()
+                           .rename(columns={"sum": "brote_en_040_050", "size": "semanas_brote"})
+                           for s, e in variant["evaluaciones"].items()}, ["horizonte", "bloque"])
+    recall = seed_median_of({s: sp.recall_by_week_type(e["datos"], series) for s, e in variant["evaluaciones"].items()},
+                            ["horizonte", "bloque", "tipo"])
+    hu = sp.hu0007_4_compliance(med).merge(med[["horizonte", "bloque", "positivos"]], on=["horizonte", "bloque"])
+    hu["evaluable"] = hu.positivos.map(lambda n: cf.evaluable(int(n), "brote"))
+    lead = variant["evaluaciones"][pr.SEEDS[0]]["antelacion_ic"]
+    lead = lead[lead.bloque.isin(report) & lead.alerta.isin(["alerta_050", "alerta_persistencia"])]
+    return {"metricas_por_temporada": med, "semanas_brote_040_050": near,
+            "recall_por_tipo": recall[recall.bloque.isin(report)], "hu0007_4": hu, "antelacion_semilla_17": lead}
+
+
+def final_choice(adopted: dict[str, dict], reference_name: str) -> tuple[str, list[dict]]:
+    """Step B outcome: none -> reference; one -> it; several -> crossed pairwise, a tie keeps the simpler."""
+    import preregistration as pr
+
+    if not adopted:
+        return reference_name, []
+    order = sorted(adopted, key=lambda n: (pr.PHASE2_PARAMETERS[n] is None, pr.PHASE2_PARAMETERS[n] or 0))
+    best, crosses = order[0], []
+    for other in order[1:]:
+        result = compare(adopted[other], adopted[best])
+        wins = pr.adopt_phase2(result["veredicto"], calibration_against(adopted[other]))
+        crosses.append({"candidata": other, "frente_a": best, "adopta": wins,
+                        "veredicto": "; ".join(f"h{r.horizonte}: {r.veredicto}"
+                                               for r in result["veredicto"].itertuples())})
+        if wins:
+            best = other
+    return best, crosses

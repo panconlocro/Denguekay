@@ -120,3 +120,43 @@ como se congelaron, con ese defecto.
 - Ese cambio movería la columna de gold en esas 134 filas: rompería la paridad bit a bit de gold con
   `frozen_configs.origins` de la V1/V2. Por eso solo entra si la configuración que lo usa reemplaza a la V2
   (decisión de Rosa en la fase 7), con su propia ficha y su propia huella.
+
+## Fase 2 · Calibración (2026-11-03)
+
+Preregistro `PHASE2` (commit `3bbfa10`, aprobado por Rosa sin cambios antes de calibrar). Notebook
+`04_fase2_calibracion.ipynb`; cifras en `metricas/fase2.json`; MLflow `denguekay/mejora_modelo_fase2_calibracion`
+(`d320f5c3d1e54e529b36901f3e3a0541`). Se recalibran las predicciones sin calibrar de L (5 semillas); μ no cambia.
+
+- **Guardas:** G5 pasa (Platt por horizonte con 1e-6 reproduce el protocolo, diferencia 0 en las 5 semillas). G6
+  pasa (0 bloques no monótonos en Platt, Platt agrupado y beta). G7 es un test y pasa.
+- **Guarda de calibración:** la referencia tiene 1 temporada de 5 en contra por horizonte (calibrado peor que sin
+  calibrar en las 5 semillas); ninguna variante llega a 3.
+- **Veredictos (5 temporadas): ninguna variante se adopta. Se queda Platt por horizonte con recorte 1e-6.**
+
+| Candidata | h2 | h3 | h4 |
+|---|---|---|---|
+| Recorte 1e-15 (paso A) | empate | empate | empate |
+| Platt agrupado | empate | empate | empate |
+| Beta | empate | empate | empate |
+| Isotónica | empate (veto AUPRC) | empate (veto AUPRC) | compensa (veto AUPRC) |
+
+- **Recorte 1e-15:** no mejora en ninguna temporada; empeora F1 en 2010 y 2015 en h3 y h4 (h4: −0,091 en 2010 y
+  −0,053 en 2015, con 234 y 557 semanas brote). Con 2 temporadas en contra no llega a «pierde». El recorte de 1e-6
+  se queda.
+- **Platt agrupado:** cambios de F1 de ±0,02 o menos salvo 2010 · h4 (+0,023). Antelación: h2 +0,047 (IC95 0,021 a
+  0,078) y h4 −0,021 (IC95 −0,041 a −0,005), con solo 2 temporadas fuera de la banda; no decide.
+- **Beta (lectura, no cambia la decisión):** es la que más se mueve.
+  - h4: F1 +0,066 en 2010, +0,130 en 2015 y +0,015 en 2022, fuera del umbral de empate; neutra en 2016 y 2023 →
+    3 de 5, no 4.
+  - Brier y log-loss calibrados mejoran frente a la referencia en 4–5 de las 5 temporadas en cada horizonte (en
+    2024, contraste, empeoran un poco).
+  - Antelación h4 +0,036 (IC95 0,010 a 0,062) con 2 temporadas a favor; h2 −0,021 (IC95 −0,041 a −0,005).
+  - Recall de brotes nuevos en 2022–2023 casi igual que la referencia (0,10–0,19).
+- **Isotónica:** la AUPRC cae en las 4 temporadas donde se aplica (2010 queda en Platt por tener < 500
+  positivos), de −0,004 a −0,024: es el efecto de los escalones, el que la guarda de AUPRC estricta debía
+  detectar. Veto en los tres horizontes.
+- La AUPRC de Platt, Platt agrupado y beta es idéntica a la de la referencia en todas las celdas, como se espera de
+  un calibrador monótono.
+- **Consecuencia:** la base sigue siendo L tal como salió de la 1a; la ganancia frente a la V1 tal cual no cambia
+  (2022 · h3 +0,046, h4 +0,106). El cuello de botella del recall en inicios limpios (0,12–0,19 en 2022–2023) no es
+  de calibración: queda para la fase 3.
