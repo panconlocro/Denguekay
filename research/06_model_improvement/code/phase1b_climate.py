@@ -66,3 +66,46 @@ def run_comparison(fixed_cache: Path = CACHE_METEO_ERA5_2017_2025, current_cache
     both = paired(current, fixed)
     return {"cobertura": coverage(current, fixed), "por_variable": compare(both),
             "por_variable_anio": compare(both, by=["anio"]), "pares": both}
+
+
+# ---------------------------------------------------------------------------
+# Districts that share a grid cell or an identical weather series
+# ---------------------------------------------------------------------------
+
+ERA5_STEP = 0.25  # degrees
+
+
+def nearest_era5_cell(districts: pd.DataFrame, step: float = ERA5_STEP) -> pd.DataFrame:
+    """Nearest point of a regular ``step``° grid to each district centroid (a geometric approximation:
+    Open-Meteo may pick a neighbouring cell with land and a similar elevation)."""
+    out = districts[["id_distrito", "distrito", "lat", "lon"]].copy()
+    out["lat_celda"] = (out.lat / step).round() * step
+    out["lon_celda"] = (out.lon / step).round() * step
+    return out
+
+
+def cells_from_cache(cache_dir: Path) -> pd.DataFrame:
+    """Grid cell the API reported per district (only caches downloaded with a fixed model keep it)."""
+    rows = []
+    for f in sorted(cache_dir.glob("distrito_*.parquet")):
+        d = pd.read_parquet(f, columns=["id_distrito", "lat_celda", "lon_celda"])
+        rows.append(d.iloc[0])
+    return pd.DataFrame(rows).reset_index(drop=True)
+
+
+def shared_cells(cells: pd.DataFrame) -> dict:
+    """How many districts share a cell with another district, and the groups."""
+    size = cells.groupby(["lat_celda", "lon_celda"]).id_distrito.transform("size")
+    groups = (cells[size.gt(1)].groupby(["lat_celda", "lon_celda"]).id_distrito.apply(sorted).tolist())
+    return {"distritos": len(cells), "celdas": int(cells.groupby(["lat_celda", "lon_celda"]).ngroups),
+            "distritos_que_comparten": int(size.gt(1).sum()), "grupos": groups}
+
+
+def identical_series(weekly: pd.DataFrame) -> dict:
+    """Groups of districts whose whole weekly series (9 variables, every week) is identical."""
+    wide = weekly.sort_values(KEY).groupby("id_distrito")[WEEKLY_VARIABLES].apply(
+        lambda g: hash(g.to_numpy(float).tobytes()))
+    groups = [sorted(ids) for ids in wide.groupby(wide).groups.values() if len(ids) > 1]
+    groups = [sorted(int(i) for i in g) for g in groups]
+    return {"distritos": int(len(wide)), "series_distintas": int(wide.nunique()),
+            "distritos_con_serie_identica": int(sum(len(g) for g in groups)), "grupos": sorted(groups)}

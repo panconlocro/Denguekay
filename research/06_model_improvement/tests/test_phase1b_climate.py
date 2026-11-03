@@ -50,5 +50,21 @@ class TestCompare(unittest.TestCase):
         self.assertEqual(cl.coverage(a, f)["solo_actual"], 4)
 
 
+class TestSharedCells(unittest.TestCase):
+    def test_nearest_cell_and_sharing(self):
+        districts = pd.DataFrame({"id_distrito": [1, 2, 3], "distrito": ["A", "B", "C"],
+                                  "lat": [-5.01, -5.06, -5.40], "lon": [-80.02, -79.99, -80.6]})
+        cells = cl.nearest_era5_cell(districts)
+        self.assertEqual(cells.lat_celda.tolist(), [-5.0, -5.0, -5.5])
+        s = cl.shared_cells(cells)
+        self.assertEqual((s["celdas"], s["distritos_que_comparten"], s["grupos"]), (2, 2, [[1, 2]]))
+
+    def test_identical_series(self):
+        a = _weekly()
+        b = a[a.id_distrito.eq(1)].assign(id_distrito=3)  # district 3 copies district 1
+        r = cl.identical_series(pd.concat([a, b]))
+        self.assertEqual((r["distritos"], r["series_distintas"], r["grupos"]), (3, 2, [[1, 3]]))
+
+
 if __name__ == "__main__":
     unittest.main()

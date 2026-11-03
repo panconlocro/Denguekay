@@ -34,6 +34,15 @@ class TestFetchDistrict(unittest.TestCase):
         self.assertEqual(params["models"], "era5")
         self.assertEqual((params["start_date"], params["end_date"]), ("2000-01-01", "2016-12-31"))
 
+    def test_grid_cell_only_with_a_fixed_model(self):
+        r = _response()
+        r.json.return_value.update({"latitude": -5.0, "longitude": -80.25, "elevation": 30.0})
+        with patch.object(om.requests, "get", return_value=r):
+            default = om.fetch_district(-5.0, -80.0)
+            fixed = om.fetch_district(-5.0, -80.0, models="era5")
+        self.assertEqual(sorted(default.columns), sorted(["time", *om.DAILY_VARS]))
+        self.assertEqual(fixed[["lat_celda", "lon_celda", "elevacion_celda"]].iloc[0].tolist(), [-5.0, -80.25, 30.0])
+
     def test_fixed_model_rejects_renamed_columns(self):
         renamed = [f"{c}_era5" for c in om.DAILY_VARS]
         with patch.object(om.requests, "get", return_value=_response(renamed)):

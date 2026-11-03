@@ -22,6 +22,7 @@ DAILY_VARS = [
     "wind_speed_10m_max", "shortwave_radiation_sum", "et0_fao_evapotranspiration",
 ]
 START, END = "2017-01-01", "2025-12-31"
+GRID_COLUMNS = {"lat_celda": "latitude", "lon_celda": "longitude", "elevacion_celda": "elevation"}
 BATCH_SIZE = 20  # if the limit hits before the batch ends, lower it to 15
 
 
@@ -58,12 +59,16 @@ def fetch_district(
             continue
 
         if r.status_code == 200:
-            daily = r.json().get("daily")
+            body = r.json()
+            daily = body.get("daily")
             if not isinstance(daily, dict) or "time" not in daily:
                 raise RuntimeError(f"Open-Meteo response missing daily data for {lat}, {lon}")
-            if models is not None and sorted(daily) != sorted(["time", *DAILY_VARS]):
+            if models is None:
+                return pd.DataFrame(daily)
+            if sorted(daily) != sorted(["time", *DAILY_VARS]):
                 raise RuntimeError(f"Open-Meteo returned unexpected columns for models={models}: {sorted(daily)}")
-            return pd.DataFrame(daily)
+            # With a fixed model, keep the grid cell the API used (to see which districts share one).
+            return pd.DataFrame(daily).assign(**{name: body.get(key) for name, key in GRID_COLUMNS.items()})
 
         if r.status_code == 429:
             is_json = r.headers.get("content-type", "").startswith("application/json")
