@@ -239,11 +239,14 @@ def run_variant(matrices, origins, blocks, series, seeds) -> dict:
     from denguekay.model import frozen_configs as cf
 
     c = cf.CONFIG_2026_V1
-    preds, evals = {}, {}
+    preds, evals, alphas = {}, {}, []
     for seed in seeds:
-        preds[seed] = predict_blocks(matrices, origins, blocks, seed, c["columnas"], c["hiperparametros"])
-        evals[seed] = pa.evaluate(preds[seed], series)
-    return {"predicciones": preds, "evaluaciones": evals}
+        pred = predict_blocks(matrices, origins, blocks, seed, c["columnas"], c["hiperparametros"])
+        # attrs holding DataFrames break pd.concat/merge; the alphas are kept apart.
+        alphas.append(pred.attrs.pop("alfas").assign(semilla=seed))
+        preds[seed] = pred
+        evals[seed] = pa.evaluate(pred, series)
+    return {"predicciones": preds, "evaluaciones": evals, "alfas": pd.concat(alphas, ignore_index=True)}
 
 
 def _blocks_of(seasons) -> list[str]:
