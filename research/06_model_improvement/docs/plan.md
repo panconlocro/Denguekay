@@ -13,9 +13,10 @@
 La V2 (`CONFIG_2026`: C3+A3 · E3 · S4_s3, Platt, p ≥ 0,50) es la configuración vigente y la que se sirve, y no
 cumple la HU0007-4. Según los informes (verifícalo, no lo des por cierto):
 
-- Clasificación: cumple en 4 de 9 celdas. Falla el recall: 2022 · h4 en 0,40, y 0,00–0,09 en las 2 primeras
-  semanas de brotes nuevos.
-- Regresión: no cumple en ninguna celda. Pierde contra la persistencia en el pico.
+- Clasificación: cumple en 4 de 9 celdas. Falla el recall: 2022 · h4 en 0,202 (el 0,40 era de la V1), y
+  0,00–0,15 en las 2 primeras semanas de brotes nuevos (verificado en la fase 0).
+- Regresión: cumple en 2 de 9 celdas, 2023 · h3 (0,747 / 0,818) y 2023 · h4 (0,708 / 0,779); «ninguna» era la
+  V1. En el resto pierde o empata con la persistencia, sobre todo en el pico.
 - La caída de F1 en 2022 · h4 con A3 es de calibración: la AUPRC casi no cambia, el Platt se ajusta solo con
   2021 y su Brier calibrado es peor que el sin calibrar.
 - Las ganancias de B3 dependen de los inicios de 2017. 2022–2023 ya se usaron en 19 comparaciones.
@@ -68,6 +69,17 @@ p ≥ 0,50 ni la etiqueta de brote (canal endémico).
 3. **La V3 pasa por todas las pruebas y experimentos necesarios** antes de congelarse (ver la fase 7). Si se
    congela, el test independiente de 2026 (`EVALUATION_2026`) se aplica a la V3 desde su commit de
    congelamiento.
+
+## Decisiones de Rosa (2026-11-03, al cerrar la fase 0)
+
+1. **Protocolo nuevo aprobado:** bloques por temporada con ventana creciente desde 2005; Platt de cada bloque con
+   todas las temporadas cerradas anteriores; deciden 2010, 2015, 2016, 2022 y 2023 (mejora en al menos 4 de 5 y
+   ninguna en contra); 2024 queda como contraste. El bloque 2010 se reporta aparte porque entrena con pocos
+   brotes. El umbral de «en contra» se define en el preregistro de la fase 1.
+2. **Recorte del logit** como variante de la fase 2 (ver la fase 2).
+3. **Corrección pendiente del pipeline:** `epi_piura_semanal.csv` tiene una semana 53 en 2009, que en MMWR no
+   existe (2009 tiene 52 semanas). En Piura son 3 filas con 4 casos (distritos 200601, 200701 y 200705), que la
+   historia larga deja fuera. Queda anotada; no se toca en este estudio.
 
 ## Fase 0 · Diagnóstico y techo (solo lectura, sin entrenar variantes)
 
@@ -129,7 +141,9 @@ Sobre la mejor matriz de la fase 1, con p ≥ 0,50 fijo:
 - Calibración beta (3 parámetros).
 - Isotónica, solo si hay suficientes positivos. La S5 del estudio 04 ya la probó en E1 con pocos datos: cita
   ese antecedente.
-- Recorte del logit fijado en el preregistro (la auditoría del estudio 05 mostró que cambia 2022 · h4).
+- Recorte del logit como **variante**: 1e-6 (el actual) frente a uno menor, fijado en el preregistro. La
+  auditoría del estudio 05 mostró que cambia 2022 · h4 y la fase 0, que 1e-6 aplasta entre el 1 % y el 8 % de
+  las probabilidades sin calibrar (decisión de Rosa, 2026-11-03).
 - Guardas: Brier y log-loss calibrados no deben empeorar frente a los sin calibrar.
 
 Detente.
