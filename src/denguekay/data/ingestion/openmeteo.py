@@ -7,6 +7,7 @@ already downloaded district again) works directly against the local disk.
 """
 
 import time
+from pathlib import Path
 
 import pandas as pd
 import requests
@@ -21,6 +22,7 @@ DAILY_VARS = [
     "wind_speed_10m_max", "shortwave_radiation_sum", "et0_fao_evapotranspiration",
 ]
 START, END = "2017-01-01", "2025-12-31"
+GRID_COLUMNS = {"lat_celda": "latitude", "lon_celda": "longitude", "elevacion_celda": "elevation"}
 BATCH_SIZE = 20  # if the limit hits before the batch ends, lower it to 15
 
 
@@ -30,15 +32,23 @@ class APILimitError(Exception):
 
 def fetch_district(
     lat: float, lon: float, retries: int = 4, *,
-    start_date: str = START, end_date: str = END,
+    start_date: str = START, end_date: str = END, models: str | None = None,
 ) -> pd.DataFrame:
-    """Download daily weather for one point and an inclusive date range."""
+    """
+    Download daily weather for one point and an inclusive date range.
+
+    `models=None` sends no `models` parameter (the API picks its default
+    "Best match", as in the 2017-2025 download). A string fixes one model and
+    the response must then carry exactly DAILY_VARS.
+    """
     params = {
         "latitude": lat, "longitude": lon,
         "start_date": start_date, "end_date": end_date,
         "daily": ",".join(DAILY_VARS),
         "timezone": "America/Lima",
     }
+    if models is not None:
+        params["models"] = models
     for attempt in range(retries):
         try:
             r = requests.get(URL, params=params, timeout=90)
@@ -49,10 +59,16 @@ def fetch_district(
             continue
 
         if r.status_code == 200:
-            daily = r.json().get("daily")
+            body = r.json()
+            daily = body.get("daily")
             if not isinstance(daily, dict) or "time" not in daily:
                 raise RuntimeError(f"Open-Meteo response missing daily data for {lat}, {lon}")
-            return pd.DataFrame(daily)
+            if models is None:
+                return pd.DataFrame(daily)
+            if sorted(daily) != sorted(["time", *DAILY_VARS]):
+                raise RuntimeError(f"Open-Meteo returned unexpected columns for models={models}: {sorted(daily)}")
+            # With a fixed model, keep the grid cell the API used (to see which districts share one).
+            return pd.DataFrame(daily).assign(**{name: body.get(key) for name, key in GRID_COLUMNS.items()})
 
         if r.status_code == 429:
             is_json = r.headers.get("content-type", "").startswith("application/json")
@@ -67,35 +83,44 @@ def fetch_district(
     raise RuntimeError(f"Falló lat={lat}, lon={lon}: {r.status_code} {r.text[:200]}")
 
 
-def _already_downloaded(district_id: int) -> bool:
-    return (CACHE_METEO / f"distrito_{district_id:03d}.parquet").exists()
+def _already_downloaded(district_id: int, cache_dir: Path = CACHE_METEO) -> bool:
+    return (cache_dir / f"distrito_{district_id:03d}.parquet").exists()
 
 
-def download_pending_batch(districts: pd.DataFrame, batch_size: int = BATCH_SIZE) -> int:
+def download_pending_batch(
+    districts: pd.DataFrame, batch_size: int = BATCH_SIZE, *,
+    start_date: str = START, end_date: str = END, models: str | None = None,
+    cache_dir: Path = CACHE_METEO,
+) -> int:
     """
     Download up to `batch_size` pending districts and cache them in
-    data/bronze/meteo/cache_meteo/distrito_XXX.parquet.
+    `cache_dir`/distrito_XXX.parquet (default data/bronze/meteo/cache_meteo/).
 
     Run this notebook/function several times until "Quedan: 0":
     Open-Meteo has per-minute/per-hour limits that usually cut the batch.
     Returns how many districts are still pending after this batch.
-    """
-    CACHE_METEO.mkdir(parents=True, exist_ok=True)
 
-    pending = districts[~districts["id_distrito"].apply(_already_downloaded)]
+    Another date range or a fixed model must go to its own `cache_dir`:
+    "resume" only checks that the district's file exists.
+    """
+    if cache_dir == CACHE_METEO and (start_date, end_date, models) != (START, END, None):
+        raise ValueError("Otro rango o modelo necesita su propio cache_dir: no se mezcla con cache_meteo/.")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    pending = districts[~districts["id_distrito"].apply(_already_downloaded, cache_dir=cache_dir)]
     print(f"Descargados: {len(districts) - len(pending)} | Pendientes: {len(pending)}")
 
     done = 0
     for _, row in pending.head(batch_size).iterrows():
         try:
-            df = fetch_district(row["lat"], row["lon"])
+            df = fetch_district(row["lat"], row["lon"], start_date=start_date, end_date=end_date, models=models)
         except APILimitError as e:
             print(f"\nLímite alcanzado: {e}")
             print("Espera y vuelve a correr este bloque.")
             break
 
         df["id_distrito"] = row["id_distrito"]
-        df.to_parquet(CACHE_METEO / f"distrito_{row['id_distrito']:03d}.parquet", index=False)
+        df.to_parquet(cache_dir / f"distrito_{row['id_distrito']:03d}.parquet", index=False)
         done += 1
         print(f"OK {row['id_distrito']:>2} {row['distrito']}")
         time.sleep(3)
