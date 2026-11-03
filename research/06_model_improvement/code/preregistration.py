@@ -26,6 +26,8 @@ MAX_AGAINST = 0                  # ... and none against
 GUARD_VETO_AGAINST = 3           # a guard vetoes a win if it is against in at least 3 of 5
 PHASE1A_SEASONS = (2022, 2023)   # R has no training before 2017
 PHASE1A_ADOPT = ("gana", "empate")  # compensa or pierde: stop and consult Rosa
+G1_EXCEPTION = {"columna": "propia_semanas_desde_ultimo_caso", "valor_v1": 52,
+                "ultimo_cierre": "2017-05-06"}  # amendment G1 (Rosa, 2026-11-03)
 DIRECTION = pa.DIRECTION         # f1_050 (primary); auprc, brier, razon_mae (guards)
 PRIMARY = pa.PRIMARY
 GUARDS = pa.GUARDS
@@ -107,7 +109,7 @@ PHASE1 = {
     },
     "guardas_antes_de_mirar_resultados": [
         "G1: en los orígenes comunes, base_6 + B3 de la tabla larga son iguales a los de "
-        "frozen_configs.origins(CONFIG_2026_V1) (atol 1e-12)",
+        "frozen_configs.origins(CONFIG_2026_V1) (atol 1e-12), con la excepción de la enmienda G1",
         "G2: R reproduce bit a bit, con la semilla 17, las predicciones guardadas de la V1 en los bloques "
         "2021-2025 (fase4/predicciones_s4s3_dentro_muestra.csv.gz), comparando las predicciones sin calibrar "
         "(μ = casos_predichos y probabilidad NB2 antes de Platt), con el dispositivo con que se grabaron "
@@ -118,6 +120,18 @@ PHASE1 = {
         "origen no cambia sus variables)",
         "si una guarda falla, se detiene la fase y se explica; no se ajusta nada para que pase",
     ],
+    "enmienda_G1": {
+        "fecha": "2026-11-03", "aprobada_por": "Rosa, antes de entrenar ningún modelo de la fase 1",
+        "motivo": "G1 falló en 134 de 30 160 orígenes (20 distritos, cierres del 2017-01-28 al 2017-05-06), solo "
+                  "en propia_semanas_desde_ultimo_caso: la V1 la calcula sin las semanas anteriores a 2017 y da el "
+                  "tope 52 a distritos que aún no tenían casos en 2017; la tabla larga ve su último caso de 2016",
+        "regla": "se exceptúan de G1 los orígenes con propia_semanas_desde_ultimo_caso = 52 en la V1 y cierre "
+                 "hasta el 2017-05-06; en ellos la tabla larga debe dar < 52 e igual a las semanas desde el último "
+                 "caso recalculadas directamente desde la serie de casos larga. Las otras 8 columnas siguen "
+                 "exigiendo igualdad en todos los orígenes",
+        "consecuencia": "L usa los valores largos; R conserva la tabla exacta de la V1 (G2 no cambia). Esas filas "
+                        "forman parte de la diferencia L - R y se declaran en el informe",
+    },
     "lecturas_que_no_deciden": [
         "V1 tal cual (Platt solo con 2021) frente a R: efecto de calibrar con 2018-2021",
         "L en 2010 (aparte), 2015, 2016, 2017 y 2024: métricas por celda con su número de positivos",

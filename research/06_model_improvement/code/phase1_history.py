@@ -117,23 +117,52 @@ def predict_blocks(matrices: dict[int, pd.DataFrame], origins: pd.DataFrame, blo
 # Guards
 # ---------------------------------------------------------------------------
 
+def weeks_since_last_case(cases: pd.DataFrame, ubigeo: pd.Series, week: pd.Series,
+                          cap: int = fi.di.MAX_WEEKS_WITHOUT_CASE) -> np.ndarray:
+    """Weeks from the last week with cases (<= ``week``) to ``week``, capped; recomputed without B3 code."""
+    positive = cases.loc[cases.casos_Dengue.gt(0), ["ubigeo", "semana_inicio"]]
+    by_district = {u: np.sort(pd.to_datetime(g.semana_inicio).to_numpy()) for u, g in positive.groupby("ubigeo")}
+    out = []
+    for u, w in zip(ubigeo, pd.to_datetime(week)):
+        weeks = by_district.get(u, np.array([], dtype="datetime64[ns]"))
+        i = np.searchsorted(weeks, np.datetime64(w), side="right")
+        out.append(min(cap, (w - pd.Timestamp(weeks[i - 1])).days // 7) if i else cap)
+    return np.asarray(out, float)
+
+
 def compare_origins(long: pd.DataFrame, v1: pd.DataFrame, columns: list[str] = V1_COLUMNS,
-                    atol: float = 1e-12) -> dict:
-    """G1: ``base_6`` + B3 of the long table against the V1 table on their common origins."""
+                    atol: float = 1e-12, exception: dict | None = None,
+                    cases: pd.DataFrame | None = None) -> dict:
+    """G1: ``base_6`` + B3 of the long table against the V1 table on their common origins.
+
+    ``exception`` (amendment G1): rows of ``exception["columna"]`` with the V1 value
+    ``valor_v1`` and a close up to ``ultimo_cierre`` are checked against the weeks
+    since the last case recomputed from ``cases`` instead of against the V1.
+    """
     key = ["ubigeo", "origen_cierre"]
     m = v1[key + columns].merge(long[key + columns], on=key, suffixes=("_v1", "_larga"), how="left",
                                 validate="one_to_one", indicator=True)
-    diffs, worst = {}, {}
+    diffs, worst, excepted = {}, {}, {}
     for c in columns:
         d = (m[f"{c}_v1"] - m[f"{c}_larga"]).abs()
         both_nan = m[f"{c}_v1"].isna() & m[f"{c}_larga"].isna()
         bad = (d > atol) | (m[f"{c}_v1"].isna() != m[f"{c}_larga"].isna())
+        if exception is not None and c == exception["columna"]:
+            rows = (m[f"{c}_v1"].eq(exception["valor_v1"])
+                    & m.origen_cierre.le(pd.Timestamp(exception["ultimo_cierre"])) & bad)
+            sub = m[rows]
+            expected = weeks_since_last_case(cases, sub.ubigeo, sub.origen_cierre - pd.Timedelta(days=6))
+            ok = (sub[f"{c}_larga"].to_numpy() < exception["valor_v1"]) & (sub[f"{c}_larga"].to_numpy() == expected)
+            excepted = {"filas": int(rows.sum()), "distritos": int(sub.ubigeo.nunique()),
+                        "coinciden_con_el_recalculo": int(ok.sum())}
+            bad = bad & ~rows
+            bad.loc[sub.index[~ok]] = True
         diffs[c] = int(bad.sum())
         worst[c] = float(d[~both_nan].max()) if (~both_nan).any() else 0.0
         if bad.any():
             worst[f"{c}_ultimo_origen_distinto"] = str(m.loc[bad, "origen_cierre"].max().date())
     return {"origenes_v1": len(v1), "sin_par_en_la_larga": int(m._merge.ne("both").sum()),
-            "filas_distintas": diffs, "diferencia_maxima": worst,
+            "filas_distintas": diffs, "diferencia_maxima": worst, "excepcion_G1": excepted,
             "pasa": all(v == 0 for v in diffs.values()) and m._merge.eq("both").all()}
 
 
