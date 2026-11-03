@@ -134,6 +134,7 @@ bronze/
 ├── meteo/cache_meteo/       # un parquet por distrito, tal cual responde Open-Meteo
 ├── meteo/cache_meteo_era5_2017_2025/  # estudio 06 (1b): 2017-2025 con ERA5 fijado, solo para comparar
 ├── meteo/cache_meteo_2000_2016/       # estudio 06 (1b): historia 2000-2016, caché aparte
+├── enso/                    # sstoi.indices de NOAA CPC (Niño 1+2), un archivo por fecha de descarga
 ├── socio/                   # el Excel del censo/proyecciones, sin tocar
 └── epi/                     # Excel y respuestas crudas de la Sala Situacional MINSA
 ```
@@ -145,6 +146,7 @@ Silver tiene dos niveles:
 silver/
 ├── meteo_semanal_distrital.csv     # por fuente
 ├── meteo_semanal_distrital_2000_2016.csv  # estudio 06 (1b): historia, aparte del de 2017-2025
+├── enso_nino12_mensual.csv         # Niño 1+2 mensual con la fecha desde la que se puede usar
 ├── socio_anual.csv
 ├── epi_piura_semanal.csv
 ├── epi_sala_semanal.csv            # exportación normalizada por ejecución
@@ -385,6 +387,7 @@ pipelines/notebooks/
 ├── 01_ingesta_distritos.ipynb
 ├── 02_ingesta_meteo.ipynb
 ├── 03_bronze_to_silver_meteo.ipynb
+├── 03b_ingesta_enso.ipynb      # Niño 1+2 de NOAA CPC: bronze y silver (estudio 06, fase 4)
 ├── 04_ingesta_socio.ipynb
 ├── 05_bronze_to_silver_socio.ipynb
 ├── 06_ingesta_epi.ipynb
