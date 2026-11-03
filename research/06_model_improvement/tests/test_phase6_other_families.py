@@ -38,6 +38,33 @@ class TestGLM(unittest.TestCase):
         pred = p6.predict_glm(fitted, train, margin)
         self.assertEqual(pred.shape, (n, len(p6.H)))
 
+    def test_poisson_glm_recovers_coefficients_and_reports_convergence(self):
+        rng = np.random.default_rng(1)
+        n = 4000
+        train = pd.DataFrame({"a": rng.normal(size=n), "b": rng.normal(size=n)})
+        offset = rng.normal(0, 0.3, n)
+        y = rng.poisson(np.exp(0.3 + 0.6 * train.a - 0.2 * train.b + offset))
+        for h in p6.H:
+            train[f"casos_Dengue_h{h}"] = y
+        margin = np.repeat(offset[:, None], len(p6.H), axis=1)
+        fitted = p6.fit_glm_poisson(train, ["a", "b"], margin, 0)
+        self.assertTrue(all(fitted["convergio"]))
+        self.assertFalse(any(fitted["penalizado"]))
+        b = fitted["beta"][0]
+        self.assertAlmostEqual(b[1] / fitted["scale"]["a"], 0.6, delta=0.05)
+        self.assertAlmostEqual(b[2] / fitted["scale"]["b"], -0.2, delta=0.05)
+        # without convergence (1 iteration) the horizon is refitted with the L2 penalty and reported
+        import preregistration as pr
+
+        old, pr.PHASE6_GLM_MAXITER = pr.PHASE6_GLM_MAXITER, 1
+        try:
+            forced = p6.fit_glm_poisson(train, ["a", "b"], margin, 0)
+        finally:
+            pr.PHASE6_GLM_MAXITER = old
+        self.assertTrue(all(forced["penalizado"]))
+        self.assertFalse(any(forced["convergio"]))
+        self.assertTrue(np.isfinite(p6.predict_glm(forced, train, margin)).all())
+
 
 class TestBlockLoop(unittest.TestCase):
     @classmethod
@@ -51,7 +78,7 @@ class TestBlockLoop(unittest.TestCase):
         """G14 on synthetic data: rows and cut-off per block are those of the L loop."""
         ref = p3.predict_blocks_weighted(self.matrices, self.origins, BLOCKS, 17, COLUMNS,
                                          cf.CONFIG_2026_V1["hiperparametros"]).attrs["ajustes"]
-        for family in p6.FAMILIES:
+        for family in (*p6.FAMILIES, "6a_prima_poisson_glm"):
             ours = self._run(family, self.origins).attrs["ajustes"]
             np.testing.assert_array_equal(ours.filas_entrenamiento.to_numpy(), ref.filas_entrenamiento.to_numpy())
             np.testing.assert_array_equal(ours.corte.to_numpy(), ref.corte.to_numpy())
@@ -67,7 +94,7 @@ class TestBlockLoop(unittest.TestCase):
         outside = ~altered.index.isin(train.index)
         for h in p6.H:
             altered.loc[outside, f"casos_Dengue_h{h}"] = altered.loc[outside, f"casos_Dengue_h{h}"] * 5 + 9
-        for family in p6.FAMILIES:
+        for family in (*p6.FAMILIES, "6a_prima_poisson_glm"):
             a = p6.predict_blocks_family(self.matrices, self.origins, [block], 17, COLUMNS, family)
             b = p6.predict_blocks_family(self.matrices, altered, [block], 17, COLUMNS, family)
             for col in ("casos_predichos", "probabilidad_brote"):

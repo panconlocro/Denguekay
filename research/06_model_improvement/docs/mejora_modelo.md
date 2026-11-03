@@ -17,7 +17,7 @@ aquí.
 | 2 · Calibración | recorte 1e-15, Platt agrupado, beta, isotónica | nada: Platt por horizonte con recorte 1e-6 (beta, cerca en h4, no alcanza la regla) |
 | 3 · Inicios | 3a1 peso a inicios, 3a2 peso por temporada, 3b dos regímenes, 3c′ L + B1 + B2 (enmienda) | nada: L sigue como base (3a1 es un intercambio: más recall de inicios a cambio de orden y brotes en curso) |
 | 5 · Conteo | 5a mezcla con la persistencia, 5b `max_delta_step` por bloque, 5c peso por temporada | **5a**: conteo = w·μ + (1 − w)·persistencia, w por horizonte y bloque con las OOS anteriores |
-| 6 · Otra familia (lectura) | 6a GLM NB2, 6b LightGBM, con C3 sin clima | nada (lectura): LightGBM empata con L + 5a; el GLM no convergió y no se interpreta (6′ con clima, pendiente de la 1b) |
+| 6 · Otra familia (lectura) | 6a GLM NB2 (no convergió), enmienda 6a′ GLM Poisson + α NB2, 6b LightGBM; C3 sin clima | nada (lectura): LightGBM empata con L + 5a; 6a′ empata o mejora (gana F1 en h4, mejor antelación, peor Brier en 2016); 6′ con clima, pendiente de la 1b |
 
 **Configuración base actual: L + 5a.**
 
@@ -345,16 +345,63 @@ sin clima. Es una lectura: nada se adopta.
   reporta y no se ajusta nada. Los síntomas están en los resultados: en h3 la mezcla 5a le da w = 0 en la mediana
   (el conteo publicado queda igual a la persistencia, razón MAE = 1,000 en todas las temporadas) y su F1 en
   2010 · h3 cae a 0,009. Por eso no se leen sus veredictos (F1: empate en h2, pierde en h3 y «gana» en h4; razón
-  MAE: empate en los tres) como evidencia sobre la familia. Si se quiere esa lectura, hace falta una enmienda
-  (por ejemplo, otro optimizador o más iteraciones) aprobada antes de correr.
+  MAE: empate en los tres) como evidencia sobre la familia. Se enmendó con 6a′ (abajo).
 - **6b · LightGBM: empate con L + 5a en los tres horizontes**, con las dos reglas (F1 de la fase 3 y razón MAE de
   la fase 5) y sin vetos. Las diferencias por temporada son de centésimas (F1 de las 5 temporadas que deciden
   entre −0,06 y +0,01; razón MAE entre −0,02 y +0,02). La antelación tampoco cambia (IC95 que incluye 0 en h2 y
   h4; en h3, −0,010 con IC95 [−0,026; 0,000]). Con la μ sin mezclar, LightGBM pierde por razón MAE en h2 y h3
   frente a L + 5a (veta la razón RMSE): la mezcla 5a también le sirve a esta familia.
-- **Lectura (observación, no conclusión):** otra familia de árboles con la misma información y los mismos
-  hiperparámetros traducidos rinde lo mismo que L. Es un indicio, no una prueba, de que el límite está en la
-  información de la matriz y no en XGBoost. La comparación con un modelo lineal queda pendiente porque el GLM no
-  convergió.
 - **6′ (con clima):** el código acepta otra lista de columnas (`run_family(..., columns=...)`); queda para cuando
   la 1b entregue el clima 2000–2016, con su propio preregistro.
+
+### Enmienda 6a′ (2026-11-03, después de ver que 6a no convergió; antes de correr 6a′)
+
+- **Por qué y cuándo:** Rosa la pidió **después de ver** la no convergencia del GLM NB2 de 6a. Es la única
+  enmienda de la fase 6 (`PHASE6_AMENDMENT`, commit `e37e55c`, antes de correr).
+- **Qué es:** GLM Poisson por horizonte (IRLS, maxiter 200) con offset log(hist_lag_a + 0,5), las mismas 9
+  columnas de C3 con la misma transformación y estandarizadas por bloque; la α de la NB2 con el estimador de L sobre
+  el ajuste dentro de la muestra, igual que L con XGBoost. Un ajuste que no converge se reajusta con L2 = 1e-4 (sin
+  penalizar el intercepto) y se reporta. Regla de cierre: si no converge sin penalización en más de 27 de los 54
+  ajustes (bloque × horizonte), el GLM queda como no interpretable.
+
+### Resultado de 6a′ (2026-11-03)
+
+Notebook `09_fase6a_prima_glm_poisson.ipynb`; cifras en `metricas/fase6.json` (sección `enmienda_6a_prima`);
+MLflow `b4aaa1cfb6c94074a3dcbb552409afe2`.
+
+- **Guardas:** G14 pasa (filas y corte de L en los 18 bloques); los tests de no fuga pasan con 6a′; L + 5a
+  reproduce `fase5.json`.
+- **Convergencia:** 54 de 54 ajustes convergen sin penalización; no se usó la L2. Es interpretable.
+- **Veredictos (lectura, no deciden), frente a L + 5a.** El GLM es determinista, así que el umbral de empate es
+  solo el rango entre semillas de L.
+
+  | Regla | h2 | h3 | h4 |
+  |---|---|---|---|
+  | F1 (fase 3) | empate (Brier en contra) | empate (Brier en contra) | **gana** |
+  | razón MAE (fase 5) | empate | empate | empate |
+  | sin 2010, F1 (3 de 4) | empate | gana | gana |
+
+- **F1 en h4** (5 temporadas que deciden, positivos entre paréntesis): 2010 0,522 frente a 0,476 (234); 2015
+  0,648 frente a 0,480 (557); 2016 0,577 frente a 0,590 (395); 2022 0,657 frente a 0,652 (431); 2023 0,822
+  frente a 0,811 (1 039). En 2024 (contraste) pierde: 0,746 frente a 0,761 (857). Buena parte de la ganancia
+  está en 2015; 2022 y 2023 son diferencias de centésimas.
+- **Antelación:** mejor en los tres horizontes, con IC95 que excluye 0: h2 +0,057 [0,021; 0,098], h3 +0,078
+  [0,041; 0,119], h4 +0,119 [0,073; 0,166] (193 episodios). La mayor diferencia está en 2016 (+0,15 a +0,38).
+- **Peor en:** Brier en 2016 en los tres horizontes (h4 0,083 frente a 0,070) y razón MAE en 2016 y 2022 (h4
+  2016: 1,157 frente a 1,062). Por eso la razón MAE queda en empate: mejora en 2010, 2015 y 2023 y empeora en 2016
+  y 2022.
+- **Con la μ sin mezclar** también empata por razón MAE (veta la razón RMSE). La mezcla 5a le da w con mediana
+  0,64 (h2), 0,76 (h3) y 0,81 (h4).
+
+### Lectura de la fase 6 y cierre (2026-11-03)
+
+- **Observación:** con la misma información (C3, sin clima), LightGBM rinde igual que L, y un GLM Poisson lineal
+  con la α de la NB2 empata o mejora en la lectura: gana por F1 en h4 y adelanta las alertas en los tres
+  horizontes, a cambio de peor Brier en 2016 y sin mejora en el conteo.
+- **Hipótesis (no conclusión):** el límite parece estar en la información de la matriz más que en la familia del
+  modelo; la flexibilidad de los árboles no aporta sobre un modelo lineal con las mismas 9 columnas. Con pocos
+  brotes por temporada y la ganancia concentrada en 2015 y 2016, no se generaliza ni se usa lenguaje causal.
+- **Nada se adopta** (la fase 6 no decide, por preregistro). Que el GLM gane en h4 queda anotado como hipótesis para
+  la síntesis de la fase 7 o un estudio posterior; usarlo como candidata requeriría un preregistro nuevo aprobado
+  por Rosa.
+- **La fase 6 queda cerrada**, salvo la 6′ con clima, preparada para cuando llegue la 1b.

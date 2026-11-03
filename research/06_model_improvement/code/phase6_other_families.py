@@ -65,6 +65,40 @@ def fit_glm(train: pd.DataFrame, columns: list[str], margin: np.ndarray, seed: i
             "convergio": converged}
 
 
+def fit_glm_poisson(train: pd.DataFrame, columns: list[str], margin: np.ndarray, seed: int) -> dict:
+    """6a' (amendment): one Poisson GLM per horizon (IRLS); a horizon that does not converge is refitted with
+    the small L2 penalty fixed a priori (intercept unpenalised). ``seed`` is unused."""
+    import warnings
+
+    import statsmodels.api as sm
+
+    import preregistration as pr
+
+    log1p = tuple(c for c in pr.PHASE6_GLM_LOG1P if c in columns)
+    raw = train[columns].astype(float).copy()
+    for c in log1p:
+        raw[c] = np.log1p(raw[c])
+    center, scale = raw.mean(), raw.std(ddof=0).replace(0.0, 1.0)
+    X = _glm_design(train[columns], center, scale, log1p)
+    penalty = np.r_[0.0, np.full(X.shape[1] - 1, pr.PHASE6_RIDGE_ALPHA)]
+    models, converged, penalised = [], [], []
+    for step, h in enumerate(H):
+        y = train[f"casos_Dengue_h{h}"].to_numpy(float)
+        model = sm.GLM(y, X, family=sm.families.Poisson(), offset=margin[:, step])
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            res = model.fit(maxiter=pr.PHASE6_GLM_MAXITER)
+            ok = bool(res.converged) and np.isfinite(res.params).all()
+            params = res.params
+            if not ok:
+                params = model.fit_regularized(alpha=penalty, L1_wt=0.0, maxiter=pr.PHASE6_GLM_MAXITER).params
+        models.append(np.asarray(params, float))
+        converged.append(ok)
+        penalised.append(not ok)
+    return {"beta": models, "center": center, "scale": scale, "log1p": log1p, "columns": columns,
+            "convergio": converged, "penalizado": penalised}
+
+
 def predict_glm(fitted: dict, origins: pd.DataFrame, margin: np.ndarray) -> np.ndarray:
     X = _glm_design(origins[fitted["columns"]], fitted["center"], fitted["scale"], fitted["log1p"])
     out = np.column_stack([np.exp(X @ b + margin[:, step]) for step, b in enumerate(fitted["beta"])])
@@ -104,7 +138,9 @@ def predict_lgbm(fitted: dict, origins: pd.DataFrame, margin: np.ndarray) -> np.
     return out
 
 
-FIT = {"6a_nb_glm": (fit_glm, predict_glm), "6b_lightgbm": (fit_lgbm, predict_lgbm)}
+FIT = {"6a_nb_glm": (fit_glm, predict_glm), "6b_lightgbm": (fit_lgbm, predict_lgbm),
+       "6a_prima_poisson_glm": (fit_glm_poisson, predict_glm)}
+DETERMINISTIC = ("6a_nb_glm", "6a_prima_poisson_glm")
 
 
 # ---------------------------------------------------------------------------
@@ -131,7 +167,9 @@ def predict_blocks_family(matrices: dict[int, pd.DataFrame], origins: pd.DataFra
         record.append({"bloque": block, "filas_entrenamiento": len(train), "corte": cutoff,
                        **{f"alpha_h{h}": a for h, a in zip(H, alphas)},
                        **({f"convergio_h{h}": c for h, c in zip(H, fitted["convergio"])}
-                          if "convergio" in fitted else {})})
+                          if "convergio" in fitted else {}),
+                       **({f"penalizado_h{h}": c for h, c in zip(H, fitted["penalizado"])}
+                          if "penalizado" in fitted else {})})
         for step, h in enumerate(H):
             pred = pd.DataFrame({"ubigeo": origins.ubigeo, "semana_inicio": origins[f"semana_inicio_h{h}"],
                                  "origen_cierre_mimo": origins.origen_cierre, "casos_predichos": counts[:, step]})
@@ -150,7 +188,7 @@ def predict_blocks_family(matrices: dict[int, pd.DataFrame], origins: pd.DataFra
 def run_family(inp: dict, family: str, seeds, columns: list[str] | None = None) -> dict:
     """Predictions and protocol evaluation of one family: raw μ and with the 5a mixture of the count.
 
-    The GLM is deterministic: it runs once and the same predictions fill every seed key.
+    The GLMs are deterministic: it runs once and the same predictions fill every seed key.
     """
     import phase1_history as p1
     from phase3_onsets import _config
@@ -160,7 +198,7 @@ def run_family(inp: dict, family: str, seeds, columns: list[str] | None = None) 
     blocks = p1.seasonal_blocks(p1.FIRST_BLOCK_SEASON_LONG)
     preds, fits = {}, []
     for seed in seeds:
-        if family == "6a_nb_glm" and preds:
+        if family in DETERMINISTIC and preds:
             preds[seed] = next(iter(preds.values())).assign(semilla=seed)
             continue
         pred = predict_blocks_family(inp["matrices"], inp["origenes"], blocks, seed, columns, family)

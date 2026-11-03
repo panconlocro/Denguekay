@@ -8532,5 +8532,4159 @@
       "w": 0.72,
       "filas_ajuste": 57655
     }
-  ]
+  ],
+  "enmienda_6a_prima": {
+    "guardas": {
+      "G14": {
+        "mismos_bloques": true,
+        "bloques_distintos": 0,
+        "pasa": true
+      },
+      "G16_reproduccion": {
+        "diferencia_maxima": 4.9451664985156185e-11,
+        "filas": 18,
+        "pasa": true
+      }
+    },
+    "convergencia": {
+      "convergen_sin_penalizar": 54,
+      "ajustes": 54,
+      "interpretable": true,
+      "por_bloque": [
+        {
+          "bloque": "temporada_2008",
+          "filas_entrenamiento": 8645,
+          "alpha_h2": 5.0614619232,
+          "alpha_h3": 8.9508064222,
+          "alpha_h4": 12.8836911478,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2009",
+          "filas_entrenamiento": 12025,
+          "alpha_h2": 7.2860269606,
+          "alpha_h3": 15.6109396054,
+          "alpha_h4": 25.0431935798,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2010",
+          "filas_entrenamiento": 15470,
+          "alpha_h2": 4.8537054616,
+          "alpha_h3": 9.4968790412,
+          "alpha_h4": 15.7135172586,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2011",
+          "filas_entrenamiento": 18850,
+          "alpha_h2": 3.8303633309,
+          "alpha_h3": 6.7548643261,
+          "alpha_h4": 10.7838017279,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2012",
+          "filas_entrenamiento": 22230,
+          "alpha_h2": 3.981508608,
+          "alpha_h3": 6.9820230305,
+          "alpha_h4": 11.2185107249,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2013",
+          "filas_entrenamiento": 25610,
+          "alpha_h2": 3.97980872,
+          "alpha_h3": 7.1332545104,
+          "alpha_h4": 10.9913247807,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2014",
+          "filas_entrenamiento": 28990,
+          "alpha_h2": 3.672384322,
+          "alpha_h3": 6.53192229,
+          "alpha_h4": 9.8702999978,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2015",
+          "filas_entrenamiento": 32370,
+          "alpha_h2": 3.4938485754,
+          "alpha_h3": 6.1756862215,
+          "alpha_h4": 9.2977271793,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2016",
+          "filas_entrenamiento": 35815,
+          "alpha_h2": 2.4181577755,
+          "alpha_h3": 4.3577061823,
+          "alpha_h4": 6.5272755826,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2017",
+          "filas_entrenamiento": 39195,
+          "alpha_h2": 1.9331030183,
+          "alpha_h3": 3.357698007,
+          "alpha_h4": 4.9473836171,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2018",
+          "filas_entrenamiento": 42575,
+          "alpha_h2": 1.5473755666,
+          "alpha_h3": 2.6386248525,
+          "alpha_h4": 3.8631584305,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2019",
+          "filas_entrenamiento": 45955,
+          "alpha_h2": 1.5276670689,
+          "alpha_h3": 2.5792310722,
+          "alpha_h4": 3.8127114982,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2020",
+          "filas_entrenamiento": 49335,
+          "alpha_h2": 1.5459456063,
+          "alpha_h3": 2.6167727139,
+          "alpha_h4": 3.8872350337,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2021",
+          "filas_entrenamiento": 52715,
+          "alpha_h2": 1.5737818222,
+          "alpha_h3": 2.6581870206,
+          "alpha_h4": 3.9517633237,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2022",
+          "filas_entrenamiento": 56160,
+          "alpha_h2": 1.6060694397,
+          "alpha_h3": 2.737544265,
+          "alpha_h4": 4.1079562259,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2023",
+          "filas_entrenamiento": 59540,
+          "alpha_h2": 1.4264238359,
+          "alpha_h3": 2.4523804084,
+          "alpha_h4": 3.6088948639,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "temporada_2024",
+          "filas_entrenamiento": 62920,
+          "alpha_h2": 1.328123046,
+          "alpha_h3": 2.2355541966,
+          "alpha_h4": 3.203778738,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        },
+        {
+          "bloque": "calendario_2025",
+          "filas_entrenamiento": 67470,
+          "alpha_h2": 1.10724543,
+          "alpha_h3": 1.835984983,
+          "alpha_h4": 2.6073097986,
+          "convergio_h2": true,
+          "convergio_h3": true,
+          "convergio_h4": true,
+          "penalizado_h2": false,
+          "penalizado_h3": false,
+          "penalizado_h4": false,
+          "semilla": 17
+        }
+      ]
+    },
+    "lectura_regla_f1": {
+      "veredicto": [
+        {
+          "horizonte": 2,
+          "veredicto": "empate",
+          "mejora_antelacion": false,
+          "empeora_antelacion": false,
+          "vetos": "brier",
+          "vetos_contra_referencia": "auprc, razon_mae",
+          "a_favor_f1_050": 1,
+          "a_favor_auprc": 3,
+          "a_favor_brier": 1,
+          "a_favor_razon_mae": 3,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 4,
+          "en_contra_razon_mae": 2,
+          "a_favor_antelacion": 2,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 3,
+          "veredicto": "empate",
+          "mejora_antelacion": false,
+          "empeora_antelacion": false,
+          "vetos": "brier",
+          "vetos_contra_referencia": "auprc, razon_mae",
+          "a_favor_f1_050": 2,
+          "a_favor_auprc": 3,
+          "a_favor_brier": 1,
+          "a_favor_razon_mae": 3,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 3,
+          "en_contra_razon_mae": 2,
+          "a_favor_antelacion": 3,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 4,
+          "veredicto": "gana",
+          "mejora_antelacion": true,
+          "empeora_antelacion": false,
+          "vetos": null,
+          "vetos_contra_referencia": "auprc, brier, razon_mae",
+          "a_favor_f1_050": 3,
+          "a_favor_auprc": 3,
+          "a_favor_brier": 3,
+          "a_favor_razon_mae": 3,
+          "en_contra_f1_050": 1,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 2,
+          "en_contra_razon_mae": 2,
+          "a_favor_antelacion": 4,
+          "en_contra_antelacion": 0
+        }
+      ],
+      "antelacion": [
+        {
+          "horizonte": 2,
+          "episodios": 193,
+          "diferencia": 0.0569948187,
+          "ic95_inferior": 0.0207253886,
+          "ic95_superior": 0.0984455959,
+          "diferencia_temporada_2010": 0.0333333333,
+          "diferencia_temporada_2015": 0.0294117647,
+          "diferencia_temporada_2016": 0.1470588235,
+          "diferencia_temporada_2022": 0.0,
+          "diferencia_temporada_2023": 0.0701754386,
+          "episodios_temporada_2010": 30,
+          "episodios_temporada_2015": 34,
+          "episodios_temporada_2016": 34,
+          "episodios_temporada_2022": 38,
+          "episodios_temporada_2023": 57
+        },
+        {
+          "horizonte": 3,
+          "episodios": 193,
+          "diferencia": 0.0777202073,
+          "ic95_inferior": 0.0414507772,
+          "ic95_superior": 0.1191709845,
+          "diferencia_temporada_2010": 0.0333333333,
+          "diferencia_temporada_2015": 0.0588235294,
+          "diferencia_temporada_2016": 0.2352941176,
+          "diferencia_temporada_2022": 0.0263157895,
+          "diferencia_temporada_2023": 0.0526315789,
+          "episodios_temporada_2010": 30,
+          "episodios_temporada_2015": 34,
+          "episodios_temporada_2016": 34,
+          "episodios_temporada_2022": 38,
+          "episodios_temporada_2023": 57
+        },
+        {
+          "horizonte": 4,
+          "episodios": 193,
+          "diferencia": 0.1191709845,
+          "ic95_inferior": 0.0725388601,
+          "ic95_superior": 0.1658031088,
+          "diferencia_temporada_2010": 0.0,
+          "diferencia_temporada_2015": 0.0882352941,
+          "diferencia_temporada_2016": 0.3823529412,
+          "diferencia_temporada_2022": 0.0526315789,
+          "diferencia_temporada_2023": 0.0877192982,
+          "episodios_temporada_2010": 30,
+          "episodios_temporada_2015": 34,
+          "episodios_temporada_2016": 34,
+          "episodios_temporada_2022": 38,
+          "episodios_temporada_2023": 57
+        }
+      ],
+      "umbral_empate": [
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2010",
+          "f1_050": 0.0160697843,
+          "auprc": 0.0012601206,
+          "brier": 0.0001442965,
+          "razon_mae": 0.0098047796,
+          "rmse": 0.3622777251,
+          "mae": 0.0163519358,
+          "recall_050": 0.0384615385,
+          "precision_050": 0.0115644491
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2015",
+          "f1_050": 0.0078095238,
+          "auprc": 0.0004611569,
+          "brier": 0.0001447325,
+          "razon_mae": 0.0016470106,
+          "rmse": 0.0328696777,
+          "mae": 0.00489896,
+          "recall_050": 0.012567325,
+          "precision_050": 0.0051031019
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2016",
+          "f1_050": 0.0030962441,
+          "auprc": 0.001200568,
+          "brier": 0.000347522,
+          "razon_mae": 0.0054593862,
+          "rmse": 0.0189015117,
+          "mae": 0.0082229986,
+          "recall_050": 0.0025316456,
+          "precision_050": 0.0034724808
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2022",
+          "f1_050": 0.0028897266,
+          "auprc": 0.0014896244,
+          "brier": 0.0001524295,
+          "razon_mae": 0.0045177442,
+          "rmse": 0.0635975999,
+          "mae": 0.0088510361,
+          "recall_050": 0.0069605568,
+          "precision_050": 0.0050898063
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2023",
+          "f1_050": 0.003547874,
+          "auprc": 0.0004648968,
+          "brier": 0.0003155634,
+          "razon_mae": 0.0035594284,
+          "rmse": 0.2353405903,
+          "mae": 0.0385734628,
+          "recall_050": 0.0009624639,
+          "precision_050": 0.0072972185
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2010",
+          "f1_050": 0.011764289,
+          "auprc": 0.0030707756,
+          "brier": 0.0001931916,
+          "razon_mae": 0.0120839011,
+          "rmse": 0.3709966433,
+          "mae": 0.0267490378,
+          "recall_050": 0.0170940171,
+          "precision_050": 0.0083292978
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2015",
+          "f1_050": 0.0083567731,
+          "auprc": 0.0013248841,
+          "brier": 0.0002046329,
+          "razon_mae": 0.002035586,
+          "rmse": 0.1224727617,
+          "mae": 0.0076471857,
+          "recall_050": 0.0089766607,
+          "precision_050": 0.0057409805
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2016",
+          "f1_050": 0.0034753534,
+          "auprc": 0.0016844197,
+          "brier": 0.0006061595,
+          "razon_mae": 0.0057285969,
+          "rmse": 0.0611658011,
+          "mae": 0.010236901,
+          "recall_050": 0.0075949367,
+          "precision_050": 0.000469438
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2022",
+          "f1_050": 0.0087016877,
+          "auprc": 0.0016607587,
+          "brier": 0.0002070689,
+          "razon_mae": 0.0099257527,
+          "rmse": 0.1836428384,
+          "mae": 0.0236896589,
+          "recall_050": 0.0092807425,
+          "precision_050": 0.0107715968
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2023",
+          "f1_050": 0.0037887699,
+          "auprc": 0.0005290379,
+          "brier": 0.0003208995,
+          "razon_mae": 0.0046412075,
+          "rmse": 0.1199534105,
+          "mae": 0.0679840785,
+          "recall_050": 0.0057747834,
+          "precision_050": 0.0045364581
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2010",
+          "f1_050": 0.0331412104,
+          "auprc": 0.0051509483,
+          "brier": 0.0002159444,
+          "razon_mae": 0.0093473834,
+          "rmse": 0.228423531,
+          "mae": 0.0246239946,
+          "recall_050": 0.0384615385,
+          "precision_050": 0.0144566301
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2015",
+          "f1_050": 0.010158143,
+          "auprc": 0.0020245901,
+          "brier": 0.0002707877,
+          "razon_mae": 0.0047190719,
+          "rmse": 0.1500902218,
+          "mae": 0.0206255634,
+          "recall_050": 0.0107719928,
+          "precision_050": 0.0122687533
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2016",
+          "f1_050": 0.0127080452,
+          "auprc": 0.0012727375,
+          "brier": 0.00064452,
+          "razon_mae": 0.0042775877,
+          "rmse": 0.0645908199,
+          "mae": 0.0089335773,
+          "recall_050": 0.0050632911,
+          "precision_050": 0.0244345031
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2022",
+          "f1_050": 0.0135616292,
+          "auprc": 0.0025391628,
+          "brier": 0.0002557357,
+          "razon_mae": 0.0133339027,
+          "rmse": 0.3454426473,
+          "mae": 0.0379463934,
+          "recall_050": 0.0185614849,
+          "precision_050": 0.0109289617
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2023",
+          "f1_050": 0.0012883654,
+          "auprc": 0.0006247897,
+          "brier": 0.0003432525,
+          "razon_mae": 0.0110909504,
+          "rmse": 0.5255424313,
+          "mae": 0.1960932526,
+          "recall_050": 0.0019249278,
+          "precision_050": 0.0040083544
+        }
+      ],
+      "lectura_sin_2010": [
+        {
+          "horizonte": 2,
+          "veredicto": "empate",
+          "mejora_antelacion": false,
+          "empeora_antelacion": false,
+          "vetos": "brier",
+          "vetos_contra_referencia": null,
+          "a_favor_f1_050": 1,
+          "a_favor_auprc": 2,
+          "a_favor_brier": 1,
+          "a_favor_razon_mae": 2,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 3,
+          "en_contra_razon_mae": 2,
+          "a_favor_antelacion": 2,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 3,
+          "veredicto": "gana",
+          "mejora_antelacion": true,
+          "empeora_antelacion": false,
+          "vetos": null,
+          "vetos_contra_referencia": null,
+          "a_favor_f1_050": 1,
+          "a_favor_auprc": 2,
+          "a_favor_brier": 1,
+          "a_favor_razon_mae": 2,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 2,
+          "en_contra_razon_mae": 2,
+          "a_favor_antelacion": 3,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 4,
+          "veredicto": "gana",
+          "mejora_antelacion": true,
+          "empeora_antelacion": false,
+          "vetos": null,
+          "vetos_contra_referencia": null,
+          "a_favor_f1_050": 2,
+          "a_favor_auprc": 2,
+          "a_favor_brier": 2,
+          "a_favor_razon_mae": 2,
+          "en_contra_f1_050": 1,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 2,
+          "en_contra_razon_mae": 2,
+          "a_favor_antelacion": 4,
+          "en_contra_antelacion": 0
+        }
+      ],
+      "metricas": [
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2010",
+          "positivos_cand": 234.0,
+          "f1_050_cand": 0.7325842697,
+          "f1_050_ref": 0.7224669604,
+          "recall_050_cand": 0.6965811966,
+          "recall_050_ref": 0.7008547009,
+          "precision_050_cand": 0.7725118483,
+          "precision_050_ref": 0.7454545455,
+          "auprc_cand": 0.7877063264,
+          "auprc_ref": 0.7803779479,
+          "brier_cand": 0.0312530622,
+          "brier_ref": 0.0302798785,
+          "razon_mae_cand": 0.857434465,
+          "razon_mae_ref": 0.9072855436,
+          "razon_rmse_cand": 0.8670750613,
+          "razon_rmse_ref": 0.8993749851
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2015",
+          "positivos_cand": 557.0,
+          "f1_050_cand": 0.7847358121,
+          "f1_050_ref": 0.7724550898,
+          "recall_050_cand": 0.7199281867,
+          "recall_050_ref": 0.6947935368,
+          "precision_050_cand": 0.8623655914,
+          "precision_050_ref": 0.8651685393,
+          "auprc_cand": 0.8862745199,
+          "auprc_ref": 0.8845363565,
+          "brier_cand": 0.0504381632,
+          "brier_ref": 0.0509985696,
+          "razon_mae_cand": 0.8596492608,
+          "razon_mae_ref": 0.8888107385,
+          "razon_rmse_cand": 0.9133858346,
+          "razon_rmse_ref": 0.9322233923
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2016",
+          "positivos_cand": 395.0,
+          "f1_050_cand": 0.6521264995,
+          "f1_050_ref": 0.6573426573,
+          "recall_050_cand": 0.7569620253,
+          "recall_050_ref": 0.7139240506,
+          "precision_050_cand": 0.5727969349,
+          "precision_050_ref": 0.6090712743,
+          "auprc_cand": 0.7501622112,
+          "auprc_ref": 0.7566474016,
+          "brier_cand": 0.0639296311,
+          "brier_ref": 0.0593525084,
+          "razon_mae_cand": 1.0671507135,
+          "razon_mae_ref": 1.0297648424,
+          "razon_rmse_cand": 1.0292126102,
+          "razon_rmse_ref": 0.9945530082
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2022",
+          "positivos_cand": 431.0,
+          "f1_050_cand": 0.706155633,
+          "f1_050_ref": 0.7119047619,
+          "recall_050_cand": 0.7053364269,
+          "recall_050_ref": 0.6960556845,
+          "precision_050_cand": 0.7069767442,
+          "precision_050_ref": 0.7281553398,
+          "auprc_cand": 0.7785782099,
+          "auprc_ref": 0.7807974426,
+          "brier_cand": 0.054357097,
+          "brier_ref": 0.053690477,
+          "razon_mae_cand": 0.9596317001,
+          "razon_mae_ref": 0.9456811358,
+          "razon_rmse_cand": 0.9829351371,
+          "razon_rmse_ref": 0.9647198223
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2023",
+          "positivos_cand": 1039.0,
+          "f1_050_cand": 0.8595533499,
+          "f1_050_ref": 0.8574277168,
+          "recall_050_cand": 0.833493744,
+          "recall_050_ref": 0.8277189605,
+          "precision_050_cand": 0.887295082,
+          "precision_050_ref": 0.8885448916,
+          "auprc_cand": 0.9483767701,
+          "auprc_ref": 0.947454161,
+          "brier_cand": 0.0623946586,
+          "brier_ref": 0.0618235643,
+          "razon_mae_cand": 0.7893873403,
+          "razon_mae_ref": 0.8076301695,
+          "razon_rmse_cand": 0.8585116048,
+          "razon_rmse_ref": 0.8925006174
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2024",
+          "positivos_cand": 857.0,
+          "f1_050_cand": 0.7902173913,
+          "f1_050_ref": 0.7993439038,
+          "recall_050_cand": 0.8483080513,
+          "recall_050_ref": 0.8529754959,
+          "precision_050_cand": 0.7395727365,
+          "precision_050_ref": 0.7520576132,
+          "auprc_cand": 0.8897552157,
+          "auprc_ref": 0.8934752255,
+          "brier_cand": 0.0763036631,
+          "brier_ref": 0.0736338808,
+          "razon_mae_cand": 1.1276721094,
+          "razon_mae_ref": 1.1355674606,
+          "razon_rmse_cand": 1.2038015441,
+          "razon_rmse_ref": 1.3160637985
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2010",
+          "positivos_cand": 234.0,
+          "f1_050_cand": 0.672985782,
+          "f1_050_ref": 0.630806846,
+          "recall_050_cand": 0.6068376068,
+          "recall_050_ref": 0.5512820513,
+          "precision_050_cand": 0.7553191489,
+          "precision_050_ref": 0.7318435754,
+          "auprc_cand": 0.7214311324,
+          "auprc_ref": 0.7057627557,
+          "brier_cand": 0.0364870716,
+          "brier_ref": 0.0360397261,
+          "razon_mae_cand": 0.8284522158,
+          "razon_mae_ref": 0.8908896594,
+          "razon_rmse_cand": 0.861572414,
+          "razon_rmse_ref": 0.8899491789
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2015",
+          "positivos_cand": 557.0,
+          "f1_050_cand": 0.7082035306,
+          "f1_050_ref": 0.6485875706,
+          "recall_050_cand": 0.6122082585,
+          "recall_050_ref": 0.5152603232,
+          "precision_050_cand": 0.8399014778,
+          "precision_050_ref": 0.875,
+          "auprc_cand": 0.8443358498,
+          "auprc_ref": 0.839134947,
+          "brier_cand": 0.0601419851,
+          "brier_ref": 0.0641725064,
+          "razon_mae_cand": 0.7854144134,
+          "razon_mae_ref": 0.8283111451,
+          "razon_rmse_cand": 0.8795360182,
+          "razon_rmse_ref": 0.9136438695
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2016",
+          "positivos_cand": 395.0,
+          "f1_050_cand": 0.6087888532,
+          "f1_050_ref": 0.6272617612,
+          "recall_050_cand": 0.7189873418,
+          "recall_050_ref": 0.6582278481,
+          "precision_050_cand": 0.5278810409,
+          "precision_050_ref": 0.599078341,
+          "auprc_cand": 0.6945685926,
+          "auprc_ref": 0.7093031933,
+          "brier_cand": 0.0747536316,
+          "brier_ref": 0.0654014021,
+          "razon_mae_cand": 1.1187024313,
+          "razon_mae_ref": 1.0418160433,
+          "razon_rmse_cand": 1.079509656,
+          "razon_rmse_ref": 1.015981304
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2022",
+          "positivos_cand": 431.0,
+          "f1_050_cand": 0.6833333333,
+          "f1_050_ref": 0.7043269231,
+          "recall_050_cand": 0.6658932715,
+          "recall_050_ref": 0.6821345708,
+          "precision_050_cand": 0.7017114914,
+          "precision_050_ref": 0.7277227723,
+          "auprc_cand": 0.7597443083,
+          "auprc_ref": 0.7710384001,
+          "brier_cand": 0.057900712,
+          "brier_ref": 0.0561195639,
+          "razon_mae_cand": 0.958547301,
+          "razon_mae_ref": 0.9272623379,
+          "razon_rmse_cand": 1.0064085359,
+          "razon_rmse_ref": 0.9899635779
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2023",
+          "positivos_cand": 1039.0,
+          "f1_050_cand": 0.8371154816,
+          "f1_050_ref": 0.8350202429,
+          "recall_050_cand": 0.7988450433,
+          "recall_050_ref": 0.7940327238,
+          "precision_050_cand": 0.8792372881,
+          "precision_050_ref": 0.8803418803,
+          "auprc_cand": 0.9311218596,
+          "auprc_ref": 0.9303011335,
+          "brier_cand": 0.0732268204,
+          "brier_ref": 0.0729638951,
+          "razon_mae_cand": 0.7336433767,
+          "razon_mae_ref": 0.7628219587,
+          "razon_rmse_cand": 0.8193709709,
+          "razon_rmse_ref": 0.8522901956
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2024",
+          "positivos_cand": 857.0,
+          "f1_050_cand": 0.7732620321,
+          "f1_050_ref": 0.7878140032,
+          "recall_050_cand": 0.8436406068,
+          "recall_050_ref": 0.8634772462,
+          "precision_050_cand": 0.713721619,
+          "precision_050_ref": 0.7252208047,
+          "auprc_cand": 0.8646725723,
+          "auprc_ref": 0.8762317655,
+          "brier_cand": 0.084760151,
+          "brier_ref": 0.0794687943,
+          "razon_mae_cand": 1.2510866666,
+          "razon_mae_ref": 1.2379606295,
+          "razon_rmse_cand": 1.3550397789,
+          "razon_rmse_ref": 1.4854975313
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2010",
+          "positivos_cand": 234.0,
+          "f1_050_cand": 0.5224719101,
+          "f1_050_ref": 0.4759206799,
+          "recall_050_cand": 0.3974358974,
+          "recall_050_ref": 0.358974359,
+          "precision_050_cand": 0.762295082,
+          "precision_050_ref": 0.7142857143,
+          "auprc_cand": 0.6398034045,
+          "auprc_ref": 0.5996789421,
+          "brier_cand": 0.0411503136,
+          "brier_ref": 0.0419443863,
+          "razon_mae_cand": 0.8141516519,
+          "razon_mae_ref": 0.8757655827,
+          "razon_rmse_cand": 0.8425601858,
+          "razon_rmse_ref": 0.8588318507
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2015",
+          "positivos_cand": 557.0,
+          "f1_050_cand": 0.6480446927,
+          "f1_050_ref": 0.4795783926,
+          "recall_050_cand": 0.5206463196,
+          "recall_050_ref": 0.3267504488,
+          "precision_050_cand": 0.8579881657,
+          "precision_050_ref": 0.900990099,
+          "auprc_cand": 0.8212686563,
+          "auprc_ref": 0.81087203,
+          "brier_cand": 0.0667411099,
+          "brier_ref": 0.0747343497,
+          "razon_mae_cand": 0.744415354,
+          "razon_mae_ref": 0.7930437066,
+          "razon_rmse_cand": 0.8340537225,
+          "razon_rmse_ref": 0.8802137133
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2016",
+          "positivos_cand": 395.0,
+          "f1_050_cand": 0.5774058577,
+          "f1_050_ref": 0.5903771131,
+          "recall_050_cand": 0.6987341772,
+          "recall_050_ref": 0.5721518987,
+          "precision_050_cand": 0.4919786096,
+          "precision_050_ref": 0.6081081081,
+          "auprc_cand": 0.6349668666,
+          "auprc_ref": 0.6595771548,
+          "brier_cand": 0.0833885501,
+          "brier_ref": 0.069519368,
+          "razon_mae_cand": 1.1572382554,
+          "razon_mae_ref": 1.0622939763,
+          "razon_rmse_cand": 1.1096938796,
+          "razon_rmse_ref": 1.033156116
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2022",
+          "positivos_cand": 431.0,
+          "f1_050_cand": 0.6568986569,
+          "f1_050_ref": 0.652446675,
+          "recall_050_cand": 0.6241299304,
+          "recall_050_ref": 0.5986078886,
+          "precision_050_cand": 0.6932989691,
+          "precision_050_ref": 0.717877095,
+          "auprc_cand": 0.7248780068,
+          "auprc_ref": 0.7425043418,
+          "brier_cand": 0.0619475929,
+          "brier_ref": 0.0596066294,
+          "razon_mae_cand": 0.9565338292,
+          "razon_mae_ref": 0.9291900652,
+          "razon_rmse_cand": 1.037631707,
+          "razon_rmse_ref": 1.038462033
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2023",
+          "positivos_cand": 1039.0,
+          "f1_050_cand": 0.8221302999,
+          "f1_050_ref": 0.8108108108,
+          "recall_050_cand": 0.7651588065,
+          "recall_050_ref": 0.7362848893,
+          "precision_050_cand": 0.8882681564,
+          "precision_050_ref": 0.9011764706,
+          "auprc_cand": 0.9235153488,
+          "auprc_ref": 0.9220169681,
+          "brier_cand": 0.0796230465,
+          "brier_ref": 0.08091083,
+          "razon_mae_cand": 0.7009664918,
+          "razon_mae_ref": 0.7330006202,
+          "razon_rmse_cand": 0.7869260897,
+          "razon_rmse_ref": 0.8145301625
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2024",
+          "positivos_cand": 857.0,
+          "f1_050_cand": 0.7458533975,
+          "f1_050_ref": 0.7610333692,
+          "recall_050_cand": 0.813302217,
+          "recall_050_ref": 0.8238039673,
+          "precision_050_cand": 0.6887351779,
+          "precision_050_ref": 0.7062937063,
+          "auprc_cand": 0.8210178641,
+          "auprc_ref": 0.8400518778,
+          "brier_cand": 0.0963522464,
+          "brier_ref": 0.0887879368,
+          "razon_mae_cand": 1.3952460618,
+          "razon_mae_ref": 1.3618692996,
+          "razon_rmse_cand": 1.5063185916,
+          "razon_rmse_ref": 1.6895243546
+        }
+      ]
+    },
+    "lectura_regla_mae": {
+      "veredicto": [
+        {
+          "horizonte": 2,
+          "veredicto": "empate",
+          "vetos": "brier",
+          "vetos_contra_referencia": "razon_rmse, auprc",
+          "a_favor_razon_mae": 3,
+          "a_favor_razon_rmse": 3,
+          "a_favor_f1_050": 1,
+          "a_favor_auprc": 3,
+          "a_favor_brier": 1,
+          "en_contra_razon_mae": 2,
+          "en_contra_razon_rmse": 2,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 4,
+          "a_favor_antelacion": 2,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 3,
+          "veredicto": "empate",
+          "vetos": "brier",
+          "vetos_contra_referencia": "razon_rmse, auprc",
+          "a_favor_razon_mae": 3,
+          "a_favor_razon_rmse": 3,
+          "a_favor_f1_050": 2,
+          "a_favor_auprc": 3,
+          "a_favor_brier": 1,
+          "en_contra_razon_mae": 2,
+          "en_contra_razon_rmse": 1,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 3,
+          "a_favor_antelacion": 3,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 4,
+          "veredicto": "empate",
+          "vetos": null,
+          "vetos_contra_referencia": "razon_rmse, f1_050, auprc, brier, antelacion",
+          "a_favor_razon_mae": 3,
+          "a_favor_razon_rmse": 3,
+          "a_favor_f1_050": 3,
+          "a_favor_auprc": 3,
+          "a_favor_brier": 3,
+          "en_contra_razon_mae": 2,
+          "en_contra_razon_rmse": 1,
+          "en_contra_f1_050": 1,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 2,
+          "a_favor_antelacion": 4,
+          "en_contra_antelacion": 0
+        }
+      ],
+      "antelacion": [
+        {
+          "horizonte": 2,
+          "episodios": 193,
+          "diferencia": 0.0569948187,
+          "ic95_inferior": 0.0207253886,
+          "ic95_superior": 0.0984455959,
+          "diferencia_temporada_2010": 0.0333333333,
+          "diferencia_temporada_2015": 0.0294117647,
+          "diferencia_temporada_2016": 0.1470588235,
+          "diferencia_temporada_2022": 0.0,
+          "diferencia_temporada_2023": 0.0701754386,
+          "episodios_temporada_2010": 30,
+          "episodios_temporada_2015": 34,
+          "episodios_temporada_2016": 34,
+          "episodios_temporada_2022": 38,
+          "episodios_temporada_2023": 57
+        },
+        {
+          "horizonte": 3,
+          "episodios": 193,
+          "diferencia": 0.0777202073,
+          "ic95_inferior": 0.0414507772,
+          "ic95_superior": 0.1191709845,
+          "diferencia_temporada_2010": 0.0333333333,
+          "diferencia_temporada_2015": 0.0588235294,
+          "diferencia_temporada_2016": 0.2352941176,
+          "diferencia_temporada_2022": 0.0263157895,
+          "diferencia_temporada_2023": 0.0526315789,
+          "episodios_temporada_2010": 30,
+          "episodios_temporada_2015": 34,
+          "episodios_temporada_2016": 34,
+          "episodios_temporada_2022": 38,
+          "episodios_temporada_2023": 57
+        },
+        {
+          "horizonte": 4,
+          "episodios": 193,
+          "diferencia": 0.1191709845,
+          "ic95_inferior": 0.0725388601,
+          "ic95_superior": 0.1658031088,
+          "diferencia_temporada_2010": 0.0,
+          "diferencia_temporada_2015": 0.0882352941,
+          "diferencia_temporada_2016": 0.3823529412,
+          "diferencia_temporada_2022": 0.0526315789,
+          "diferencia_temporada_2023": 0.0877192982,
+          "episodios_temporada_2010": 30,
+          "episodios_temporada_2015": 34,
+          "episodios_temporada_2016": 34,
+          "episodios_temporada_2022": 38,
+          "episodios_temporada_2023": 57
+        }
+      ],
+      "lectura_sin_2010": [
+        {
+          "horizonte": 2,
+          "veredicto": "empate",
+          "vetos": "brier",
+          "vetos_contra_referencia": null,
+          "a_favor_razon_mae": 2,
+          "a_favor_razon_rmse": 2,
+          "a_favor_f1_050": 1,
+          "a_favor_auprc": 2,
+          "a_favor_brier": 1,
+          "en_contra_razon_mae": 2,
+          "en_contra_razon_rmse": 2,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 3,
+          "a_favor_antelacion": 2,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 3,
+          "veredicto": "empate",
+          "vetos": null,
+          "vetos_contra_referencia": "antelacion",
+          "a_favor_razon_mae": 2,
+          "a_favor_razon_rmse": 2,
+          "a_favor_f1_050": 1,
+          "a_favor_auprc": 2,
+          "a_favor_brier": 1,
+          "en_contra_razon_mae": 2,
+          "en_contra_razon_rmse": 1,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 2,
+          "a_favor_antelacion": 3,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 4,
+          "veredicto": "empate",
+          "vetos": null,
+          "vetos_contra_referencia": "antelacion",
+          "a_favor_razon_mae": 2,
+          "a_favor_razon_rmse": 2,
+          "a_favor_f1_050": 2,
+          "a_favor_auprc": 2,
+          "a_favor_brier": 2,
+          "en_contra_razon_mae": 2,
+          "en_contra_razon_rmse": 1,
+          "en_contra_f1_050": 1,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 2,
+          "a_favor_antelacion": 4,
+          "en_contra_antelacion": 0
+        }
+      ],
+      "metricas": [
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2010",
+          "positivos_cand": 234.0,
+          "razon_mae_cand": 0.857434465,
+          "razon_mae_ref": 0.9072855436,
+          "razon_rmse_cand": 0.8670750613,
+          "razon_rmse_ref": 0.8993749851,
+          "mae_cand": 1.4299875974,
+          "mae_ref": 1.5131268075,
+          "rmse_cand": 11.0629480391,
+          "rmse_ref": 11.475060432,
+          "f1_050_cand": 0.7325842697,
+          "f1_050_ref": 0.7224669604,
+          "auprc_cand": 0.7877063264,
+          "auprc_ref": 0.7803779479,
+          "brier_cand": 0.0312530622,
+          "brier_ref": 0.0302798785
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2015",
+          "positivos_cand": 557.0,
+          "razon_mae_cand": 0.8596492608,
+          "razon_mae_ref": 0.8888107385,
+          "razon_rmse_cand": 0.9133858346,
+          "razon_rmse_ref": 0.9322233923,
+          "mae_cand": 2.5569886722,
+          "mae_ref": 2.6437281967,
+          "rmse_cand": 11.1052454673,
+          "rmse_ref": 11.3342786916,
+          "f1_050_cand": 0.7847358121,
+          "f1_050_ref": 0.7724550898,
+          "auprc_cand": 0.8862745199,
+          "auprc_ref": 0.8845363565,
+          "brier_cand": 0.0504381632,
+          "brier_ref": 0.0509985696
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2016",
+          "positivos_cand": 395.0,
+          "razon_mae_cand": 1.0671507135,
+          "razon_mae_ref": 1.0297648424,
+          "razon_rmse_cand": 1.0292126102,
+          "razon_rmse_ref": 0.9945530082,
+          "mae_cand": 1.6073562966,
+          "mae_ref": 1.5510452109,
+          "rmse_cand": 4.9368508401,
+          "rmse_ref": 4.7705982275,
+          "f1_050_cand": 0.6521264995,
+          "f1_050_ref": 0.6573426573,
+          "auprc_cand": 0.7501622112,
+          "auprc_ref": 0.7566474016,
+          "brier_cand": 0.0639296311,
+          "brier_ref": 0.0593525084
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2022",
+          "positivos_cand": 431.0,
+          "razon_mae_cand": 0.9596317001,
+          "razon_mae_ref": 0.9456811358,
+          "razon_rmse_cand": 0.9829351371,
+          "razon_rmse_ref": 0.9647198223,
+          "mae_cand": 1.8800831709,
+          "mae_ref": 1.8527516217,
+          "rmse_cand": 5.9328389284,
+          "rmse_ref": 5.8228942076,
+          "f1_050_cand": 0.706155633,
+          "f1_050_ref": 0.7119047619,
+          "auprc_cand": 0.7785782099,
+          "auprc_ref": 0.7807974426,
+          "brier_cand": 0.054357097,
+          "brier_ref": 0.053690477
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2023",
+          "positivos_cand": 1039.0,
+          "razon_mae_cand": 0.7893873403,
+          "razon_mae_ref": 0.8076301695,
+          "razon_rmse_cand": 0.8585116048,
+          "razon_rmse_ref": 0.8925006174,
+          "mae_cand": 8.554576594,
+          "mae_ref": 8.7522738099,
+          "rmse_cand": 42.474038648,
+          "rmse_ref": 44.1556124681,
+          "f1_050_cand": 0.8595533499,
+          "f1_050_ref": 0.8574277168,
+          "auprc_cand": 0.9483767701,
+          "auprc_ref": 0.947454161,
+          "brier_cand": 0.0623946586,
+          "brier_ref": 0.0618235643
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2024",
+          "positivos_cand": 857.0,
+          "razon_mae_cand": 1.1276721094,
+          "razon_mae_ref": 1.1355674606,
+          "razon_rmse_cand": 1.2038015441,
+          "razon_rmse_ref": 1.3160637985,
+          "mae_cand": 5.5889831881,
+          "mae_ref": 5.6281142309,
+          "rmse_cand": 18.9680895286,
+          "rmse_ref": 20.736986157,
+          "f1_050_cand": 0.7902173913,
+          "f1_050_ref": 0.7993439038,
+          "auprc_cand": 0.8897552157,
+          "auprc_ref": 0.8934752255,
+          "brier_cand": 0.0763036631,
+          "brier_ref": 0.0736338808
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2010",
+          "positivos_cand": 234.0,
+          "razon_mae_cand": 0.8284522158,
+          "razon_mae_ref": 0.8908896594,
+          "razon_rmse_cand": 0.861572414,
+          "razon_rmse_ref": 0.8899491789,
+          "mae_cand": 1.8338696683,
+          "mae_ref": 1.9720817846,
+          "rmse_cand": 14.221374002,
+          "rmse_ref": 14.6897694391,
+          "f1_050_cand": 0.672985782,
+          "f1_050_ref": 0.630806846,
+          "auprc_cand": 0.7214311324,
+          "auprc_ref": 0.7057627557,
+          "brier_cand": 0.0364870716,
+          "brier_ref": 0.0360397261
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2015",
+          "positivos_cand": 557.0,
+          "razon_mae_cand": 0.7854144134,
+          "razon_mae_ref": 0.8283111451,
+          "razon_rmse_cand": 0.8795360182,
+          "razon_rmse_ref": 0.9136438695,
+          "mae_cand": 2.9506047427,
+          "mae_ref": 3.1117569928,
+          "rmse_cand": 13.0885201622,
+          "rmse_ref": 13.5960847083,
+          "f1_050_cand": 0.7082035306,
+          "f1_050_ref": 0.6485875706,
+          "auprc_cand": 0.8443358498,
+          "auprc_ref": 0.839134947,
+          "brier_cand": 0.0601419851,
+          "brier_ref": 0.0641725064
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2016",
+          "positivos_cand": 395.0,
+          "razon_mae_cand": 1.1187024313,
+          "razon_mae_ref": 1.0418160433,
+          "razon_rmse_cand": 1.079509656,
+          "razon_rmse_ref": 1.015981304,
+          "mae_cand": 1.9991013862,
+          "mae_ref": 1.8617067756,
+          "rmse_cand": 6.0899505408,
+          "rmse_ref": 5.7315614154,
+          "f1_050_cand": 0.6087888532,
+          "f1_050_ref": 0.6272617612,
+          "auprc_cand": 0.6945685926,
+          "auprc_ref": 0.7093031933,
+          "brier_cand": 0.0747536316,
+          "brier_ref": 0.0654014021
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2022",
+          "positivos_cand": 431.0,
+          "razon_mae_cand": 0.958547301,
+          "razon_mae_ref": 0.9272623379,
+          "razon_rmse_cand": 1.0064085359,
+          "razon_rmse_ref": 0.9899635779,
+          "mae_cand": 2.2877517979,
+          "mae_ref": 2.2130844024,
+          "rmse_cand": 7.3771232001,
+          "rmse_ref": 7.2565792291,
+          "f1_050_cand": 0.6833333333,
+          "f1_050_ref": 0.7043269231,
+          "auprc_cand": 0.7597443083,
+          "auprc_ref": 0.7710384001,
+          "brier_cand": 0.057900712,
+          "brier_ref": 0.0561195639
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2023",
+          "positivos_cand": 1039.0,
+          "razon_mae_cand": 0.7336433767,
+          "razon_mae_ref": 0.7628219587,
+          "razon_rmse_cand": 0.8193709709,
+          "razon_rmse_ref": 0.8522901956,
+          "mae_cand": 10.7463560889,
+          "mae_ref": 11.1737618862,
+          "rmse_cand": 54.9384142385,
+          "rmse_ref": 57.1456318042,
+          "f1_050_cand": 0.8371154816,
+          "f1_050_ref": 0.8350202429,
+          "auprc_cand": 0.9311218596,
+          "auprc_ref": 0.9303011335,
+          "brier_cand": 0.0732268204,
+          "brier_ref": 0.0729638951
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2024",
+          "positivos_cand": 857.0,
+          "razon_mae_cand": 1.2510866666,
+          "razon_mae_ref": 1.2379606295,
+          "razon_rmse_cand": 1.3550397789,
+          "razon_rmse_ref": 1.4854975313,
+          "mae_cand": 7.9791938674,
+          "mae_ref": 7.8954784885,
+          "rmse_cand": 27.9680458213,
+          "rmse_ref": 30.6606962162,
+          "f1_050_cand": 0.7732620321,
+          "f1_050_ref": 0.7878140032,
+          "auprc_cand": 0.8646725723,
+          "auprc_ref": 0.8762317655,
+          "brier_cand": 0.084760151,
+          "brier_ref": 0.0794687943
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2010",
+          "positivos_cand": 234.0,
+          "razon_mae_cand": 0.8141516519,
+          "razon_mae_ref": 0.8757655827,
+          "razon_rmse_cand": 0.8425601858,
+          "razon_rmse_ref": 0.8588318507,
+          "mae_cand": 2.1447355943,
+          "mae_ref": 2.3070463752,
+          "rmse_cand": 16.1095847058,
+          "rmse_ref": 16.4206957306,
+          "f1_050_cand": 0.5224719101,
+          "f1_050_ref": 0.4759206799,
+          "auprc_cand": 0.6398034045,
+          "auprc_ref": 0.5996789421,
+          "brier_cand": 0.0411503136,
+          "brier_ref": 0.0419443863
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2015",
+          "positivos_cand": 557.0,
+          "razon_mae_cand": 0.744415354,
+          "razon_mae_ref": 0.7930437066,
+          "razon_rmse_cand": 0.8340537225,
+          "razon_rmse_ref": 0.8802137133,
+          "mae_cand": 3.2536028986,
+          "mae_ref": 3.4661419712,
+          "rmse_cand": 14.5874830204,
+          "rmse_ref": 15.3948148083,
+          "f1_050_cand": 0.6480446927,
+          "f1_050_ref": 0.4795783926,
+          "auprc_cand": 0.8212686563,
+          "auprc_ref": 0.81087203,
+          "brier_cand": 0.0667411099,
+          "brier_ref": 0.0747343497
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2016",
+          "positivos_cand": 395.0,
+          "razon_mae_cand": 1.1572382554,
+          "razon_mae_ref": 1.0622939763,
+          "razon_rmse_cand": 1.1096938796,
+          "razon_rmse_ref": 1.033156116,
+          "mae_cand": 2.4168475872,
+          "mae_ref": 2.2185601121,
+          "rmse_cand": 7.2813290928,
+          "rmse_ref": 6.779121543,
+          "f1_050_cand": 0.5774058577,
+          "f1_050_ref": 0.5903771131,
+          "auprc_cand": 0.6349668666,
+          "auprc_ref": 0.6595771548,
+          "brier_cand": 0.0833885501,
+          "brier_ref": 0.069519368
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2022",
+          "positivos_cand": 431.0,
+          "razon_mae_cand": 0.9565338292,
+          "razon_mae_ref": 0.9291900652,
+          "razon_rmse_cand": 1.037631707,
+          "razon_rmse_ref": 1.038462033,
+          "mae_cand": 2.7221594387,
+          "mae_ref": 2.6443429697,
+          "rmse_cand": 8.8569196188,
+          "rmse_ref": 8.8640070377,
+          "f1_050_cand": 0.6568986569,
+          "f1_050_ref": 0.652446675,
+          "auprc_cand": 0.7248780068,
+          "auprc_ref": 0.7425043418,
+          "brier_cand": 0.0619475929,
+          "brier_ref": 0.0596066294
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2023",
+          "positivos_cand": 1039.0,
+          "razon_mae_cand": 0.7009664918,
+          "razon_mae_ref": 0.7330006202,
+          "razon_rmse_cand": 0.7869260897,
+          "razon_rmse_ref": 0.8145301625,
+          "mae_cand": 12.3934193935,
+          "mae_ref": 12.9597979474,
+          "rmse_cand": 63.0994018451,
+          "rmse_ref": 65.3128250674,
+          "f1_050_cand": 0.8221302999,
+          "f1_050_ref": 0.8108108108,
+          "auprc_cand": 0.9235153488,
+          "auprc_ref": 0.9220169681,
+          "brier_cand": 0.0796230465,
+          "brier_ref": 0.08091083
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2024",
+          "positivos_cand": 857.0,
+          "razon_mae_cand": 1.3952460618,
+          "razon_mae_ref": 1.3618692996,
+          "razon_rmse_cand": 1.5063185916,
+          "razon_rmse_ref": 1.6895243546,
+          "mae_cand": 10.9493792275,
+          "mae_ref": 10.6874506423,
+          "rmse_cand": 38.3432719551,
+          "rmse_ref": 43.0067664075,
+          "f1_050_cand": 0.7458533975,
+          "f1_050_ref": 0.7610333692,
+          "auprc_cand": 0.8210178641,
+          "auprc_ref": 0.8400518778,
+          "brier_cand": 0.0963522464,
+          "brier_ref": 0.0887879368
+        }
+      ],
+      "umbral_empate": [
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2010",
+          "razon_mae": 0.0098047796,
+          "razon_rmse": 0.0283940573,
+          "f1_050": 0.0160697843,
+          "auprc": 0.0012601206,
+          "brier": 0.0001442965
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2015",
+          "razon_mae": 0.0016470106,
+          "razon_rmse": 0.00270347,
+          "f1_050": 0.0078095238,
+          "auprc": 0.0004611569,
+          "brier": 0.0001447325
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2016",
+          "razon_mae": 0.0054593862,
+          "razon_rmse": 0.0039405027,
+          "f1_050": 0.0030962441,
+          "auprc": 0.001200568,
+          "brier": 0.000347522
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2022",
+          "razon_mae": 0.0045177442,
+          "razon_rmse": 0.0105366615,
+          "f1_050": 0.0028897266,
+          "auprc": 0.0014896244,
+          "brier": 0.0001524295
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2023",
+          "razon_mae": 0.0035594284,
+          "razon_rmse": 0.0047568499,
+          "f1_050": 0.003547874,
+          "auprc": 0.0004648968,
+          "brier": 0.0003155634
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2010",
+          "razon_mae": 0.0120839011,
+          "razon_rmse": 0.0224760613,
+          "f1_050": 0.011764289,
+          "auprc": 0.0030707756,
+          "brier": 0.0001931916
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2015",
+          "razon_mae": 0.002035586,
+          "razon_rmse": 0.0082300523,
+          "f1_050": 0.0083567731,
+          "auprc": 0.0013248841,
+          "brier": 0.0002046329
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2016",
+          "razon_mae": 0.0057285969,
+          "razon_rmse": 0.0108423004,
+          "f1_050": 0.0034753534,
+          "auprc": 0.0016844197,
+          "brier": 0.0006061595
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2022",
+          "razon_mae": 0.0099257527,
+          "razon_rmse": 0.0250530885,
+          "f1_050": 0.0087016877,
+          "auprc": 0.0016607587,
+          "brier": 0.0002070689
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2023",
+          "razon_mae": 0.0046412075,
+          "razon_rmse": 0.0017890277,
+          "f1_050": 0.0037887699,
+          "auprc": 0.0005290379,
+          "brier": 0.0003208995
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2010",
+          "razon_mae": 0.0093473834,
+          "razon_rmse": 0.0119469605,
+          "f1_050": 0.0331412104,
+          "auprc": 0.0051509483,
+          "brier": 0.0002159444
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2015",
+          "razon_mae": 0.0047190719,
+          "razon_rmse": 0.0085815564,
+          "f1_050": 0.010158143,
+          "auprc": 0.0020245901,
+          "brier": 0.0002707877
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2016",
+          "razon_mae": 0.0042775877,
+          "razon_rmse": 0.0098438124,
+          "f1_050": 0.0127080452,
+          "auprc": 0.0012727375,
+          "brier": 0.00064452
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2022",
+          "razon_mae": 0.0133339027,
+          "razon_rmse": 0.0404703056,
+          "f1_050": 0.0135616292,
+          "auprc": 0.0025391628,
+          "brier": 0.0002557357
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2023",
+          "razon_mae": 0.0110909504,
+          "razon_rmse": 0.0065541517,
+          "f1_050": 0.0012883654,
+          "auprc": 0.0006247897,
+          "brier": 0.0003432525
+        }
+      ]
+    },
+    "lectura_regla_mae_mu_sin_mezclar": {
+      "veredicto": [
+        {
+          "horizonte": 2,
+          "veredicto": "empate",
+          "vetos": "razon_rmse, brier",
+          "vetos_contra_referencia": "auprc",
+          "a_favor_razon_mae": 1,
+          "a_favor_razon_rmse": 1,
+          "a_favor_f1_050": 1,
+          "a_favor_auprc": 3,
+          "a_favor_brier": 1,
+          "en_contra_razon_mae": 3,
+          "en_contra_razon_rmse": 3,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 4,
+          "a_favor_antelacion": 2,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 3,
+          "veredicto": "empate",
+          "vetos": "razon_rmse, brier",
+          "vetos_contra_referencia": "auprc",
+          "a_favor_razon_mae": 2,
+          "a_favor_razon_rmse": 1,
+          "a_favor_f1_050": 2,
+          "a_favor_auprc": 3,
+          "a_favor_brier": 1,
+          "en_contra_razon_mae": 3,
+          "en_contra_razon_rmse": 3,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 3,
+          "a_favor_antelacion": 3,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 4,
+          "veredicto": "empate",
+          "vetos": "razon_rmse",
+          "vetos_contra_referencia": "f1_050, auprc, brier, antelacion",
+          "a_favor_razon_mae": 2,
+          "a_favor_razon_rmse": 1,
+          "a_favor_f1_050": 3,
+          "a_favor_auprc": 3,
+          "a_favor_brier": 3,
+          "en_contra_razon_mae": 3,
+          "en_contra_razon_rmse": 3,
+          "en_contra_f1_050": 1,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 2,
+          "a_favor_antelacion": 4,
+          "en_contra_antelacion": 0
+        }
+      ],
+      "antelacion": [
+        {
+          "horizonte": 2,
+          "episodios": 193,
+          "diferencia": 0.0569948187,
+          "ic95_inferior": 0.0207253886,
+          "ic95_superior": 0.0984455959,
+          "diferencia_temporada_2010": 0.0333333333,
+          "diferencia_temporada_2015": 0.0294117647,
+          "diferencia_temporada_2016": 0.1470588235,
+          "diferencia_temporada_2022": 0.0,
+          "diferencia_temporada_2023": 0.0701754386,
+          "episodios_temporada_2010": 30,
+          "episodios_temporada_2015": 34,
+          "episodios_temporada_2016": 34,
+          "episodios_temporada_2022": 38,
+          "episodios_temporada_2023": 57
+        },
+        {
+          "horizonte": 3,
+          "episodios": 193,
+          "diferencia": 0.0777202073,
+          "ic95_inferior": 0.0414507772,
+          "ic95_superior": 0.1191709845,
+          "diferencia_temporada_2010": 0.0333333333,
+          "diferencia_temporada_2015": 0.0588235294,
+          "diferencia_temporada_2016": 0.2352941176,
+          "diferencia_temporada_2022": 0.0263157895,
+          "diferencia_temporada_2023": 0.0526315789,
+          "episodios_temporada_2010": 30,
+          "episodios_temporada_2015": 34,
+          "episodios_temporada_2016": 34,
+          "episodios_temporada_2022": 38,
+          "episodios_temporada_2023": 57
+        },
+        {
+          "horizonte": 4,
+          "episodios": 193,
+          "diferencia": 0.1191709845,
+          "ic95_inferior": 0.0725388601,
+          "ic95_superior": 0.1658031088,
+          "diferencia_temporada_2010": 0.0,
+          "diferencia_temporada_2015": 0.0882352941,
+          "diferencia_temporada_2016": 0.3823529412,
+          "diferencia_temporada_2022": 0.0526315789,
+          "diferencia_temporada_2023": 0.0877192982,
+          "episodios_temporada_2010": 30,
+          "episodios_temporada_2015": 34,
+          "episodios_temporada_2016": 34,
+          "episodios_temporada_2022": 38,
+          "episodios_temporada_2023": 57
+        }
+      ],
+      "lectura_sin_2010": [
+        {
+          "horizonte": 2,
+          "veredicto": "pierde",
+          "vetos": "razon_rmse, brier",
+          "vetos_contra_referencia": null,
+          "a_favor_razon_mae": 0,
+          "a_favor_razon_rmse": 1,
+          "a_favor_f1_050": 1,
+          "a_favor_auprc": 2,
+          "a_favor_brier": 1,
+          "en_contra_razon_mae": 3,
+          "en_contra_razon_rmse": 3,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 3,
+          "a_favor_antelacion": 2,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 3,
+          "veredicto": "empate",
+          "vetos": "razon_rmse",
+          "vetos_contra_referencia": "antelacion",
+          "a_favor_razon_mae": 1,
+          "a_favor_razon_rmse": 1,
+          "a_favor_f1_050": 1,
+          "a_favor_auprc": 2,
+          "a_favor_brier": 1,
+          "en_contra_razon_mae": 3,
+          "en_contra_razon_rmse": 3,
+          "en_contra_f1_050": 2,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 2,
+          "a_favor_antelacion": 3,
+          "en_contra_antelacion": 0
+        },
+        {
+          "horizonte": 4,
+          "veredicto": "empate",
+          "vetos": "razon_rmse",
+          "vetos_contra_referencia": "antelacion",
+          "a_favor_razon_mae": 1,
+          "a_favor_razon_rmse": 1,
+          "a_favor_f1_050": 2,
+          "a_favor_auprc": 2,
+          "a_favor_brier": 2,
+          "en_contra_razon_mae": 3,
+          "en_contra_razon_rmse": 3,
+          "en_contra_f1_050": 1,
+          "en_contra_auprc": 2,
+          "en_contra_brier": 2,
+          "a_favor_antelacion": 4,
+          "en_contra_antelacion": 0
+        }
+      ],
+      "metricas": [
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2010",
+          "positivos_cand": 234.0,
+          "razon_mae_cand": 0.879529975,
+          "razon_mae_ref": 0.9072855436,
+          "razon_rmse_cand": 0.8962803528,
+          "razon_rmse_ref": 0.8993749851,
+          "mae_cand": 1.4668374168,
+          "mae_ref": 1.5131268075,
+          "rmse_cand": 11.4355762424,
+          "rmse_ref": 11.475060432,
+          "f1_050_cand": 0.7325842697,
+          "f1_050_ref": 0.7224669604,
+          "auprc_cand": 0.7877063264,
+          "auprc_ref": 0.7803779479,
+          "brier_cand": 0.0312530622,
+          "brier_ref": 0.0302798785
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2015",
+          "positivos_cand": 557.0,
+          "razon_mae_cand": 0.9392055714,
+          "razon_mae_ref": 0.8888107385,
+          "razon_rmse_cand": 1.029376967,
+          "razon_rmse_ref": 0.9322233923,
+          "mae_cand": 2.7936253963,
+          "mae_ref": 2.6437281967,
+          "rmse_cand": 12.515503815,
+          "rmse_ref": 11.3342786916,
+          "f1_050_cand": 0.7847358121,
+          "f1_050_ref": 0.7724550898,
+          "auprc_cand": 0.8862745199,
+          "auprc_ref": 0.8845363565,
+          "brier_cand": 0.0504381632,
+          "brier_ref": 0.0509985696
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2016",
+          "positivos_cand": 395.0,
+          "razon_mae_cand": 1.1687257452,
+          "razon_mae_ref": 1.0297648424,
+          "razon_rmse_cand": 1.1353787056,
+          "razon_rmse_ref": 0.9945530082,
+          "mae_cand": 1.7603499316,
+          "mae_ref": 1.5510452109,
+          "rmse_cand": 5.4461005054,
+          "rmse_ref": 4.7705982275,
+          "f1_050_cand": 0.6521264995,
+          "f1_050_ref": 0.6573426573,
+          "auprc_cand": 0.7501622112,
+          "auprc_ref": 0.7566474016,
+          "brier_cand": 0.0639296311,
+          "brier_ref": 0.0593525084
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2022",
+          "positivos_cand": 431.0,
+          "razon_mae_cand": 0.9966174048,
+          "razon_mae_ref": 0.9456811358,
+          "razon_rmse_cand": 1.0374727194,
+          "razon_rmse_ref": 0.9647198223,
+          "mae_cand": 1.9525445132,
+          "mae_ref": 1.8527516217,
+          "rmse_cand": 6.2620190326,
+          "rmse_ref": 5.8228942076,
+          "f1_050_cand": 0.706155633,
+          "f1_050_ref": 0.7119047619,
+          "auprc_cand": 0.7785782099,
+          "auprc_ref": 0.7807974426,
+          "brier_cand": 0.054357097,
+          "brier_ref": 0.053690477
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2023",
+          "positivos_cand": 1039.0,
+          "razon_mae_cand": 0.8071005246,
+          "razon_mae_ref": 0.8076301695,
+          "razon_rmse_cand": 0.8792418728,
+          "razon_rmse_ref": 0.8925006174,
+          "mae_cand": 8.7465340579,
+          "mae_ref": 8.7522738099,
+          "rmse_cand": 43.4996487879,
+          "rmse_ref": 44.1556124681,
+          "f1_050_cand": 0.8595533499,
+          "f1_050_ref": 0.8574277168,
+          "auprc_cand": 0.9483767701,
+          "auprc_ref": 0.947454161,
+          "brier_cand": 0.0623946586,
+          "brier_ref": 0.0618235643
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2024",
+          "positivos_cand": 857.0,
+          "razon_mae_cand": 1.2527098861,
+          "razon_mae_ref": 1.1355674606,
+          "razon_rmse_cand": 1.3689115357,
+          "razon_rmse_ref": 1.3160637985,
+          "mae_cand": 6.208697045,
+          "mae_ref": 5.6281142309,
+          "rmse_cand": 21.569698671,
+          "rmse_ref": 20.736986157,
+          "f1_050_cand": 0.7902173913,
+          "f1_050_ref": 0.7993439038,
+          "auprc_cand": 0.8897552157,
+          "auprc_ref": 0.8934752255,
+          "brier_cand": 0.0763036631,
+          "brier_ref": 0.0736338808
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2010",
+          "positivos_cand": 234.0,
+          "razon_mae_cand": 0.8462363097,
+          "razon_mae_ref": 0.8908896594,
+          "razon_rmse_cand": 0.8717047456,
+          "razon_rmse_ref": 0.8899491789,
+          "mae_cand": 1.8732367069,
+          "mae_ref": 1.9720817846,
+          "rmse_cand": 14.3886213225,
+          "rmse_ref": 14.6897694391,
+          "f1_050_cand": 0.672985782,
+          "f1_050_ref": 0.630806846,
+          "auprc_cand": 0.7214311324,
+          "auprc_ref": 0.7057627557,
+          "brier_cand": 0.0364870716,
+          "brier_ref": 0.0360397261
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2015",
+          "positivos_cand": 557.0,
+          "razon_mae_cand": 0.8563760005,
+          "razon_mae_ref": 0.8283111451,
+          "razon_rmse_cand": 0.9798682122,
+          "razon_rmse_ref": 0.9136438695,
+          "mae_cand": 3.2171896077,
+          "mae_ref": 3.1117569928,
+          "rmse_cand": 14.5815800452,
+          "rmse_ref": 13.5960847083,
+          "f1_050_cand": 0.7082035306,
+          "f1_050_ref": 0.6485875706,
+          "auprc_cand": 0.8443358498,
+          "auprc_ref": 0.839134947,
+          "brier_cand": 0.0601419851,
+          "brier_ref": 0.0641725064
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2016",
+          "positivos_cand": 395.0,
+          "razon_mae_cand": 1.241003747,
+          "razon_mae_ref": 1.0418160433,
+          "razon_rmse_cand": 1.2305890398,
+          "razon_rmse_ref": 1.015981304,
+          "mae_cand": 2.2176516662,
+          "mae_ref": 1.8617067756,
+          "rmse_cand": 6.9422504436,
+          "rmse_ref": 5.7315614154,
+          "f1_050_cand": 0.6087888532,
+          "f1_050_ref": 0.6272617612,
+          "auprc_cand": 0.6945685926,
+          "auprc_ref": 0.7093031933,
+          "brier_cand": 0.0747536316,
+          "brier_ref": 0.0654014021
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2022",
+          "positivos_cand": 431.0,
+          "razon_mae_cand": 1.0082624393,
+          "razon_mae_ref": 0.9272623379,
+          "razon_rmse_cand": 1.0857299305,
+          "razon_rmse_ref": 0.9899635779,
+          "mae_cand": 2.406406242,
+          "mae_ref": 2.2130844024,
+          "rmse_cand": 7.9585607372,
+          "rmse_ref": 7.2565792291,
+          "f1_050_cand": 0.6833333333,
+          "f1_050_ref": 0.7043269231,
+          "auprc_cand": 0.7597443083,
+          "auprc_ref": 0.7710384001,
+          "brier_cand": 0.057900712,
+          "brier_ref": 0.0561195639
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2023",
+          "positivos_cand": 1039.0,
+          "razon_mae_cand": 0.7479175475,
+          "razon_mae_ref": 0.7628219587,
+          "razon_rmse_cand": 0.8330704568,
+          "razon_rmse_ref": 0.8522901956,
+          "mae_cand": 10.9554431294,
+          "mae_ref": 11.1737618862,
+          "rmse_cand": 55.8569579193,
+          "rmse_ref": 57.1456318042,
+          "f1_050_cand": 0.8371154816,
+          "f1_050_ref": 0.8350202429,
+          "auprc_cand": 0.9311218596,
+          "auprc_ref": 0.9303011335,
+          "brier_cand": 0.0732268204,
+          "brier_ref": 0.0729638951
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2024",
+          "positivos_cand": 857.0,
+          "razon_mae_cand": 1.413580153,
+          "razon_mae_ref": 1.2379606295,
+          "razon_rmse_cand": 1.5456885485,
+          "razon_rmse_ref": 1.4854975313,
+          "mae_cand": 9.0155465554,
+          "mae_ref": 7.8954784885,
+          "rmse_cand": 31.9030399122,
+          "rmse_ref": 30.6606962162,
+          "f1_050_cand": 0.7732620321,
+          "f1_050_ref": 0.7878140032,
+          "auprc_cand": 0.8646725723,
+          "auprc_ref": 0.8762317655,
+          "brier_cand": 0.084760151,
+          "brier_ref": 0.0794687943
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2010",
+          "positivos_cand": 234.0,
+          "razon_mae_cand": 0.8213858523,
+          "razon_mae_ref": 0.8757655827,
+          "razon_rmse_cand": 0.8469248575,
+          "razon_rmse_ref": 0.8588318507,
+          "mae_cand": 2.1637927897,
+          "mae_ref": 2.3070463752,
+          "rmse_cand": 16.1930363672,
+          "rmse_ref": 16.4206957306,
+          "f1_050_cand": 0.5224719101,
+          "f1_050_ref": 0.4759206799,
+          "auprc_cand": 0.6398034045,
+          "auprc_ref": 0.5996789421,
+          "brier_cand": 0.0411503136,
+          "brier_ref": 0.0419443863
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2015",
+          "positivos_cand": 557.0,
+          "razon_mae_cand": 0.8037730857,
+          "razon_mae_ref": 0.7930437066,
+          "razon_rmse_cand": 0.9289707527,
+          "razon_rmse_ref": 0.8802137133,
+          "mae_cand": 3.5130366766,
+          "mae_ref": 3.4661419712,
+          "rmse_cand": 16.2475686111,
+          "rmse_ref": 15.3948148083,
+          "f1_050_cand": 0.6480446927,
+          "f1_050_ref": 0.4795783926,
+          "auprc_cand": 0.8212686563,
+          "auprc_ref": 0.81087203,
+          "brier_cand": 0.0667411099,
+          "brier_ref": 0.0747343497
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2016",
+          "positivos_cand": 395.0,
+          "razon_mae_cand": 1.301442798,
+          "razon_mae_ref": 1.0622939763,
+          "razon_rmse_cand": 1.2893232988,
+          "razon_rmse_ref": 1.033156116,
+          "mae_cand": 2.7180132281,
+          "mae_ref": 2.2185601121,
+          "rmse_cand": 8.4599792952,
+          "rmse_ref": 6.779121543,
+          "f1_050_cand": 0.5774058577,
+          "f1_050_ref": 0.5903771131,
+          "auprc_cand": 0.6349668666,
+          "auprc_ref": 0.6595771548,
+          "brier_cand": 0.0833885501,
+          "brier_ref": 0.069519368
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2022",
+          "positivos_cand": 431.0,
+          "razon_mae_cand": 1.0047006214,
+          "razon_mae_ref": 0.9291900652,
+          "razon_rmse_cand": 1.1207572211,
+          "razon_rmse_ref": 1.038462033,
+          "mae_cand": 2.8592352892,
+          "mae_ref": 2.6443429697,
+          "rmse_cand": 9.5664546032,
+          "rmse_ref": 8.8640070377,
+          "f1_050_cand": 0.6568986569,
+          "f1_050_ref": 0.652446675,
+          "auprc_cand": 0.7248780068,
+          "auprc_ref": 0.7425043418,
+          "brier_cand": 0.0619475929,
+          "brier_ref": 0.0596066294
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2023",
+          "positivos_cand": 1039.0,
+          "razon_mae_cand": 0.7125127318,
+          "razon_mae_ref": 0.7330006202,
+          "razon_rmse_cand": 0.7981044536,
+          "razon_rmse_ref": 0.8145301625,
+          "mae_cand": 12.5975623828,
+          "mae_ref": 12.9597979474,
+          "rmse_cand": 63.9957351604,
+          "rmse_ref": 65.3128250674,
+          "f1_050_cand": 0.8221302999,
+          "f1_050_ref": 0.8108108108,
+          "auprc_cand": 0.9235153488,
+          "auprc_ref": 0.9220169681,
+          "brier_cand": 0.0796230465,
+          "brier_ref": 0.08091083
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2024",
+          "positivos_cand": 857.0,
+          "razon_mae_cand": 1.5429557252,
+          "razon_mae_ref": 1.3618692996,
+          "razon_rmse_cand": 1.6775146594,
+          "razon_rmse_ref": 1.6895243546,
+          "mae_cand": 12.1085504764,
+          "mae_ref": 10.6874506423,
+          "rmse_cand": 42.701060155,
+          "rmse_ref": 43.0067664075,
+          "f1_050_cand": 0.7458533975,
+          "f1_050_ref": 0.7610333692,
+          "auprc_cand": 0.8210178641,
+          "auprc_ref": 0.8400518778,
+          "brier_cand": 0.0963522464,
+          "brier_ref": 0.0887879368
+        }
+      ],
+      "umbral_empate": [
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2010",
+          "razon_mae": 0.0098047796,
+          "razon_rmse": 0.0283940573,
+          "f1_050": 0.0160697843,
+          "auprc": 0.0012601206,
+          "brier": 0.0001442965
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2015",
+          "razon_mae": 0.0016470106,
+          "razon_rmse": 0.00270347,
+          "f1_050": 0.0078095238,
+          "auprc": 0.0004611569,
+          "brier": 0.0001447325
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2016",
+          "razon_mae": 0.0054593862,
+          "razon_rmse": 0.0039405027,
+          "f1_050": 0.0030962441,
+          "auprc": 0.001200568,
+          "brier": 0.000347522
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2022",
+          "razon_mae": 0.0045177442,
+          "razon_rmse": 0.0105366615,
+          "f1_050": 0.0028897266,
+          "auprc": 0.0014896244,
+          "brier": 0.0001524295
+        },
+        {
+          "horizonte": 2,
+          "bloque": "temporada_2023",
+          "razon_mae": 0.0035594284,
+          "razon_rmse": 0.0047568499,
+          "f1_050": 0.003547874,
+          "auprc": 0.0004648968,
+          "brier": 0.0003155634
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2010",
+          "razon_mae": 0.0120839011,
+          "razon_rmse": 0.0224760613,
+          "f1_050": 0.011764289,
+          "auprc": 0.0030707756,
+          "brier": 0.0001931916
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2015",
+          "razon_mae": 0.002035586,
+          "razon_rmse": 0.0082300523,
+          "f1_050": 0.0083567731,
+          "auprc": 0.0013248841,
+          "brier": 0.0002046329
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2016",
+          "razon_mae": 0.0057285969,
+          "razon_rmse": 0.0108423004,
+          "f1_050": 0.0034753534,
+          "auprc": 0.0016844197,
+          "brier": 0.0006061595
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2022",
+          "razon_mae": 0.0099257527,
+          "razon_rmse": 0.0250530885,
+          "f1_050": 0.0087016877,
+          "auprc": 0.0016607587,
+          "brier": 0.0002070689
+        },
+        {
+          "horizonte": 3,
+          "bloque": "temporada_2023",
+          "razon_mae": 0.0046412075,
+          "razon_rmse": 0.0017890277,
+          "f1_050": 0.0037887699,
+          "auprc": 0.0005290379,
+          "brier": 0.0003208995
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2010",
+          "razon_mae": 0.0093473834,
+          "razon_rmse": 0.0119469605,
+          "f1_050": 0.0331412104,
+          "auprc": 0.0051509483,
+          "brier": 0.0002159444
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2015",
+          "razon_mae": 0.0047190719,
+          "razon_rmse": 0.0085815564,
+          "f1_050": 0.010158143,
+          "auprc": 0.0020245901,
+          "brier": 0.0002707877
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2016",
+          "razon_mae": 0.0042775877,
+          "razon_rmse": 0.0098438124,
+          "f1_050": 0.0127080452,
+          "auprc": 0.0012727375,
+          "brier": 0.00064452
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2022",
+          "razon_mae": 0.0133339027,
+          "razon_rmse": 0.0404703056,
+          "f1_050": 0.0135616292,
+          "auprc": 0.0025391628,
+          "brier": 0.0002557357
+        },
+        {
+          "horizonte": 4,
+          "bloque": "temporada_2023",
+          "razon_mae": 0.0110909504,
+          "razon_rmse": 0.0065541517,
+          "f1_050": 0.0012883654,
+          "auprc": 0.0006247897,
+          "brier": 0.0003432525
+        }
+      ]
+    },
+    "w_5a": [
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2009",
+        "w": 0.58,
+        "filas_ajuste": 3315
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2010",
+        "w": 0.58,
+        "filas_ajuste": 6760
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2011",
+        "w": 0.62,
+        "filas_ajuste": 10140
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2012",
+        "w": 0.62,
+        "filas_ajuste": 13520
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2013",
+        "w": 0.62,
+        "filas_ajuste": 16900
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2014",
+        "w": 0.62,
+        "filas_ajuste": 20280
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2015",
+        "w": 0.61,
+        "filas_ajuste": 23660
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2016",
+        "w": 0.62,
+        "filas_ajuste": 27105
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2017",
+        "w": 0.58,
+        "filas_ajuste": 30485
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2018",
+        "w": 0.76,
+        "filas_ajuste": 33865
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2019",
+        "w": 0.75,
+        "filas_ajuste": 37245
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2020",
+        "w": 0.74,
+        "filas_ajuste": 40625
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2021",
+        "w": 0.74,
+        "filas_ajuste": 44005
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2022",
+        "w": 0.73,
+        "filas_ajuste": 47450
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2023",
+        "w": 0.71,
+        "filas_ajuste": 50830
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "temporada_2024",
+        "w": 0.76,
+        "filas_ajuste": 54210
+      },
+      {
+        "semilla": 17,
+        "horizonte": 2,
+        "bloque": "calendario_2025",
+        "w": 0.66,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3250
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2010",
+        "w": 0.95,
+        "filas_ajuste": 6695
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2011",
+        "w": 0.75,
+        "filas_ajuste": 10075
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2012",
+        "w": 0.75,
+        "filas_ajuste": 13455
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2013",
+        "w": 0.74,
+        "filas_ajuste": 16835
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2014",
+        "w": 0.74,
+        "filas_ajuste": 20215
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2015",
+        "w": 0.72,
+        "filas_ajuste": 23595
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2016",
+        "w": 0.69,
+        "filas_ajuste": 27040
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2017",
+        "w": 0.65,
+        "filas_ajuste": 30420
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2018",
+        "w": 0.81,
+        "filas_ajuste": 33800
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2019",
+        "w": 0.79,
+        "filas_ajuste": 37180
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2020",
+        "w": 0.79,
+        "filas_ajuste": 40560
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2021",
+        "w": 0.78,
+        "filas_ajuste": 43940
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2022",
+        "w": 0.78,
+        "filas_ajuste": 47385
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2023",
+        "w": 0.75,
+        "filas_ajuste": 50765
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "temporada_2024",
+        "w": 0.8,
+        "filas_ajuste": 54145
+      },
+      {
+        "semilla": 17,
+        "horizonte": 3,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3185
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2010",
+        "w": 0.98,
+        "filas_ajuste": 6630
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2011",
+        "w": 0.77,
+        "filas_ajuste": 10010
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2012",
+        "w": 0.71,
+        "filas_ajuste": 13390
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2013",
+        "w": 0.71,
+        "filas_ajuste": 16770
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2014",
+        "w": 0.71,
+        "filas_ajuste": 20150
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2015",
+        "w": 0.71,
+        "filas_ajuste": 23530
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2016",
+        "w": 0.71,
+        "filas_ajuste": 26975
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2017",
+        "w": 0.66,
+        "filas_ajuste": 30355
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2018",
+        "w": 0.86,
+        "filas_ajuste": 33735
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2019",
+        "w": 0.85,
+        "filas_ajuste": 37115
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2020",
+        "w": 0.84,
+        "filas_ajuste": 40495
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2021",
+        "w": 0.84,
+        "filas_ajuste": 43875
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2022",
+        "w": 0.83,
+        "filas_ajuste": 47320
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2023",
+        "w": 0.79,
+        "filas_ajuste": 50700
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "temporada_2024",
+        "w": 0.85,
+        "filas_ajuste": 54080
+      },
+      {
+        "semilla": 17,
+        "horizonte": 4,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2009",
+        "w": 0.58,
+        "filas_ajuste": 3315
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2010",
+        "w": 0.58,
+        "filas_ajuste": 6760
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2011",
+        "w": 0.62,
+        "filas_ajuste": 10140
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2012",
+        "w": 0.62,
+        "filas_ajuste": 13520
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2013",
+        "w": 0.62,
+        "filas_ajuste": 16900
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2014",
+        "w": 0.62,
+        "filas_ajuste": 20280
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2015",
+        "w": 0.61,
+        "filas_ajuste": 23660
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2016",
+        "w": 0.62,
+        "filas_ajuste": 27105
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2017",
+        "w": 0.58,
+        "filas_ajuste": 30485
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2018",
+        "w": 0.76,
+        "filas_ajuste": 33865
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2019",
+        "w": 0.75,
+        "filas_ajuste": 37245
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2020",
+        "w": 0.74,
+        "filas_ajuste": 40625
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2021",
+        "w": 0.74,
+        "filas_ajuste": 44005
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2022",
+        "w": 0.73,
+        "filas_ajuste": 47450
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2023",
+        "w": 0.71,
+        "filas_ajuste": 50830
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "temporada_2024",
+        "w": 0.76,
+        "filas_ajuste": 54210
+      },
+      {
+        "semilla": 29,
+        "horizonte": 2,
+        "bloque": "calendario_2025",
+        "w": 0.66,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3250
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2010",
+        "w": 0.95,
+        "filas_ajuste": 6695
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2011",
+        "w": 0.75,
+        "filas_ajuste": 10075
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2012",
+        "w": 0.75,
+        "filas_ajuste": 13455
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2013",
+        "w": 0.74,
+        "filas_ajuste": 16835
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2014",
+        "w": 0.74,
+        "filas_ajuste": 20215
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2015",
+        "w": 0.72,
+        "filas_ajuste": 23595
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2016",
+        "w": 0.69,
+        "filas_ajuste": 27040
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2017",
+        "w": 0.65,
+        "filas_ajuste": 30420
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2018",
+        "w": 0.81,
+        "filas_ajuste": 33800
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2019",
+        "w": 0.79,
+        "filas_ajuste": 37180
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2020",
+        "w": 0.79,
+        "filas_ajuste": 40560
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2021",
+        "w": 0.78,
+        "filas_ajuste": 43940
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2022",
+        "w": 0.78,
+        "filas_ajuste": 47385
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2023",
+        "w": 0.75,
+        "filas_ajuste": 50765
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "temporada_2024",
+        "w": 0.8,
+        "filas_ajuste": 54145
+      },
+      {
+        "semilla": 29,
+        "horizonte": 3,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3185
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2010",
+        "w": 0.98,
+        "filas_ajuste": 6630
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2011",
+        "w": 0.77,
+        "filas_ajuste": 10010
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2012",
+        "w": 0.71,
+        "filas_ajuste": 13390
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2013",
+        "w": 0.71,
+        "filas_ajuste": 16770
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2014",
+        "w": 0.71,
+        "filas_ajuste": 20150
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2015",
+        "w": 0.71,
+        "filas_ajuste": 23530
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2016",
+        "w": 0.71,
+        "filas_ajuste": 26975
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2017",
+        "w": 0.66,
+        "filas_ajuste": 30355
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2018",
+        "w": 0.86,
+        "filas_ajuste": 33735
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2019",
+        "w": 0.85,
+        "filas_ajuste": 37115
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2020",
+        "w": 0.84,
+        "filas_ajuste": 40495
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2021",
+        "w": 0.84,
+        "filas_ajuste": 43875
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2022",
+        "w": 0.83,
+        "filas_ajuste": 47320
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2023",
+        "w": 0.79,
+        "filas_ajuste": 50700
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "temporada_2024",
+        "w": 0.85,
+        "filas_ajuste": 54080
+      },
+      {
+        "semilla": 29,
+        "horizonte": 4,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2009",
+        "w": 0.58,
+        "filas_ajuste": 3315
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2010",
+        "w": 0.58,
+        "filas_ajuste": 6760
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2011",
+        "w": 0.62,
+        "filas_ajuste": 10140
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2012",
+        "w": 0.62,
+        "filas_ajuste": 13520
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2013",
+        "w": 0.62,
+        "filas_ajuste": 16900
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2014",
+        "w": 0.62,
+        "filas_ajuste": 20280
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2015",
+        "w": 0.61,
+        "filas_ajuste": 23660
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2016",
+        "w": 0.62,
+        "filas_ajuste": 27105
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2017",
+        "w": 0.58,
+        "filas_ajuste": 30485
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2018",
+        "w": 0.76,
+        "filas_ajuste": 33865
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2019",
+        "w": 0.75,
+        "filas_ajuste": 37245
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2020",
+        "w": 0.74,
+        "filas_ajuste": 40625
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2021",
+        "w": 0.74,
+        "filas_ajuste": 44005
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2022",
+        "w": 0.73,
+        "filas_ajuste": 47450
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2023",
+        "w": 0.71,
+        "filas_ajuste": 50830
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "temporada_2024",
+        "w": 0.76,
+        "filas_ajuste": 54210
+      },
+      {
+        "semilla": 41,
+        "horizonte": 2,
+        "bloque": "calendario_2025",
+        "w": 0.66,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3250
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2010",
+        "w": 0.95,
+        "filas_ajuste": 6695
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2011",
+        "w": 0.75,
+        "filas_ajuste": 10075
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2012",
+        "w": 0.75,
+        "filas_ajuste": 13455
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2013",
+        "w": 0.74,
+        "filas_ajuste": 16835
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2014",
+        "w": 0.74,
+        "filas_ajuste": 20215
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2015",
+        "w": 0.72,
+        "filas_ajuste": 23595
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2016",
+        "w": 0.69,
+        "filas_ajuste": 27040
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2017",
+        "w": 0.65,
+        "filas_ajuste": 30420
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2018",
+        "w": 0.81,
+        "filas_ajuste": 33800
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2019",
+        "w": 0.79,
+        "filas_ajuste": 37180
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2020",
+        "w": 0.79,
+        "filas_ajuste": 40560
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2021",
+        "w": 0.78,
+        "filas_ajuste": 43940
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2022",
+        "w": 0.78,
+        "filas_ajuste": 47385
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2023",
+        "w": 0.75,
+        "filas_ajuste": 50765
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "temporada_2024",
+        "w": 0.8,
+        "filas_ajuste": 54145
+      },
+      {
+        "semilla": 41,
+        "horizonte": 3,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3185
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2010",
+        "w": 0.98,
+        "filas_ajuste": 6630
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2011",
+        "w": 0.77,
+        "filas_ajuste": 10010
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2012",
+        "w": 0.71,
+        "filas_ajuste": 13390
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2013",
+        "w": 0.71,
+        "filas_ajuste": 16770
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2014",
+        "w": 0.71,
+        "filas_ajuste": 20150
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2015",
+        "w": 0.71,
+        "filas_ajuste": 23530
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2016",
+        "w": 0.71,
+        "filas_ajuste": 26975
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2017",
+        "w": 0.66,
+        "filas_ajuste": 30355
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2018",
+        "w": 0.86,
+        "filas_ajuste": 33735
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2019",
+        "w": 0.85,
+        "filas_ajuste": 37115
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2020",
+        "w": 0.84,
+        "filas_ajuste": 40495
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2021",
+        "w": 0.84,
+        "filas_ajuste": 43875
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2022",
+        "w": 0.83,
+        "filas_ajuste": 47320
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2023",
+        "w": 0.79,
+        "filas_ajuste": 50700
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "temporada_2024",
+        "w": 0.85,
+        "filas_ajuste": 54080
+      },
+      {
+        "semilla": 41,
+        "horizonte": 4,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2009",
+        "w": 0.58,
+        "filas_ajuste": 3315
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2010",
+        "w": 0.58,
+        "filas_ajuste": 6760
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2011",
+        "w": 0.62,
+        "filas_ajuste": 10140
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2012",
+        "w": 0.62,
+        "filas_ajuste": 13520
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2013",
+        "w": 0.62,
+        "filas_ajuste": 16900
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2014",
+        "w": 0.62,
+        "filas_ajuste": 20280
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2015",
+        "w": 0.61,
+        "filas_ajuste": 23660
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2016",
+        "w": 0.62,
+        "filas_ajuste": 27105
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2017",
+        "w": 0.58,
+        "filas_ajuste": 30485
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2018",
+        "w": 0.76,
+        "filas_ajuste": 33865
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2019",
+        "w": 0.75,
+        "filas_ajuste": 37245
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2020",
+        "w": 0.74,
+        "filas_ajuste": 40625
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2021",
+        "w": 0.74,
+        "filas_ajuste": 44005
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2022",
+        "w": 0.73,
+        "filas_ajuste": 47450
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2023",
+        "w": 0.71,
+        "filas_ajuste": 50830
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "temporada_2024",
+        "w": 0.76,
+        "filas_ajuste": 54210
+      },
+      {
+        "semilla": 53,
+        "horizonte": 2,
+        "bloque": "calendario_2025",
+        "w": 0.66,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3250
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2010",
+        "w": 0.95,
+        "filas_ajuste": 6695
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2011",
+        "w": 0.75,
+        "filas_ajuste": 10075
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2012",
+        "w": 0.75,
+        "filas_ajuste": 13455
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2013",
+        "w": 0.74,
+        "filas_ajuste": 16835
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2014",
+        "w": 0.74,
+        "filas_ajuste": 20215
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2015",
+        "w": 0.72,
+        "filas_ajuste": 23595
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2016",
+        "w": 0.69,
+        "filas_ajuste": 27040
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2017",
+        "w": 0.65,
+        "filas_ajuste": 30420
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2018",
+        "w": 0.81,
+        "filas_ajuste": 33800
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2019",
+        "w": 0.79,
+        "filas_ajuste": 37180
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2020",
+        "w": 0.79,
+        "filas_ajuste": 40560
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2021",
+        "w": 0.78,
+        "filas_ajuste": 43940
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2022",
+        "w": 0.78,
+        "filas_ajuste": 47385
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2023",
+        "w": 0.75,
+        "filas_ajuste": 50765
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "temporada_2024",
+        "w": 0.8,
+        "filas_ajuste": 54145
+      },
+      {
+        "semilla": 53,
+        "horizonte": 3,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3185
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2010",
+        "w": 0.98,
+        "filas_ajuste": 6630
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2011",
+        "w": 0.77,
+        "filas_ajuste": 10010
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2012",
+        "w": 0.71,
+        "filas_ajuste": 13390
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2013",
+        "w": 0.71,
+        "filas_ajuste": 16770
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2014",
+        "w": 0.71,
+        "filas_ajuste": 20150
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2015",
+        "w": 0.71,
+        "filas_ajuste": 23530
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2016",
+        "w": 0.71,
+        "filas_ajuste": 26975
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2017",
+        "w": 0.66,
+        "filas_ajuste": 30355
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2018",
+        "w": 0.86,
+        "filas_ajuste": 33735
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2019",
+        "w": 0.85,
+        "filas_ajuste": 37115
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2020",
+        "w": 0.84,
+        "filas_ajuste": 40495
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2021",
+        "w": 0.84,
+        "filas_ajuste": 43875
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2022",
+        "w": 0.83,
+        "filas_ajuste": 47320
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2023",
+        "w": 0.79,
+        "filas_ajuste": 50700
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "temporada_2024",
+        "w": 0.85,
+        "filas_ajuste": 54080
+      },
+      {
+        "semilla": 53,
+        "horizonte": 4,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2009",
+        "w": 0.58,
+        "filas_ajuste": 3315
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2010",
+        "w": 0.58,
+        "filas_ajuste": 6760
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2011",
+        "w": 0.62,
+        "filas_ajuste": 10140
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2012",
+        "w": 0.62,
+        "filas_ajuste": 13520
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2013",
+        "w": 0.62,
+        "filas_ajuste": 16900
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2014",
+        "w": 0.62,
+        "filas_ajuste": 20280
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2015",
+        "w": 0.61,
+        "filas_ajuste": 23660
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2016",
+        "w": 0.62,
+        "filas_ajuste": 27105
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2017",
+        "w": 0.58,
+        "filas_ajuste": 30485
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2018",
+        "w": 0.76,
+        "filas_ajuste": 33865
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2019",
+        "w": 0.75,
+        "filas_ajuste": 37245
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2020",
+        "w": 0.74,
+        "filas_ajuste": 40625
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2021",
+        "w": 0.74,
+        "filas_ajuste": 44005
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2022",
+        "w": 0.73,
+        "filas_ajuste": 47450
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2023",
+        "w": 0.71,
+        "filas_ajuste": 50830
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "temporada_2024",
+        "w": 0.76,
+        "filas_ajuste": 54210
+      },
+      {
+        "semilla": 67,
+        "horizonte": 2,
+        "bloque": "calendario_2025",
+        "w": 0.66,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3250
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2010",
+        "w": 0.95,
+        "filas_ajuste": 6695
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2011",
+        "w": 0.75,
+        "filas_ajuste": 10075
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2012",
+        "w": 0.75,
+        "filas_ajuste": 13455
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2013",
+        "w": 0.74,
+        "filas_ajuste": 16835
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2014",
+        "w": 0.74,
+        "filas_ajuste": 20215
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2015",
+        "w": 0.72,
+        "filas_ajuste": 23595
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2016",
+        "w": 0.69,
+        "filas_ajuste": 27040
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2017",
+        "w": 0.65,
+        "filas_ajuste": 30420
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2018",
+        "w": 0.81,
+        "filas_ajuste": 33800
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2019",
+        "w": 0.79,
+        "filas_ajuste": 37180
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2020",
+        "w": 0.79,
+        "filas_ajuste": 40560
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2021",
+        "w": 0.78,
+        "filas_ajuste": 43940
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2022",
+        "w": 0.78,
+        "filas_ajuste": 47385
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2023",
+        "w": 0.75,
+        "filas_ajuste": 50765
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "temporada_2024",
+        "w": 0.8,
+        "filas_ajuste": 54145
+      },
+      {
+        "semilla": 67,
+        "horizonte": 3,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2008",
+        "w": 1.0,
+        "filas_ajuste": 0
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2009",
+        "w": 1.0,
+        "filas_ajuste": 3185
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2010",
+        "w": 0.98,
+        "filas_ajuste": 6630
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2011",
+        "w": 0.77,
+        "filas_ajuste": 10010
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2012",
+        "w": 0.71,
+        "filas_ajuste": 13390
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2013",
+        "w": 0.71,
+        "filas_ajuste": 16770
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2014",
+        "w": 0.71,
+        "filas_ajuste": 20150
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2015",
+        "w": 0.71,
+        "filas_ajuste": 23530
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2016",
+        "w": 0.71,
+        "filas_ajuste": 26975
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2017",
+        "w": 0.66,
+        "filas_ajuste": 30355
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2018",
+        "w": 0.86,
+        "filas_ajuste": 33735
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2019",
+        "w": 0.85,
+        "filas_ajuste": 37115
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2020",
+        "w": 0.84,
+        "filas_ajuste": 40495
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2021",
+        "w": 0.84,
+        "filas_ajuste": 43875
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2022",
+        "w": 0.83,
+        "filas_ajuste": 47320
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2023",
+        "w": 0.79,
+        "filas_ajuste": 50700
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "temporada_2024",
+        "w": 0.85,
+        "filas_ajuste": 54080
+      },
+      {
+        "semilla": 67,
+        "horizonte": 4,
+        "bloque": "calendario_2025",
+        "w": 0.68,
+        "filas_ajuste": 57655
+      }
+    ]
+  }
 }
