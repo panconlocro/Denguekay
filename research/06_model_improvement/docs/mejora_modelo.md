@@ -17,6 +17,7 @@ aquí.
 | 2 · Calibración | recorte 1e-15, Platt agrupado, beta, isotónica | nada: Platt por horizonte con recorte 1e-6 (beta, cerca en h4, no alcanza la regla) |
 | 3 · Inicios | 3a1 peso a inicios, 3a2 peso por temporada, 3b dos regímenes, 3c′ L + B1 + B2 (enmienda) | nada: L sigue como base (3a1 es un intercambio: más recall de inicios a cambio de orden y brotes en curso) |
 | 5 · Conteo | 5a mezcla con la persistencia, 5b `max_delta_step` por bloque, 5c peso por temporada | **5a**: conteo = w·μ + (1 − w)·persistencia, w por horizonte y bloque con las OOS anteriores |
+| 6 · Otra familia (lectura) | 6a GLM NB2, 6b LightGBM, con C3 sin clima | nada (lectura): LightGBM empata con L + 5a; el GLM no convergió y no se interpreta (6′ con clima, pendiente de la 1b) |
 
 **Configuración base actual: L + 5a.**
 
@@ -45,7 +46,7 @@ aquí.
 
 **Siguiente paso:** la 1b cuando el clima 2000–2016 esté disponible (repetir la comparación de historia con A3
 sobre L + 5a, con la regla de 5 temporadas); luego entrenar la fase 4 (Niño 1+2, con el clima ya incluido); luego
-las fases 6 (línea base de otra familia, lectura) y 7 (síntesis, pruebas, auditoría con `revisor-modelado` y
+la 6′ (otra familia con clima, lectura) y la fase 7 (síntesis, pruebas, auditoría con `revisor-modelado` y
 congelamiento).
 
 **Pendientes del pipeline anotados (no tocar en este estudio):** semana 53 de 2009 en `epi_piura_semanal.csv`;
@@ -327,3 +328,33 @@ AUPRC, Brier y la antelación.
 - **Cierre (confirmado por Rosa, 2026-11-03):** se adopta 5a. La base pasa a ser L + mezcla del conteo con la
   persistencia. Decisión de diseño: los casos salen de la μ mezclada y la probabilidad de la μ del modelo (ver
   «Estado actual»). El intervalo del conteo queda para la fase 7.
+
+## Fase 6 · Líneas base de otra familia (lectura, 2026-11-03)
+
+Preregistro `PHASE6` (commit `71f446a`, aprobado por Rosa tal cual antes de correr). Notebook
+`08_fase6_otras_familias.ipynb`; cifras en `metricas/fase6.json`; predicciones en
+`models/experimentos/mejora_modelo/fase6/` (no versionado); MLflow `denguekay/mejora_modelo_fase6_otras_familias`
+(`637310f706b84c19b6856cbd37552e6a`). LightGBM 4.7.0 y statsmodels 0.15.0. Base: L + 5a, con la misma matriz C3
+sin clima. Es una lectura: nada se adopta.
+
+- **Guardas:** pasan todas. G14: filas de entrenamiento y corte iguales a los de L en los 18 bloques de las dos
+  familias. G15: los tests de no fuga por perturbación pasan. G16: LightGBM con la semilla 17 da dos veces lo mismo
+  (diferencia 0), y L + 5a reproduce las métricas de `fase5.json` (diferencia máxima 4,9e-11 en 18 filas).
+- **6a · GLM NB2: no es interpretable.** El ajuste por máxima verosimilitud no convergió en 200 iteraciones en al
+  menos un horizonte de cada uno de los 18 bloques; en h3 converge solo en 2 de 18. Según el preregistro se
+  reporta y no se ajusta nada. Los síntomas están en los resultados: en h3 la mezcla 5a le da w = 0 en la mediana
+  (el conteo publicado queda igual a la persistencia, razón MAE = 1,000 en todas las temporadas) y su F1 en
+  2010 · h3 cae a 0,009. Por eso no se leen sus veredictos (F1: empate en h2, pierde en h3 y «gana» en h4; razón
+  MAE: empate en los tres) como evidencia sobre la familia. Si se quiere esa lectura, hace falta una enmienda
+  (por ejemplo, otro optimizador o más iteraciones) aprobada antes de correr.
+- **6b · LightGBM: empate con L + 5a en los tres horizontes**, con las dos reglas (F1 de la fase 3 y razón MAE de
+  la fase 5) y sin vetos. Las diferencias por temporada son de centésimas (F1 de las 5 temporadas que deciden
+  entre −0,06 y +0,01; razón MAE entre −0,02 y +0,02). La antelación tampoco cambia (IC95 que incluye 0 en h2 y
+  h4; en h3, −0,010 con IC95 [−0,026; 0,000]). Con la μ sin mezclar, LightGBM pierde por razón MAE en h2 y h3
+  frente a L + 5a (veta la razón RMSE): la mezcla 5a también le sirve a esta familia.
+- **Lectura (observación, no conclusión):** otra familia de árboles con la misma información y los mismos
+  hiperparámetros traducidos rinde lo mismo que L. Es un indicio, no una prueba, de que el límite está en la
+  información de la matriz y no en XGBoost. La comparación con un modelo lineal queda pendiente porque el GLM no
+  convergió.
+- **6′ (con clima):** el código acepta otra lista de columnas (`run_family(..., columns=...)`); queda para cuando
+  la 1b entregue el clima 2000–2016, con su propio preregistro.
