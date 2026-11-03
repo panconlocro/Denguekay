@@ -163,3 +163,40 @@ Preregistro `PHASE2` (commit `3bbfa10`, aprobado por Rosa sin cambios antes de c
 - **Consecuencia:** la base sigue siendo L tal como salió de la 1a; la ganancia frente a la V1 tal cual no cambia
   (2022 · h3 +0,046, h4 +0,106). El cuello de botella del recall en inicios limpios (0,12–0,19 en 2022–2023) no es
   de calibración: queda para la fase 3.
+
+## Fase 3 · Inicios de brote (3a1, 3a2 y 3b; 2026-11-03)
+
+Preregistro `PHASE3` (commit `6574669`, aprobado por Rosa con dos ajustes: recorte de 3a2 a [0,25, 1] y fiabilidad y
+Brier por régimen como lectura). Notebook `05_fase3_inicios.ipynb`; cifras en `metricas/fase3.json`; predicciones
+en `models/experimentos/mejora_modelo/fase3/` (no versionado); MLflow `denguekay/mejora_modelo_fase3_inicios`
+(`f563d64ea4ae4d3da49a385b0ce3cce6`). Dispositivo: cuda, `n_jobs` = 12.
+
+- **G8 pasa:** el ciclo nuevo sin pesos ni regímenes reproduce L bit a bit (diferencia 0 en μ y en la probabilidad
+  sin calibrar, 183 105 filas, semilla 17); con pesos iguales a 1 la diferencia también es 0. G9 es un test y pasa.
+- **Veredictos frente a L: ninguna se adopta; L sigue siendo la base.**
+
+| Variante | h2 | h3 | h4 |
+|---|---|---|---|
+| 3a1 · peso 5 a inicios | compensa (vetos AUPRC, Brier, razón MAE) | empate | empate |
+| 3a2 · peso por temporada | empate | empate | empate |
+| 3b · dos regímenes | compensa (veto razón MAE) | compensa (vetos AUPRC, razón MAE) | empate |
+
+- **3a1:** sube lo que la fase buscaba y rompe el resto.
+  - Antelación: h2 +0,078 (IC95 0,041 a 0,114, 4 temporadas a favor), h3 y h4 +0,047 (IC95 0,010 a 0,083, 3 a favor).
+  - Recall de brote nuevo: 2023 0,30 / 0,29 / 0,26 frente a 0,17 / 0,19 / 0,17 de L; 2016 · h2 0,21 frente a 0,13;
+    2022 · h2 0,22 frente a 0,12.
+  - Pero la AUPRC cae en las 5 temporadas en los tres horizontes, el Brier empeora en 3–4 y la razón MAE en 3
+    (hasta +0,24 en 2016 · h4). En 2010 y 2015 · h4 el F1 cae a 0,135 y 0,349 (L: 0,476 y 0,480) porque el recall
+    de brotes en curso baja a 0,09 y 0,24. Con 234 y 557 semanas brote.
+- **3a2:** sin efecto en F1 ni AUPRC fuera del umbral de empate; la razón MAE mejora en 3–4 temporadas (y −0,11 a
+  −0,17 en 2024, contraste), la antelación baja un poco (−0,026 a −0,036). Empate.
+- **3b:** empeora los inicios. La antelación baja en los tres horizontes (h3 −0,181, IC95 −0,233 a −0,130) y el
+  recall de brote nuevo cae a 0–0,06. El modelo de inicios no supera p ≥ 0,50 con un solo Platt sobre la
+  probabilidad combinada. En h3 y h4 la lectura sin 2010 da «pierde».
+  - Lectura por régimen (Rosa): el Brier del régimen de inicios (n = 43 207, 2 316 positivos en las 5 temporadas)
+    queda un poco mejor que L en 2016 y 2022, peor en 2015 y en 2023 · h3 y h4; el del régimen en curso (n = 7 688,
+    5 652 positivos) mejora en 2010 y 2015. El régimen en curso usó el modelo único en 1 bloque por semilla (menos
+    de 100 orígenes de entrenamiento).
+- **Lectura:** el peso a los inicios es la única variante que mueve el recall de brotes nuevos, pero a costa del
+  ranking, del conteo y de los brotes en curso. No se adopta. 3c (B1 + B2 en el modelo de inicios de 3b) queda
+  pendiente de que Rosa revise B1 y B2 sobre la serie larga.

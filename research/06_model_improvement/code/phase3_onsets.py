@@ -175,3 +175,230 @@ def predict_blocks_weighted(matrices: dict[int, pd.DataFrame], origins: pd.DataF
     output = pd.concat(parts, ignore_index=True).assign(estrategia="E3", formulacion=FORMULATION, semilla=seed)
     output.attrs["ajustes"] = pd.DataFrame(record)
     return output
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 run: inputs, guard G8, variants, verdicts and readings
+# ---------------------------------------------------------------------------
+
+def phase3_inputs() -> dict:
+    """Long cases, labels, matrices and origins of L (as in phase 1a) and the label series."""
+    import phase1_history as p1
+    from phase0_diagnosis import load_integrated, long_case_series, long_labels
+
+    cases, _ = long_case_series(load_integrated())
+    labels = long_labels(cases)
+    matrices = p1.long_matrices(cases, labels)
+    origins = p1.long_origins(cases, matrices[2])
+    series = labels[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue", "brote"]].copy()
+    series["semana_inicio"] = pd.to_datetime(series.semana_inicio)
+    return {"casos": cases, "matrices": matrices, "origenes": origins, "serie": series}
+
+
+def _config():
+    from denguekay.model import frozen_configs as cf
+
+    c = cf.CONFIG_2026_V1
+    return c["columnas"], c["hiperparametros"]
+
+
+def guard_g8(inp: dict, saved_l17: pd.DataFrame) -> dict:
+    """G8: without weights nor regimes the loop reproduces the saved L (seed 17); with weights = 1, report."""
+    import phase1_history as p1
+
+    columns, hp = _config()
+    blocks = p1.seasonal_blocks(p1.FIRST_BLOCK_SEASON_LONG)
+    plain = predict_blocks_weighted(inp["matrices"], inp["origenes"], blocks, 17, columns, hp)
+    ones = predict_blocks_weighted(inp["matrices"], inp["origenes"], blocks, 17, columns, hp,
+                                   weights_fn=lambda t: np.ones(len(t)))
+    exact = p1.compare_predictions(plain, saved_l17)
+    with_ones = p1.compare_predictions(ones, saved_l17)
+    return {"sin_pesos": exact, "pesos_1": {"diferencia_maxima": with_ones["diferencia_maxima"]},
+            "pasa": exact["pasa"]}
+
+
+def weights_for(variant: str, series: pd.DataFrame):
+    if variant == "3a1":
+        new = onset_weeks(series)
+        return lambda train: onset_weights(train, new)
+    if variant == "3a2":
+        return season_weights
+    return None
+
+
+def run_variant(inp: dict, variant: str, seeds) -> dict:
+    """Predictions (5 seeds) and protocol evaluation of 3a1, 3a2 or 3b."""
+    import phase1_history as p1
+    from denguekay.evaluation import protocol as pa
+
+    columns, hp = _config()
+    blocks = p1.seasonal_blocks(p1.FIRST_BLOCK_SEASON_LONG)
+    state = origin_state(inp["origenes"], inp["serie"]) if variant == "3b" else None
+    preds, evals, fits = {}, {}, []
+    for seed in seeds:
+        pred = predict_blocks_weighted(inp["matrices"], inp["origenes"], blocks, seed, columns, hp,
+                                       weights_fn=weights_for(variant, inp["serie"]), state=state)
+        fits.append(pred.attrs.pop("ajustes").assign(semilla=seed))
+        preds[seed] = pred
+        evals[seed] = pa.evaluate(pred, inp["serie"])
+    return {"predicciones": preds, "evaluaciones": evals, "ajustes": pd.concat(fits, ignore_index=True)}
+
+
+def reference_l(series: pd.DataFrame) -> dict:
+    """L as saved in phase 1a, evaluated with the protocol (Platt per horizon, 1e-6)."""
+    import phase2_calibration as p2
+    from denguekay.evaluation import protocol as pa
+
+    preds = p2.read_l_predictions()
+    return {"predicciones": preds, "evaluaciones": {s: pa.evaluate(p, series) for s, p in preds.items()}}
+
+
+def compare(candidate: dict, reference: dict) -> dict:
+    """Preregistered verdict (``decide_multi_season``) plus the per-season metrics of both."""
+    import preregistration as pr
+    from denguekay.evaluation import protocol as pa
+
+    blocks = [pr.block_name(s) for s in pr.DECIDING_SEASONS]
+    med = {k: pa.seed_median([e["metricas"] for e in v["evaluaciones"].values()])
+           for k, v in (("cand", candidate), ("ref", reference))}
+    ranges = pa.tie_threshold(*(pa.seed_ranges([e["metricas"] for e in v["evaluaciones"].values()])
+                                for v in (candidate, reference)))
+    seed = pr.SEEDS[0]
+    lead = pr.lead_time_difference_multi(candidate["evaluaciones"][seed]["antelacion"],
+                                         reference["evaluaciones"][seed]["antelacion"], "alerta_050")
+    verdict = pr.decide_multi_season(*(m[m.bloque.isin(blocks)] for m in (med["cand"], med["ref"])),
+                                     ranges[ranges.bloque.isin(blocks)], lead)
+    no_2010 = (2015, 2016, 2022, 2023)
+    b4 = [pr.block_name(s) for s in no_2010]
+    lead4 = pr.lead_time_difference_multi(candidate["evaluaciones"][seed]["antelacion"],
+                                          reference["evaluaciones"][seed]["antelacion"], "alerta_050", no_2010)
+    reading = pr.decide_multi_season(*(m[m.bloque.isin(b4)] for m in (med["cand"], med["ref"])),
+                                     ranges[ranges.bloque.isin(b4)], lead4, seasons=no_2010, min_in_favour=3,
+                                     guard_veto=pr.GUARD_VETO_AGAINST)
+    both = med["cand"].merge(med["ref"], on=["horizonte", "bloque"], suffixes=("_cand", "_ref"))
+    cols = ["horizonte", "bloque", "positivos_cand"] + [f"{m}_{v}" for m in (
+        "f1_050", "recall_050", "precision_050", "auprc", "brier", "razon_mae", "razon_rmse") for v in ("cand", "ref")]
+    report = [*blocks, pr.block_name(pr.CONTRAST_SEASON)]
+    return {"veredicto": verdict, "antelacion": lead, "umbral_empate": ranges[ranges.bloque.isin(blocks)],
+            "lectura_sin_2010": reading, "metricas": both[both.bloque.isin(report)][cols]}
+
+
+def by_regime(variant: dict, series: pd.DataFrame, blocks: list[str]) -> dict:
+    """Reading (Rosa): calibrated Brier and reliability per regime (state at the origin), seed median / seed 17."""
+    import preregistration as pr
+    from phase1_history import seed_median_of
+
+    def regime(data):
+        week = pd.to_datetime(data.origen_cierre) - pd.Timedelta(days=6)
+        lab = series[["ubigeo", "semana_inicio", "brote"]].rename(columns={"semana_inicio": "w", "brote": "regimen"})
+        key = pd.DataFrame({"ubigeo": data.ubigeo.astype(str).to_numpy(), "w": week.to_numpy()})
+        reg = key.merge(lab.assign(ubigeo=lab.ubigeo.astype(str)), on=["ubigeo", "w"], how="left",
+                        validate="many_to_one").regimen.fillna(0).astype(int).to_numpy()
+        return data.assign(regimen=reg)
+
+    briers, curves = {}, []
+    for seed, e in variant["evaluaciones"].items():
+        d = regime(e["datos"][e["datos"].bloque.isin(blocks) & e["datos"].probabilidad_calibrada.notna()])
+        briers[seed] = (d.assign(se=(d.probabilidad_calibrada - d.brote) ** 2)
+                        .groupby(["horizonte", "bloque", "regimen"])
+                        .agg(n=("se", "size"), positivos=("brote", "sum"), brier=("se", "mean"),
+                             prob_media=("probabilidad_calibrada", "mean"), prevalencia=("brote", "mean"))
+                        .reset_index())
+        if seed == pr.SEEDS[0]:
+            for (h, b, r), g in d.groupby(["horizonte", "bloque", "regimen"]):
+                curves.append(diag.reliability_curve(g.brote, g.probabilidad_calibrada, 10)
+                              .reset_index(names="bin").assign(horizonte=h, bloque=b, regimen=r))
+    return {"brier_por_regimen": seed_median_of(briers, ["horizonte", "bloque", "regimen"]),
+            "fiabilidad_por_regimen_semilla_17": pd.concat(curves, ignore_index=True)}
+
+
+# ---------------------------------------------------------------------------
+# 3c: B1 and B2 on the long series (2000-2025), in memory
+# ---------------------------------------------------------------------------
+
+def _b1_b2_columns() -> tuple[list[str], list[str]]:
+    from denguekay.features import onset_features as fi
+
+    return list(fi.COLUMNS["B1"]), list(fi.COLUMNS["B2"])
+
+
+def long_spatial_table(geography: pd.DataFrame, cases: pd.DataFrame, labels: pd.DataFrame,
+                       cutoff: pd.Timestamp) -> pd.DataFrame:
+    """B1 and B2 per district and week ``w`` with data of weeks <= ``w``, on the long series.
+
+    The same formulas as ``evaluation.onsets.weekly_status`` (knn5 neighbours, province and region without
+    the district itself, core = 5 districts with the most cases closed at ``cutoff``), but the cases start in
+    2000 and the label in 2005 (before 2005 the outbreak fractions are null; no origin uses them). Only
+    the core ranking depends on ``cutoff``.
+    """
+    from denguekay.evaluation import onsets as di
+    from denguekay.features.neighbors import geographic_catalog, neighborhood_matrix
+
+    geo = geographic_catalog(geography)
+    weights, _ = neighborhood_matrix(geo, k=di.K_NEIGHBORS)
+    ids = weights.index
+    c = cases.assign(semana_inicio=pd.to_datetime(cases.semana_inicio), ubigeo=cases.ubigeo.astype("string"))
+    y = c.pivot(index="semana_inicio", columns="ubigeo", values="casos_Dengue").reindex(columns=ids).sort_index()
+    if y.isna().any().any():
+        raise ValueError("Faltan distrito-semanas en la serie de casos")
+    lab = labels.assign(semana_inicio=pd.to_datetime(labels.semana_inicio), ubigeo=labels.ubigeo.astype("string"))
+    b = lab.pivot(index="semana_inicio", columns="ubigeo", values="brote").reindex(index=y.index, columns=ids)
+    b = b.astype(float)
+    w = weights.to_numpy()
+    yv, bv = y.to_numpy(float), b.to_numpy(float)
+    active = (yv > 0).astype(float)
+    new_rows = ((y > 0) & (y.shift(1) == 0)).to_numpy(float)
+    provinces = geo.set_index("ubigeo").loc[ids, "provincia"].to_numpy()
+    prov = (provinces[:, None] == provinces[None, :]).astype(float)
+    np.fill_diagonal(prov, 0)
+    region = np.ones_like(prov) - np.eye(len(ids))
+    n_prov, n_reg = prov.sum(axis=1), region.sum(axis=1)
+    order = list(di.core_ranking(c, cutoff).index)
+    core = np.zeros_like(prov)
+    for i, u in enumerate(ids):
+        for v in [v for v in order if v != u][:di.N_CORE]:
+            core[i, ids.get_loc(v)] = 1.0
+
+    def frame(m):
+        return pd.DataFrame(np.asarray(m), index=y.index, columns=ids)
+
+    vals = {
+        "vecinos_log_media_casos": np.log1p(frame(yv @ w.T)),
+        "vecinos_frac_en_brote": frame(bv @ w.T),
+        "vecinos_n_casos_nuevos": frame(new_rows @ (w > 0).T.astype(float)),
+        "provincia_log_otros_casos": np.log1p(frame(yv @ prov.T)),
+        "provincia_otros_frac_en_brote": frame(bv @ prov.T / n_prov),
+        "region_log_otros_casos": np.log1p(frame(yv @ region.T)),
+        "region_otros_frac_en_brote": frame(bv @ region.T / n_reg),
+        "nucleo_log_casos": np.log1p(frame(yv @ core.T)),
+        "nucleo_frac_en_brote": frame(bv @ core.T / di.N_CORE),
+    }
+    for base in ("vecinos_log_media_casos", "provincia_log_otros_casos", "region_log_otros_casos"):
+        vals[f"{base}_cambio_1"] = vals[base] - vals[base].shift(1)
+        vals[f"{base}_cambio_4"] = vals[base] - vals[base].shift(4)
+    vals["nucleo_log_casos_cambio_4"] = vals["nucleo_log_casos"] - vals["nucleo_log_casos"].shift(4)
+    b1, b2 = _b1_b2_columns()
+    out = pd.concat({k: vals[k].stack(future_stack=True) for k in b1 + b2}, axis=1)
+    out = out.rename_axis(["semana_inicio", "ubigeo"]).reset_index()
+    out["ubigeo"] = out.ubigeo.astype("string")
+    return out[["ubigeo", "semana_inicio", *b1, *b2]]
+
+
+def add_spatial(origins: pd.DataFrame, table: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    """The columns of the origin week (``onset_features.add``)."""
+    from denguekay.features import onset_features as fi
+
+    return fi.add(origins, table, columns)
+
+
+def spatial_prepare_block(geography: pd.DataFrame, cases: pd.DataFrame, labels: pd.DataFrame):
+    """``prepare_block`` for 3c: B1 (no fit) and B2 with the core ranking of each block's cut-off."""
+    b1, b2 = _b1_b2_columns()
+    cache: dict = {}
+
+    def prepare(origins: pd.DataFrame, cutoff: pd.Timestamp) -> pd.DataFrame:
+        key = pd.Timestamp(cutoff)
+        if key not in cache:
+            cache[key] = long_spatial_table(geography, cases, labels, key)
+        return add_spatial(origins, cache[key], b1 + b2)
+    return prepare

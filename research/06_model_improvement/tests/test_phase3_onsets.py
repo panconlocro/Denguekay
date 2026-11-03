@@ -123,5 +123,61 @@ class TestPhase3Record(unittest.TestCase):
         self.assertEqual(pr.PHASE3_MIN_REGIME_ROWS, p3.MIN_REGIME_ROWS)
 
 
+HAS_DATA = d.SILVER_EPI_HISTORICAL.exists()
+
+
+@unittest.skipUnless(HAS_DATA, "Sin datos")
+class TestG10(unittest.TestCase):
+    """G10: B1 and B2 on the long series."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.panel = d.load_integrated()
+        cases, _ = d.long_case_series(cls.panel)
+        cls.cases = cases
+        cls.labels = d.long_labels(cases)
+        cls.columns = sum(p3._b1_b2_columns(), [])
+
+    def test_same_formulas_as_weekly_status_on_2017_2025(self):
+        from denguekay.evaluation import onsets as di
+
+        cutoff = pd.Timestamp("2021-08-28")
+        lab = self.labels.assign(semana_inicio=pd.to_datetime(self.labels.semana_inicio))
+        s17 = lab[lab.semana_inicio.ge(pd.Timestamp(self.panel.semana_inicio.min()))].reset_index(drop=True)
+        ours = p3.long_spatial_table(self.panel, s17, s17, cutoff).sort_values(["ubigeo", "semana_inicio"])
+        ref = di.weekly_status(self.panel, s17, cutoff).sort_values(["ubigeo", "semana_inicio"])
+        pd.testing.assert_frame_equal(ours[self.columns].reset_index(drop=True),
+                                      ref[self.columns].reset_index(drop=True), check_dtype=False)
+
+    def test_no_leakage_by_perturbation(self):
+        cutoff, since = pd.Timestamp("2012-08-25"), pd.Timestamp("2013-03-03")
+        base = p3.long_spatial_table(self.panel, self.cases, self.labels, cutoff)
+        cases, labels = self.cases.copy(), self.labels.copy()
+        later = pd.to_datetime(cases.semana_inicio).ge(since)
+        cases.loc[later, "casos_Dengue"] = cases.loc[later, "casos_Dengue"] * 3 + 7
+        later_l = pd.to_datetime(labels.semana_inicio).ge(since)
+        labels.loc[later_l, "brote"] = 1 - labels.loc[later_l, "brote"]
+        other = p3.long_spatial_table(self.panel, cases, labels, cutoff)
+        sel = base.semana_inicio.lt(since)
+        pd.testing.assert_frame_equal(base[sel].reset_index(drop=True), other[sel].reset_index(drop=True))
+        self.assertFalse(base.loc[~sel, "vecinos_frac_en_brote"].equals(other.loc[~sel, "vecinos_frac_en_brote"]))
+
+    def test_core_ranking_uses_only_closed_weeks(self):
+        cutoff = pd.Timestamp("2012-08-25")
+        base = p3.long_spatial_table(self.panel, self.cases, self.labels, cutoff)
+        cases = self.cases.copy()
+        later = pd.to_datetime(cases.semana_inicio).gt(cutoff)
+        cases.loc[later, "casos_Dengue"] = cases.loc[later, "casos_Dengue"][::-1].to_numpy()
+        other = p3.long_spatial_table(self.panel, cases, self.labels, cutoff)
+        sel = base.semana_inicio.le(cutoff - pd.Timedelta(days=6))
+        pd.testing.assert_frame_equal(base.loc[sel, ["nucleo_log_casos", "nucleo_frac_en_brote"]].reset_index(drop=True),
+                                      other.loc[sel, ["nucleo_log_casos", "nucleo_frac_en_brote"]].reset_index(drop=True))
+
+    def test_origins_since_2005_have_no_nulls(self):
+        table = p3.long_spatial_table(self.panel, self.cases, self.labels, pd.Timestamp("2009-08-29"))
+        t = table[table.semana_inicio.ge(pd.Timestamp("2005-01-02"))]
+        self.assertFalse(t[self.columns].isna().any().any())
+
+
 if __name__ == "__main__":
     unittest.main()
