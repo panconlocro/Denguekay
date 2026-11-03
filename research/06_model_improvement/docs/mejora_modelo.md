@@ -231,3 +231,48 @@ Notebook `06_fase3c_contexto_espacial.ipynb`; cifras en `metricas/fase3c.json`; 
 - El Brier mejora en 3 de 5 temporadas en cada horizonte (no decide; es guarda).
 - **Cierre de la fase 3:** ninguna variante (3a1, 3a2, 3b, 3c′) se adopta; **L sigue siendo la base**. Lo único que
   movió el recall de inicios fue el peso de muestra de 3a1, como intercambio con el orden y los brotes en curso.
+
+## Fase 5 · Conteo (2026-11-03)
+
+Preregistro `PHASE5` (commit `6d2164c`, aprobado por Rosa con una lectura agregada). Notebook `07_fase5_conteo.ipynb`;
+cifras en `metricas/fase5.json`; predicciones de 5b, w de 5a y `max_delta_step` elegidos en
+`models/experimentos/mejora_modelo/fase5/` (no versionado); MLflow `denguekay/mejora_modelo_fase5_conteo`
+(`3259773a81f14abeb94cbcbc2366647f`). Dispositivo: cuda, `n_jobs` = 12. Decide la razón MAE; vetan la razón RMSE, F1,
+AUPRC, Brier y la antelación.
+
+- **Guardas:** G11 pasa (0 bloques con w = 1 distintos de L). G12 pasa (5b con la grilla {0,7} reproduce L bit a bit,
+  183 105 filas, semilla 17). G13 pasa (3a2 con las 5 semillas y las mismas filas que L).
+- **Veredictos frente a L:**
+
+| Variante | h2 | h3 | h4 | Se adopta |
+|---|---|---|---|---|
+| 5a · mezcla con la persistencia | gana (5 de 5) | gana (4 de 5) | gana (4 de 5) | **sí** |
+| 5b · `max_delta_step` por bloque | empate | empate | empate | no |
+| 5c · 3a2 (no ciega) | empate | compensa (veto Brier) | empate (veto Brier) | no |
+
+- **5a se adopta: la base pasa a ser L + mezcla con la persistencia (solo el conteo).** Una sola variante adoptada:
+  no hay cruce.
+  - Razón MAE: baja en las 5 temporadas en h2 (−0,016 a −0,070) y en 4 de 5 en h3 y h4; en 2010 · h3/h4 queda igual
+    (w = 1,00, mediana entre semillas). La razón RMSE baja en todas las celdas salvo 2010 · h4 (−0,001 a −0,142);
+    está marcada como mejora en ≥ 3 temporadas («veto contra la referencia» en la tabla). 2024 (contraste): razón MAE
+    −0,11 a −0,14 y RMSE −0,20 a −0,29.
+  - F1, AUPRC, Brier y antelación son idénticos a L por construcción (la probabilidad no cambia).
+  - w mediano por bloque: 0,59–0,88 en h2, 0,65–1,00 en h3 y 0,69–1,00 en h4; para 2022–2024, 0,73–0,85. El modelo
+    pesa más que la persistencia en todos los bloques, y más en h4.
+  - Por fase de la curva (2022–2023): mejora en pico y subida (2022 · h4 pico 1,347 → 1,236; 2023 · h2 subida 1,063
+    → 0,976) y empeora en bajada (2022 · h2 0,666 → 0,727), donde la persistencia arrastra el pico ya pasado. MAE y
+    RMSE se mueven en el mismo sentido.
+  - HU0007-4 de regresión: 5a cumple en 2023 · h4 (igual que L). En 2015 · h3 la razón MAE pasa a ≤ 0,85 (en
+    2015 · h4 ya lo era), pero la RMSE no. En 2017 (solo lectura) 5a queda peor: L cumplía la regresión en h3 y h4
+    y 5a no, y en h2 la razón MAE de 5a pasa por encima de 0,85. El conteo sigue sin cumplir la HU0007-4 en la
+    mayoría de las celdas.
+- **5b:** `max_delta_step` elegido: 0,7 en 65 de 90 bloques·semilla, 1,0 en 20 y 2,0 en 5; nunca 3, 5 ni 10. La
+  razón MAE baja solo donde se eligió otro valor (2015, 2016, 2024) y no alcanza 4 de 5. Empate. Con la
+  validación interna, el rango ampliado casi no se usa en L con 160 árboles.
+- **5c (3a2):** razón MAE a favor en 3–4 de 5 temporadas, como en la fase 3, pero el Brier veta en h3 y h4 y la
+  antelación baja (−0,026 a −0,036). No se adopta.
+- **Lectura de Rosa: probabilidad desde la μ mezclada.** NB2 con la μ y la α de L reproduce la probabilidad guardada
+  (diferencia 0). Con la μ mezclada y Platt: «compensa (empate)» en los tres horizontes. El F1 casi no cambia (−0,009
+  a +0,031), pero la AUPRC queda en contra en 2–3 temporadas y el Brier en 2–3. **Casos y probabilidad no deberían
+  salir de la misma μ mezclada:** la probabilidad (y el intervalo de la alerta) siguen con la μ del modelo y el conteo
+  publicado con la μ mezclada. Cómo se calcula el intervalo del conteo con la μ mezclada queda para la fase 7.

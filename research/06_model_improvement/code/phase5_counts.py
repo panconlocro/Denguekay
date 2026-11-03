@@ -195,3 +195,37 @@ def same_mu_reading(preds: dict[int, pd.DataFrame], series: pd.DataFrame) -> dic
         mixed, _ = mix_chronologically(p)
         evals[s] = pa.evaluate(nb2_from_counts(mixed, alphas, s), series)
     return {"diferencia_max_reproduccion_L": check, "evaluaciones": evals}
+
+
+def compare(candidate: dict, reference: dict) -> dict:
+    """Preregistered phase 5 verdict (``decide_phase5``), the reading without 2010 and the per-season metrics."""
+    import preregistration as pr
+
+    seed = pr.SEEDS[0]
+    med_c, med_r = seed_median(candidate), seed_median(reference)
+    ranges = tie_threshold(candidate, reference)
+    out = {}
+    for name, seasons, k in (("veredicto", pr.DECIDING_SEASONS, pr.MIN_IN_FAVOUR),
+                             ("lectura_sin_2010", (2015, 2016, 2022, 2023), 3)):
+        blocks = [pr.block_name(s) for s in seasons]
+        lead = pr.lead_time_difference_multi(candidate["evaluaciones"][seed]["antelacion"],
+                                             reference["evaluaciones"][seed]["antelacion"], "alerta_050", seasons)
+        out[name] = pr.decide_phase5(*(m[m.bloque.isin(blocks)] for m in (med_c, med_r)),
+                                     ranges[ranges.bloque.isin(blocks)], lead, seasons=seasons, min_in_favour=k)
+        if name == "veredicto":
+            out["antelacion"] = lead
+    both = med_c.merge(med_r, on=["horizonte", "bloque"], suffixes=("_cand", "_ref"))
+    cols = ["horizonte", "bloque", "positivos_cand"] + [f"{m}_{v}" for m in (
+        "razon_mae", "razon_rmse", "mae", "rmse", "f1_050", "auprc", "brier") for v in ("cand", "ref")]
+    report = [pr.block_name(s) for s in (*pr.DECIDING_SEASONS, pr.CONTRAST_SEASON)]
+    out["metricas"] = both[both.bloque.isin(report)][cols]
+    out["umbral_empate"] = ranges[ranges.bloque.isin([pr.block_name(s) for s in pr.DECIDING_SEASONS])]
+    return out
+
+
+def phases_of_curve(variant: dict) -> pd.DataFrame:
+    """Count by phase of the regional curve (MAE and RMSE together), seed median."""
+    from phase1_history import seed_median_of
+
+    return seed_median_of({s: e["errores_por_fase"] for s, e in variant["evaluaciones"].items()},
+                          ["horizonte", "bloque", "fase"])
