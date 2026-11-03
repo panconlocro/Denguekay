@@ -144,6 +144,118 @@ PHASE1 = {
 
 
 # ---------------------------------------------------------------------------
+# Phase 2 · calibration (preregistered before any phase 2 calibration was run)
+# ---------------------------------------------------------------------------
+
+PHASE2_EPS_REFERENCE = 1e-6
+PHASE2_EPS_SMALL = 1e-15
+PHASE2_ISOTONIC_MIN_POSITIVES = 500
+PHASE2_AUPRC_VETO = 2            # stricter than GUARD_VETO_AGAINST: AUPRC vetoes with 2 of 5 seasons
+PHASE2_CALIBRATION_VETO = 3      # calibrated worse than uncalibrated in >= 3 of 5 seasons: not adoptable
+PHASE2_MIN_HORIZONS_WON = 2      # adopted with "gana" in >= 2 horizons and no "pierde"/"compensa"
+PHASE2_PARAMETERS = {"platt_agrupado": 2, "platt": 6, "beta": 9, "isotonica": None}  # fewer = simpler
+
+PHASE2 = {
+    "fecha": "2026-11-03",
+    "estado": "aprobado por Rosa sin cambios (2026-11-03), commiteado antes de calibrar ninguna variante",
+    "base": "L de la fase 1a (C3 · E3 · S4_s3, entrenada desde 2005, hiperparámetros de la V1): se recalibran "
+            "sus predicciones sin calibrar guardadas (fase1a/predicciones_L.csv.gz, 5 semillas). No se "
+            "reentrena nada; μ no cambia, así que la razón MAE es idéntica en todas las variantes",
+    "fijo": "alerta p >= 0,50, etiqueta de brote, bloques, cortes y etiquetas cerradas del protocolo de 5 "
+            "temporadas (PHASE1['protocolo_nuevo'])",
+    "referencia": "Platt por horizonte con recorte del logit 1e-6 (la calibración de L en la 1a)",
+    "paso_A_recorte": {
+        "candidata": f"Platt por horizonte con recorte {PHASE2_EPS_SMALL:g}",
+        "motivo": "en L, 1e-6 aplasta el 6,5 % de las probabilidades sin calibrar (todas las filas, bloques y "
+                  "semillas); 1e-15 aplasta el 2,6 %; el 0,02 % es exactamente 0. 1e-15 es el menor recorte "
+                  "con 1 - eps distinguible de 1 en float64, así que el recorte sigue siendo simétrico. Las "
+                  "fracciones son de la entrada (sin etiquetas), no de resultados",
+        "decision": "el recorte que salga de este paso (1e-15 solo si gana con la regla de adopción) se usa en "
+                    "el paso B para Platt y beta",
+    },
+    "paso_B_familias": {
+        "platt_agrupado": "un Platt por bloque con las filas de h2, h3 y h4 cuyas etiquetas cerraron antes del "
+                          "primero de los tres primeros orígenes del bloque; se aplica a los tres horizontes",
+        "beta": "calibración beta de Kull, Silva Filho y Flach (AISTATS 2017, PMLR 54: 623-631): logística sobre "
+                "[ln p, -ln(1 - p)], 3 parámetros por horizonte; con a = b es Platt. Monotonía (decisión de este "
+                "estudio): si un coeficiente sale negativo, se quita ese término y se reajusta; sin términos, "
+                "respaldo Platt",
+        "isotonica": f"por horizonte, solo en bloques cuyo calibrador tiene >= {PHASE2_ISOTONIC_MIN_POSITIVES} "
+                     "positivos; por debajo, respaldo Platt (por construcción, 2010, con unos 259 positivos, "
+                     "queda neutro y la isotónica necesita las otras 4 temporadas a favor). Antecedente: la S5 "
+                     "del estudio 04 probó la isotónica con 71-84 positivos en el calibrador de 2022 y empató "
+                     "con S1 en E3",
+        "umbral_isotonica": "fijado a priori: unas 6 veces los positivos del antecedente S5; no se ajusta",
+    },
+    "regla": "decide_phase2 = decide_multi_season (5 temporadas, 4 de 5 a favor y ninguna en contra, umbral de "
+             "empate por rango entre semillas, antelación con banda ±1/n, F1 y antelación pesan igual) con una "
+             f"guarda de AUPRC más estricta: veta si está en contra en >= {PHASE2_AUPRC_VETO} de 5 temporadas "
+             "(Brier y razón MAE siguen con 3 de 5)",
+    "por_que_auprc_mas_estricta": "un calibrador monótono no cambia el orden dentro de un bloque; la AUPRC solo "
+                                  "puede moverse por empates (recorte, escalones de la isotónica) o por un "
+                                  "calibrador no monótono. Una caída de AUPRC en esta fase es un artefacto de la "
+                                  "calibración, no un cambio del modelo",
+    "guarda_calibracion": "por horizonte y temporada que decide, la temporada cuenta en contra si el Brier o el "
+                          "log-loss calibrados son mayores que los sin calibrar en las 5 semillas. Si cuenta en "
+                          f"contra en >= {PHASE2_CALIBRATION_VETO} de 5 temporadas, la variante no se adopta en "
+                          "ningún horizonte. Se reporta también para la referencia",
+    "adopcion": f"una variante se adopta si gana en >= {PHASE2_MIN_HORIZONS_WON} de 3 horizontes, ninguno es "
+                "«pierde» ni «compensa (empate)» y pasa la guarda de calibración. Si en el paso B se adoptan "
+                "varias, se cruzan entre sí con la misma regla; si el cruce empata, se queda la de menos "
+                "parámetros (Platt agrupado 2 < Platt por horizonte 6 < beta 9 < isotónica). Si ninguna se "
+                "adopta, se queda la referencia. La configuración final usa un solo calibrador en los tres "
+                "horizontes",
+    "guardas_antes_de_mirar_resultados": [
+        "G5: calibrate_variant con Platt por horizonte y 1e-6 reproduce bit a bit "
+        "protocol.calibrate_chronologically en las 5 semillas de L",
+        "G6: con Platt (por horizonte o agrupado) y beta, la probabilidad calibrada es no decreciente en la sin "
+        "calibrar dentro de cada horizonte y bloque",
+        "G7: test de no fuga del calibrador: cambiar etiquetas que cierran después del corte de un bloque no "
+        "cambia su probabilidad calibrada (por horizonte y agrupado)",
+        "si una guarda falla, se detiene la fase y se explica; no se ajusta nada para que pase",
+    ],
+    "lecturas_que_no_deciden": [
+        "2010 aparte, lectura sin 2010 (3 de 4) y 2024 como contraste",
+        "parámetros de cada calibrador por bloque (a, b, c; respaldo de beta e isotónica)",
+        "curvas de fiabilidad y semanas brote en [0,40, 0,50) por temporada",
+        "recall en inicios limpios y antelación frente a la persistencia",
+        "HU0007-4 por celda (la regresión no cambia con la calibración)",
+        "comparación con la V1 tal cual en 2022-2023 (ganancia de referencia de la 1a)",
+    ],
+    "multiplicidad": "4 candidatas contra una referencia: la regla exige 4 de 5 temporadas y 2 de 3 horizontes "
+                     "para limitar adopciones por azar; las variantes que empatan no se adoptan",
+    "mlflow": "denguekay/mejora_modelo_fase2_calibracion",
+}
+
+
+def decide_phase2(candidate: pd.DataFrame, reference: pd.DataFrame, ranges: pd.DataFrame,
+                  lead_time_diff: pd.DataFrame) -> pd.DataFrame:
+    """The multi-season rule with the stricter AUPRC veto of phase 2 (symmetric)."""
+    verdict = decide_multi_season(candidate, reference, ranges, lead_time_diff)
+    out = []
+    for _, v in verdict.iterrows():
+        v = v.copy()
+        if v.veredicto == "gana" and v.get("en_contra_auprc", 0) >= PHASE2_AUPRC_VETO:
+            v["veredicto"], v["vetos"] = "compensa (empate)", ", ".join(filter(None, [v.vetos, "auprc"]))
+        elif v.veredicto == "pierde" and v.get("a_favor_auprc", 0) >= PHASE2_AUPRC_VETO:
+            v["veredicto"] = "compensa (empate)"
+            v["vetos_contra_referencia"] = ", ".join(filter(None, [v.vetos_contra_referencia, "auprc"]))
+        out.append(v)
+    return pd.DataFrame(out).reset_index(drop=True)
+
+
+def adopt_phase2(verdict: pd.DataFrame, calibration_against: pd.Series) -> bool:
+    """Adoption of a phase 2 variant: >= 2 horizons won, none lost or offset, calibration guard passed.
+
+    ``calibration_against``: seasons against per horizon (``calibration_guard`` summed by horizon).
+    """
+    won = int(verdict.veredicto.eq("gana").sum())
+    bad = verdict.veredicto.isin(["pierde", "compensa (empate)"]).any()
+    vetoed = bool((calibration_against >= PHASE2_CALIBRATION_VETO).any())
+    return won >= PHASE2_MIN_HORIZONS_WON and not bad and not vetoed
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 
