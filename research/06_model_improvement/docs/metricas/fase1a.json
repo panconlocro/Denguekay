@@ -1,0 +1,6 @@
+{
+  "dispositivo": {
+    "device": "cuda",
+    "n_jobs": 12
+  }
+}
