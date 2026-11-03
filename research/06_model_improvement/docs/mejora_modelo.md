@@ -3,6 +3,54 @@
 Informe del estudio 06. Plan y decisiones de Rosa en [plan.md](plan.md); preregistros en
 `code/preregistration.py`.
 
+## Estado actual (2026-11-03)
+
+Rama `exp/model-improvement`. Para retomar: leer `CLAUDE.md`, [plan.md](plan.md) y este informe, y seguir desde
+aquí.
+
+**Fases cerradas (todas confirmadas por Rosa):**
+
+| Fase | Qué se probó | Qué se adoptó |
+|---|---|---|
+| 0 · Diagnóstico | errores por estado, calibración, persistencia, historia 2000–2016 (sin entrenar) | nada (diagnóstico) |
+| 1a · Más historia | V1 entrenada desde 2005 (L) frente a desde 2017 (R) | **L** (entrenar desde 2005); ganancia de referencia frente a la V1 tal cual: 2022 · h3 +0,046 y h4 +0,106 de F1 |
+| 2 · Calibración | recorte 1e-15, Platt agrupado, beta, isotónica | nada: Platt por horizonte con recorte 1e-6 (beta, cerca en h4, no alcanza la regla) |
+| 3 · Inicios | 3a1 peso a inicios, 3a2 peso por temporada, 3b dos regímenes, 3c′ L + B1 + B2 (enmienda) | nada: L sigue como base (3a1 es un intercambio: más recall de inicios a cambio de orden y brotes en curso) |
+| 5 · Conteo | 5a mezcla con la persistencia, 5b `max_delta_step` por bloque, 5c peso por temporada | **5a**: conteo = w·μ + (1 − w)·persistencia, w por horizonte y bloque con las OOS anteriores |
+
+**Configuración base actual: L + 5a.**
+
+- Modelo: C3 (`base_6` + B3) · E3 · S4_s3 · XGBoost con los hiperparámetros de la V1, entrenado con los orígenes
+  desde 2005, bloques por temporada (ventana creciente), α dentro de la muestra, Platt por horizonte con recorte 1e-6,
+  alerta p ≥ 0,50.
+- **Decisión de diseño (Rosa, 2026-11-03): dos μ con funciones distintas.** Los **casos** publicados salen de la μ
+  mezclada (w·μ + (1 − w)·persistencia); la **probabilidad** de brote (NB2 → Platt) y la alerta salen de la μ del
+  modelo. La lectura de la fase 5 mostró que calcular la probabilidad con la μ mezclada empeora la AUPRC y el Brier
+  en 2–3 temporadas («compensa» en h2, h3 y h4). El intervalo del conteo queda para la fase 7.
+- Código: matrices y orígenes largos y bucle de bloques en `code/phase1_history.py` (`long_matrices`,
+  `long_origins`, `predict_blocks`) y `code/phase3_onsets.py` (`predict_blocks_weighted`); calibración con
+  `denguekay.evaluation.protocol`; mezcla en `code/phase5_counts.py` (`mix_chronologically`, `fit_w`); reglas en
+  `code/preregistration.py`. Predicciones de L en `models/experimentos/mejora_modelo/fase1a/` (no versionado).
+
+**Pendiente del equipo (lo corre el equipo, no Claude):**
+
+1. Celda A del notebook `pipelines/notebooks/02_ingesta_meteo.ipynb` (ERA5 fijo 2017–2025 en
+   `data/bronze/meteo/cache_meteo_era5_2017_2025/`), después de que Rosa confirme el identificador del modelo.
+2. Notebook de comparación `notebooks/03_fase1b_consistencia_clima.ipynb` de este estudio (diferencias por variable
+   y año, celdas compartidas y series idénticas). Con eso Rosa decide el modelo de la historia.
+3. Descarga 2000–2016: celda B del notebook 02 y la sección nueva del notebook 03 del pipeline
+   (`silver/meteo_semanal_distrital_2000_2016.csv`).
+4. Ingesta del Niño 1+2 (NOAA CPC): rama `feat/enso-index-ingestion` (pusheada; PR pendiente) y notebook
+   `pipelines/notebooks/03b_ingesta_enso.ipynb`, junto con el clima de la 1b.
+
+**Siguiente paso:** la 1b cuando el clima 2000–2016 esté disponible (repetir la comparación de historia con A3
+sobre L + 5a, con la regla de 5 temporadas); luego entrenar la fase 4 (Niño 1+2, con el clima ya incluido); luego
+las fases 6 (línea base de otra familia, lectura) y 7 (síntesis, pruebas, auditoría con `revisor-modelado` y
+congelamiento).
+
+**Pendientes del pipeline anotados (no tocar en este estudio):** semana 53 de 2009 en `epi_piura_semanal.csv`;
+`propia_semanas_desde_ultimo_caso` en `gold.py` sin la historia anterior a 2017 (limitación conocida de la V1/V2).
+
 ## Fase 0 · Diagnóstico y techo (cerrada el 2026-11-03)
 
 Notebook `01_diagnostico_techo.ipynb`, cifras en `metricas/fase0.json`, MLflow
@@ -276,3 +324,6 @@ AUPRC, Brier y la antelación.
   a +0,031), pero la AUPRC queda en contra en 2–3 temporadas y el Brier en 2–3. **Casos y probabilidad no deberían
   salir de la misma μ mezclada:** la probabilidad (y el intervalo de la alerta) siguen con la μ del modelo y el conteo
   publicado con la μ mezclada. Cómo se calcula el intervalo del conteo con la μ mezclada queda para la fase 7.
+- **Cierre (confirmado por Rosa, 2026-11-03):** se adopta 5a. La base pasa a ser L + mezcla del conteo con la
+  persistencia. Decisión de diseño: los casos salen de la μ mezclada y la probabilidad de la μ del modelo (ver
+  «Estado actual»). El intervalo del conteo queda para la fase 7.
