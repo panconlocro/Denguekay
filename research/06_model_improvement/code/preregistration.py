@@ -523,6 +523,26 @@ PHASE6 = {
     "mlflow": "denguekay/mejora_modelo_fase6_otras_familias",
 }
 
+PHASE6_RIDGE_ALPHA = 1e-4    # 6a': small L2 penalty fixed a priori, only for blocks/horizons that do not converge
+
+PHASE6_AMENDMENT = {
+    "fecha": "2026-11-03",
+    "estado": "pedida por Rosa después de ver que 6a no convergió (al menos un horizonte en los 18 bloques; h3 "
+              "solo en 2 de 18); commiteada antes de correr 6a′. Es la única enmienda de la fase 6",
+    "variante": "6a′ = GLM Poisson por horizonte (statsmodels `GLM`, familia Poisson, IRLS, maxiter "
+                f"{PHASE6_GLM_MAXITER}) con intercepto y offset log(hist_lag_a + 0,5) (el margen de S4_s3); las "
+                "mismas 9 columnas de C3 con la misma transformación (log1p de los niveles de casos) y "
+                "estandarizadas con el entrenamiento de cada bloque; la α de la NB2 con el estimador de L "
+                "(`negative_binomial_dispersion` sobre el ajuste dentro de la muestra), igual que L con XGBoost",
+    "si_no_converge": f"ese bloque y horizonte se reajusta con una penalización L2 de {PHASE6_RIDGE_ALPHA} (sin "
+                      "penalizar el intercepto; `fit_regularized`, L1_wt = 0) y se reporta",
+    "regla_de_cierre": "si 6a′ no converge sin penalización en la mayoría de los ajustes bloque × horizonte "
+                       "(> 27 de 54), la fase 6 se cierra con el GLM como no interpretable. Si converge, se lee "
+                       "igual que 6a y 6b frente a L + 5a (lectura, no decide)",
+    "guardas": "las de la fase 6: G14 (filas y corte de L), G15 (no fuga por perturbación, test), y la "
+               "reproducción de L + 5a",
+}
+
 
 # ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
