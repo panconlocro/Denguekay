@@ -256,6 +256,89 @@ def adopt_phase2(verdict: pd.DataFrame, calibration_against: pd.Series) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Phase 3 · outbreak onsets (preregistered before training any phase 3 model)
+# ---------------------------------------------------------------------------
+
+PHASE3_ONSET_WEIGHT = 5.0
+PHASE3_SEASON_WEIGHT_CLIP = (0.25, 1.0)  # Rosa: no season weighs more than today
+PHASE3_MIN_REGIME_ROWS = 100
+PHASE3_MIN_HORIZONS_WON = 2
+PHASE3_SIMPLICITY = ("3a1", "3a2", "3b", "3c")  # a tie in a cross keeps the earlier (simpler) one
+
+PHASE3 = {
+    "fecha": "2026-11-03",
+    "estado": "aprobado por Rosa (2026-11-03) con dos ajustes (recorte de 3a2 a [0,25, 1]; fiabilidad y Brier por "
+              "régimen en 3b y 3c), commiteado antes de entrenar ningún modelo de la fase 3",
+    "base": "L: C3 · E3 · S4_s3 entrenada desde 2005 con los hiperparámetros de la V1, Platt por horizonte con "
+            "recorte 1e-6 (cierre de la fase 2); bloques por temporada 2008-2024 y calendario_2025",
+    "fijo": "alerta p >= 0,50, etiqueta, bloques, cortes, calibración (Platt por horizonte, 1e-6), 5 semillas, "
+            "regla de 5 temporadas",
+    "por_que": "en L el recall de las 2 primeras semanas de brotes nuevos es 0,12-0,19 en 2022-2023 y 0,02-0,13 en "
+               "2010, 2015 y 2016, frente a 0,66-0,89 en brotes en curso; la fase 2 mostró que no es de calibración",
+    "brote_nuevo": "semana brote entre las 2 primeras de un episodio con inicio limpio (>= 8 semanas sin brote "
+                   "antes), la misma definición de recall_by_week_type; el inicio de un episodio solo depende de "
+                   "etiquetas anteriores",
+    "variantes": {
+        "3a1_peso_inicios": f"sample_weight = {PHASE3_ONSET_WEIGHT:g} para los orígenes de entrenamiento con al "
+                            "menos uno de sus tres objetivos en brote nuevo, 1 para el resto. Un solo valor, fijado a "
+                            "priori (sin grilla, para no multiplicar comparaciones). La α se estima sin pesos",
+        "3a2_peso_temporada": "sample_weight por temporada del objetivo h=2: mediana(C) / C_s, recortado a "
+                              f"[{PHASE3_SEASON_WEIGHT_CLIP[0]:g}, {PHASE3_SEASON_WEIGHT_CLIP[1]:g}], con C_s los "
+                              "casos objetivo h=2 de los orígenes de entrenamiento del bloque en la temporada s (sin "
+                              "casos: el tope). Las temporadas grandes (2017, 2023) pesan menos y ninguna pesa más que hoy (ajuste de "
+                              "Rosa: no subir el peso de temporadas casi sin casos, como 2019 y 2020). Se recalcula en cada "
+                              "bloque con su entrenamiento",
+        "3b_dos_regimenes": "un modelo para orígenes sin brote en la semana de origen (régimen de inicios) y otro "
+                            "para orígenes en brote (en curso), mismas columnas e hiperparámetros, cada uno con su α "
+                            "por horizonte. El estado es la etiqueta de la semana de origen, conocida al cierre del "
+                            "origen. Si un régimen tiene menos de "
+                            f"{PHASE3_MIN_REGIME_ROWS} orígenes de entrenamiento en un bloque, ese bloque usa el "
+                            "modelo único para ese régimen (se reporta). Un solo Platt por horizonte sobre la "
+                            "probabilidad combinada",
+        "3c_B1_B2_en_inicios": "3b con B1 (dinámica espacial, 10 columnas) y B2 (distritos núcleo, 3 columnas, "
+                               "ranking ajustado con los casos cerrados al corte de cada bloque) solo en el modelo de "
+                               "inicios, calculados en memoria sobre la serie larga. Antecedente: en el estudio 05 no "
+                               "agregaron sobre B3 en el modelo único, pero la fase 1 los marcó observados en los "
+                               "inicios",
+    },
+    "orden": "3a1, 3a2 y 3b se comparan cada una contra L. 3c se compara contra 3b si 3b se adopta y contra L si "
+             "no (y se reporta también frente a 3b). Una a la vez: no se combinan pesos con regímenes en esta fase",
+    "regla": "decide_multi_season tal cual (5 temporadas, 4 de 5 a favor y ninguna en contra, umbral de empate por "
+             "rango entre semillas, antelación con banda ±1/n, F1 y antelación pesan igual; AUPRC, Brier y razón "
+             "MAE vetan con 3 de 5). La AUPRC vuelve al veto general porque aquí el modelo cambia el orden",
+    "adopcion": f"gana en >= {PHASE3_MIN_HORIZONS_WON} de 3 horizontes y ningún horizonte «pierde» ni «compensa "
+                "(empate)». Si se adoptan varias, se cruzan con la misma regla; un empate en el cruce deja la más "
+                "simple (3a1 < 3a2 < 3b < 3c). Si ninguna se adopta, L sigue siendo la base",
+    "guardas_antes_de_mirar_resultados": [
+        "G8: predict_blocks_weighted sin pesos ni regímenes reproduce bit a bit las predicciones guardadas de L "
+        "(fase1a/predicciones_L.csv.gz, μ y probabilidad sin calibrar, semilla 17, todos los bloques), en el "
+        "dispositivo de la 1a (cuda, n_jobs = 12). Con pesos iguales a 1 se reporta la diferencia máxima",
+        "G9: tests de no fuga: cambiar etiquetas o casos posteriores al corte no cambia los pesos de los orígenes de "
+        "entrenamiento (3a1, 3a2); cambiar etiquetas posteriores al cierre del origen no cambia su régimen (3b)",
+        "G10 (solo si se llega a 3c): test de no fuga por perturbación de B1 y B2 sobre la serie larga, y B2 con "
+        "el ranking del corte del bloque",
+        "si una guarda falla, se detiene la fase y se explica; no se ajusta nada para que pase",
+    ],
+    "lecturas_que_no_deciden": [
+        "recall en brote nuevo y en curso por temporada (la pregunta de la fase)",
+        "2010 aparte, lectura sin 2010 (3 de 4) y 2024 como contraste",
+        "HU0007-4 por celda, con regresión (la razón MAE y RMSE cambian con los pesos y los regímenes)",
+        "pesos efectivos por temporada (3a2) y filas y respaldos por régimen (3b)",
+        "3b y 3c: curva de fiabilidad y Brier calibrado por régimen (estado al origen), solo lectura (Rosa)",
+        "conteo por fase de la curva",
+    ],
+    "mlflow": "denguekay/mejora_modelo_fase3_inicios",
+}
+
+
+def adopt_phase3(verdict: pd.DataFrame) -> bool:
+    """Adoption of a phase 3 variant: >= 2 horizons won and none lost or offset."""
+    won = int(verdict.veredicto.eq("gana").sum())
+    bad = verdict.veredicto.isin(["pierde", "compensa (empate)"]).any()
+    return won >= PHASE3_MIN_HORIZONS_WON and not bad
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 
