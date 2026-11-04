@@ -7,6 +7,7 @@ already downloaded district again) works directly against the local disk.
 """
 
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -24,10 +25,19 @@ DAILY_VARS = [
 START, END = "2017-01-01", "2025-12-31"
 GRID_COLUMNS = {"lat_celda": "latitude", "lon_celda": "longitude", "elevacion_celda": "elevation"}
 BATCH_SIZE = 20  # if the limit hits before the batch ends, lower it to 15
+HOURLY_WAIT_SECONDS = 61 * 60   # download_all: wait after the hourly limit (one hour plus a margin)
+MAX_HOURLY_WAITS = 24
 
 
 class APILimitError(Exception):
-    """Open-Meteo hourly or daily limit reached: retrying now makes no sense."""
+    """Open-Meteo hourly or daily limit reached: retrying now makes no sense.
+
+    ``kind`` is "hourly" or "daily", read from the API's reason.
+    """
+
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.kind = "daily" if "Daily" in reason else "hourly"
 
 
 def fetch_district(
@@ -90,7 +100,7 @@ def _already_downloaded(district_id: int, cache_dir: Path = CACHE_METEO) -> bool
 def download_pending_batch(
     districts: pd.DataFrame, batch_size: int = BATCH_SIZE, *,
     start_date: str = START, end_date: str = END, models: str | None = None,
-    cache_dir: Path = CACHE_METEO,
+    cache_dir: Path = CACHE_METEO, raise_on_limit: bool = False,
 ) -> int:
     """
     Download up to `batch_size` pending districts and cache them in
@@ -101,7 +111,9 @@ def download_pending_batch(
     Returns how many districts are still pending after this batch.
 
     Another date range or a fixed model must go to its own `cache_dir`:
-    "resume" only checks that the district's file exists.
+    "resume" only checks that the district's file exists. With `raise_on_limit`
+    the hourly or daily limit is raised (APILimitError) instead of printed; the
+    districts already downloaded stay in the cache.
     """
     if cache_dir == CACHE_METEO and (start_date, end_date, models) != (START, END, None):
         raise ValueError("Otro rango o modelo necesita su propio cache_dir: no se mezcla con cache_meteo/.")
@@ -115,6 +127,8 @@ def download_pending_batch(
         try:
             df = fetch_district(row["lat"], row["lon"], start_date=start_date, end_date=end_date, models=models)
         except APILimitError as e:
+            if raise_on_limit:
+                raise
             print(f"\nLímite alcanzado: {e}")
             print("Espera y vuelve a correr este bloque.")
             break
@@ -130,3 +144,34 @@ def download_pending_batch(
     if remaining == 0:
         print("Listo: ya se puede pasar al armado de la data diaria (bronze -> silver).")
     return remaining
+
+
+def download_all(
+    districts: pd.DataFrame, *, hourly_wait: float = HOURLY_WAIT_SECONDS, max_hourly_waits: int = MAX_HOURLY_WAITS,
+    sleep=time.sleep, **kwargs,
+) -> int:
+    """
+    Download every pending district of `districts`, waiting on its own after the hourly limit.
+
+    Same arguments as `download_pending_batch` (`models`, `cache_dir`, dates). After the
+    hourly limit it prints the time it will resume, waits `hourly_wait` seconds and goes on;
+    it stops after the daily limit or after `max_hourly_waits` waits. Returns how many
+    districts are still pending (0 = done). Running it again resumes from the cache.
+    """
+    waits = 0
+    while True:
+        try:
+            return download_pending_batch(districts, batch_size=len(districts), raise_on_limit=True, **kwargs)
+        except APILimitError as e:
+            cache_dir = kwargs.get("cache_dir", CACHE_METEO)
+            remaining = int((~districts["id_distrito"].apply(_already_downloaded, cache_dir=cache_dir)).sum())
+            if e.kind == "daily":
+                print(f"\nLímite diario: {e}\nSe detiene con {remaining} pendientes; vuelve a correr la celda mañana.")
+                return remaining
+            if waits >= max_hourly_waits:
+                print(f"\nSe alcanzaron {max_hourly_waits} esperas; quedan {remaining}. Vuelve a correr la celda.")
+                return remaining
+            waits += 1
+            resume = datetime.now() + timedelta(seconds=hourly_wait)
+            print(f"\nLímite por hora ({remaining} pendientes). Espera {waits}: reanuda a las {resume:%H:%M}.")
+            sleep(hourly_wait)
