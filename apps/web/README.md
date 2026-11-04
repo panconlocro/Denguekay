@@ -5,6 +5,14 @@ Primera entrega del frontend de vigilancia de dengue en Piura, basada en el punt
 tokens de Figma, Inter local, TanStack Query, React Leaflet y Recharts.
 Solo consume lecturas de /api/v1; no lee datos, modelos ni la BD directamente.
 
+## Trabajo por fases
+
+El [plan de fases](PLAN.md) separa el commit inicial de la propuesta de los cierres que se revisarán con
+el usuario. La [fase 1](docs/fase-01-contrato-y-datos.md) documenta el contrato de cada componente y el
+inventario local. Después se [regeneró gold](docs/actualizacion-gold-20261104.md) por solicitud expresa,
+pero la BD configurada sigue con un esquema antiguo y aún no hay una demo actual de v2 en esta máquina.
+No debe interpretarse la vista previa con fixtures como una publicación completa de v2.
+
 ## Ejecutar en desarrollo
 
 Se necesita Node.js 20.19+ y una API configurada según

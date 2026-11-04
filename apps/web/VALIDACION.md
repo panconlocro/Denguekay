@@ -43,3 +43,12 @@ La primera entrega termina en tablero y navegación con versiones funcionales in
 vistas. El README detalla lo pendiente: métricas e importancias completas, rangos personalizados,
 polígonos publicables, serie regional, incidencia, manual PDF y soporte. También siguen pendientes los
 problemas de backend señalados en la revisión previa y los cambios de soporte de CI/arquitectura.
+
+## Actualización posterior de gold
+
+Por solicitud expresa del usuario se ejecutó el notebook 10 después de esta validación inicial.
+El [informe de regeneración](docs/actualizacion-gold-20261104.md) registra el gold de 20 columnas,
+Great Expectations aprobado y B3 verificada. El problema de esquema antiguo de gold descrito arriba
+ya no representa su estado actual. Permanece una diferencia de igualdad exacta en seno/coseno
+respecto al respaldo, medida en 1,11e-16. No se repitió la suite Python completa ni se afirma que esté
+en verde. La BD operacional y la selección del servidor de vista previa no cambiaron.
