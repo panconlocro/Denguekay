@@ -77,10 +77,21 @@ def read_window(url: str, bounds: tuple = PIURA_BOUNDS) -> tuple[np.ndarray, dic
                        "width": data.shape[1], "crs": dataset.crs, "transform": dataset.window_transform(window),
                        "nodata_declarado": dataset.nodata, "resolucion": dataset.res}
     except RasterioIOError as exc:
-        if "429" in str(exc):
+        if "429" in str(exc) or http_status(url) == 429:
             raise RateLimited(str(exc)) from exc
         raise
     return data, profile
+
+
+def http_status(url: str) -> int | None:
+    """Status of a 1-byte range request. Without the HEAD request, a 429 on the first read reaches GDAL as an
+    HTML page ("not recognized as being in a supported file format"), so the code is asked for explicitly."""
+    import requests
+
+    try:
+        return requests.get(url, headers={"Range": "bytes=0-0", "User-Agent": USER_AGENT}, timeout=60).status_code
+    except requests.RequestException:
+        return None
 
 
 def save_window(data: np.ndarray, profile: dict, path: Path) -> bool:

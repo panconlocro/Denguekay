@@ -46,6 +46,19 @@ class TestUrlsAndChecks(unittest.TestCase):
                                         "chirps-v3.0.sat.2000.01.05.cog")
         self.assertEqual(ch.day_path(d, Path("x")), Path("x") / "2000" / "chirps-v3.0.sat.2000.01.05.tif")
 
+    def test_an_unrecognised_file_that_answers_429_is_rate_limited(self):
+        from unittest.mock import MagicMock, patch
+
+        from rasterio.errors import RasterioIOError
+
+        boom = MagicMock(side_effect=RasterioIOError("not recognized as being in a supported file format"))
+        with patch("rasterio.open", boom), patch("requests.get", return_value=MagicMock(status_code=429)):
+            with self.assertRaises(ch.RateLimited):
+                ch.read_window("https://x/y.cog")
+        with patch("rasterio.open", boom), patch("requests.get", return_value=MagicMock(status_code=206)):
+            with self.assertRaises(RasterioIOError):
+                ch.read_window("https://x/y.cog")
+
     def test_check_window_detects_centroids_on_sea(self):
         data, profile = _window()
         ok = ch.check_window(data, profile, DISTRICTS)
