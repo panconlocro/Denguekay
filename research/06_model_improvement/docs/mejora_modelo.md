@@ -460,6 +460,12 @@ MLflow `b4aaa1cfb6c94074a3dcbb552409afe2`.
   usaría el preliminar `sat`, que según la CHC se calcula con menos estaciones y sin el mismo control de calidad;
   sus valores pueden diferir del final. Cuando sale el final de un mes, las semanas se recalculan con él (el bronze
   conserva ambos). Es un riesgo a medir en la fase 7.
+- **Retraso real del preliminar (medido el 2026-11-04):** con las fechas de modificación del listado
+  `daily/prelim/sat/` de 2025 y 2026 (130 péntadas, 660 días; sin bajar archivos), el retraso entre el fin de la
+  péntada y la publicación tiene mediana 2 días, percentil 90 de 4 y máximo de 18 (en 2025; en 2026 el máximo es
+  5). 96 de 130 péntadas salieron en la fecha del calendario oficial (fin + 2). La ingesta fija la disponibilidad en
+  fin de péntada + 5 días (`PUBLICATION_LAG_DAYS = 5`, rama `feat/chirps-precipitation`, commit `d3b7d9b`), que
+  cubre el 94 % de 2025–2026. Los atrasos mayores se tratan en el diseño del serving.
 
 ## Fase 4 · Señal regional de El Niño (Niño 1+2)
 
