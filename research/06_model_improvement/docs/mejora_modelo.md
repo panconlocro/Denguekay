@@ -47,10 +47,19 @@ aquí.
    Archivo crudo `data/bronze/enso/sstoi_20261103.indices`; `data/silver/enso_nino12_mensual.csv` con 538 meses,
    de 1982-01 a 2026-10.
 
-**Siguiente paso:** la 1b′ (L + 5a + humedad de ERA5-Land, preregistrada) cuando esté el silver de ERA5-Land;
-si se adopta H, se repite la fase 4 sobre L + 5a + H; después, la 6′ (otra familia con clima,
-lectura) y la fase 7 (síntesis, pruebas, auditoría con `revisor-modelado` y congelamiento). Si la 1b′ muestra que
-el clima aporta, el siguiente paso es la precipitación de CHIRPS v3 (ver «Fase 1b′»).
+**Decisión de Rosa (2026-11-04): en la V3 la lluvia es solo CHIRPS v3** (entrenamiento y actualización semanal;
+reemplazo, no agregado). La lluvia «Best match» de Open-Meteo queda solo para la V2: antes de 2017 Open-Meteo no
+tiene lluvia útil y se entrena desde 2005. Ver [plan.md](plan.md), «Decisiones de Rosa (2026-11-04)».
+
+**Siguiente paso, en este orden y con un preregistro commiteado por paso (sin adelantar ni mezclar):**
+
+a) 1b′: L + 5a + humedad de ERA5-Land (preregistrada), cuando esté el silver de ERA5-Land;
+b) la variante que agrega la lluvia de CHIRPS v3 sobre la base que gane en (a), con `fecha_disponible` por semana
+   y una guarda tipo G21 (requisito para preregistrarla);
+c) repetir el Niño 1+2 solo si la base cambió en (a) o en (b). La fase 4 del 2026-11-04 queda como primera medición.
+
+Después, la 6′ (otra familia con clima, lectura) y la fase 7 (síntesis, pruebas, auditoría con `revisor-modelado`
+y congelamiento). La ingesta de CHIRPS v3 va en la rama `feat/chirps-precipitation` (la corre el equipo).
 
 **Pendientes del pipeline anotados (no tocar en este estudio):** semana 53 de 2009 en `epi_piura_semanal.csv`;
 `propia_semanas_desde_ultimo_caso` en `gold.py` sin la historia anterior a 2017 (limitación conocida de la V1/V2).
@@ -447,6 +456,10 @@ MLflow `b4aaa1cfb6c94074a3dcbb552409afe2`.
   SENAMHI suspendió su generación en casi tiempo real y no hay valores después del 2018-06-30. El catálogo de IRIDL
   exige iniciar sesión y no se pudo verificar la licencia de los datos. Una publicación no oficial menciona una
   v3.0 (1981–2025) que no se pudo confirmar en fuentes de SENAMHI. **No sirve para la app con lo verificado.**
+- **Posible desfase entre el entrenamiento y la app (CHIRPS):** el modelo se entrenaría con el final `sat` y la app
+  usaría el preliminar `sat`, que según la CHC se calcula con menos estaciones y sin el mismo control de calidad;
+  sus valores pueden diferir del final. Cuando sale el final de un mes, las semanas se recalculan con él (el bronze
+  conserva ambos). Es un riesgo a medir en la fase 7.
 
 ## Fase 4 · Señal regional de El Niño (Niño 1+2)
 

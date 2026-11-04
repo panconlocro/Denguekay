@@ -81,6 +81,24 @@ p ≥ 0,50 ni la etiqueta de brote (canal endémico).
    existe (2009 tiene 52 semanas). En Piura son 3 filas con 4 casos (distritos 200601, 200701 y 200705), que la
    historia larga deja fuera. Queda anotada; no se toca en este estudio.
 
+## Decisiones de Rosa (2026-11-04, clima y precipitación)
+
+1. **En la V3, la lluvia es solo CHIRPS v3**, para entrenar y para la actualización semanal (reemplazo, no
+   agregado). Antes de 2017 Open-Meteo no tiene lluvia útil (ERA5 a 0,25° deja iguales a los distritos vecinos y
+   ERA5-Land no trae precipitación), y como se entrena desde 2005, la lluvia de Open-Meteo solo cubriría 2017–2025.
+   La lluvia «Best match» de Open-Meteo queda solo para la V2.
+2. **Orden de los pasos de clima, cada uno con su propio preregistro commiteado antes de correr** (no se adelantan
+   ni se mezclan):
+   a) 1b′: L + 5a + humedad de ERA5-Land;
+   b) la variante que agrega la lluvia de CHIRPS v3 sobre la base que gane en (a);
+   c) repetir el Niño 1+2 solo si la base cambió en (a) o en (b).
+3. **La fase 4 cerrada el 2026-11-04 es la primera medición del Niño 1+2** (sobre L + 5a; empate, no se adopta).
+4. **Disponibilidad de CHIRPS:** cada semana lleva una `fecha_disponible` según el calendario del preliminar
+   (péntadas publicadas los días 2, 7, 12, 17, 22 y 27) y una guarda tipo G21: ningún origen usa una semana publicada
+   después de su cierre. Sin esa guarda, la variante (b) no se preregistra.
+5. **Posible desfase entrenamiento–app:** el entrenamiento usa el final `sat` y la app el preliminar `sat`, que usa
+   menos estaciones; pueden diferir.
+
 ## Fase 0 · Diagnóstico y techo (solo lectura, sin entrenar variantes)
 
 - Con las predicciones OOS guardadas de la V2, separa el error por estado:
