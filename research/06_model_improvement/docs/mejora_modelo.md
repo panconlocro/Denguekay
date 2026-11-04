@@ -35,14 +35,16 @@ aquí.
 
 **Pendiente del equipo (lo corre el equipo, no Claude):**
 
-1. Celda A del notebook `pipelines/notebooks/02_ingesta_meteo.ipynb` (ERA5 fijo 2017–2025 en
-   `data/bronze/meteo/cache_meteo_era5_2017_2025/`), después de que Rosa confirme el identificador del modelo.
-2. Notebook de comparación `notebooks/03_fase1b_consistencia_clima.ipynb` de este estudio (diferencias por variable
-   y año, celdas compartidas y series idénticas). Con eso Rosa decide el modelo de la historia.
-3. Descarga 2000–2016: celda B del notebook 02 y la sección nueva del notebook 03 del pipeline
-   (`silver/meteo_semanal_distrital_2000_2016.csv`).
-4. Ingesta del Niño 1+2 (NOAA CPC): rama `feat/enso-index-ingestion` (pusheada; PR pendiente) y notebook
-   `pipelines/notebooks/03b_ingesta_enso.ipynb`, junto con el clima de la 1b.
+1. ~~Celda A (ERA5 fijo 2017–2025)~~: hecha; comparación en `notebooks/03_fase1b_consistencia_clima.ipynb`
+   (commit `fefa3b2`). Rosa descartó ERA5 a 0,25° (precipitación idéntica entre vecinos en 48 distritos) y
+   «Best match» para 2000–2016 (antes de 2017 no tiene el IFS: el empalme existiría sin medirlo).
+2. Celda A2 del notebook 02 del pipeline: ERA5-Land (0,1°) 2017–2025 para una muestra de 16 distritos, con
+   reanudación automática tras el límite por hora (`download_all`), en
+   `data/bronze/meteo/cache_meteo_era5_land_2017_2025/`. Después, repetir la comparación para ERA5-Land; si
+   distingue la precipitación entre vecinos, se propone la descarga 2000–2025 con ERA5-Land a un silver aparte.
+3. ~~Ingesta del Niño 1+2 (NOAA CPC)~~: hecha por Rosa el 2026-11-03 con `pipelines/notebooks/03b_ingesta_enso.ipynb`.
+   Archivo crudo `data/bronze/enso/sstoi_20261103.indices`; `data/silver/enso_nino12_mensual.csv` con 538 meses,
+   de 1982-01 a 2026-10.
 
 **Siguiente paso:** la 1b cuando el clima 2000–2016 esté disponible (repetir la comparación de historia con A3
 sobre L + 5a, con la regla de 5 temporadas); luego entrenar la fase 4 (Niño 1+2, con el clima ya incluido); luego
