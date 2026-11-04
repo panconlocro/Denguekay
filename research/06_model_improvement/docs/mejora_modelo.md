@@ -17,7 +17,8 @@ aquí.
 | 2 · Calibración | recorte 1e-15, Platt agrupado, beta, isotónica | nada: Platt por horizonte con recorte 1e-6 (beta, cerca en h4, no alcanza la regla) |
 | 3 · Inicios | 3a1 peso a inicios, 3a2 peso por temporada, 3b dos regímenes, 3c′ L + B1 + B2 (enmienda) | nada: L sigue como base (3a1 es un intercambio: más recall de inicios a cambio de orden y brotes en curso) |
 | 5 · Conteo | 5a mezcla con la persistencia, 5b `max_delta_step` por bloque, 5c peso por temporada | **5a**: conteo = w·μ + (1 − w)·persistencia, w por horizonte y bloque con las OOS anteriores |
-| 4 · Niño 1+2 | 4a anomalía del último mes disponible, 4b media de 3 meses, sobre L + 5a | nada: empate en los tres horizontes (pendiente de repetir sobre L + 5a + H si la 1b′ adopta H) |
+| 4 · Niño 1+2 | 4a anomalía del último mes disponible, 4b media de 3 meses, sobre L + 5a | nada: empate en los tres horizontes (primera medición) |
+| 1b′ · Humedad ERA5-Land | L + 5a + H (`hum_rel_media_media5_h2` sobre ERA5-Land 2000–2025) | nada: empate en los tres horizontes; la base sigue siendo L + 5a |
 | 6 · Otra familia (lectura) | 6a GLM NB2 (no convergió), enmienda 6a′ GLM Poisson + α NB2, 6b LightGBM; C3 sin clima | nada (lectura): LightGBM empata con L + 5a; 6a′ empata o mejora (gana F1 en h4, mejor antelación, peor Brier en 2016); 6′ con clima, pendiente de la 1b |
 
 **Configuración base actual: L + 5a.**
@@ -53,10 +54,12 @@ tiene lluvia útil y se entrena desde 2005. Ver [plan.md](plan.md), «Decisiones
 
 **Siguiente paso, en este orden y con un preregistro commiteado por paso (sin adelantar ni mezclar):**
 
-a) 1b′: L + 5a + humedad de ERA5-Land (preregistrada), cuando esté el silver de ERA5-Land;
-b) la variante que agrega la lluvia de CHIRPS v3 sobre la base que gane en (a), con `fecha_disponible` por semana
-   y una guarda tipo G21 (requisito para preregistrarla);
-c) repetir el Niño 1+2 solo si la base cambió en (a) o en (b). La fase 4 del 2026-11-04 queda como primera medición.
+a) ~~1b′: L + 5a + humedad de ERA5-Land~~: corrida el 2026-11-04, empate en los tres horizontes; la base sigue
+   siendo L + 5a;
+b) la variante que agrega la lluvia de CHIRPS v3 sobre L + 5a, con `fecha_disponible` por semana y una guarda tipo
+   G21 contra `origen_cierre` + 14 días (requisito para preregistrarla), cuando termine la descarga;
+c) repetir el Niño 1+2 solo si la base cambia en (b) (no cambió en a). La fase 4 del 2026-11-04 queda como primera
+   medición.
 
 Después, la 6′ (otra familia con clima, lectura) y la fase 7 (síntesis, pruebas, auditoría con `revisor-modelado`
 y congelamiento). La ingesta de CHIRPS v3 va en la rama `feat/chirps-precipitation` (la corre el equipo).
@@ -514,3 +517,55 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
   mejora la alerta en las temporadas que deciden. El valor es único por mes para toda la región, y en 2000–2025 hay
   pocos episodios de El Niño costero (el máximo es 2023); con tan pocos años, no se generaliza. Si la 1b′ adopta H,
   4a y 4b se repiten sobre L + 5a + H, como quedó preregistrado.
+
+## Disponibilidad de los datos en la app (2026-11-04)
+
+- **Referencia (decisión de Rosa; *hipótesis*):** la app corre cuando hay casos nuevos, y la Sala Situacional del
+  MINSA va unas 3 semanas atrasada (una sola observación: en la semana epi 44 de 2026 seguía en la 41; no se sabe qué
+  día exacto actualiza). Como referencia conservadora, un dato cuenta como disponible para un origen si se publica a
+  más tardar en `origen_cierre` + 14 días. Con una sola observación, la cifra es una hipótesis a revisar.
+- **Conteo de orígenes afectados desde 2005 (71 110), contra `origen_cierre` + 14 días:**
+  - humedad de ERA5-Land con la alineación h=2 (la última semana usada termina en `origen_cierre`; ERA5-Land se
+    publica unos 5 días después según Open-Meteo): **0** (margen mínimo de 9 días). Contra `origen_cierre` solo, los
+    71 110 quedarían afectados: sin la referencia de los casos, H no estaría disponible al cierre;
+  - CHIRPS con la misma alineación y disponibilidad en fin de péntada + 5 días: **0** (el retraso máximo desde el
+    sábado es de 10 días);
+  - Niño 1+2: la fase 4 usó el último mes con `fecha_disponible` <= `origen_cierre`, más estricto que la nueva
+    referencia; **0** orígenes la violan. Con `origen_cierre` + 14 días, el 46,1 % de los orígenes (32 760) tendría un
+    mes más reciente disponible: la fase 4 fue conservadora. No se vuelve a correr (paso c).
+- **Para el serving:** antes de predecir, la app debe verificar que el clima de la última semana usada (humedad y
+  lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
+  péntada en 2025).
+
+## Fase 1b′ · Humedad de ERA5-Land: resultados (2026-11-04)
+
+Preregistro `PHASE1B_PRIME` (commit `ebad7be`), sin enmiendas: H con la alineación h=2 tal como quedó preregistrada
+(el código acepta un rezago extra, `extra_lag`, que no se usa). Notebook `11_fase1b_prima_humedad.ipynb`; cifras en
+`metricas/fase1b_prima.json`; predicciones en `models/experimentos/mejora_modelo/fase1b_prima/` (no versionado);
+MLflow `denguekay/mejora_modelo_fase1b_prima_humedad` (`baa635b12e0642adbf82574ccf71e1a7`). Silver de entrada
+`data/silver/meteo_humedad_era5_land_2000_2025.csv` (88 140 filas, 2000-01-02 a 2025-12-21, sin vacíos), escrito
+con la excepción autorizada por Rosa (el hash de `meteo_semanal_distrital.csv` no cambió).
+
+- **Guardas:** G17 pasa (H calculada con el silver vigente es igual a `hum_rel_media_media5_h2` del gold en las
+  30 095 filas con valor; diferencia 0, mismos vacíos; distritos mapeados por centroide, gold leído con
+  `float_precision="round_trip"`). G18: el test de no fuga pasa. G19: 0 de 71 110 orígenes desde 2005 sin H. G20:
+  L + 5a reproduce `fase5.json`. Disponibilidad contra `origen_cierre` + 14 días: 0 afectados.
+- **Veredicto (regla de 5 temporadas):** **empate en h2, h3 y h4**; H no se adopta y la base sigue siendo L + 5a.
+  F1 a favor en 0 de 5 temporadas y en contra en 0–1; ninguna guarda veta. La lectura sin 2010 y la regla de razón
+  MAE de la fase 5 también dan empate en los tres horizontes.
+- **Antelación (semilla 17, 193 episodios):** +0,010 [−0,016; 0,036] en h2, −0,010 [−0,031; 0,010] en h3 y −0,005
+  [−0,016; 0,000] en h4; el IC95 incluye 0.
+- **Recall de brotes nuevos** (2 primeras semanas, 5 temporadas × 3 horizontes): mejora en 2 celdas y empeora en 7;
+  son diferencias de 1 a 2 semanas por celda (por ejemplo, 2022 · h3: 8 de 49 con L + 5a frente a 6 de 49).
+- **Conteo (lectura):** la razón MAE baja en 2022 y 2023 (2023 · h3: 0,734 frente a 0,763) y mucho en el contraste
+  2024 (h3: 0,938 frente a 1,238), pero sube en 2010 · h2 y en 2015–2016; la regla de razón MAE da empate. En la
+  HU0007-4 de regresión, 2023 · h3 pasa a cumplir con H (razón MAE 0,734 y RMSE 0,817, ambas <= 0,85; con L + 5a
+  la RMSE era 0,852).
+- **Frente a la V2 (lectura, 2022 y 2023):** en 2022 · h4 la V2 tiene F1 0,333 (recall 0,202) frente a 0,652 de
+  L + 5a y 0,648 de L + 5a + H; en 2023 las tres quedan en F1 de 0,81 a 0,86. La V2 usa la humedad y la lluvia de
+  «Best match» y su propio Platt.
+- **Humedad ERA5-Land − «Best match», 2017–2025:** diferencia media entre −0,22 (2023) y +1,55 (2021) puntos de
+  humedad, MAE de 3,0 a 3,9 y correlación semanal de 0,84 a 0,88 según el año.
+- **Lectura (observación, no conclusión):** con la información de L, la humedad de ERA5-Land no mejora la alerta en
+  las temporadas que deciden; mejora el conteo en algunas temporadas, sin alcanzar la regla. Con pocos brotes, no se
+  generaliza. Siguiente paso: la lluvia de CHIRPS v3 sobre L + 5a (paso b), con su propio preregistro.
