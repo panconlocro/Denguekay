@@ -135,6 +135,7 @@ bronze/
 ├── meteo/cache_meteo_era5_2017_2025/  # estudio 06 (1b): 2017-2025 con ERA5 fijado, solo para comparar
 ├── meteo/cache_meteo_era5_land_2017_2025/  # estudio 06 (1b): 2017-2025 con ERA5-Land (0,1°), solo para comparar
 ├── meteo/cache_meteo_2000_2016/       # estudio 06 (1b): historia 2000-2016, caché aparte
+├── meteo/cache_meteo_era5_land_2000_2016/  # estudio 06 (1b′): ERA5-Land 2000-2016 (humedad y temperatura)
 ├── enso/                    # sstoi.indices de NOAA CPC (Niño 1+2), un archivo por fecha de descarga
 ├── socio/                   # el Excel del censo/proyecciones, sin tocar
 └── epi/                     # Excel y respuestas crudas de la Sala Situacional MINSA
@@ -147,6 +148,7 @@ Silver tiene dos niveles:
 silver/
 ├── meteo_semanal_distrital.csv     # por fuente
 ├── meteo_semanal_distrital_2000_2016.csv  # estudio 06 (1b): historia, aparte del de 2017-2025
+├── meteo_humedad_era5_land_2000_2025.csv  # estudio 06 (1b′): humedad y temperatura ERA5-Land, sin precipitación
 ├── enso_nino12_mensual.csv         # Niño 1+2 mensual con la fecha desde la que se puede usar
 ├── socio_anual.csv
 ├── epi_piura_semanal.csv
