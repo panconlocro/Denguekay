@@ -36,8 +36,11 @@ PIURA_BOUNDS = (-81.3804, -6.5268, -79.1604, -4.0326)
 PIXEL_SIZE = 0.05
 NODATA = -9999.0  # the files declare no nodata; the sea comes as -9999
 USER_AGENT = "Denguekay-UPC-tesis/0.1 (+https://github.com/panconlocro/Denguekay)"
+# CPL_VSIL_CURL_USE_HEAD=NO skips the HEAD request: 2 HTTP requests per day (header + block) instead of 3.
 GDAL_ENV = {"GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR", "GDAL_HTTP_USERAGENT": USER_AGENT,
-            "GDAL_HTTP_MAX_RETRY": "0", "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".cog,.tif"}
+            "GDAL_HTTP_MAX_RETRY": "0", "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".cog,.tif",
+            "CPL_VSIL_CURL_USE_HEAD": "NO"}
+REQUESTS_PER_DAY = 2
 
 INITIAL_PAUSE = 2.0          # seconds between days until the calibration ends
 CALIBRATION_DAYS = 50
@@ -45,6 +48,7 @@ MAX_HOURS = 16.0             # corrected estimate above this: stop and report
 SAFETY = 0.8                 # keep the pace at 80 % of the rate measured before a 429
 BACKOFF_START, BACKOFF_MAX = 120.0, 960.0
 MAX_CONSECUTIVE_ERRORS = 5   # errors other than 429
+MAX_CONSECUTIVE_429 = 6      # 2 + 4 + 8 + 16 + 16 + 16 minutes of waiting without a single day downloaded
 
 
 class RateLimited(Exception):
@@ -179,7 +183,7 @@ class Pacer:
         self.calibrated = True
         return {"dias_medidos": len(self.ok_times), "respuestas_429": len(self.limited_times),
                 "dias_por_minuto_antes_del_429": rate, "lectura_media_s": read, "pausa_s": self.pause,
-                "peticiones_por_dia": 2}
+                "peticiones_por_dia": REQUESTS_PER_DAY}
 
     def seconds_per_day(self) -> float:
         return (float(np.mean(self.read_seconds)) if self.read_seconds else 0.0) + self.pause
@@ -215,7 +219,8 @@ def download_final(start: str = "2000-01-01", end: str = "2025-12-31", *, folder
     """Download every missing day of [start, end]; resumable. Returns the run summary (also the manifest).
 
     States: "completa", "detenida_estimacion" (corrected estimate > max_hours after the calibration),
-    "detenida_errores" (MAX_CONSECUTIVE_ERRORS errors in a row other than 429).
+    "detenida_errores" (MAX_CONSECUTIVE_ERRORS errors in a row other than 429), "detenida_429"
+    (MAX_CONSECUTIVE_429 answers 429 in a row: the server blocks longer than the backoff covers).
     """
     reader = reader or (lambda d: read_window(day_url(d)))
     pacer = pacer or Pacer()
@@ -226,7 +231,7 @@ def download_final(start: str = "2000-01-01", end: str = "2025-12-31", *, folder
                "descargados": 0, "fallidos": [], "commit": git_commit(), "user_agent": USER_AGENT,
                "inicio": datetime.now().isoformat(timespec="seconds"), "estado": "completa"}
     print(f"Días en el rango: {len(days)} | ya guardados: {summary['ya_existian']} | pendientes: {len(pending)}")
-    errors, backoff, i = 0, BACKOFF_START, 0
+    errors, limited, backoff, i = 0, 0, BACKOFF_START, 0
     while i < len(pending):
         day = pending[i]
         t0 = clock()
@@ -234,6 +239,11 @@ def download_final(start: str = "2000-01-01", end: str = "2025-12-31", *, folder
             data, profile = reader(day)
         except RateLimited:
             pacer.limited_times.append(clock())
+            limited += 1
+            if limited >= MAX_CONSECUTIVE_429:
+                summary["estado"] = "detenida_429"
+                print(f"{limited} respuestas 429 seguidas en {day}: se detiene para revisar con Rosa.")
+                break
             print(f"HTTP 429 en {day}: espera {backoff / 60:.0f} min y reintenta")
             sleep(backoff)
             backoff = min(backoff * 2, BACKOFF_MAX)
@@ -251,7 +261,7 @@ def download_final(start: str = "2000-01-01", end: str = "2025-12-31", *, folder
         saver(data, profile, day_path(day, folder))
         pacer.ok_times.append(clock())
         summary["descargados"] += 1
-        errors, backoff, i = 0, BACKOFF_START, i + 1
+        errors, limited, backoff, i = 0, 0, BACKOFF_START, i + 1
         if not pacer.calibrated and summary["descargados"] >= pacer.calibration_days:
             summary["calibracion"] = pacer.calibrate()
             hours = (len(pending) - i) * pacer.seconds_per_day() / 3600

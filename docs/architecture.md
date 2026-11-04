@@ -300,7 +300,8 @@ src/denguekay/serving/
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
-└── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
+├── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
+└── chirps_download.py        # corrida desatendida de la descarga de CHIRPS (celdas A y B del 03c)
 ```
 
 ## 3b. `apps/api/` — la API

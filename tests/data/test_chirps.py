@@ -108,6 +108,15 @@ class TestSaveAndDownload(unittest.TestCase):
         self.assertEqual((summary["descargados"], summary["fallidos"]), (10, []))
         self.assertGreaterEqual(clock.t, ch.BACKOFF_START * 3)   # 120 s + 240 s of backoff
 
+    def test_stops_after_several_429_in_a_row(self):
+        def reader(d):
+            if d >= date(2000, 1, 4):
+                raise ch.RateLimited("429")
+            return _window()
+
+        summary, *_ = self._run(reader)
+        self.assertEqual((summary["estado"], summary["descargados"]), ("detenida_429", 3))
+
     def test_other_errors_are_recorded_and_stop_after_several(self):
         def reader(d):
             raise OSError("timeout")
