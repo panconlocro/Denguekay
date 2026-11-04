@@ -8,6 +8,8 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "dev:demo": "node tools/dev.mjs demo-v2",
+    "dev:fixtures": "node tools/dev.mjs fixtures",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc -b",

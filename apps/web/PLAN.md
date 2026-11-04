@@ -28,27 +28,28 @@ de soporte fuera de esta carpeta, como CI y arquitectura global, se tramitan por
 
 ## Fases y condiciones de cierre
 
-| Fase                         | Entregable                                                                   | Condición de cierre                                                                         | Estado                                                   |
-| ---------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| 1. Contrato y alcance        | Matriz componente → endpoint → campo; inventario de datos y brechas          | Fuentes, faltantes y condiciones de integración documentados sin inventar datos             | Documentada; pendiente de revisión del usuario           |
-| 2. Base visual e integración | Auditar la base existente, componentes, navegación, estados y cliente tipado | Fuente de API identificada, entorno de pruebas claramente diferenciado y estados coherentes | Pendiente; existe código inicial reutilizable            |
-| 3. Tablero                   | Indicadores, priorización, resumen geográfico y vigencia                     | Datos comprobados por horizonte y alcance de filtros explícito                              | Pendiente; existe versión inicial                        |
-| 4. Mapa y detalle            | Mapa, selección, magnitud, intervalos y serie distrital                      | Recorrido completo, fechas coherentes y ausencia de valores sustituidos                     | Pendiente; existe versión inicial                        |
-| 5. Alertas                   | Listados activos/retirados, filtros, orden y detalle                         | Paginación completa y avisos experimentales diferenciados                                   | Pendiente; existe versión inicial                        |
-| 6. Desempeño y ayuda         | Métricas por bloque, persistencia, importancias y manual                     | Métricas trazables a una versión y recursos de ayuda reales                                 | Pendiente; existen vistas iniciales                      |
-| 7. Validación de entrega     | Pruebas funcionales, accesibilidad, fidelidad visual, build y documentación  | Evidencia de la implementación acordada y CI del PR en verde                                | Pendiente; las pruebas previas no sustituyen este cierre |
+| Fase                         | Entregable                                                                   | Condición de cierre                                                                         | Estado                                                    |
+| ---------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 1. Contrato y alcance        | Matriz componente → endpoint → campo; inventario de datos y brechas          | Fuentes, faltantes y condiciones de integración documentados sin inventar datos             | Revisada; usuario autorizó continuar con «siguiente fase» |
+| 2. Base visual e integración | Auditar la base existente, componentes, navegación, estados y cliente tipado | Fuente de API identificada, entorno de pruebas claramente diferenciado y estados coherentes | Implementada; pendiente de revisión del usuario           |
+| 3. Tablero                   | Indicadores, priorización, resumen geográfico y vigencia                     | Datos comprobados por horizonte y alcance de filtros explícito                              | Pendiente; existe versión inicial                         |
+| 4. Mapa y detalle            | Mapa, selección, magnitud, intervalos y serie distrital                      | Recorrido completo, fechas coherentes y ausencia de valores sustituidos                     | Pendiente; existe versión inicial                         |
+| 5. Alertas                   | Listados activos/retirados, filtros, orden y detalle                         | Paginación completa y avisos experimentales diferenciados                                   | Pendiente; existe versión inicial                         |
+| 6. Desempeño y ayuda         | Métricas por bloque, persistencia, importancias y manual                     | Métricas trazables a una versión y recursos de ayuda reales                                 | Pendiente; existen vistas iniciales                       |
+| 7. Validación de entrega     | Pruebas funcionales, accesibilidad, fidelidad visual, build y documentación  | Evidencia de la implementación acordada y CI del PR en verde                                | Pendiente; las pruebas previas no sustituyen este cierre  |
 
 ## Fase actual
 
-La [fase 1](docs/fase-01-contrato-y-datos.md) identifica qué está expuesto por la API y qué datos
-operacionales existen en esta máquina. El resultado de preparación de datos es **no listo para validar
-la publicación completa v2**: la BD configurada es antigua y no se encontró la demo actual de v2.
+La [fase 1](docs/fase-01-contrato-y-datos.md) identificó el contrato y las brechas de datos. Al cerrarla,
+la BD configurada era antigua y faltaba una demo actual de v2.
 
 Durante la fase 1 el usuario autorizó expresamente ejecutar el notebook 10. El gold se regeneró y
 validó; su [informe de actualización](docs/actualizacion-gold-20261104.md) registra el respaldo, los
 hashes y una diferencia mínima de seno/coseno con el archivo antiguo. No se ejecutaron migraciones,
-entrenamiento ni publicación. La BD y los artefactos de v2 siguen pendientes.
+entrenamiento ni publicación durante esa fase.
 
-El siguiente paso requiere revisar estos resultados y elegir la fuente real para integrar: una demo
-actual ya publicada de v2 o una API de desarrollo compatible y verificada. Entrenar/publicar v2
-localmente sería trabajo adicional de backend; ejecutar el notebook de gold no realizó esos pasos.
+Para la fase 2 el usuario eligió expresamente «Preparar demo local de v2». Se ejecutó el constructor
+existente del backend con el gold regenerado, generando una SQLite y artefactos nuevos, separados de
+la base antigua. El [informe de fase 2](docs/fase-02-integracion-demo-v2.md) registra la integración,
+las verificaciones y sus límites. La fase 3 requiere la siguiente aprobación; las versiones iniciales
+de sus pantallas siguen siendo la base para revisarlas.

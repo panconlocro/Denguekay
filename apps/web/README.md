@@ -9,9 +9,10 @@ Solo consume lecturas de /api/v1; no lee datos, modelos ni la BD directamente.
 
 El [plan de fases](PLAN.md) separa el commit inicial de la propuesta de los cierres que se revisarán con
 el usuario. La [fase 1](docs/fase-01-contrato-y-datos.md) documenta el contrato de cada componente y el
-inventario local. Después se [regeneró gold](docs/actualizacion-gold-20261104.md) por solicitud expresa,
-pero la BD configurada sigue con un esquema antiguo y aún no hay una demo actual de v2 en esta máquina.
-No debe interpretarse la vista previa con fixtures como una publicación completa de v2.
+inventario local. Después se [regeneró gold](docs/actualizacion-gold-20261104.md) por solicitud expresa.
+La [fase 2](docs/fase-02-integracion-demo-v2.md) integra una demo local v2 autorizada por el usuario,
+con base y artefactos separados de la BD antigua. La interfaz identifica el entorno y verifica las
+versiones de v2 antes de mostrar sus resultados. Su corte sigue siendo diciembre de 2025.
 
 ## Ejecutar en desarrollo
 
@@ -28,10 +29,30 @@ La API debe iniciarse aparte con la BD migrada y cargada. Un fallo de conexión 
 no hay datos de ejemplo como reemplazo en ejecución.
 
 Para otra URL, copiar .env.example a .env.local y ajustar API_PROXY_TARGET (proxy de desarrollo).
+VITE_DATA_SOURCE identifica el entorno: `api`, `demo-v2` o `fixtures`; si falta, se muestra una advertencia.
 En producción, VITE_API_BASE_URL es la URL pública completa terminada en /api/v1. Las variables VITE_*
 son públicas y se incorporan al build: nunca colocar API_KEY ni credenciales de BD o Supabase.
 Configurar CORS en la API para el origen del frontend y el hosting de la SPA para devolver index.html
 al abrir rutas internas.
+
+### Demo local v2
+
+Con la demo ya preparada, desde la raíz:
+
+```bash
+.venv/bin/python apps/web/tools/serve_demo.py
+```
+
+Desde esta carpeta, en otra terminal:
+
+```bash
+npm run dev:demo
+```
+
+La API escucha en 18001 y abre solo `models/serving/demo/denguekay_demo.sqlite` en modo de lectura;
+no migra la base antigua ni entrena al arrancar. Vite usa ese proxy y la etiqueta `demo-v2`.
+Los comandos para preparar una demo que aún no existe están en el informe de fase 2; regenerarla
+es una operación explícita, independiente de iniciar el frontend.
 
 ## Qué incluye
 
@@ -103,6 +124,8 @@ Para probar con la API real sobre fixtures aisladas, sin usar la BD del proyecto
    En Windows: .venv\Scripts\python apps/web/e2e/serve_api.py. Crea una SQLite temporal migrada y publica
    modelos de prueba sobre fixtures; escucha en 127.0.0.1:18000. No escribe en data/.
    Las fixtures usan v0, h=2 y h=4; h=3 no disponible comprueba ese estado del contrato.
+   Para una vista previa manual, usar `npm run dev:fixtures`: su banda visible distingue las fixtures
+   de la demo v2 e informa que contienen valores alterados para pruebas de interfaz.
 
 2. Desde apps/web, instalar el navegador una vez y ejecutar:
 
@@ -118,6 +141,15 @@ Para probar con la API real sobre fixtures aisladas, sin usar la BD del proyecto
 
 Se prueban escritorio y móvil: filtros, navegación, avisos, assets, horizonte sin modelo y recuperación
 tras 503. Los datos esperados son los de las fixtures, no los de una BD de desarrollo o producción.
+
+Para probar con la demo v2, iniciar `tools/serve_demo.py` y ejecutar:
+
+```bash
+WEB_TEST_SOURCE=demo-v2 npm run test:e2e
+```
+
+En PowerShell, definir primero `$env:WEB_TEST_SOURCE="demo-v2"`. Este perfil usa 18001 y comprueba
+los tres horizontes, el recorrido distrital y el bloqueo de una conexión con otra versión.
 
 El CI del frontend y el mapa global de arquitectura se integrarán como cambios de soporte separados.
 Esta rama conserva el alcance apps/web establecido en CONTRIBUTING.md.

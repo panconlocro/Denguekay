@@ -14,7 +14,9 @@ import { get } from './api/client';
 import { useDistricts, useSummary } from './api/queries';
 import type { Configuration, District } from './api/types';
 import { Filters } from './components/Filters';
+import { SourceNotice } from './components/SourceNotice';
 import { Card, Failure, Icon, Loading } from './components/ui';
+import { dataSource, verifyDemoV2 } from './lib/dataSource';
 import { date, targetPassed, weekLabel } from './lib/format';
 import { DashboardPage } from './pages/DashboardPage';
 import {
@@ -66,13 +68,24 @@ function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const match = useMatch('/distritos/:ubigeo');
+  const source = dataSource(import.meta.env.VITE_DATA_SOURCE);
+  const identity = useQuery({
+    queryKey: ['demo-v2-identity'],
+    enabled: source === 'demo-v2',
+    queryFn: async ({ signal }) => {
+      const models = await get('/api/v1/modelos/activo', {}, signal);
+      verifyDemoV2(models.elementos);
+      return models;
+    },
+  });
+  const sourceReady = source !== 'demo-v2' || (identity.isSuccess && !identity.isError);
   const config = useQuery({
     queryKey: ['configuration'],
     queryFn: ({ signal }) => get('/api/v1/configuracion', {}, signal),
   });
   const catalogue = useDistricts();
   const [params, setParams] = useSearchParams();
-  const configuration = config.isError ? undefined : config.data;
+  const configuration = config.isError || !sourceReady ? undefined : config.data;
   const requestedHorizon = Number(params.get('horizonte'));
   const horizon = configuration?.horizontes.some((h) => h.horizonte === requestedHorizon)
     ? requestedHorizon
@@ -103,7 +116,7 @@ function Layout() {
       ? 'Tablero de vigilancia y pronóstico'
       : navigation.find((n) => n.to !== '/' && location.pathname.startsWith(n.to))?.name ||
         'Página no encontrada';
-  const currentSummary = summary.isError ? undefined : summary.data;
+  const currentSummary = !configuration || summary.isError ? undefined : summary.data;
   const context = configuration
     ? { configuration, districts, horizon, enabled, province, district, search }
     : null;
@@ -165,7 +178,16 @@ function Layout() {
             )}
           </div>
         </header>
-        {config.isError ? (
+        <SourceNotice
+          source={source}
+          verified={sourceReady}
+          cutoff={identity.data?.fecha_corte_datos}
+        />
+        {source === 'demo-v2' && identity.isError ? (
+          <Card>
+            <Failure error={identity.error} retry={() => void identity.refetch()} />
+          </Card>
+        ) : config.isError ? (
           <Card>
             <Failure error={config.error} retry={() => void config.refetch()} />
           </Card>

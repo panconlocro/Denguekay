@@ -7,6 +7,7 @@ test('published dashboard, geographic filters and district navigation', async ({
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/?horizonte=2');
+  await expect(page.getByText('Entorno de pruebas · muestra v0', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Distritos prioritarios' })).toBeVisible();
   await expect(page.getByText('Experimental: modelo no validado', { exact: true })).toBeVisible();
   await expect(page.getByText('Consulta histórica · objetivo pasado')).toBeVisible();

@@ -52,3 +52,19 @@ Great Expectations aprobado y B3 verificada. El problema de esquema antiguo de g
 ya no representa su estado actual. Permanece una diferencia de igualdad exacta en seno/coseno
 respecto al respaldo, medida en 1,11e-16. No se repitió la suite Python completa ni se afirma que esté
 en verde. La BD operacional y la selección del servidor de vista previa no cambiaron.
+
+## Fase 2: integración posterior con la demo local v2
+
+Por elección expresa del usuario se preparó una base nueva de demo v2 con el constructor existente,
+sin migrar la base antigua. La vista previa ahora usa esa API en modo de lectura, con una banda de
+procedencia y comprobación de versiones. Corte: 27/12/2025; 65 distritos por horizonte, h=2, 3 y 4.
+
+Pasaron 12 pruebas unitarias, ESLint, TypeScript, build y formato. Playwright aprobó 4 recorridos
+con v2 y 8 con fixtures, ambos perfiles en escritorio y móvil. También se comprobaron 39 respuestas
+HTTP, los hashes de los artefactos y el rechazo de escrituras en la demo. Las capturas de escritorio
+y móvil se inspeccionaron. Las 9 guardas de estructura y contrato OpenAPI pasaron tras preparar los
+archivos en el índice. Great Expectations de la publicación: 107/107 en silver y 42/42 en gold.
+El [informe de fase 2](docs/fase-02-integracion-demo-v2.md) contiene cifras y evidencia local.
+
+No se repitió la suite Python completa y no se afirma que esté en verde. Persisten los límites de
+entorno y equivalencia ya documentados. No se registró un modelo final en MLflow ni se desplegó.
