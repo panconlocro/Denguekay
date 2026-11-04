@@ -3,10 +3,10 @@
 Informe del estudio 06. Plan y decisiones de Rosa en [plan.md](plan.md); preregistros en
 `code/preregistration.py`.
 
-## Estado actual (2026-11-03)
+## Estado actual (2026-11-04)
 
 Rama `exp/model-improvement`. Para retomar: leer `CLAUDE.md`, [plan.md](plan.md) y este informe, y seguir desde
-aquí.
+aquí. El estudio está en pausa por decisión de Rosa (2026-11-04), con la lluvia pendiente.
 
 **Fases cerradas (todas confirmadas por Rosa):**
 
@@ -19,9 +19,9 @@ aquí.
 | 5 · Conteo | 5a mezcla con la persistencia, 5b `max_delta_step` por bloque, 5c peso por temporada | **5a**: conteo = w·μ + (1 − w)·persistencia, w por horizonte y bloque con las OOS anteriores |
 | 4 · Niño 1+2 | 4a anomalía del último mes disponible, 4b media de 3 meses, sobre L + 5a | nada: empate en los tres horizontes (primera medición) |
 | 1b′ · Humedad ERA5-Land | L + 5a + H (`hum_rel_media_media5_h2` sobre ERA5-Land 2000–2025) | nada: empate en los tres horizontes; la base sigue siendo L + 5a |
-| 6 · Otra familia (lectura) | 6a GLM NB2 (no convergió), enmienda 6a′ GLM Poisson + α NB2, 6b LightGBM; C3 sin clima | nada (lectura): LightGBM empata con L + 5a; 6a′ empata o mejora (gana F1 en h4, mejor antelación, peor Brier en 2016); 6′ con clima, pendiente de la 1b |
+| 6 · Otra familia (lectura) | 6a GLM NB2 (no convergió), enmienda 6a′ GLM Poisson + α NB2, 6b LightGBM; C3 sin clima | nada (lectura): LightGBM empata con L + 5a; 6a′ empata o mejora (gana F1 en h4, mejor antelación, peor Brier en 2016); 6′ con clima, pendiente |
 
-**Configuración base actual: L + 5a.**
+**Base candidata: L + 5a.**
 
 - Modelo: C3 (`base_6` + B3) · E3 · S4_s3 · XGBoost con los hiperparámetros de la V1, entrenado con los orígenes
   desde 2005, bloques por temporada (ventana creciente), α dentro de la muestra, Platt por horizonte con recorte 1e-6,
@@ -35,34 +35,39 @@ aquí.
   `denguekay.evaluation.protocol`; mezcla en `code/phase5_counts.py` (`mix_chronologically`, `fit_w`); reglas en
   `code/preregistration.py`. Predicciones de L en `models/experimentos/mejora_modelo/fase1a/` (no versionado).
 
-**Pendiente del equipo (lo corre el equipo, no Claude):**
+**Datos del clima ya disponibles (los corrió el equipo):**
 
-1. ~~Celda A (ERA5 fijo 2017–2025)~~: hecha; comparación en `notebooks/03_fase1b_consistencia_clima.ipynb`
-   (commit `fefa3b2`). Rosa descartó ERA5 a 0,25° (precipitación idéntica entre vecinos en 48 distritos) y
-   «Best match» para 2000–2016 (antes de 2017 no tiene el IFS: el empalme existiría sin medirlo).
-2. ~~Celda A2 (ERA5-Land, muestra de 16 distritos)~~: hecha. ERA5-Land no trae precipitación en Open-Meteo
-   (ver «Fase 1b′»). Pendiente: celdas A3 y B2 del notebook 02 (ERA5-Land 2000–2025, 65 distritos, humedad y
-   temperatura; unos 4–5 días por el límite diario del API) y la sección 1b′ del notebook 03 del pipeline, que
-   escribe `data/silver/meteo_humedad_era5_land_2000_2025.csv` (rama `feat/era5-land-humidity-history`).
-3. ~~Ingesta del Niño 1+2 (NOAA CPC)~~: hecha por Rosa el 2026-11-03 con `pipelines/notebooks/03b_ingesta_enso.ipynb`.
-   Archivo crudo `data/bronze/enso/sstoi_20261103.indices`; `data/silver/enso_nino12_mensual.csv` con 538 meses,
-   de 1982-01 a 2026-10.
+- Humedad y temperatura de ERA5-Land 2000–2025 para los 65 distritos: `data/silver/meteo_humedad_era5_land_2000_2025.csv`
+  (88 140 filas; bronze en `cache_meteo_era5_land_2000_2016/` y `cache_meteo_era5_land_2017_2025/`). Se usó en la 1b′.
+- Niño 1+2 de NOAA CPC: `data/silver/enso_nino12_mensual.csv` (538 meses, 1982-01 a 2026-10). Se usó en la fase 4.
+- Rosa descartó ERA5 a 0,25° (precipitación idéntica entre vecinos en 48 distritos) y «Best match» para 2000–2016;
+  ERA5-Land no trae precipitación en Open-Meteo (ver «Fase 1b′»).
 
 **Decisión de Rosa (2026-11-04): en la V3 la lluvia es solo CHIRPS v3** (entrenamiento y actualización semanal;
 reemplazo, no agregado). La lluvia «Best match» de Open-Meteo queda solo para la V2: antes de 2017 Open-Meteo no
 tiene lluvia útil y se entrena desde 2005. Ver [plan.md](plan.md), «Decisiones de Rosa (2026-11-04)».
 
-**Siguiente paso, en este orden y con un preregistro commiteado por paso (sin adelantar ni mezclar):**
+**Pasos de clima (un preregistro commiteado por paso, sin adelantar ni mezclar):**
 
 a) ~~1b′: L + 5a + humedad de ERA5-Land~~: corrida el 2026-11-04, empate en los tres horizontes; la base sigue
-   siendo L + 5a;
-b) la variante que agrega la lluvia de CHIRPS v3 sobre L + 5a, con `fecha_disponible` por semana y una guarda tipo
-   G21 contra `origen_cierre` + 14 días (requisito para preregistrarla), cuando termine la descarga;
-c) repetir el Niño 1+2 solo si la base cambia en (b) (no cambió en a). La fase 4 del 2026-11-04 queda como primera
-   medición.
+   siendo L + 5a.
+b) **Lluvia de CHIRPS v3 sobre L + 5a: en pausa (Rosa, 2026-11-04).** La ingesta está en la rama
+   `feat/chirps-precipitation` (sin PR), con `fecha_disponible` por semana (fin de péntada + 5 días) y la guarda tipo
+   G21 contra `origen_cierre` + 14 días (0 orígenes afectados). La descarga desde los COG del servidor de la CHC
+   choca con su límite de tasa (HTTP 429 a las pocas decenas de peticiones, con bloqueos de más de media hora): se
+   bajaron 24 días (2000-01-01 a 2000-01-24) en `data/bronze/chirps/v3_sat/final/`, que se conservan; ninguna de
+   las dos corridas llegó a escribir su manifiesto. **Opciones pendientes, a decidir por Rosa:**
+   1. bajar la lluvia por Google Earth Engine (CHIRPS v3 diario `sat` publicado en su catálogo), con una cuenta y
+      una ingesta nueva;
+   2. dejar la lluvia fuera de la V3 y anotarla como trabajo futuro.
+c) Repetir el Niño 1+2 solo si la base cambia en (b). La fase 4 del 2026-11-04 queda como primera medición.
 
-Después, la 6′ (otra familia con clima, lectura) y la fase 7 (síntesis, pruebas, auditoría con `revisor-modelado`
-y congelamiento). La ingesta de CHIRPS v3 va en la rama `feat/chirps-precipitation` (la corre el equipo).
+**Por hacer:** la 6′ (otra familia con clima, lectura), si se retoma la lluvia; y la **fase 7** (síntesis frente a la
+V2 con la HU0007-4 por celda, pruebas obligatorias, auditoría con `revisor-modelado`, intervalo del conteo con la μ
+mezclada y congelamiento). No se ha empezado.
+
+**Ramas abiertas sin PR:** `feat/chirps-precipitation` (ingesta de CHIRPS v3) y `fix/notebook-02-era5-land-imports`
+(imports de las celdas de ERA5-Land del notebook 02). Los PR y los merges los decide Rosa.
 
 **Pendientes del pipeline anotados (no tocar en este estudio):** semana 53 de 2009 en `epi_piura_semanal.csv`;
 `propia_semanas_desde_ultimo_caso` en `gold.py` sin la historia anterior a 2017 (limitación conocida de la V1/V2).
