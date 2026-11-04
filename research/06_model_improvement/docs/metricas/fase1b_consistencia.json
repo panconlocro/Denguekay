@@ -1,0 +1,3421 @@
+{
+ "cobertura": {
+  "semanas_actual": 30485,
+  "semanas_fijo": 30485,
+  "solo_actual": 0,
+  "solo_fijo": 0
+ },
+ "modelo_fijo_cache": "cache_meteo_era5_2017_2025",
+ "por_variable": [
+  {
+   "variable": "temp_media",
+   "filas": 30485,
+   "nulos": 0,
+   "media_actual": 21.231484805173505,
+   "diferencia_media": 0.5240366456571147,
+   "mae": 0.869410248600014,
+   "max_abs": 4.328571428571429,
+   "correlacion": 0.9731374073128627,
+   "iguales": 0.004165983270460883
+  },
+  {
+   "variable": "temp_max",
+   "filas": 30485,
+   "nulos": 0,
+   "media_actual": 28.58365097588978,
+   "diferencia_media": 0.029630966048876474,
+   "mae": 1.5956404789240608,
+   "max_abs": 7.800000000000001,
+   "correlacion": 0.9217289117842922,
+   "iguales": 0.01866491717237986
+  },
+  {
+   "variable": "temp_min",
+   "filas": 30485,
+   "nulos": 0,
+   "media_actual": 16.316726258815812,
+   "diferencia_media": 0.6915105789732655,
+   "mae": 1.095210759389864,
+   "max_abs": 5.800000000000001,
+   "correlacion": 0.9591032141701503,
+   "iguales": 0.0330654420206659
+  },
+  {
+   "variable": "precip_total_mm",
+   "filas": 30485,
+   "nulos": 0,
+   "media_actual": 17.923191733639495,
+   "diferencia_media": 2.4936722978514023,
+   "mae": 10.590683942922748,
+   "max_abs": 422.7,
+   "correlacion": 0.8239463588531508,
+   "iguales": 0.19671969821223553
+  },
+  {
+   "variable": "lluvia_total_mm",
+   "filas": 30485,
+   "nulos": 0,
+   "media_actual": 17.923191733639495,
+   "diferencia_media": 2.4936722978514023,
+   "mae": 10.590683942922748,
+   "max_abs": 422.7,
+   "correlacion": 0.8239463588531508,
+   "iguales": 0.19671969821223553
+  },
+  {
+   "variable": "hum_rel_media",
+   "filas": 30485,
+   "nulos": 0,
+   "media_actual": 72.89861993017644,
+   "diferencia_media": 0.5626373626373626,
+   "mae": 3.902546920030929,
+   "max_abs": 29.857142857142854,
+   "correlacion": 0.8372513881490465,
+   "iguales": 0.012202722650483845
+  },
+  {
+   "variable": "viento_max",
+   "filas": 30485,
+   "nulos": 0,
+   "media_actual": 20.03381007052649,
+   "diferencia_media": -4.185668361489257,
+   "mae": 4.4679514515335415,
+   "max_abs": 21.1,
+   "correlacion": 0.8691557993585036,
+   "iguales": 0.0052484828604231586
+  },
+  {
+   "variable": "radiacion_total",
+   "filas": 30485,
+   "nulos": 0,
+   "media_actual": 146.06747219944234,
+   "diferencia_media": -0.6105320649499754,
+   "mae": 7.476098737083811,
+   "max_abs": 48.41999999999999,
+   "correlacion": 0.8636947315697642,
+   "iguales": 0.0003608331966540922
+  },
+  {
+   "variable": "et0_total",
+   "filas": 30485,
+   "nulos": 0,
+   "media_actual": 31.05200360833197,
+   "diferencia_media": -0.5736998523864195,
+   "mae": 2.089084467771035,
+   "max_abs": 16.410000000000004,
+   "correlacion": 0.9174093753694043,
+   "iguales": 0.0013121207151057896
+  }
+ ],
+ "por_variable_anio": [
+  {
+   "anio": 2017,
+   "variable": "temp_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 20.96228233305156,
+   "diferencia_media": 0.6119061707523247,
+   "mae": 0.9043491124260354,
+   "max_abs": 3.042857142857141,
+   "correlacion": 0.9755111460513971,
+   "iguales": 0.0029585798816568047
+  },
+  {
+   "anio": 2017,
+   "variable": "temp_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 27.63319526627219,
+   "diferencia_media": 0.3844970414201183,
+   "mae": 1.5101775147928993,
+   "max_abs": 5.799999999999997,
+   "correlacion": 0.9129073274532618,
+   "iguales": 0.020710059171597635
+  },
+  {
+   "anio": 2017,
+   "variable": "temp_min",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 16.541508875739645,
+   "diferencia_media": 0.5125147928994084,
+   "mae": 1.0299112426035504,
+   "max_abs": 5.200000000000001,
+   "correlacion": 0.9631132161452437,
+   "iguales": 0.0378698224852071
+  },
+  {
+   "anio": 2017,
+   "variable": "precip_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 35.13905325443787,
+   "diferencia_media": -0.9504437869822483,
+   "mae": 15.106183431952664,
+   "max_abs": 422.7,
+   "correlacion": 0.8806987618452872,
+   "iguales": 0.15828402366863906
+  },
+  {
+   "anio": 2017,
+   "variable": "lluvia_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 35.13905325443787,
+   "diferencia_media": -0.9504437869822483,
+   "mae": 15.106183431952664,
+   "max_abs": 422.7,
+   "correlacion": 0.8806987618452872,
+   "iguales": 0.15828402366863906
+  },
+  {
+   "anio": 2017,
+   "variable": "hum_rel_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 77.00016906170752,
+   "diferencia_media": 0.9860101437024513,
+   "mae": 3.1721470836855454,
+   "max_abs": 24.42857142857143,
+   "correlacion": 0.8558443721042446,
+   "iguales": 0.01272189349112426
+  },
+  {
+   "anio": 2017,
+   "variable": "viento_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 18.513639053254437,
+   "diferencia_media": -3.5115976331360943,
+   "mae": 3.902307692307692,
+   "max_abs": 16.6,
+   "correlacion": 0.8726520998242612,
+   "iguales": 0.006804733727810651
+  },
+  {
+   "anio": 2017,
+   "variable": "radiacion_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 137.8443727810651,
+   "diferencia_media": 0.36942011834319494,
+   "mae": 7.758313609467455,
+   "max_abs": 40.369999999999976,
+   "correlacion": 0.8798167429596945,
+   "iguales": 0.0
+  },
+  {
+   "anio": 2017,
+   "variable": "et0_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 28.139002958579884,
+   "diferencia_media": -0.1158550295857988,
+   "mae": 1.7962988165680474,
+   "max_abs": 8.36,
+   "correlacion": 0.9081002826534604,
+   "iguales": 0.0017751479289940828
+  },
+  {
+   "anio": 2018,
+   "variable": "temp_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 20.99848689771767,
+   "diferencia_media": 0.4101352493660186,
+   "mae": 0.7973879966187658,
+   "max_abs": 3.37142857142857,
+   "correlacion": 0.9749977834274578,
+   "iguales": 0.004733727810650888
+  },
+  {
+   "anio": 2018,
+   "variable": "temp_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 28.159082840236685,
+   "diferencia_media": 0.0014201183431952697,
+   "mae": 1.4905917159763313,
+   "max_abs": 5.599999999999998,
+   "correlacion": 0.9277170707411269,
+   "iguales": 0.020710059171597635
+  },
+  {
+   "anio": 2018,
+   "variable": "temp_min",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 16.16215976331361,
+   "diferencia_media": 0.38571005917159756,
+   "mae": 0.9628106508875739,
+   "max_abs": 4.9,
+   "correlacion": 0.9581180952623518,
+   "iguales": 0.03698224852071006
+  },
+  {
+   "anio": 2018,
+   "variable": "precip_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 12.956804733727811,
+   "diferencia_media": 1.533550295857988,
+   "mae": 8.355798816568047,
+   "max_abs": 154.59999999999997,
+   "correlacion": 0.7725758169771881,
+   "iguales": 0.20680473372781066
+  },
+  {
+   "anio": 2018,
+   "variable": "lluvia_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 12.956804733727811,
+   "diferencia_media": 1.533550295857988,
+   "mae": 8.355798816568047,
+   "max_abs": 154.59999999999997,
+   "correlacion": 0.7725758169771881,
+   "iguales": 0.20680473372781066
+  },
+  {
+   "anio": 2018,
+   "variable": "hum_rel_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 73.00672020287405,
+   "diferencia_media": 0.8357142857142859,
+   "mae": 3.7388419273034654,
+   "max_abs": 27.85714285714286,
+   "correlacion": 0.8348474512320058,
+   "iguales": 0.011538461538461539
+  },
+  {
+   "anio": 2018,
+   "variable": "viento_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 19.5803550295858,
+   "diferencia_media": -3.806775147928994,
+   "mae": 4.09878698224852,
+   "max_abs": 16.000000000000004,
+   "correlacion": 0.8827191003446168,
+   "iguales": 0.005917159763313609
+  },
+  {
+   "anio": 2018,
+   "variable": "radiacion_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 143.23874556213016,
+   "diferencia_media": 2.264837278106509,
+   "mae": 8.044210059171597,
+   "max_abs": 45.17999999999999,
+   "correlacion": 0.843387164592518,
+   "iguales": 0.0002958579881656805
+  },
+  {
+   "anio": 2018,
+   "variable": "et0_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 30.228381656804732,
+   "diferencia_media": -0.05344082840236683,
+   "mae": 2.0479082840236686,
+   "max_abs": 9.490000000000002,
+   "correlacion": 0.9076334986807353,
+   "iguales": 0.0020710059171597634
+  },
+  {
+   "anio": 2019,
+   "variable": "temp_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 21.36816568047337,
+   "diferencia_media": 0.4476880811496196,
+   "mae": 0.8342054099746408,
+   "max_abs": 3.842857142857145,
+   "correlacion": 0.9741758363072931,
+   "iguales": 0.004733727810650888
+  },
+  {
+   "anio": 2019,
+   "variable": "temp_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 28.588816568047342,
+   "diferencia_media": -0.10505917159763316,
+   "mae": 1.6303846153846153,
+   "max_abs": 6.399999999999999,
+   "correlacion": 0.9169349427630266,
+   "iguales": 0.018343195266272188
+  },
+  {
+   "anio": 2019,
+   "variable": "temp_min",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 16.44414201183432,
+   "diferencia_media": 0.6557692307692308,
+   "mae": 1.096301775147929,
+   "max_abs": 5.200000000000001,
+   "correlacion": 0.9589076939159558,
+   "iguales": 0.03431952662721893
+  },
+  {
+   "anio": 2019,
+   "variable": "precip_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 18.472011834319527,
+   "diferencia_media": 2.0273668639053253,
+   "mae": 11.106420118343195,
+   "max_abs": 332.5,
+   "correlacion": 0.7900582393484195,
+   "iguales": 0.15946745562130177
+  },
+  {
+   "anio": 2019,
+   "variable": "lluvia_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 18.472011834319527,
+   "diferencia_media": 2.0273668639053253,
+   "mae": 11.106420118343195,
+   "max_abs": 332.5,
+   "correlacion": 0.7900582393484195,
+   "iguales": 0.15946745562130177
+  },
+  {
+   "anio": 2019,
+   "variable": "hum_rel_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 73.02903634826711,
+   "diferencia_media": 1.0052409129332207,
+   "mae": 4.143617920540998,
+   "max_abs": 21.42857142857143,
+   "correlacion": 0.8323424857693922,
+   "iguales": 0.013609467455621301
+  },
+  {
+   "anio": 2019,
+   "variable": "viento_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 19.733343195266272,
+   "diferencia_media": -3.7663905325443787,
+   "mae": 4.153550295857988,
+   "max_abs": 17.9,
+   "correlacion": 0.8821751519722076,
+   "iguales": 0.007988165680473372
+  },
+  {
+   "anio": 2019,
+   "variable": "radiacion_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 145.5623520710059,
+   "diferencia_media": -2.3277721893491123,
+   "mae": 6.76502071005917,
+   "max_abs": 36.47999999999999,
+   "correlacion": 0.8763890348227352,
+   "iguales": 0.000591715976331361
+  },
+  {
+   "anio": 2019,
+   "variable": "et0_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 30.930804733727808,
+   "diferencia_media": -0.865662721893491,
+   "mae": 2.1239230769230764,
+   "max_abs": 12.899999999999999,
+   "correlacion": 0.9220697757376309,
+   "iguales": 0.0008875739644970414
+  },
+  {
+   "anio": 2020,
+   "variable": "temp_media",
+   "filas": 3445,
+   "nulos": 0,
+   "media_actual": 21.357329462989842,
+   "diferencia_media": 0.5026415094339624,
+   "mae": 0.8419655815882231,
+   "max_abs": 3.157142857142855,
+   "correlacion": 0.9763220486934661,
+   "iguales": 0.0049346879535558785
+  },
+  {
+   "anio": 2020,
+   "variable": "temp_max",
+   "filas": 3445,
+   "nulos": 0,
+   "media_actual": 29.03570391872279,
+   "diferencia_media": 0.19793904208998542,
+   "mae": 1.5678084179970972,
+   "max_abs": 7.099999999999998,
+   "correlacion": 0.9330978992752765,
+   "iguales": 0.01857764876632801
+  },
+  {
+   "anio": 2020,
+   "variable": "temp_min",
+   "filas": 3445,
+   "nulos": 0,
+   "media_actual": 16.203918722786646,
+   "diferencia_media": 0.604412191582003,
+   "mae": 1.0654281567489114,
+   "max_abs": 5.299999999999999,
+   "correlacion": 0.960125644829905,
+   "iguales": 0.03076923076923077
+  },
+  {
+   "anio": 2020,
+   "variable": "precip_total_mm",
+   "filas": 3445,
+   "nulos": 0,
+   "media_actual": 11.942612481857767,
+   "diferencia_media": 2.4167779390420905,
+   "mae": 7.895210449927431,
+   "max_abs": 202.3,
+   "correlacion": 0.7856265852568117,
+   "iguales": 0.23222060957910015
+  },
+  {
+   "anio": 2020,
+   "variable": "lluvia_total_mm",
+   "filas": 3445,
+   "nulos": 0,
+   "media_actual": 11.942612481857767,
+   "diferencia_media": 2.4167779390420905,
+   "mae": 7.895210449927431,
+   "max_abs": 202.3,
+   "correlacion": 0.7856265852568117,
+   "iguales": 0.23222060957910015
+  },
+  {
+   "anio": 2020,
+   "variable": "hum_rel_media",
+   "filas": 3445,
+   "nulos": 0,
+   "media_actual": 70.62210242587601,
+   "diferencia_media": 0.13402446609993782,
+   "mae": 3.842504665146175,
+   "max_abs": 22.285714285714292,
+   "correlacion": 0.8448329033006964,
+   "iguales": 0.01509433962264151
+  },
+  {
+   "anio": 2020,
+   "variable": "viento_max",
+   "filas": 3445,
+   "nulos": 0,
+   "media_actual": 20.342496371552972,
+   "diferencia_media": -3.8113497822931786,
+   "mae": 4.138896952104499,
+   "max_abs": 17.3,
+   "correlacion": 0.8844834694286713,
+   "iguales": 0.0052249637155297535
+  },
+  {
+   "anio": 2020,
+   "variable": "radiacion_total",
+   "filas": 3445,
+   "nulos": 0,
+   "media_actual": 150.82238896952106,
+   "diferencia_media": -1.3067837445573292,
+   "mae": 6.016351233671989,
+   "max_abs": 40.41,
+   "correlacion": 0.8940635718759898,
+   "iguales": 0.0005805515239477503
+  },
+  {
+   "anio": 2020,
+   "variable": "et0_total",
+   "filas": 3445,
+   "nulos": 0,
+   "media_actual": 32.47197387518142,
+   "diferencia_media": -0.4674136429608128,
+   "mae": 1.8496835994194485,
+   "max_abs": 11.609999999999996,
+   "correlacion": 0.9326018847626926,
+   "iguales": 0.001451378809869376
+  },
+  {
+   "anio": 2021,
+   "variable": "temp_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 20.93899408284024,
+   "diferencia_media": 0.4063440405748098,
+   "mae": 0.7790997464074386,
+   "max_abs": 3.099999999999998,
+   "correlacion": 0.9749150837569153,
+   "iguales": 0.004733727810650888
+  },
+  {
+   "anio": 2021,
+   "variable": "temp_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 28.63615384615385,
+   "diferencia_media": -0.2839644970414201,
+   "mae": 1.5995857988165678,
+   "max_abs": 6.699999999999999,
+   "correlacion": 0.9295388478919835,
+   "iguales": 0.015384615384615385
+  },
+  {
+   "anio": 2021,
+   "variable": "temp_min",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 15.843520710059174,
+   "diferencia_media": 0.7200887573964497,
+   "mae": 1.0626331360946746,
+   "max_abs": 4.9,
+   "correlacion": 0.9575386556795256,
+   "iguales": 0.03461538461538462
+  },
+  {
+   "anio": 2021,
+   "variable": "precip_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 12.227988165680475,
+   "diferencia_media": 5.036390532544378,
+   "mae": 9.605621301775148,
+   "max_abs": 178.2,
+   "correlacion": 0.7896746579508213,
+   "iguales": 0.18846153846153846
+  },
+  {
+   "anio": 2021,
+   "variable": "lluvia_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 12.227988165680475,
+   "diferencia_media": 5.036390532544378,
+   "mae": 9.605621301775148,
+   "max_abs": 178.2,
+   "correlacion": 0.7896746579508213,
+   "iguales": 0.18846153846153846
+  },
+  {
+   "anio": 2021,
+   "variable": "hum_rel_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 71.69125105663568,
+   "diferencia_media": 0.9122992392223158,
+   "mae": 3.936306001690617,
+   "max_abs": 23.14285714285714,
+   "correlacion": 0.8315797852608279,
+   "iguales": 0.013905325443786982
+  },
+  {
+   "anio": 2021,
+   "variable": "viento_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 20.205473372781064,
+   "diferencia_media": -4.1253254437869815,
+   "mae": 4.377396449704142,
+   "max_abs": 16.099999999999998,
+   "correlacion": 0.8837471132308887,
+   "iguales": 0.004142011834319527
+  },
+  {
+   "anio": 2021,
+   "variable": "radiacion_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 148.99033431952662,
+   "diferencia_media": -2.426005917159763,
+   "mae": 7.448159763313609,
+   "max_abs": 46.60000000000001,
+   "correlacion": 0.8373366535478669,
+   "iguales": 0.0
+  },
+  {
+   "anio": 2021,
+   "variable": "et0_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 31.71457692307692,
+   "diferencia_media": -0.999440828402367,
+   "mae": 2.187630177514793,
+   "max_abs": 10.950000000000003,
+   "correlacion": 0.9146738375078598,
+   "iguales": 0.0002958579881656805
+  },
+  {
+   "anio": 2022,
+   "variable": "temp_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 20.45063398140321,
+   "diferencia_media": 0.4142941673710904,
+   "mae": 0.8305071851225698,
+   "max_abs": 2.985714285714284,
+   "correlacion": 0.972527884367612,
+   "iguales": 0.0014792899408284023
+  },
+  {
+   "anio": 2022,
+   "variable": "temp_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 28.17991124260355,
+   "diferencia_media": -0.1585207100591716,
+   "mae": 1.5632544378698225,
+   "max_abs": 5.699999999999999,
+   "correlacion": 0.9274836726869466,
+   "iguales": 0.017159763313609466
+  },
+  {
+   "anio": 2022,
+   "variable": "temp_min",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 15.188579881656805,
+   "diferencia_media": 0.5903254437869823,
+   "mae": 1.1239349112426034,
+   "max_abs": 5.200000000000001,
+   "correlacion": 0.9489104132568542,
+   "iguales": 0.03106508875739645
+  },
+  {
+   "anio": 2022,
+   "variable": "precip_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 11.7848224852071,
+   "diferencia_media": 3.7621005917159764,
+   "mae": 8.451272189349114,
+   "max_abs": 196.9,
+   "correlacion": 0.7953971001685957,
+   "iguales": 0.2
+  },
+  {
+   "anio": 2022,
+   "variable": "lluvia_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 11.7848224852071,
+   "diferencia_media": 3.7621005917159764,
+   "mae": 8.451272189349114,
+   "max_abs": 196.9,
+   "correlacion": 0.7953971001685957,
+   "iguales": 0.2
+  },
+  {
+   "anio": 2022,
+   "variable": "hum_rel_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 71.08647506339814,
+   "diferencia_media": 0.7670752324598479,
+   "mae": 4.005029585798817,
+   "max_abs": 28.14285714285714,
+   "correlacion": 0.8078320881460682,
+   "iguales": 0.009763313609467455
+  },
+  {
+   "anio": 2022,
+   "variable": "viento_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 20.250857988165677,
+   "diferencia_media": -4.136272189349112,
+   "mae": 4.363313609467456,
+   "max_abs": 16.099999999999998,
+   "correlacion": 0.8870942164685791,
+   "iguales": 0.004733727810650888
+  },
+  {
+   "anio": 2022,
+   "variable": "radiacion_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 148.9012899408284,
+   "diferencia_media": -0.7164023668639049,
+   "mae": 7.091633136094675,
+   "max_abs": 39.10000000000001,
+   "correlacion": 0.8758303360396339,
+   "iguales": 0.0008875739644970414
+  },
+  {
+   "anio": 2022,
+   "variable": "et0_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 31.525156804733726,
+   "diferencia_media": -0.7405917159763313,
+   "mae": 2.0106745562130177,
+   "max_abs": 11.230000000000004,
+   "correlacion": 0.9290639661674684,
+   "iguales": 0.0014792899408284023
+  },
+  {
+   "anio": 2023,
+   "variable": "temp_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 22.169767540152154,
+   "diferencia_media": 0.7123119188503805,
+   "mae": 0.9482967032967033,
+   "max_abs": 3.2857142857142847,
+   "correlacion": 0.9748186880243712,
+   "iguales": 0.005621301775147929
+  },
+  {
+   "anio": 2023,
+   "variable": "temp_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 29.256893491124263,
+   "diferencia_media": 0.17023668639053258,
+   "mae": 1.5855621301775147,
+   "max_abs": 6.300000000000001,
+   "correlacion": 0.9296573337823208,
+   "iguales": 0.01952662721893491
+  },
+  {
+   "anio": 2023,
+   "variable": "temp_min",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 17.40292899408284,
+   "diferencia_media": 1.0810650887573965,
+   "mae": 1.2721301775147928,
+   "max_abs": 5.300000000000001,
+   "correlacion": 0.9649400422445712,
+   "iguales": 0.022781065088757397
+  },
+  {
+   "anio": 2023,
+   "variable": "precip_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 27.70665680473373,
+   "diferencia_media": 0.697514792899408,
+   "mae": 13.595562130177514,
+   "max_abs": 339.9,
+   "correlacion": 0.8332800660421127,
+   "iguales": 0.171301775147929
+  },
+  {
+   "anio": 2023,
+   "variable": "lluvia_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 27.70665680473373,
+   "diferencia_media": 0.697514792899408,
+   "mae": 13.595562130177514,
+   "max_abs": 339.9,
+   "correlacion": 0.8332800660421127,
+   "iguales": 0.171301775147929
+  },
+  {
+   "anio": 2023,
+   "variable": "hum_rel_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 74.87286559594253,
+   "diferencia_media": -1.1749788672865595,
+   "mae": 3.988334742180896,
+   "max_abs": 22.428571428571423,
+   "correlacion": 0.8467167243843129,
+   "iguales": 0.010059171597633136
+  },
+  {
+   "anio": 2023,
+   "variable": "viento_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 19.688491124260356,
+   "diferencia_media": -3.9619526627218935,
+   "mae": 4.298579881656805,
+   "max_abs": 20.900000000000002,
+   "correlacion": 0.8835510131371179,
+   "iguales": 0.005917159763313609
+  },
+  {
+   "anio": 2023,
+   "variable": "radiacion_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 143.9779023668639,
+   "diferencia_media": -1.698479289940828,
+   "mae": 7.503597633136096,
+   "max_abs": 40.55999999999999,
+   "correlacion": 0.883757943622457,
+   "iguales": 0.0
+  },
+  {
+   "anio": 2023,
+   "variable": "et0_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 30.925292899408287,
+   "diferencia_media": -0.4052426035502958,
+   "mae": 1.9424970414201181,
+   "max_abs": 9.11,
+   "correlacion": 0.9368913697260873,
+   "iguales": 0.0020710059171597634
+  },
+  {
+   "anio": 2024,
+   "variable": "temp_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 21.5843279797126,
+   "diferencia_media": 0.601090448013525,
+   "mae": 0.9524091293322062,
+   "max_abs": 3.7857142857142883,
+   "correlacion": 0.9686790329933777,
+   "iguales": 0.0035502958579881655
+  },
+  {
+   "anio": 2024,
+   "variable": "temp_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 29.229408284023666,
+   "diferencia_media": -0.05159763313609461,
+   "mae": 1.7069822485207102,
+   "max_abs": 7.800000000000001,
+   "correlacion": 0.9107407651517776,
+   "iguales": 0.016568047337278107
+  },
+  {
+   "anio": 2024,
+   "variable": "temp_min",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 16.563313609467457,
+   "diferencia_media": 0.8647041420118343,
+   "mae": 1.174171597633136,
+   "max_abs": 5.800000000000001,
+   "correlacion": 0.9574957531756968,
+   "iguales": 0.03520710059171597
+  },
+  {
+   "anio": 2024,
+   "variable": "precip_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 12.987278106508876,
+   "diferencia_media": 1.842159763313609,
+   "mae": 9.251094674556212,
+   "max_abs": 336.1,
+   "correlacion": 0.724745646233247,
+   "iguales": 0.26893491124260355
+  },
+  {
+   "anio": 2024,
+   "variable": "lluvia_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 12.987278106508876,
+   "diferencia_media": 1.842159763313609,
+   "mae": 9.251094674556212,
+   "max_abs": 336.1,
+   "correlacion": 0.724745646233247,
+   "iguales": 0.26893491124260355
+  },
+  {
+   "anio": 2024,
+   "variable": "hum_rel_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 71.56010143702451,
+   "diferencia_media": 0.979120879120879,
+   "mae": 4.275739644970415,
+   "max_abs": 29.857142857142854,
+   "correlacion": 0.8102139357400322,
+   "iguales": 0.010946745562130178
+  },
+  {
+   "anio": 2024,
+   "variable": "viento_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 20.467366863905326,
+   "diferencia_media": -4.5231952662721895,
+   "mae": 4.745384615384616,
+   "max_abs": 20.300000000000004,
+   "correlacion": 0.8656100832906379,
+   "iguales": 0.0038461538461538464
+  },
+  {
+   "anio": 2024,
+   "variable": "radiacion_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 149.7419378698225,
+   "diferencia_media": 1.7426923076923075,
+   "mae": 7.174390532544378,
+   "max_abs": 37.80000000000001,
+   "correlacion": 0.8618480962129201,
+   "iguales": 0.0002958579881656805
+  },
+  {
+   "anio": 2024,
+   "variable": "et0_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 32.263689349112425,
+   "diferencia_media": -0.437612426035503,
+   "mae": 2.102837278106509,
+   "max_abs": 16.410000000000004,
+   "correlacion": 0.909161913697017,
+   "iguales": 0.0014792899408284023
+  },
+  {
+   "anio": 2025,
+   "variable": "temp_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 21.250955198647507,
+   "diferencia_media": 0.6103296703296704,
+   "mae": 0.9369991546914624,
+   "max_abs": 4.328571428571429,
+   "correlacion": 0.9684595466708146,
+   "iguales": 0.004733727810650888
+  },
+  {
+   "anio": 2025,
+   "variable": "temp_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 28.525,
+   "diferencia_media": 0.10849112426035504,
+   "mae": 1.7069526627218934,
+   "max_abs": 6.900000000000002,
+   "correlacion": 0.9079342101164841,
+   "iguales": 0.021005917159763313
+  },
+  {
+   "anio": 2025,
+   "variable": "temp_min",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 16.502633136094673,
+   "diferencia_media": 0.8106804733727809,
+   "mae": 1.0701479289940827,
+   "max_abs": 5.200000000000001,
+   "correlacion": 0.9621422925822812,
+   "iguales": 0.034023668639053255
+  },
+  {
+   "anio": 2025,
+   "variable": "precip_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 18.206508875739644,
+   "diferencia_media": 6.079112426035503,
+   "mae": 12.000828402366865,
+   "max_abs": 337.8,
+   "correlacion": 0.8216849950322327,
+   "iguales": 0.18431952662721893
+  },
+  {
+   "anio": 2025,
+   "variable": "lluvia_total_mm",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 18.206508875739644,
+   "diferencia_media": 6.079112426035503,
+   "mae": 12.000828402366865,
+   "max_abs": 337.8,
+   "correlacion": 0.8216849950322327,
+   "iguales": 0.18431952662721893
+  },
+  {
+   "anio": 2025,
+   "variable": "hum_rel_media",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 73.26263736263735,
+   "diferencia_media": 0.6274725274725275,
+   "mae": 4.0215553677092135,
+   "max_abs": 26.571428571428577,
+   "correlacion": 0.8393811084895098,
+   "iguales": 0.0121301775147929
+  },
+  {
+   "anio": 2025,
+   "variable": "viento_max",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 21.516331360946744,
+   "diferencia_media": -6.035355029585799,
+   "mae": 6.139674556213017,
+   "max_abs": 21.1,
+   "correlacion": 0.8307929659248587,
+   "iguales": 0.0026627218934911242
+  },
+  {
+   "anio": 2025,
+   "variable": "radiacion_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 145.43648520710062,
+   "diferencia_media": -1.3829053254437873,
+   "mae": 9.511284023668638,
+   "max_abs": 48.41999999999999,
+   "correlacion": 0.815613480983571,
+   "iguales": 0.000591715976331361
+  },
+  {
+   "anio": 2025,
+   "variable": "et0_total",
+   "filas": 3380,
+   "nulos": 0,
+   "media_actual": 31.241846153846154,
+   "diferencia_media": -1.0800828402366864,
+   "mae": 2.7449112426035502,
+   "max_abs": 13.449999999999996,
+   "correlacion": 0.8856805044250804,
+   "iguales": 0.0002958579881656805
+  }
+ ],
+ "celdas_compartidas": {
+  "teorica_0_25": {
+   "distritos": 65,
+   "celdas": 35,
+   "distritos_que_comparten": 47,
+   "grupos": [
+    [
+     45,
+     46,
+     47,
+     48
+    ],
+    [
+     16,
+     18
+    ],
+    [
+     40,
+     41,
+     65
+    ],
+    [
+     36,
+     38
+    ],
+    [
+     19,
+     22,
+     23,
+     26
+    ],
+    [
+     11,
+     15,
+     25,
+     28
+    ],
+    [
+     30,
+     31,
+     32
+    ],
+    [
+     43,
+     51,
+     55
+    ],
+    [
+     21,
+     44
+    ],
+    [
+     2,
+     27
+    ],
+    [
+     6,
+     20
+    ],
+    [
+     29,
+     34,
+     35,
+     52,
+     60
+    ],
+    [
+     56,
+     58
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     3,
+     9
+    ],
+    [
+     59,
+     62,
+     63
+    ]
+   ]
+  },
+  "real_era5": {
+   "distritos": 65,
+   "celdas": 34,
+   "distritos_que_comparten": 48,
+   "grupos": [
+    [
+     45.0,
+     46.0,
+     47.0,
+     48.0,
+     50.0
+    ],
+    [
+     16.0,
+     18.0
+    ],
+    [
+     40.0,
+     41.0,
+     65.0
+    ],
+    [
+     36.0,
+     38.0
+    ],
+    [
+     19.0,
+     22.0,
+     23.0,
+     25.0
+    ],
+    [
+     11.0,
+     15.0,
+     26.0,
+     28.0
+    ],
+    [
+     30.0,
+     31.0,
+     32.0
+    ],
+    [
+     43.0,
+     51.0,
+     55.0
+    ],
+    [
+     21.0,
+     44.0
+    ],
+    [
+     2.0,
+     27.0
+    ],
+    [
+     6.0,
+     20.0
+    ],
+    [
+     29.0,
+     34.0,
+     35.0,
+     52.0,
+     60.0
+    ],
+    [
+     56.0,
+     58.0
+    ],
+    [
+     7.0,
+     8.0
+    ],
+    [
+     4.0,
+     5.0
+    ],
+    [
+     3.0,
+     9.0
+    ],
+    [
+     59.0,
+     62.0,
+     63.0
+    ]
+   ]
+  }
+ },
+ "series_identicas": {
+  "descargado_hoy": {
+   "distritos": 65,
+   "series_distintas": 65,
+   "distritos_con_serie_identica": 0,
+   "grupos": []
+  },
+  "era5": {
+   "distritos": 65,
+   "series_distintas": 65,
+   "distritos_con_serie_identica": 0,
+   "grupos": []
+  }
+ },
+ "iguales_dentro_de_celda": [
+  {
+   "fuente": "era5",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "hum_rel_media",
+   "iguales": 0.7633262260127932
+  },
+  {
+   "fuente": "era5",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "hum_rel_media",
+   "iguales": 0.8251599147121536
+  },
+  {
+   "fuente": "era5",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.373134328358209
+  },
+  {
+   "fuente": "era5",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "hum_rel_media",
+   "iguales": 0.5628997867803838
+  },
+  {
+   "fuente": "era5",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "hum_rel_media",
+   "iguales": 0.008528784648187633
+  },
+  {
+   "fuente": "era5",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "hum_rel_media",
+   "iguales": 0.5245202558635395
+  },
+  {
+   "fuente": "era5",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "hum_rel_media",
+   "iguales": 0.8038379530916845
+  },
+  {
+   "fuente": "era5",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.8336886993603412
+  },
+  {
+   "fuente": "era5",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.04477611940298507
+  },
+  {
+   "fuente": "era5",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.7995735607675906
+  },
+  {
+   "fuente": "era5",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "hum_rel_media",
+   "iguales": 0.35394456289978676
+  },
+  {
+   "fuente": "era5",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.7739872068230277
+  },
+  {
+   "fuente": "era5",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "era5",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.019189765458422176
+  },
+  {
+   "fuente": "era5",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.579957356076759
+  },
+  {
+   "fuente": "era5",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "precip_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "lluvia_total_mm",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "hum_rel_media",
+   "iguales": 0.2899786780383795
+  },
+  {
+   "fuente": "era5",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "viento_max",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "radiacion_total",
+   "iguales": 1.0
+  },
+  {
+   "fuente": "era5",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "temp_min",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "precip_total_mm",
+   "iguales": 0.3049040511727079
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.3049040511727079
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "hum_rel_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "viento_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "45-46-47-48-50",
+   "distritos": 5,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0042643923240938165
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0042643923240938165
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 0.017057569296375266
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.017057569296375266
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.01279317697228145
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 0.019189765458422176
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "16-18",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "precip_total_mm",
+   "iguales": 0.3368869936034115
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.3368869936034115
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "hum_rel_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "viento_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "40-41-65",
+   "distritos": 3,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.017057569296375266
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.03411513859275053
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0042643923240938165
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 0.31130063965884863
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.31130063965884863
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.017057569296375266
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 0.010660980810234541
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "36-38",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "precip_total_mm",
+   "iguales": 0.14925373134328357
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.14925373134328357
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "hum_rel_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "viento_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "19-22-23-25",
+   "distritos": 4,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "precip_total_mm",
+   "iguales": 0.02771855010660981
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.02771855010660981
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "hum_rel_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "viento_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "11-15-26-28",
+   "distritos": 4,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "precip_total_mm",
+   "iguales": 0.32196162046908317
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.32196162046908317
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "hum_rel_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "viento_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "30-31-32",
+   "distritos": 3,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "temp_min",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "precip_total_mm",
+   "iguales": 0.2921108742004264
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.2921108742004264
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "hum_rel_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "viento_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "43-51-55",
+   "distritos": 3,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.019189765458422176
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.046908315565031986
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.02771855010660981
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 0.22174840085287847
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.22174840085287847
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.0255863539445629
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 0.01279317697228145
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "21-44",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0042643923240938165
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.02771855010660981
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.006396588486140725
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 0.029850746268656716
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.029850746268656716
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.019189765458422176
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 0.03624733475479744
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 0.0042643923240938165
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "2-27",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0042643923240938165
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 0.07462686567164178
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.07462686567164178
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 0.006396588486140725
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "6-20",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "precip_total_mm",
+   "iguales": 0.31982942430703626
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.31982942430703626
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "hum_rel_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "viento_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "29-34-35-52-60",
+   "distritos": 5,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.03411513859275053
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.12366737739872068
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.06823027718550106
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 0.31769722814498935
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.31769722814498935
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.07462686567164178
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 0.03411513859275053
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "56-58",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.008528784648187633
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 0.023454157782515993
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.023454157782515993
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.006396588486140725
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 0.017057569296375266
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "7-8",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 0.017057569296375266
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.017057569296375266
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.0042643923240938165
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 0.03624733475479744
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "4-5",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "temp_media",
+   "iguales": 0.0042643923240938165
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "temp_max",
+   "iguales": 0.04477611940298507
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "temp_min",
+   "iguales": 0.053304904051172705
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "precip_total_mm",
+   "iguales": 0.029850746268656716
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.029850746268656716
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "hum_rel_media",
+   "iguales": 0.019189765458422176
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "viento_max",
+   "iguales": 0.04477611940298507
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "radiacion_total",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "3-9",
+   "distritos": 2,
+   "variable": "et0_total",
+   "iguales": 0.006396588486140725
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "temp_media",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "temp_max",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "temp_min",
+   "iguales": 0.0
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "precip_total_mm",
+   "iguales": 0.4200426439232409
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "lluvia_total_mm",
+   "iguales": 0.4200426439232409
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "hum_rel_media",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "viento_max",
+   "iguales": 0.0042643923240938165
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "radiacion_total",
+   "iguales": 0.0021321961620469083
+  },
+  {
+   "fuente": "descargado_hoy",
+   "grupo": "59-62-63",
+   "distritos": 3,
+   "variable": "et0_total",
+   "iguales": 0.0
+  }
+ ]
+}
