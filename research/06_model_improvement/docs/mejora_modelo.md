@@ -17,6 +17,7 @@ aquí.
 | 2 · Calibración | recorte 1e-15, Platt agrupado, beta, isotónica | nada: Platt por horizonte con recorte 1e-6 (beta, cerca en h4, no alcanza la regla) |
 | 3 · Inicios | 3a1 peso a inicios, 3a2 peso por temporada, 3b dos regímenes, 3c′ L + B1 + B2 (enmienda) | nada: L sigue como base (3a1 es un intercambio: más recall de inicios a cambio de orden y brotes en curso) |
 | 5 · Conteo | 5a mezcla con la persistencia, 5b `max_delta_step` por bloque, 5c peso por temporada | **5a**: conteo = w·μ + (1 − w)·persistencia, w por horizonte y bloque con las OOS anteriores |
+| 4 · Niño 1+2 | 4a anomalía del último mes disponible, 4b media de 3 meses, sobre L + 5a | nada: empate en los tres horizontes (pendiente de repetir sobre L + 5a + H si la 1b′ adopta H) |
 | 6 · Otra familia (lectura) | 6a GLM NB2 (no convergió), enmienda 6a′ GLM Poisson + α NB2, 6b LightGBM; C3 sin clima | nada (lectura): LightGBM empata con L + 5a; 6a′ empata o mejora (gana F1 en h4, mejor antelación, peor Brier en 2016); 6′ con clima, pendiente de la 1b |
 
 **Configuración base actual: L + 5a.**
@@ -47,7 +48,7 @@ aquí.
    de 1982-01 a 2026-10.
 
 **Siguiente paso:** la 1b′ (L + 5a + humedad de ERA5-Land, preregistrada) cuando esté el silver de ERA5-Land;
-mientras tanto, el preregistro de la fase 4 (Niño 1+2) sobre L + 5a; después, la 6′ (otra familia con clima,
+si se adopta H, se repite la fase 4 sobre L + 5a + H; después, la 6′ (otra familia con clima,
 lectura) y la fase 7 (síntesis, pruebas, auditoría con `revisor-modelado` y congelamiento). Si la 1b′ muestra que
 el clima aporta, el siguiente paso es la precipitación de CHIRPS v3 (ver «Fase 1b′»).
 
@@ -468,3 +469,29 @@ MLflow `b4aaa1cfb6c94074a3dcbb552409afe2`.
   correr): 4a = C3 + anomalía del último mes disponible; 4b = C3 + media de los 3 últimos meses disponibles; cada
   una frente a L + 5a con la regla de 5 temporadas de las fases 2 y 3; guardas G21–G24. Si la 1b′ adopta H, 4a y
   4b se vuelven a medir sobre L + 5a + H.
+
+### Resultados de la fase 4 (2026-11-04)
+
+Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
+`models/experimentos/mejora_modelo/fase4/` (no versionado); MLflow `denguekay/mejora_modelo_fase4_nino`
+(`01c630b438a6469da4e5909bb6b6262d`). Dispositivo: cuda, `n_jobs` = 12.
+
+- **Guardas:** pasan todas. G21: 0 de 71 175 orígenes usan un mes publicado después de su cierre. G22: el test de
+  no fuga pasa. G23: 0 de 71 110 orígenes desde 2005 sin valor. G24: L + 5a reproduce `fase5.json` (diferencia
+  máxima 4,9e-11).
+- **Rango en los orígenes desde 2005:** último mes de −1,90 a 3,30; media de 3 meses de −1,74 a 3,11.
+- **Veredictos (regla de 5 temporadas):** 4a y 4b **empatan en h2, h3 y h4**; ninguna se adopta y la base sigue
+  siendo L + 5a. F1 a favor en 0–1 de 5 temporadas y en contra en 1–2; ninguna guarda veta. La lectura sin 2010 y
+  la regla de razón MAE de la fase 5 también dan empate en los tres horizontes.
+- **Antelación (semilla 17, 193 episodios):** algo peor, sin significancia: diferencias de −0,005 a −0,026 con
+  IC95 que incluye 0 en todos los horizontes; la caída más repetida está en 2022 (−0,03 a −0,08).
+- **Recall de brotes nuevos** (2 primeras semanas, 5 temporadas × 3 horizontes): 4a mejora en 2 celdas y empeora
+  en 6; 4b mejora en 2 y empeora en 9. Son diferencias de 1 a 3 semanas por celda (por ejemplo, 2022 · h4: 6 de 49
+  con L + 5a frente a 4 de 49 con 4a). La hipótesis de que el índice regional adelanta los inicios no se observa
+  con esta matriz.
+- **Conteo (lectura):** la razón MAE baja en 2022 (h3: 0,875 con 4a y 0,841 con 4b frente a 0,927) y en el
+  contraste 2024 (h4: 1,130 y 1,213 frente a 1,362), pero sube en 2015; la regla de razón MAE da empate.
+- **Lectura (observación, no conclusión):** con la información de L, la anomalía Niño 1+2 publicada al origen no
+  mejora la alerta en las temporadas que deciden. El valor es único por mes para toda la región, y en 2000–2025 hay
+  pocos episodios de El Niño costero (el máximo es 2023); con tan pocos años, no se generaliza. Si la 1b′ adopta H,
+  4a y 4b se repiten sobre L + 5a + H, como quedó preregistrado.

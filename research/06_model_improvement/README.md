@@ -11,13 +11,13 @@
 
 | Carpeta | Qué hay |
 |---|---|
-| `notebooks/` | `01_diagnostico_techo.ipynb` (fase 0), `02_fase1a_historia.ipynb` (1a), `03_fase1b_consistencia_clima.ipynb` (1b, consistencia del clima; lo corre el equipo), `04_fase2_calibracion.ipynb` (fase 2), `05_fase3_inicios.ipynb` (fase 3: 3a1, 3a2 y 3b), `06_fase3c_contexto_espacial.ipynb` (3c′), `07_fase5_conteo.ipynb` (fase 5), `08_fase6_otras_familias.ipynb` (fase 6, lectura), `09_fase6a_prima_glm_poisson.ipynb` (enmienda 6a′) |
-| `code/` | `phase0_diagnosis.py`, `preregistration.py`, `phase1_history.py`, `phase1b_climate.py`, `phase2_calibration.py`, `phase3_onsets.py`, `phase5_counts.py`, `phase6_other_families.py` |
-| `tests/` | `test_phase0_diagnosis.py`, `test_preregistration.py`, `test_phase1_history.py`, `test_phase1b_climate.py`, `test_phase2_calibration.py`, `test_phase3_onsets.py`, `test_phase5_counts.py`, `test_phase6_other_families.py` |
-| `docs/` | `plan.md`, `mejora_modelo.md` (informe), `metricas/fase0.json`, `metricas/fase1a.json`, `metricas/fase2.json`, `metricas/fase3.json`, `metricas/fase3c.json`, `metricas/fase5.json`, `metricas/fase6.json` y `figuras/fase0/` |
+| `notebooks/` | `01_diagnostico_techo.ipynb` (fase 0), `02_fase1a_historia.ipynb` (1a), `03_fase1b_consistencia_clima.ipynb` (1b, consistencia del clima; lo corre el equipo), `04_fase2_calibracion.ipynb` (fase 2), `05_fase3_inicios.ipynb` (fase 3: 3a1, 3a2 y 3b), `06_fase3c_contexto_espacial.ipynb` (3c′), `07_fase5_conteo.ipynb` (fase 5), `08_fase6_otras_familias.ipynb` (fase 6, lectura), `09_fase6a_prima_glm_poisson.ipynb` (enmienda 6a′), `10_fase4_nino.ipynb` (fase 4) |
+| `code/` | `phase0_diagnosis.py`, `preregistration.py`, `phase1_history.py`, `phase1b_climate.py`, `phase2_calibration.py`, `phase3_onsets.py`, `phase5_counts.py`, `phase6_other_families.py`, `phase4_enso.py` |
+| `tests/` | `test_phase0_diagnosis.py`, `test_preregistration.py`, `test_phase1_history.py`, `test_phase1b_climate.py`, `test_phase2_calibration.py`, `test_phase3_onsets.py`, `test_phase5_counts.py`, `test_phase6_other_families.py`, `test_phase4_enso.py` |
+| `docs/` | `plan.md`, `mejora_modelo.md` (informe), `metricas/fase0.json`, `metricas/fase1a.json`, `metricas/fase2.json`, `metricas/fase3.json`, `metricas/fase3c.json`, `metricas/fase5.json`, `metricas/fase6.json`, `metricas/fase4.json` y `figuras/fase0/` |
 
 Experimentos de MLflow: `denguekay/mejora_modelo_fase0_diagnostico` `denguekay/mejora_modelo_fase1a_historia` ,
-`denguekay/mejora_modelo_fase2_calibracion` , `denguekay/mejora_modelo_fase3_inicios` `denguekay/mejora_modelo_fase5_conteo` y `denguekay/mejora_modelo_fase6_otras_familias`.
+`denguekay/mejora_modelo_fase2_calibracion` , `denguekay/mejora_modelo_fase3_inicios` `denguekay/mejora_modelo_fase5_conteo` `denguekay/mejora_modelo_fase6_otras_familias` y `denguekay/mejora_modelo_fase4_nino`.
 
 ## Dependencias fuera de `requirements.txt`
 
@@ -43,6 +43,7 @@ Desde la raíz del repositorio, con `data/` completo y las predicciones de la V2
 .\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace research/06_model_improvement/notebooks/07_fase5_conteo.ipynb
 .\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace research/06_model_improvement/notebooks/08_fase6_otras_familias.ipynb
 .\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace research/06_model_improvement/notebooks/09_fase6a_prima_glm_poisson.ipynb
+.\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace research/06_model_improvement/notebooks/10_fase4_nino.ipynb
 ```
 
 La 1a deja sus predicciones en `models/experimentos/mejora_modelo/fase1a/` (no versionadas). El notebook 03
