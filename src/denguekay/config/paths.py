@@ -33,12 +33,15 @@ CACHE_METEO = BRONZE_METEO / "cache_meteo"   # formerly on Drive, now local
 CACHE_METEO_ERA5_2017_2025 = BRONZE_METEO / "cache_meteo_era5_2017_2025"
 CACHE_METEO_ERA5_LAND_2017_2025 = BRONZE_METEO / "cache_meteo_era5_land_2017_2025"   # study 06, 1b: ERA5-Land check
 CACHE_METEO_2000_2016 = BRONZE_METEO / "cache_meteo_2000_2016"
+CACHE_METEO_ERA5_LAND_2000_2016 = BRONZE_METEO / "cache_meteo_era5_land_2000_2016"   # study 06, 1b'
 BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
 BRONZE_SALA = BRONZE_EPI / "sala"
 BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per download date
 SILVER_SALA = SILVER / "epi_sala_semanal.csv"
 SILVER_METEO_2000_2016 = SILVER / "meteo_semanal_distrital_2000_2016.csv"   # study 06, phase 1b
+# Study 06, 1b': humidity and temperature from ERA5-Land 2000-2025 (no precipitation), apart from the silver in use.
+SILVER_METEO_ERA5_LAND_2000_2025 = SILVER / "meteo_humedad_era5_land_2000_2025.csv"
 SILVER_ENSO = SILVER / "enso_nino12_mensual.csv"   # monthly Niño 1+2 with the date it becomes usable
 
 # Integrated silver: silver sources already joined (meteo + socio + epi),

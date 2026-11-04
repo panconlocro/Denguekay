@@ -43,6 +43,15 @@ class TestFetchDistrict(unittest.TestCase):
         self.assertEqual(sorted(default.columns), sorted(["time", *om.DAILY_VARS]))
         self.assertEqual(fixed[["lat_celda", "lon_celda", "elevacion_celda"]].iloc[0].tolist(), [-5.0, -80.25, 30.0])
 
+    def test_requested_daily_variables(self):
+        with patch.object(om.requests, "get", return_value=_response(om.ERA5_LAND_DAILY_VARS)) as get:
+            out = om.fetch_district(-5.0, -80.0, models="era5_land", daily_vars=om.ERA5_LAND_DAILY_VARS)
+        self.assertEqual(get.call_args.kwargs["params"]["daily"], ",".join(om.ERA5_LAND_DAILY_VARS))
+        self.assertEqual(sorted(out.columns), sorted(["time", *om.ERA5_LAND_DAILY_VARS, *om.GRID_COLUMNS]))
+        with patch.object(om.requests, "get", return_value=_response()):
+            with self.assertRaises(RuntimeError):  # more columns than requested
+                om.fetch_district(-5.0, -80.0, models="era5_land", daily_vars=om.ERA5_LAND_DAILY_VARS)
+
     def test_fixed_model_rejects_renamed_columns(self):
         renamed = [f"{c}_era5" for c in om.DAILY_VARS]
         with patch.object(om.requests, "get", return_value=_response(renamed)):
@@ -59,6 +68,8 @@ class TestDownloadPendingBatch(unittest.TestCase):
             om.download_pending_batch(self.districts, start_date="2000-01-01", end_date="2016-12-31")
         with self.assertRaises(ValueError):
             om.download_pending_batch(self.districts, models="era5", cache_dir=CACHE_METEO)
+        with self.assertRaises(ValueError):
+            om.download_pending_batch(self.districts, daily_vars=om.ERA5_LAND_DAILY_VARS)
 
     def test_writes_to_its_own_cache_and_resumes(self):
         with tempfile.TemporaryDirectory() as tmp, \
