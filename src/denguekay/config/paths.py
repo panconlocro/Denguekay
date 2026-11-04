@@ -38,10 +38,16 @@ BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
 BRONZE_SALA = BRONZE_EPI / "sala"
 BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per download date
+# CHIRPS v3 daily, sat disaggregation: one GeoTIFF per day with the Piura window, plus the run manifests
+BRONZE_CHIRPS = BRONZE / "chirps" / "v3_sat"
+BRONZE_CHIRPS_FINAL = BRONZE_CHIRPS / "final"
+BRONZE_CHIRPS_PRELIM = BRONZE_CHIRPS / "prelim"   # weekly app update (not downloaded yet)
 SILVER_SALA = SILVER / "epi_sala_semanal.csv"
 SILVER_METEO_2000_2016 = SILVER / "meteo_semanal_distrital_2000_2016.csv"   # study 06, phase 1b
 # Study 06, 1b': humidity and temperature from ERA5-Land 2000-2025 (no precipitation), apart from the silver in use.
 SILVER_METEO_ERA5_LAND_2000_2025 = SILVER / "meteo_humedad_era5_land_2000_2025.csv"
+# Weekly precipitation per district from CHIRPS v3 (final sat), with fecha_disponible; apart from the V2 silver
+SILVER_CHIRPS_PRECIP = SILVER / "precip_chirps_v3_semanal_2000_2025.csv"
 SILVER_ENSO = SILVER / "enso_nino12_mensual.csv"   # monthly Niño 1+2 with the date it becomes usable
 
 # Integrated silver: silver sources already joined (meteo + socio + epi),

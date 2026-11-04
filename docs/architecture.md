@@ -137,6 +137,7 @@ bronze/
 ├── meteo/cache_meteo_2000_2016/       # estudio 06 (1b): historia 2000-2016, caché aparte
 ├── meteo/cache_meteo_era5_land_2000_2016/  # estudio 06 (1b′): ERA5-Land 2000-2016 (humedad y temperatura)
 ├── enso/                    # sstoi.indices de NOAA CPC (Niño 1+2), un archivo por fecha de descarga
+├── chirps/v3_sat/           # CHIRPS v3 diario (sat): final/AAAA/ y prelim/AAAA/ con la ventana de Piura por día, y los manifiestos de cada corrida
 ├── socio/                   # el Excel del censo/proyecciones, sin tocar
 └── epi/                     # Excel y respuestas crudas de la Sala Situacional MINSA
 ```
@@ -149,6 +150,7 @@ silver/
 ├── meteo_semanal_distrital.csv     # por fuente
 ├── meteo_semanal_distrital_2000_2016.csv  # estudio 06 (1b): historia, aparte del de 2017-2025
 ├── meteo_humedad_era5_land_2000_2025.csv  # estudio 06 (1b′): humedad y temperatura ERA5-Land, sin precipitación
+├── precip_chirps_v3_semanal_2000_2025.csv  # lluvia semanal CHIRPS v3 (final sat) por distrito, con fecha_disponible (V3)
 ├── enso_nino12_mensual.csv         # Niño 1+2 mensual con la fecha desde la que se puede usar
 ├── socio_anual.csv
 ├── epi_piura_semanal.csv
@@ -206,10 +208,12 @@ data/
 ├── ingestion/
 │   ├── openmeteo.py            # clima diario de Open-Meteo por distrito
 │   ├── gadm_districts.py       # límites distritales GADM y centroides
+│   ├── chirps.py               # CHIRPS v3 diario (sat): ventana de Piura por día desde los COG, con reanudación
 │   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
 │   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE
 ├── processing/
 │   ├── weekly_aggregation.py   # diario -> semanal por distrito
+│   ├── chirps_precipitation.py # CHIRPS por centroide -> lluvia semanal con fecha_disponible
 │   ├── socio_interpolation.py  # interpolación 2017-2025
 │   ├── epi_cases.py            # Excel epidemiológico (un caso por fila) -> silver semanal
 │   ├── epi_sala.py             # normalización y conciliación de la Sala
@@ -391,6 +395,7 @@ pipelines/notebooks/
 ├── 02_ingesta_meteo.ipynb
 ├── 03_bronze_to_silver_meteo.ipynb
 ├── 03b_ingesta_enso.ipynb      # Niño 1+2 de NOAA CPC: bronze y silver (estudio 06, fase 4)
+├── 03c_ingesta_chirps.ipynb    # CHIRPS v3 diario (final sat): ventana de Piura a bronze; silver aparte (V3)
 ├── 04_ingesta_socio.ipynb
 ├── 05_bronze_to_silver_socio.ipynb
 ├── 06_ingesta_epi.ipynb
