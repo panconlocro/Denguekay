@@ -30,9 +30,9 @@ def daily_from_bronze(folder: Path, districts: pd.DataFrame) -> pd.DataFrame:
     transform0 = None
     for f in sorted(folder.glob("*/chirps-v3.0.sat.*.tif")):
         day = pd.Timestamp(f.stem.removeprefix("chirps-v3.0.sat.").replace(".", "-"))
-        with rasterio.open(f) as src:
-            data = src.read(1)
-            transform = src.transform
+        with rasterio.open(f) as dataset:
+            data = dataset.read(1)
+            transform = dataset.transform
         if transform0 is None:
             transform0, (r, c) = transform, centroid_cells(transform, districts)
             if (r < 0).any() or (c < 0).any() or (r >= data.shape[0]).any() or (c >= data.shape[1]).any():

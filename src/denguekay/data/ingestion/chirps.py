@@ -66,12 +66,12 @@ def read_window(url: str, bounds: tuple = PIURA_BOUNDS) -> tuple[np.ndarray, dic
     from rasterio.windows import from_bounds
 
     try:
-        with rasterio.Env(**GDAL_ENV), rasterio.open("/vsicurl/" + url) as src:
-            window = from_bounds(*bounds, transform=src.transform).round_offsets().round_lengths()
-            data = src.read(1, window=window)
+        with rasterio.Env(**GDAL_ENV), rasterio.open("/vsicurl/" + url) as dataset:
+            window = from_bounds(*bounds, transform=dataset.transform).round_offsets().round_lengths()
+            data = dataset.read(1, window=window)
             profile = {"driver": "GTiff", "dtype": data.dtype.name, "count": 1, "height": data.shape[0],
-                       "width": data.shape[1], "crs": src.crs, "transform": src.window_transform(window),
-                       "nodata_declarado": src.nodata, "resolucion": src.res}
+                       "width": data.shape[1], "crs": dataset.crs, "transform": dataset.window_transform(window),
+                       "nodata_declarado": dataset.nodata, "resolucion": dataset.res}
     except RasterioIOError as exc:
         if "429" in str(exc):
             raise RateLimited(str(exc)) from exc

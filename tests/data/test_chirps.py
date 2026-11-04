@@ -69,9 +69,9 @@ class TestSaveAndDownload(unittest.TestCase):
             self.assertTrue(ch.save_window(*_window(1.0), path))
             self.assertFalse(ch.save_window(*_window(9.0), path))
             import rasterio
-            with rasterio.open(path) as src:
-                self.assertEqual(float(src.read(1)[0, 1]), 1.0)
-                self.assertEqual(float(src.read(1)[0, 0]), ch.NODATA)   # kept as it arrived
+            with rasterio.open(path) as dataset:
+                self.assertEqual(float(dataset.read(1)[0, 1]), 1.0)
+                self.assertEqual(float(dataset.read(1)[0, 0]), ch.NODATA)   # kept as it arrived
             self.assertEqual(list(path.parent.glob("*.tmp")), [])
 
     def _run(self, reader, days=("2000-01-01", "2000-01-10"), **kwargs):
