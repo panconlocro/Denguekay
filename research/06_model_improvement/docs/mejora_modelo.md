@@ -38,18 +38,18 @@ aquí.
 1. ~~Celda A (ERA5 fijo 2017–2025)~~: hecha; comparación en `notebooks/03_fase1b_consistencia_clima.ipynb`
    (commit `fefa3b2`). Rosa descartó ERA5 a 0,25° (precipitación idéntica entre vecinos en 48 distritos) y
    «Best match» para 2000–2016 (antes de 2017 no tiene el IFS: el empalme existiría sin medirlo).
-2. Celda A2 del notebook 02 del pipeline: ERA5-Land (0,1°) 2017–2025 para una muestra de 16 distritos, con
-   reanudación automática tras el límite por hora (`download_all`), en
-   `data/bronze/meteo/cache_meteo_era5_land_2017_2025/`. Después, repetir la comparación para ERA5-Land; si
-   distingue la precipitación entre vecinos, se propone la descarga 2000–2025 con ERA5-Land a un silver aparte.
+2. ~~Celda A2 (ERA5-Land, muestra de 16 distritos)~~: hecha. ERA5-Land no trae precipitación en Open-Meteo
+   (ver «Fase 1b′»). Pendiente: celdas A3 y B2 del notebook 02 (ERA5-Land 2000–2025, 65 distritos, humedad y
+   temperatura; unos 4–5 días por el límite diario del API) y la sección 1b′ del notebook 03 del pipeline, que
+   escribe `data/silver/meteo_humedad_era5_land_2000_2025.csv` (rama `feat/era5-land-humidity-history`).
 3. ~~Ingesta del Niño 1+2 (NOAA CPC)~~: hecha por Rosa el 2026-11-03 con `pipelines/notebooks/03b_ingesta_enso.ipynb`.
    Archivo crudo `data/bronze/enso/sstoi_20261103.indices`; `data/silver/enso_nino12_mensual.csv` con 538 meses,
    de 1982-01 a 2026-10.
 
-**Siguiente paso:** la 1b cuando el clima 2000–2016 esté disponible (repetir la comparación de historia con A3
-sobre L + 5a, con la regla de 5 temporadas); luego entrenar la fase 4 (Niño 1+2, con el clima ya incluido); luego
-la 6′ (otra familia con clima, lectura) y la fase 7 (síntesis, pruebas, auditoría con `revisor-modelado` y
-congelamiento).
+**Siguiente paso:** la 1b′ (L + 5a + humedad de ERA5-Land, preregistrada) cuando esté el silver de ERA5-Land;
+mientras tanto, el preregistro de la fase 4 (Niño 1+2) sobre L + 5a; después, la 6′ (otra familia con clima,
+lectura) y la fase 7 (síntesis, pruebas, auditoría con `revisor-modelado` y congelamiento). Si la 1b′ muestra que
+el clima aporta, el siguiente paso es la precipitación de CHIRPS v3 (ver «Fase 1b′»).
 
 **Pendientes del pipeline anotados (no tocar en este estudio):** semana 53 de 2009 en `epi_piura_semanal.csv`;
 `propia_semanas_desde_ultimo_caso` en `gold.py` sin la historia anterior a 2017 (limitación conocida de la V1/V2).
@@ -407,3 +407,42 @@ MLflow `b4aaa1cfb6c94074a3dcbb552409afe2`.
   la síntesis de la fase 7 o un estudio posterior; usarlo como candidata requeriría un preregistro nuevo aprobado
   por Rosa.
 - **La fase 6 queda cerrada**, salvo la 6′ con clima, preparada para cuando llegue la 1b.
+
+## Fase 1b′ · Fuente del clima y preregistro (2026-11-03 y 2026-11-04)
+
+- **ERA5 fijo (0,25°) frente a lo descargado («Best match»), 2017–2025:** notebook
+  `03_fase1b_consistencia_clima.ipynb` (commit `fefa3b2`, cifras en `metricas/fase1b_consistencia.json`). Las
+  diferencias son sistemáticas (viento −4,19 km/h, temperatura media +0,52 °C, precipitación +2,49 mm por semana en
+  promedio; correlación semanal de la precipitación 0,824 y de la humedad 0,837), con 2025 como el año más
+  distinto. 48 de los 65 distritos comparten celda real de ERA5 (34 celdas) y, dentro de cada celda, la
+  precipitación, el viento y la radiación son idénticos en todas las semanas (mediana por grupo 1,000).
+- **Decisión de Rosa:** no usar ERA5 a 0,25° (precipitación idéntica entre vecinos en 48 distritos) ni «Best match»
+  para 2000–2016 (antes de 2017 no tiene el IFS: el empalme existiría igual, sin medirlo).
+- **ERA5-Land (0,1°):** la celda A2 bajó una muestra de 16 distritos (5 grupos que comparten celda en ERA5 y 4
+  distritos de costa y sierra). Las 15 celdas de ERA5-Land separan esos grupos (solo La Arena y La Unión comparten
+  una), pero la precipitación, la lluvia, el viento, la radiación y la ET0 llegaron vacías en el 100 % de los días.
+  La documentación de Open-Meteo confirma que ERA5-Land no trae precipitación, lluvia, radiación ni viento
+  (https://open-meteo.com/en/docs/historical-weather-api), y Rosa lo comprobó en el navegador (diaria y horaria en
+  `null`). Sí trae temperatura y humedad.
+- **Plan aprobado:** humedad de ERA5-Land 2000–2025 para los 65 distritos (rama `feat/era5-land-humidity-history`:
+  `daily_vars` configurable en `openmeteo.py`, agregación semanal que deja vacía la semana sin datos en vez de 0,
+  silver aparte). No cambia el silver vigente, el gold ni la V2.
+- **Preregistro `PHASE1B_PRIME`** (aprobado por Rosa el 2026-11-04 tal cual, commiteado antes de que termine la
+  descarga): L + 5a + H, con H = `hum_rel_media_media5_h2` (definición de gold.py) sobre la humedad de ERA5-Land,
+  frente a L + 5a con la regla de 5 temporadas de las fases 2 y 3; adopción con «gana» en >= 2 de 3 horizontes y
+  sin «pierde» ni «compensa». Guardas G17–G20 (definición de H igual a la del gold, no fuga, sin nulos desde 2005,
+  reproducción de L + 5a).
+
+### Precipitación: fuentes verificadas (2026-11-04; siguiente paso si la 1b′ muestra que el clima aporta)
+
+- **CHIRPS v3** (Climate Hazards Center, UCSB; https://www.chc.ucsb.edu/data/chirps3): 0,05°, diaria, desde 1981,
+  licencia CC BY 4.0. Archivos GeoTIFF y NetCDF sin registro en https://data.chc.ucsb.edu/products/CHIRPS/v3.0/.
+  Al 2026-11-04, el producto final llega al 2026-09-30 y el preliminar al 2026-10-31 (publicado el 2026-11-02).
+  Preliminar: 2 días después de cada péntada; final: una vez al mes, normalmente en la tercera semana del mes
+  siguiente. **Sirve para entrenar (2000–2025) y, con el preliminar, para la actualización semanal de la app.**
+  La v2 se produce hasta diciembre de 2026. La documentación aclara que la fecha de cada valor diario es una
+  etiqueta del proceso de desagregación: habría que medir su efecto en las sumas semanales.
+- **PISCOp v2.1** (SENAMHI; https://piscoprec.github.io/webPISCO/en/about): 0,1°, diaria y mensual, desde 1981.
+  SENAMHI suspendió su generación en casi tiempo real y no hay valores después del 2018-06-30. El catálogo de IRIDL
+  exige iniciar sesión y no se pudo verificar la licencia de los datos. Una publicación no oficial menciona una
+  v3.0 (1981–2025) que no se pudo confirmar en fuentes de SENAMHI. **No sirve para la app con lo verificado.**

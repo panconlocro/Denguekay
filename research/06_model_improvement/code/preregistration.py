@@ -545,6 +545,48 @@ PHASE6_AMENDMENT = {
 
 
 # ---------------------------------------------------------------------------
+# Phase 1b' (approved by Rosa on 2026-11-04 before the ERA5-Land download finished)
+# ---------------------------------------------------------------------------
+
+PHASE1B_PRIME_COLUMN = "hum_rel_media_media5_h2"   # same definition as the humidity of A3 in gold.py
+PHASE1B_PRIME_MIN_HORIZONS_WON = 2
+
+PHASE1B_PRIME = {
+    "fecha": "2026-11-04",
+    "estado": "aprobado por Rosa (2026-11-04) tal cual, commiteado antes de que termine la descarga de ERA5-Land; "
+              "se corre cuando el silver `meteo_humedad_era5_land_2000_2025.csv` esté listo",
+    "por_que": "ERA5 a 0,25° deja idéntica la precipitación entre vecinos en 48 distritos; «Best match» no tiene el "
+               "IFS antes de 2017; ERA5-Land (0,1°) no trae precipitación en Open-Meteo. Queda la humedad de "
+               "ERA5-Land como única fuente 2000-2025: A3 solo con humedad",
+    "candidata": f"L + 5a + H: H = `{PHASE1B_PRIME_COLUMN}` con la definición de gold.py, calculada en memoria "
+                 "sobre la humedad semanal de ERA5-Land 2000-2025. Matriz C3 + H; E3 · S4_s3; hiperparámetros de "
+                 "la V1; bloques 2008-2024 + calendario_2025; Platt por horizonte con 1e-6; alerta p >= 0,50; dos "
+                 "μ con la mezcla 5a; 5 semillas",
+    "referencia": "L + 5a (predicciones guardadas de la 1a con la mezcla 5a)",
+    "regla": "decide_multi_season (fases 2 y 3): 5 temporadas (2010, 2015, 2016, 2022, 2023), F1 primaria; AUPRC, "
+             "Brier, razón MAE y antelación como guardas",
+    "adopcion": f"gana en >= {PHASE1B_PRIME_MIN_HORIZONS_WON} de 3 horizontes y ninguno «pierde» ni «compensa "
+                "(empate)»",
+    "lecturas_que_no_deciden": [
+        "la regla de razón MAE de la fase 5 (decide_phase5)",
+        "sin 2010 (3 de 4) y 2024 como contraste",
+        "frente a la V2 en 2022 y 2023 con sus predicciones guardadas, y la HU0007-4 por celda",
+        "diferencia ERA5-Land − «Best match» de la humedad 2017-2025 por año, en los 65 distritos",
+    ],
+    "guardas_antes_de_mirar_resultados": [
+        "G17: la función que calcula H, aplicada al silver vigente («Best match»), reproduce exactamente la "
+        "columna de humedad del gold (misma definición)",
+        "G18: test de no fuga por perturbación: cambiar la humedad posterior al origen no cambia H",
+        "G19: ningún origen desde 2005 queda sin H",
+        "G20: L + 5a reproduce fase5.json",
+        "si una guarda falla, se detiene la fase y se explica; no se ajusta nada para que pase",
+    ],
+    "despues": "la fase 4 (Niño 1+2) sobre la base que quede; si H se adopta, el Niño se vuelve a medir sobre la "
+               "base nueva",
+}
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 
