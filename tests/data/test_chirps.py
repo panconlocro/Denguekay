@@ -155,18 +155,21 @@ class TestProcessing(unittest.TestCase):
     def test_publication_calendar_of_the_preliminary(self):
         saturdays = pd.Series(pd.to_datetime(["2017-01-07", "2017-01-14", "2017-01-28", "2017-02-25", "2017-02-26",
                                              "2016-12-31"]))
-        expected = pd.to_datetime(["2017-01-12", "2017-01-17", "2017-02-02", "2017-02-27", "2017-03-02",
-                                   "2017-01-02"])
-        self.assertEqual(cp.pentad_publication(saturdays).tolist(), expected.tolist())
+        official = pd.to_datetime(["2017-01-12", "2017-01-17", "2017-02-02", "2017-02-27", "2017-03-02",
+                                   "2017-01-02"])   # CHC: the 2nd, 7th, 12th, 17th, 22nd and 27th
+        self.assertEqual(cp.pentad_publication(saturdays, cp.OFFICIAL_LAG_DAYS).tolist(), official.tolist())
+        conservative = official + pd.Timedelta(days=3)
+        self.assertEqual(cp.PUBLICATION_LAG_DAYS, 5)
+        self.assertEqual(cp.pentad_publication(saturdays).tolist(), conservative.tolist())
 
     def test_weekly_availability_and_guard(self):
         daily = pd.DataFrame({"id_distrito": 1, "time": pd.date_range("2017-01-01", "2017-01-14"),
                               "precipitation_sum": 1.0})
         weekly = cp.weekly_precipitation(daily, DISTRICTS)
-        self.assertEqual(weekly.fecha_disponible.tolist(), pd.to_datetime(["2017-01-12", "2017-01-17"]).tolist())
-        origins = pd.DataFrame({"origen_cierre": pd.to_datetime(["2017-01-14", "2017-01-14"]),
+        self.assertEqual(weekly.fecha_disponible.tolist(), pd.to_datetime(["2017-01-15", "2017-01-20"]).tolist())
+        origins = pd.DataFrame({"origen_cierre": pd.to_datetime(["2017-01-15", "2017-01-15"]),
                                 "semana_inicio": pd.to_datetime(["2017-01-01", "2017-01-08"])})
-        self.assertEqual(cp.weeks_published_after(weekly, origins), 1)   # week of Jan 8 is published on Jan 17
+        self.assertEqual(cp.weeks_published_after(weekly, origins), 1)   # week of Jan 8 is usable from Jan 20
 
     def test_windows_must_match(self):
         with tempfile.TemporaryDirectory() as tmp:

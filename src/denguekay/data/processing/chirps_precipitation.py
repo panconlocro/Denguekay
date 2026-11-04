@@ -5,10 +5,13 @@ Bronze CHIRPS v3 (daily Piura windows) -> weekly precipitation per district, wit
   that Open-Meteo uses). -9999 (sea / no data) becomes NaN, never 0.
 - Weeks: the MMWR aggregation of ``weekly_aggregation.aggregate_available_to_weekly`` (only 7-day weeks; a
   week with no data stays empty).
-- ``fecha_disponible``: the day the preliminary product covering the week's Saturday is published. CHIRPS
-  publishes preliminary pentads (days 1-5, 6-10, 11-15, 16-20, 21-25, 26-end of month) two days after each
-  pentad ends, on the 2nd, 7th, 12th, 17th, 22nd and 27th (https://www.chc.ucsb.edu/data/chirps3). A model
-  may use a week only from that date (the guard of the study's variant b).
+- ``fecha_disponible``: the day the preliminary product covering the week's Saturday can be counted on.
+  CHIRPS publishes preliminary pentads (days 1-5, 6-10, 11-15, 16-20, 21-25, 26-end of month) two days after
+  each pentad ends, on the 2nd, 7th, 12th, 17th, 22nd and 27th (https://www.chc.ucsb.edu/data/chirps3). The
+  listing dates of daily/prelim/sat/ for 2025-2026 (130 pentads) gave a lag after the pentad end of median 2,
+  p90 4 and maximum 18 days; 5 days covers 94 % of those pentads (all of 2026), so the availability date is the
+  pentad end plus 5 days. Larger delays are handled in the serving design. A model may use a week only from
+  that date (the guard of the study's variant b).
 """
 
 from pathlib import Path
@@ -19,7 +22,8 @@ import pandas as pd
 from denguekay.data.ingestion.chirps import NODATA, centroid_cells
 from denguekay.data.processing.weekly_aggregation import aggregate_available_to_weekly
 
-PUBLICATION_LAG_DAYS = 2
+PUBLICATION_LAG_DAYS = 5        # conservative: CHC's own schedule is pentad end + 2 (OFFICIAL_LAG_DAYS)
+OFFICIAL_LAG_DAYS = 2
 
 
 def daily_from_bronze(folder: Path, districts: pd.DataFrame) -> pd.DataFrame:
@@ -48,13 +52,13 @@ def daily_from_bronze(folder: Path, districts: pd.DataFrame) -> pd.DataFrame:
     return pd.concat(rows, ignore_index=True)
 
 
-def pentad_publication(day: pd.Series) -> pd.Series:
-    """Publication date of the preliminary pentad that contains each day."""
+def pentad_publication(day: pd.Series, lag_days: int = PUBLICATION_LAG_DAYS) -> pd.Series:
+    """Availability date of the preliminary pentad that contains each day: its last day plus ``lag_days``."""
     day = pd.to_datetime(day)
     end_day = np.select([day.dt.day <= 5, day.dt.day <= 10, day.dt.day <= 15, day.dt.day <= 20, day.dt.day <= 25],
                         [5, 10, 15, 20, 25], default=day.dt.days_in_month)
     pentad_end = pd.to_datetime(dict(year=day.dt.year, month=day.dt.month, day=end_day))
-    return pentad_end + pd.Timedelta(days=PUBLICATION_LAG_DAYS)
+    return pentad_end + pd.Timedelta(days=lag_days)
 
 
 def weekly_precipitation(daily: pd.DataFrame, districts: pd.DataFrame) -> pd.DataFrame:
