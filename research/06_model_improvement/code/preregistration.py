@@ -587,6 +587,63 @@ PHASE1B_PRIME = {
 
 
 # ---------------------------------------------------------------------------
+# Phase 4 (approved by Rosa on 2026-11-04 with the check of the raw file, before running)
+# ---------------------------------------------------------------------------
+
+PHASE4_COLUMNS = {"4a": ["nino12_anom_ultimo"], "4b": ["nino12_anom_media3"]}
+PHASE4_MIN_HORIZONS_WON = 2
+PHASE4_SIMPLICITY = ("4a", "4b")   # a tie in a cross keeps the earlier (simpler) one
+PHASE4_TRAINING_MAX = 3.30         # largest monthly Niño 1+2 anomaly in 2000-2025 (2023-08)
+
+PHASE4 = {
+    "fecha": "2026-11-04",
+    "estado": "aprobado por Rosa (2026-11-04) con un agregado (verificar 2026-10 contra el archivo crudo); "
+              "commiteado antes de correr ninguna variante de la fase 4",
+    "fuente": "NOAA CPC sstoi.indices (OISST v2.1, base 1991-2020), anomalía de la región Niño 1+2; silver "
+              "`enso_nino12_mensual.csv` (538 meses, 1982-01 a 2026-10; crudo `sstoi_20261103.indices`)",
+    "base": "L + 5a",
+    "disponibilidad": "un mes se usa en un origen solo si su fecha_disponible (día 10 del mes siguiente) es <= "
+                      "origen_cierre (el sábado que cierra la última semana observada)",
+    "variantes": {
+        "4a": "C3 + nino12_anom_ultimo: anomalía del último mes disponible al origen",
+        "4b": "C3 + nino12_anom_media3: media de los 3 últimos meses disponibles al origen",
+    },
+    "comun": "E3 · S4_s3, hiperparámetros de la V1, bloques 2008-2024 + calendario_2025, Platt por horizonte con "
+             "1e-6, alerta p >= 0,50, dos μ con la mezcla 5a, 5 semillas. El valor es el mismo para todos los "
+             "distritos (señal regional entre años)",
+    "regla": "decide_multi_season (fases 2 y 3), 5 temporadas, F1 primaria; AUPRC, Brier, razón MAE y antelación "
+             "como guardas",
+    "adopcion": f"gana en >= {PHASE4_MIN_HORIZONS_WON} de 3 horizontes y ninguno «pierde» ni «compensa (empate)». "
+                "Si se adoptan las dos, se cruzan con la misma regla; un empate deja 4a",
+    "lecturas_que_no_deciden": [
+        "la regla de razón MAE de la fase 5",
+        "recall en las 2 primeras semanas de brotes nuevos frente a brotes en curso",
+        "sin 2010 (3 de 4) y 2024 como contraste",
+        f"rango: 2000-2025 va de -1,90 a {PHASE4_TRAINING_MAX} (2023-08); 2026-10 = 5,25, fuera del rango de "
+        "entrenamiento (riesgo de extrapolación para la app, fase 7)",
+        "repetición después de la 1b′: si se adopta H, 4a y 4b se vuelven a medir con la misma regla sobre "
+        "L + 5a + H; el primer resultado queda registrado",
+    ],
+    "guardas_antes_de_mirar_resultados": [
+        "G21: ningún origen usa un mes con fecha_disponible > origen_cierre (tabla completa)",
+        "G22: test de no fuga por perturbación (cambiar anomalías de meses aún no disponibles no cambia las "
+        "variables)",
+        "G23: ningún origen desde 2005 queda sin valor",
+        "G24: L + 5a reproduce fase5.json",
+        "si una guarda falla, se detiene la fase y se explica; no se ajusta nada para que pase",
+    ],
+    "mlflow": "denguekay/mejora_modelo_fase4_nino",
+}
+
+
+def adopt_phase4(verdict: pd.DataFrame) -> bool:
+    """Adoption of a phase 4 variant: >= 2 horizons won and none lost or offset."""
+    won = int(verdict.veredicto.eq("gana").sum())
+    bad = verdict.veredicto.isin(["pierde", "compensa (empate)"]).any()
+    return won >= PHASE4_MIN_HORIZONS_WON and not bad
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 

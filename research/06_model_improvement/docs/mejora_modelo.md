@@ -446,3 +446,25 @@ MLflow `b4aaa1cfb6c94074a3dcbb552409afe2`.
   SENAMHI suspendió su generación en casi tiempo real y no hay valores después del 2018-06-30. El catálogo de IRIDL
   exige iniciar sesión y no se pudo verificar la licencia de los datos. Una publicación no oficial menciona una
   v3.0 (1981–2025) que no se pudo confirmar en fuentes de SENAMHI. **No sirve para la app con lo verificado.**
+
+## Fase 4 · Señal regional de El Niño (Niño 1+2)
+
+### Verificación del dato y preregistro (2026-11-04, antes de correr)
+
+- **Fuente:** NOAA CPC, `sstoi.indices` (OISST v2.1, base 1991-2020). Crudo `data/bronze/enso/sstoi_20261103.indices`;
+  silver `data/silver/enso_nino12_mensual.csv`, 538 meses de 1982-01 a 2026-10, con `fecha_disponible` = día 10 del
+  mes siguiente.
+- **Verificación pedida por Rosa:** el valor de 2026-10 (5,25) es la columna `ANOM` que sigue a `NINO1+2` en el
+  crudo (cuarta columna: `2026 10 26.12 5.25 29.24 4.16 29.88 1.20 30.01 3.25`), no la temperatura (26,12) ni la
+  anomalía de Niño 3 (4,16), Niño 4 (1,20) o Niño 3.4 (3,25). Las 6 últimas filas procesadas coinciden con las
+  crudas: 2026-05 1,81; 06 2,83; 07 3,56; 08 4,08; 09 4,69; 10 5,25.
+- **Riesgo de extrapolación (observación):** en 2000–2025 la anomalía va de −1,90 (2007-11) a 3,30 (2023-08); en
+  todo el registro 1982–2025 el máximo es 4,03 (1983-06). El valor de 2026-10 (5,25) queda fuera del rango de
+  entrenamiento, y por encima del máximo del registro. Un modelo de árboles no extrapola: trataría 5,25 como el
+  valor más alto que vio. Se revisa en la fase 7 para la app.
+- **Contexto de la temporada 2026–2027 (observación, sin inferencia):** la anomalía de Niño 1+2 sube todos los
+  meses desde 2026-05 (1,81) hasta 2026-10 (5,25). Qué implica para el dengue en Piura no se afirma aquí.
+- **Preregistro `PHASE4`** (aprobado por Rosa el 2026-11-04 con la verificación anterior, commiteado antes de
+  correr): 4a = C3 + anomalía del último mes disponible; 4b = C3 + media de los 3 últimos meses disponibles; cada
+  una frente a L + 5a con la regla de 5 temporadas de las fases 2 y 3; guardas G21–G24. Si la 1b′ adopta H, 4a y
+  4b se vuelven a medir sobre L + 5a + H.
