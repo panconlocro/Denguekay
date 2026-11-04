@@ -74,5 +74,55 @@ class TestDownloadPendingBatch(unittest.TestCase):
             get.assert_not_called()
 
 
+
+def _limit(reason):
+    r = MagicMock(status_code=429, headers={"content-type": "application/json"})
+    r.json.return_value = {"reason": reason}
+    return r
+
+
+HOURLY = "Hourly API request limit exceeded. Please try again in the next hour."
+DAILY = "Daily API request limit exceeded. Please try again tomorrow."
+
+
+class TestDownloadAll(unittest.TestCase):
+    districts = pd.DataFrame({"id_distrito": [1, 2, 3], "distrito": ["A", "B", "C"], "lat": [-5.0, -5.1, -5.2],
+                              "lon": [-80.0, -80.1, -80.2]})
+
+    def _run(self, responses, **kwargs):
+        waits = []
+        with tempfile.TemporaryDirectory() as tmp, \
+                patch.object(om.requests, "get", side_effect=responses), patch.object(om.time, "sleep"):
+            cache = Path(tmp) / "cache"
+            left = om.download_all(self.districts, models="era5_land", cache_dir=cache, sleep=waits.append, **kwargs)
+            files = sorted(p.name for p in cache.iterdir())
+        return left, files, waits
+
+    def test_limit_kind(self):
+        self.assertEqual(om.APILimitError(HOURLY).kind, "hourly")
+        self.assertEqual(om.APILimitError(DAILY).kind, "daily")
+
+    def test_waits_after_the_hourly_limit_and_finishes(self):
+        left, files, waits = self._run([_response(), _limit(HOURLY), _response(), _limit(HOURLY), _response()])
+        self.assertEqual(left, 0)
+        self.assertEqual(len(files), 3)
+        self.assertEqual(waits, [om.HOURLY_WAIT_SECONDS] * 2)
+
+    def test_stops_at_the_daily_limit(self):
+        left, files, waits = self._run([_response(), _limit(DAILY)])
+        self.assertEqual((left, len(files), waits), (2, 1, []))
+
+    def test_stops_after_the_maximum_number_of_waits(self):
+        left, files, waits = self._run([_response(), _limit(HOURLY), _limit(HOURLY)], max_hourly_waits=1)
+        self.assertEqual((left, len(files), len(waits)), (2, 1, 1))
+
+    def test_the_batch_still_prints_and_returns_without_raising(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+                patch.object(om.requests, "get", side_effect=[_response(), _limit(HOURLY)]), \
+                patch.object(om.time, "sleep"):
+            left = om.download_pending_batch(self.districts, models="era5", cache_dir=Path(tmp) / "c")
+        self.assertEqual(left, 2)
+
+
 if __name__ == "__main__":
     unittest.main()
