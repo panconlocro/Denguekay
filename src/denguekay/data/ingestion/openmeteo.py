@@ -22,6 +22,10 @@ DAILY_VARS = [
     "precipitation_sum", "rain_sum", "relative_humidity_2m_mean",
     "wind_speed_10m_max", "shortwave_radiation_sum", "et0_fao_evapotranspiration",
 ]
+# ERA5-Land has no precipitation, rain, wind or radiation (Open-Meteo docs); study 06 asks only for these.
+ERA5_LAND_DAILY_VARS = [
+    "temperature_2m_mean", "temperature_2m_max", "temperature_2m_min", "relative_humidity_2m_mean",
+]
 START, END = "2017-01-01", "2025-12-31"
 GRID_COLUMNS = {"lat_celda": "latitude", "lon_celda": "longitude", "elevacion_celda": "elevation"}
 BATCH_SIZE = 20  # if the limit hits before the batch ends, lower it to 15
@@ -43,18 +47,21 @@ class APILimitError(Exception):
 def fetch_district(
     lat: float, lon: float, retries: int = 4, *,
     start_date: str = START, end_date: str = END, models: str | None = None,
+    daily_vars: list[str] | None = None,
 ) -> pd.DataFrame:
     """
     Download daily weather for one point and an inclusive date range.
 
     `models=None` sends no `models` parameter (the API picks its default
     "Best match", as in the 2017-2025 download). A string fixes one model and
-    the response must then carry exactly DAILY_VARS.
+    the response must then carry exactly the requested variables
+    (`daily_vars`, default DAILY_VARS).
     """
+    daily_vars = list(daily_vars or DAILY_VARS)
     params = {
         "latitude": lat, "longitude": lon,
         "start_date": start_date, "end_date": end_date,
-        "daily": ",".join(DAILY_VARS),
+        "daily": ",".join(daily_vars),
         "timezone": "America/Lima",
     }
     if models is not None:
@@ -75,7 +82,7 @@ def fetch_district(
                 raise RuntimeError(f"Open-Meteo response missing daily data for {lat}, {lon}")
             if models is None:
                 return pd.DataFrame(daily)
-            if sorted(daily) != sorted(["time", *DAILY_VARS]):
+            if sorted(daily) != sorted(["time", *daily_vars]):
                 raise RuntimeError(f"Open-Meteo returned unexpected columns for models={models}: {sorted(daily)}")
             # With a fixed model, keep the grid cell the API used (to see which districts share one).
             return pd.DataFrame(daily).assign(**{name: body.get(key) for name, key in GRID_COLUMNS.items()})
@@ -100,7 +107,7 @@ def _already_downloaded(district_id: int, cache_dir: Path = CACHE_METEO) -> bool
 def download_pending_batch(
     districts: pd.DataFrame, batch_size: int = BATCH_SIZE, *,
     start_date: str = START, end_date: str = END, models: str | None = None,
-    cache_dir: Path = CACHE_METEO, raise_on_limit: bool = False,
+    cache_dir: Path = CACHE_METEO, raise_on_limit: bool = False, daily_vars: list[str] | None = None,
 ) -> int:
     """
     Download up to `batch_size` pending districts and cache them in
@@ -115,7 +122,8 @@ def download_pending_batch(
     the hourly or daily limit is raised (APILimitError) instead of printed; the
     districts already downloaded stay in the cache.
     """
-    if cache_dir == CACHE_METEO and (start_date, end_date, models) != (START, END, None):
+    other_vars = daily_vars is not None and list(daily_vars) != DAILY_VARS
+    if cache_dir == CACHE_METEO and ((start_date, end_date, models) != (START, END, None) or other_vars):
         raise ValueError("Otro rango o modelo necesita su propio cache_dir: no se mezcla con cache_meteo/.")
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -125,7 +133,8 @@ def download_pending_batch(
     done = 0
     for _, row in pending.head(batch_size).iterrows():
         try:
-            df = fetch_district(row["lat"], row["lon"], start_date=start_date, end_date=end_date, models=models)
+            df = fetch_district(row["lat"], row["lon"], start_date=start_date, end_date=end_date, models=models,
+                                daily_vars=daily_vars)
         except APILimitError as e:
             if raise_on_limit:
                 raise
