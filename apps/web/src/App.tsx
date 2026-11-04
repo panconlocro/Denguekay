@@ -1,0 +1,231 @@
+import { useQuery } from '@tanstack/react-query';
+import { Suspense } from 'react';
+import {
+  NavLink,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useMatch,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
+import { get } from './api/client';
+import { useDistricts, useSummary } from './api/queries';
+import type { Configuration, District } from './api/types';
+import { Filters } from './components/Filters';
+import { Card, Failure, Icon, Loading } from './components/ui';
+import { date, targetPassed, weekLabel } from './lib/format';
+import { DashboardPage } from './pages/DashboardPage';
+import {
+  AlertsPage,
+  DistrictPage,
+  HelpPage,
+  MapPage,
+  ModelsPage,
+  NotFoundPage,
+} from './pages/SecondaryPages';
+
+export type AppContext = {
+  configuration: Configuration;
+  districts: District[];
+  horizon: number;
+  enabled: boolean;
+  province: string;
+  district: string;
+  search: string;
+};
+
+const navigation = [
+  { to: '/', name: 'Tablero', short: 'Tablero', icon: 'grid' },
+  { to: '/mapa', name: 'Mapa de riesgo', short: 'Mapa', icon: 'map' },
+  { to: '/distritos', name: 'Detalle y series', short: 'Series', icon: 'series' },
+  { to: '/alertas', name: 'Alertas tempranas', short: 'Avisos', icon: 'alert' },
+  { to: '/modelo', name: 'Desempeño del modelo', short: 'Modelo', icon: 'bars' },
+  { to: '/ayuda', name: 'Ayuda y manual', short: 'Ayuda', icon: 'help' },
+];
+
+export function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<DashboardPage />} />
+        <Route path="mapa" element={<MapPage />} />
+        <Route path="distritos" element={<DistrictPage />} />
+        <Route path="distritos/:ubigeo" element={<DistrictPage />} />
+        <Route path="alertas" element={<AlertsPage />} />
+        <Route path="modelo" element={<ModelsPage />} />
+        <Route path="ayuda" element={<HelpPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
+  );
+}
+
+function Layout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const match = useMatch('/distritos/:ubigeo');
+  const config = useQuery({
+    queryKey: ['configuration'],
+    queryFn: ({ signal }) => get('/api/v1/configuracion', {}, signal),
+  });
+  const catalogue = useDistricts();
+  const [params, setParams] = useSearchParams();
+  const configuration = config.isError ? undefined : config.data;
+  const requestedHorizon = Number(params.get('horizonte'));
+  const horizon = configuration?.horizontes.some((h) => h.horizonte === requestedHorizon)
+    ? requestedHorizon
+    : (configuration?.horizonte_por_defecto ?? 4);
+  const enabled = !!configuration?.horizontes.find((h) => h.horizonte === horizon)?.disponible;
+  const summary = useSummary(horizon, enabled);
+  const districts = catalogue.isError ? [] : catalogue.data?.elementos || [];
+  const district = match?.params.ubigeo || params.get('distrito') || '';
+  const province = match
+    ? districts.find((d) => d.ubigeo === district)?.ubigeo_provincia || ''
+    : params.get('provincia') || '';
+  const search = params.toString() ? `?${params}` : '';
+  const change = (key: string, value: string) => {
+    const next = new URLSearchParams(params);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    if (key === 'provincia') next.delete('distrito');
+    if (match && (key === 'distrito' || key === 'provincia'))
+      navigate(`/distritos${key === 'distrito' && value ? `/${value}` : ''}?${next}`);
+    else setParams(next);
+  };
+  const reset = () => {
+    if (match) navigate('/distritos');
+    else setParams({});
+  };
+  const title =
+    location.pathname === '/'
+      ? 'Tablero de vigilancia y pronóstico'
+      : navigation.find((n) => n.to !== '/' && location.pathname.startsWith(n.to))?.name ||
+        'Página no encontrada';
+  const currentSummary = summary.isError ? undefined : summary.data;
+  const context = configuration
+    ? { configuration, districts, horizon, enabled, province, district, search }
+    : null;
+  return (
+    <div className="app-shell">
+      <a href="#main-content" className="skip-link">
+        Saltar al contenido
+      </a>
+      <aside className="sidebar">
+        <NavLink className="brand" to={`/${search}`} aria-label="Denguekay, inicio">
+          <img src="/assets/logo.svg" width="34" height="34" alt="" />
+          <span>
+            <strong>Denguekay</strong>
+            <small>Alerta temprana de dengue · Piura</small>
+          </span>
+        </NavLink>
+        <p className="nav-caption">MENÚ</p>
+        <nav aria-label="Navegación principal">
+          {navigation.map((item) => (
+            <NavLink key={item.to} to={`${item.to}${search}`} end={item.to === '/'}>
+              <Icon name={item.icon} />
+              <span>{item.name}</span>
+              {item.to === '/alertas' && currentSummary && (
+                <span className="nav-count">{currentSummary.alertas_activas}</span>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="institution">
+          <strong>DIRESA Piura</strong>
+          <span>Epidemiología y vigilancia</span>
+          <small>
+            Datos públicos agregados por distrito.
+            <br />
+            Sin datos personales (Ley N.º 29733).
+          </small>
+        </div>
+      </aside>
+      <main id="main-content" className="main-content" tabIndex={-1}>
+        <header className="page-header">
+          <div>
+            <p className="eyebrow">DENGUEKAY / VIGILANCIA DISTRITAL</p>
+            <h1>{title}</h1>
+            <p>
+              Situación observada y pronóstico de brotes de dengue por distrito y semana — Región
+              Piura
+            </p>
+          </div>
+          <div className="freshness">
+            <span className="date-pill">
+              <i />
+              {configuration
+                ? `Actualizado ${date(currentSummary?.fecha_actualizacion || configuration.fecha_actualizacion)}`
+                : 'Conectando con la API'}
+            </span>
+            <span>Objetivo: {weekLabel(currentSummary?.semana_objetivo)}</span>
+            {targetPassed(currentSummary?.semana_objetivo) && (
+              <strong className="historical-pill">Consulta histórica · objetivo pasado</strong>
+            )}
+          </div>
+        </header>
+        {config.isError ? (
+          <Card>
+            <Failure error={config.error} retry={() => void config.refetch()} />
+          </Card>
+        ) : !configuration ? (
+          <Card>
+            <Loading label="Conectando con el servicio de predicción" />
+          </Card>
+        ) : (
+          <>
+            <Filters
+              configuration={configuration}
+              districts={districts}
+              horizon={horizon}
+              province={province}
+              district={district}
+              target={currentSummary?.semana_objetivo}
+              change={change}
+              reset={reset}
+            />
+            {configuration.horizontes.find((h) => h.horizonte === horizon)?.experimental && (
+              <div className="experimental-banner" role="note">
+                <span className="banner-symbol">!</span>
+                <div>
+                  <strong>Experimental: modelo no validado</strong>
+                  <p>
+                    Los pronósticos y avisos son experimentales; no constituyen alertas operativas.
+                  </p>
+                </div>
+                <NavLink to={`/modelo${search}`}>Ver desempeño →</NavLink>
+              </div>
+            )}
+            {catalogue.isError && (
+              <Card>
+                <Failure error={catalogue.error} retry={() => void catalogue.refetch()} />
+              </Card>
+            )}
+            <Suspense
+              fallback={
+                <Card>
+                  <Loading label="Cargando vista" />
+                </Card>
+              }
+            >
+              <Outlet context={context} />
+            </Suspense>
+          </>
+        )}
+        <footer className="page-footer">
+          <span>Denguekay · Vigilancia de dengue en Piura</span>
+          <span>Datos agregados · Contrato API {configuration?.version_contrato || '—'}</span>
+        </footer>
+      </main>
+      <nav className="mobile-nav" aria-label="Navegación móvil">
+        {navigation.map((item) => (
+          <NavLink key={item.to} to={`${item.to}${search}`} end={item.to === '/'}>
+            <Icon name={item.icon} />
+            <span>{item.short}</span>
+          </NavLink>
+        ))}
+      </nav>
+    </div>
+  );
+}

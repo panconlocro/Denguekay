@@ -1,67 +1,115 @@
-# apps/web · Frontend (plan)
+# Denguekay web
 
-Todavía no hay código: este README fija el plan para cuando empiece el encargo del frontend. Lo que
-aquí figura como «por decidir» se acuerda con Rosa antes de implementarlo.
+Primera entrega del frontend de vigilancia de dengue en Piura, basada en el punto 6 de OE2 v1.3 y los
+[mockups de Figma](https://www.figma.com/design/YntyrKwEpxRMCkAoLLhdC6). React, Vite y TypeScript;
+tokens de Figma, Inter local, TanStack Query, React Leaflet y Recharts.
+Solo consume lecturas de /api/v1; no lee datos, modelos ni la BD directamente.
 
-**Para empezar:** [docs/backend/guia_frontend.md](../../docs/backend/guia_frontend.md) explica cómo levantar
-la API en local con la BD de demostración, dónde está el contrato v1 y cómo generar los tipos TypeScript.
+## Ejecutar en desarrollo
 
-## Qué es
+Se necesita Node.js 20.19+ y una API configurada según
+[la guía del backend](../../docs/backend/guia_frontend.md). Desde esta carpeta:
 
-Una aplicación web de una sola página que muestra a los usuarios de vigilancia el riesgo de brote de
-dengue por distrito de Piura. **Solo consume la API** (`apps/api`, `/api/v1`): no lee la BD, ni `data/`,
-ni los modelos, y no recalcula nada. Todo lo que muestra sale de la respuesta de un endpoint.
+```bash
+npm ci
+npm run dev
+```
 
-## Stack
+Abrir http://127.0.0.1:5173. Vite reenvía /api/v1 a http://127.0.0.1:8000.
+La API debe iniciarse aparte con la BD migrada y cargada. Un fallo de conexión se muestra con reintento;
+no hay datos de ejemplo como reemplazo en ejecución.
 
-- **React + Vite** (decisión del [ADR 0001](../../docs/decisions/0001-repo-restructure.md)).
-- El servidor de desarrollo de Vite usa `http://localhost:5173`, que ya es el origen CORS permitido por la
-  API (`serving.cors_origenes` en `configs/config.yaml`; `CORS_ORIGINS` en la API agrega otros).
-- Por decidir: TypeScript (los tipos se pueden generar del contrato; ver la guía), librería de mapas (el mapa
-  de riesgo llega como GeoJSON),
-  librería de gráficos, gestor de estado/consultas y framework de tests.
+Para otra URL, copiar .env.example a .env.local y ajustar API_PROXY_TARGET (proxy de desarrollo).
+En producción, VITE_API_BASE_URL es la URL pública completa terminada en /api/v1. Las variables VITE_*
+son públicas y se incorporan al build: nunca colocar API_KEY ni credenciales de BD o Supabase.
+Configurar CORS en la API para el origen del frontend y el hosting de la SPA para devolver index.html
+al abrir rutas internas.
 
-## Pantallas y endpoints
+## Qué incluye
 
-| Pantalla | Endpoints | HU |
-|---|---|---|
-| Arranque: horizontes disponibles y por defecto, leyenda, cortes y nota experimental | `GET /configuracion` | — |
-| Tablero del corte vigente: niveles de riesgo, alertas activas, casos estimados de la región | `GET /tablero/resumen?horizonte=` | HU0012 |
-| Mapa de riesgo por distrito (centroides; «Sin datos» cuando no hay predicción) | `GET /mapa-riesgo?horizonte=` | HU0014 |
-| Serie del distrito: casos observados y predicciones semana a semana | `GET /series/{ubigeo}?horizonte=&desde=&hasta=` | HU0013 |
-| Predicciones por distrito para un corte | `GET /predicciones?horizonte=&corte=` | HU0010, HU0011 |
-| Alertas, con filtros por horizonte, distrito, nivel y estado, y su detalle | `GET /alertas`, `GET /alertas/{identificador}` | HU0015 |
-| Modelo en uso, su detalle y sus importancias | `GET /modelos/activo`, `GET /modelos/{identificador}`, `.../variables` | HU0008 |
-| Catálogo de distritos y observaciones | `GET /distritos`, `GET /distritos/{ubigeo}`, `GET /observaciones` | — |
-| Estado del servicio | `GET /salud` | HU0016 |
+- Tablero conectado: indicadores regionales, predicciones priorizadas, mapa, avisos y horizontes.
+- Filtros de provincia/distrito para mapa y listados; no alteran los indicadores regionales.
+- Horizonte y predeterminado leídos de /configuracion; filtros conservados en la URL.
+- Navegación de las seis vistas. Mapa, selección distrital, serie, avisos paginados, versiones del modelo
+  y ayuda tienen una implementación inicial funcional.
+- Estados de carga, ausencia, error y reintento por consulta. Un resultado fallido no conserva datos
+  anteriores en pantalla. Un cambio de horizonte no reutiliza predicciones de otro horizonte.
+- Vista móvil a 390 px, navegación inferior, tabla alternativa al gráfico y movimiento reducido.
+- Tipos generados del contrato 1.1.0; código y comentarios en inglés, interfaz en español.
+- Assets originales locales de Figma; mapas y gráficos dinámicos desde la API.
 
-Las escrituras (`POST /admin/inferencias` y `POST /admin/modelos/{version}/activar`) exigen `X-API-Key`.
-Quedan fuera de la primera versión del frontend: la clave no debe viajar a un navegador público.
+## Límites y siguientes entregas
 
-## Reglas que el frontend debe respetar
+- El mapa usa centroides reales; no usa los polígonos esquemáticos de Figma. Soporta Point, Polygon y
+  MultiPolygon. Los polígonos requieren una fuente publicable en el backend. El mapa base usa
+  OpenStreetMap con atribución y conexión, sujeto a su
+  [política de teselas](https://operations.osmfoundation.org/policies/tiles/).
+  Si no cargan las teselas, los marcadores permanecen sobre el fondo del mapa.
+- La API no publica serie regional ni incidencia: esos componentes explican su ausencia.
+  Seleccionar un distrito muestra su serie real; no se inventan curvas ni poblaciones.
+- Desempeño muestra versiones reales; las métricas por bloque e importancias completas quedan para su
+  entrega. Ayuda contiene la guía inicial; PDF, capacitación y soporte están pendientes de publicación.
+- El objetivo corresponde al corte publicado: mapa y resumen no aceptan corte histórico.
+  Los rangos personalizados de la serie y los umbrales futuros quedan pendientes.
+- No se muestran explicaciones individuales ni agregados de vecinos que la API no expone.
+- Siguen pendientes las correcciones de backend de la revisión: sumas regionales incompletas, coherencia
+  al desactivar modelos experimentales y rangos de series con fecha final implícita. Los casos observados
+  indican «cobertura distrital no informada»: el valor de la API no certifica cobertura de los 65 distritos.
+- Los modelos experimentales llevan banda visible. Sus avisos no son alertas operativas ni generan
+  notificaciones. Disponible no significa validado.
+- Si el objetivo ya pasó se marca «Consulta histórica». Los intervalos son orientativos y no calibrados.
 
-- **El contrato es `docs/backend/openapi_v1.json`** (v1.0.0; `openapi.json` es el mismo con ejemplos
-  reales). Los campos están en español (por ejemplo `probabilidad_brote`, `nivel_riesgo`, `semana_corte`) y
-  no se renombran en la interfaz de datos. La versión del contrato llega en la cabecera `X-Version-Contrato`.
-- **Nada en código duro:** horizontes, horizonte por defecto, cortes, niveles y leyenda salen de
-  `GET /configuracion`.
-- **`ubigeo` es texto de seis dígitos** (con ceros a la izquierda): nunca se convierte a número.
-- **`experimental: true` se muestra siempre.** Hoy ninguna versión cumple los umbrales de aceptación
-  (HU0007-4) y la API sirve la [v0](../../models/registry/v0/ficha.md) como demo experimental; la interfaz
-  lo dice en cada vista que muestre predicciones (el tablero y `/modelos/activo` traen el texto en `nota`).
-- **Faltantes, no ceros:** un valor `null` con `disponible: false` y `motivo` se muestra como «sin datos»
-  con su motivo, no como 0. Un horizonte sin modelo (hoy h=3) responde «sin modelo para h=N» y la interfaz
-  lo explica.
-- **Horizontes 2, 3 y 4 semanas**, elegibles por el usuario entre los `horizontes_disponibles`; el horizonte
-  por defecto es el de `/configuracion` (4).
-- **Intervalos de casos:** hoy son `null` con `motivo_intervalo`; la interfaz debe mostrarlos cuando lleguen.
-- **Mapa:** la geometría puede ser `Point` (hoy), `Polygon` o `MultiPolygon`.
-- Textos en español y unidades en los gráficos (casos, casos por 100 000 hab.).
+## Estructura
 
-## Cómo se integrará en el repo
+- ./src/api/: cliente de lectura, consultas y tipos OpenAPI.
+- ./src/components/: filtros, estados, mapa y serie temporal.
+- ./src/lib/: formato numérico, fechas de Lima y colores de riesgo.
+- ./src/pages/: tablero y versiones iniciales de las otras vistas.
+- ./src/test/: configuración de pruebas unitarias.
+- ./src/App.tsx: navegación, filtros en URL y estructura responsive.
+- ./src/tokens.css y ./src/styles.css: guía visual.
+- public/assets/: logotipo e iconos originales de Figma.
+- e2e/: recorridos en navegador y API temporal aislada.
 
-- Código en `apps/web/` con su propio `package.json`; no se mezcla con el paquete Python.
-- La URL de la API se configura por variable de entorno de Vite (nombre por decidir); en desarrollo,
-  `http://127.0.0.1:8000/api/v1`.
-- Un job del CI para `apps/web` (instalación, lint, tests y build) se agrega en el mismo encargo.
-- Al empezar, se actualiza `docs/architecture.md` con la estructura interna de `apps/web/`.
+## Comprobaciones
+
+```bash
+npm run api:generate
+npm run typecheck
+npm run lint
+npm test
+npm run build
+```
+
+api:generate actualiza ./src/api/schema.d.ts desde docs/backend/openapi_v1.json. No modifica el contrato
+ni sus fixtures. El lockfile se versiona; los builds y node_modules no.
+
+Para probar con la API real sobre fixtures aisladas, sin usar la BD del proyecto:
+
+1. Desde la raíz, con las dependencias Python completas instaladas:
+
+   ```bash
+   .venv/bin/python apps/web/e2e/serve_api.py
+   ```
+
+   En Windows: .venv\Scripts\python apps/web/e2e/serve_api.py. Crea una SQLite temporal migrada y publica
+   modelos de prueba sobre fixtures; escucha en 127.0.0.1:18000. No escribe en data/.
+   Las fixtures usan v0, h=2 y h=4; h=3 no disponible comprueba ese estado del contrato.
+
+2. Desde apps/web, instalar el navegador una vez y ejecutar:
+
+   ```bash
+   npx playwright install chromium
+   npm run test:e2e
+   ```
+
+   Usa Vite de pruebas en el puerto 5174. CHROME_PATH permite usar Chrome instalado.
+   WEB_SCREENSHOT_DIR permite guardar capturas fuera del repositorio.
+
+3. Detener la API temporal con Ctrl+C; su carpeta se limpia al cerrar.
+
+Se prueban escritorio y móvil: filtros, navegación, avisos, assets, horizonte sin modelo y recuperación
+tras 503. Los datos esperados son los de las fixtures, no los de una BD de desarrollo o producción.
+
+El CI del frontend y el mapa global de arquitectura se integrarán como cambios de soporte separados.
+Esta rama conserva el alcance apps/web establecido en CONTRIBUTING.md.
