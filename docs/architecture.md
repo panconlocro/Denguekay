@@ -20,7 +20,7 @@ flowchart LR
   serving --> storage[(models/storage<br/>boosters)]
   db --> api[apps/api<br/>FastAPI /api/v1]
   storage --> api
-  api --> web[apps/web<br/>React + Vite, plan]
+  api --> web[apps/web<br/>React + Vite, lecturas HTTP]
   research[research/<br/>estudios congelados] -. importa .-> model
 ```
 
@@ -29,7 +29,9 @@ flowchart LR
   configuraciones congeladas; cada versión tiene su ficha en `models/registry/`.
 - **Backend** (`denguekay.serving`, `denguekay.db`, `apps/api`): carga validada, ajuste de servicio, Storage,
   inferencia y la API del documento OE2. Hoy sirve la v0 como experimental.
-- **Frontend** (`apps/web/`): solo el plan por ahora.
+- **Frontend** (`apps/web/`): SPA React + Vite + TypeScript que consume lecturas de `/api/v1`.
+  La implementación está en `feat/web-dashboard`, pendiente de integración; este snapshot de
+  `develop` aún contiene solo el README del plan. El soporte de CI detecta esa ausencia explícitamente.
 - **Investigación** (`research/`): congelada; puede importar el paquete, nunca al revés.
 
 ---
@@ -51,7 +53,7 @@ Denguekay/
 ├── alembic.ini                # migraciones del backend, sin credenciales
 ├── pyproject.toml             # paquete instalable denguekay (pip install -e .); dependencias = requirements.txt
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
-├── .github/workflows/         # tests (SQLite y PostgreSQL), cobertura y humo de la API liviana; sin despliegue
+├── .github/workflows/         # backend.yml: SQLite/PostgreSQL; frontend.yml: Node, contrato y E2E fixtures
 ├── requirements.txt
 ├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
 ├── render.yaml                # Blueprint de Render para la API (docs/backend/despliegue.md); no despliega por sí solo
@@ -83,7 +85,7 @@ Denguekay/
 │   ├── api/                   # aplicación FastAPI (no se instala; corre desde la raíz)
 │   │   ├── routers/
 │   │   └── tools/             # benchmark, export_openapi, smoke_test
-│   └── web/                   # frontend (React + Vite): por ahora solo README.md con el plan
+│   └── web/                   # SPA React + Vite; estructura implementada en la rama frontend (ver 3c)
 │
 ├── pipelines/notebooks/       # pipeline: 01–09 (bronze/silver) y 10_silver_to_gold
 ├── research/                  # estudios congelados: 01_eda … 05_fe_hyperparameters (README por estudio)
@@ -96,6 +98,7 @@ Denguekay/
 ├── mlflow.db                  # tracking de MLflow (generado, no se versiona)
 ├── mlartifacts/               # artefactos de MLflow (generado, no se versiona)
 └── docs/
+    ├── frontend-ci.md         # CI frontend, orden de integración y validaciones pendientes
     ├── modeling/              # guía de MLflow/GX, diccionario de variables y métricas que lee serving (V0)
     ├── decisions/             # ADR numerados (0001: monorepo; 0002: ramas develop y main)
     └── backend/               # operación y evidencia del backend por fase
@@ -356,7 +359,7 @@ desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten. El j
 `requirements-api.txt`, migra una SQLite y arranca `uvicorn`, como el build de Render. El despliegue (Render,
 Supabase y Vercel) está en `docs/backend/despliegue.md`; lo hace Rosa a mano.
 
-### Guardas y tolerancias por plataforma
+### Guardas y tolerancias por plataforma del backend
 
 Las guardas que comparan con una línea base grabada siguen una sola regla:
 
@@ -379,6 +382,50 @@ Las guardas que comparan con una línea base grabada siguen una sola regla:
     guardada en `numeric(7,2)`, usa 1e-9.
 - **Reentrenar no es comparable entre sistemas operativos** (decisión D1 del ADR 0001). Las pruebas que
   reentrenan quedan clavadas al entorno de grabación y, fuera de él, se omiten con el motivo.
+
+
+## 3c. `apps/web/` — frontend de lectura
+
+Esta estructura describe la implementación de `feat/web-dashboard`; sus archivos llegarán con
+el PR del frontend. El PR de soporte agrega CI y documentación sin copiar ni cambiar `apps/web/`.
+
+```text
+apps/web/
+├── package.json, package-lock.json       # scripts y dependencias npm
+├── src/
+│   ├── api/                             # cliente HTTP, TanStack Query y schema.d.ts generado
+│   ├── components/                      # filtros, estados, mapa Leaflet y series Recharts
+│   ├── pages/                           # tablero, mapa, distrito, avisos, desempeño y ayuda
+│   ├── lib/                             # formato, fechas de Lima y niveles de riesgo
+│   ├── content/help.json                # contenido compartido de ayuda y manual
+│   ├── test/                            # configuración de pruebas unitarias
+│   └── App.tsx, tokens.css, styles.css   # navegación, filtros en URL y presentación
+├── public/assets/                       # SVG locales de Figma; README.md con procedencia
+├── public/manual-usuario.pdf            # manual descargable desde Ayuda
+├── tools/build_manual.py                # autoría del PDF; requiere reportlab y pypdf, revisión visual
+├── tools/serve_demo.py                  # demo v2 ya preparada, lectura en 127.0.0.1:18001
+├── e2e/serve_api.py                      # API real sobre fixtures en 127.0.0.1:18000
+└── playwright.config.ts                 # escritorio/móvil, Vite 5174, trazas en fallos
+```
+
+El navegador solo recibe respuestas de la API y recursos públicos: no importa Python, fixtures,
+`data/`, `research/`, modelos ni acceso a la BD. No invoca rutas administrativas ni lleva `API_KEY`.
+`VITE_API_BASE_URL` configura la URL pública y `VITE_DATA_SOURCE` identifica `api`, `demo-v2` o
+`fixtures`; `API_PROXY_TARGET` configura el proxy de desarrollo. Las variables `VITE_*` son públicas.
+Los tipos se generan desde `docs/backend/openapi_v1.json` mediante `npm run api:generate`.
+
+El perfil E2E de CI usa `TestAPIReal`: SQLite y storage temporales, validación de fixtures y un
+ajuste pequeño de XGBoost v0 para h=2 y h=4 (h=3 sin modelo). Incluye valores alterados para probar
+avisos; no mide la calidad predictiva de v2. Requiere `requirements.txt` completo para GX y los
+módulos de prueba, además del paquete editable. No ejecuta investigación ni entrenamiento productivo,
+no regenera gold/silver y no usa la BD local. La demo v2 es otro perfil local: abre la BD y los
+artefactos previamente preparados en `models/serving/demo/`, sin prepararlos en este CI.
+
+`.github/workflows/frontend.yml` corre en PR, push a `main`/`develop` y ejecución manual. Detecta
+`apps/web/package.json` después del checkout y omite explícitamente el job de pruebas cuando falta.
+Cuando existe, exige lockfile, contrato sin diferencias, lint, formato, tests, build y E2E Chromium
+con API temporal y diagnóstico de fallos. No despliega ni usa secretos. El CI backend se conserva
+independiente. Comandos, evidencia disponible y orden de PR en [frontend-ci.md](frontend-ci.md).
 
 
 ---
@@ -505,7 +552,10 @@ great_expectations/gx/
 | EDA congelado (notebooks, código, figuras, cifras) | `research/01_eda/` |
 | Modelo entrenado (artefacto) | `models/storage/` o `models/experimentos/` (no se versionan) |
 | Ficha de una versión de modelo | `models/registry/vN/` (`ficha.md`, `ficha.json`) y una entrada en `models/registry/CHANGELOG.md` |
-| Pantalla o componente del frontend | `apps/web/` (React + Vite; hoy solo el plan) |
+| Pantalla o componente del frontend | `apps/web/src/` (React + Vite + TypeScript; pendiente de integrar desde la rama frontend) |
+| SVG local y su procedencia | `apps/web/public/assets/` y su `README.md` |
+| Manual descargable y contenido compartido | `apps/web/public/manual-usuario.pdf`, `apps/web/src/content/help.json`; generador en `apps/web/tools/build_manual.py` |
+| CI y guía de validación del frontend | `.github/workflows/frontend.yml`, `docs/frontend-ci.md` |
 | Script de instalación o mantenimiento | `scripts/` |
 | Suite de Great Expectations | `src/denguekay/data/validation/<dataset>_expectations.py` |
 | Registro de experimentos en MLflow | `src/denguekay/model/tracking.py` (no crear otro tracker) |
