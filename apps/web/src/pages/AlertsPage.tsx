@@ -213,7 +213,7 @@ export function AlertsPage() {
           </button>
         </div>
       </Card>
-      <div className="alert-indicators" aria-label="Resumen de registros filtrados">
+      <div className="alert-indicators" role="group" aria-label="Resumen de registros filtrados">
         <Card>
           <p className="metric-label">Registros activos</p>
           <strong className="metric-value">{number(activeRows?.length)}</strong>

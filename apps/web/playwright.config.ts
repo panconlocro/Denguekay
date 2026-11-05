@@ -4,8 +4,20 @@ const demo = process.env.WEB_TEST_SOURCE === 'demo-v2';
 export default defineConfig({
   testDir: './e2e',
   testMatch: demo
-    ? ['demo-v2.spec.ts', 'map-detail.spec.ts', 'alerts.spec.ts', 'models-help.spec.ts']
-    : ['dashboard.spec.ts', 'map-detail.spec.ts', 'alerts.spec.ts', 'models-help.spec.ts'],
+    ? [
+        'demo-v2.spec.ts',
+        'map-detail.spec.ts',
+        'alerts.spec.ts',
+        'models-help.spec.ts',
+        'accessibility.spec.ts',
+      ]
+    : [
+        'dashboard.spec.ts',
+        'map-detail.spec.ts',
+        'alerts.spec.ts',
+        'models-help.spec.ts',
+        'accessibility.spec.ts',
+      ],
   fullyParallel: false,
   workers: 2,
   use: {

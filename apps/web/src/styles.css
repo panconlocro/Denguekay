@@ -57,8 +57,11 @@ button {
   padding: 8px 12px;
 }
 :focus-visible {
-  outline: 3px solid #289c9a;
+  outline: 3px solid var(--primary);
   outline-offset: 3px;
+}
+.sidebar :focus-visible {
+  outline-color: #63d6d1;
 }
 h1,
 h2,
@@ -124,7 +127,7 @@ small {
   white-space: nowrap;
 }
 .nav-caption {
-  color: #6f8a8d;
+  color: #809da0;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -386,7 +389,7 @@ small {
   white-space: nowrap;
 }
 .experimental-text {
-  color: #8c6411;
+  color: #7a5a0b;
 }
 .operational-text {
   color: #2d7449;
@@ -806,7 +809,7 @@ td a {
 .alert-row small {
   display: block;
   font-size: 10px;
-  color: var(--muted);
+  color: #49535f;
 }
 .alert-row .risk-chip {
   padding: 0;
@@ -1043,7 +1046,7 @@ td a {
   display: block;
   font-size: 29px;
   margin: 6px 0;
-  color: var(--risk-color);
+  color: inherit;
 }
 .selected-risk > p {
   font-size: 11px;
@@ -1796,7 +1799,7 @@ td a {
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    color: #77838f;
+    color: var(--muted);
     font-size: 9px;
     min-width: 45px;
     min-height: 42px;

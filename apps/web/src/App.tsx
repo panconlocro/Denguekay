@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import {
   NavLink,
   Outlet,
@@ -46,6 +46,28 @@ const navigation = [
   { to: '/modelo', name: 'Desempeño del modelo', short: 'Modelo', icon: 'bars' },
   { to: '/ayuda', name: 'Ayuda y manual', short: 'Ayuda', icon: 'help' },
 ];
+
+function viewTitle(pathname: string) {
+  return pathname === '/'
+    ? 'Tablero de vigilancia y pronóstico'
+    : navigation.find((n) => n.to !== '/' && pathname.startsWith(n.to))?.name ||
+        'Página no encontrada';
+}
+
+function RouteAccessibility() {
+  const { pathname } = useLocation();
+  const previousPathname = useRef(pathname);
+
+  useEffect(() => {
+    document.title = `${viewTitle(pathname)} · Denguekay`;
+    if (previousPathname.current !== pathname) {
+      document.getElementById('main-content')?.focus();
+      previousPathname.current = pathname;
+    }
+  }, [pathname]);
+
+  return null;
+}
 
 export function App() {
   return (
@@ -121,11 +143,7 @@ function Layout() {
     else if (match) navigate('/distritos');
     else setParams({});
   };
-  const title =
-    location.pathname === '/'
-      ? 'Tablero de vigilancia y pronóstico'
-      : navigation.find((n) => n.to !== '/' && location.pathname.startsWith(n.to))?.name ||
-        'Página no encontrada';
+  const title = viewTitle(location.pathname);
   const currentSummary = !configuration || summary.isError ? undefined : summary.data;
   const context = configuration
     ? {
@@ -217,6 +235,7 @@ function Layout() {
           </Card>
         ) : (
           <>
+            <RouteAccessibility />
             <Filters
               configuration={configuration}
               districts={districts}

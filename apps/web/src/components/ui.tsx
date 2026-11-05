@@ -1,7 +1,9 @@
-import type { ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { RiskLevel } from '../api/types';
 import { ApiError } from '../api/client';
+
+const StateHeadingLevel = createContext<2 | 3>(2);
 
 export function AppLink({
   to,
@@ -88,7 +90,7 @@ export function Card({
           {action}
         </div>
       )}
-      {children}
+      <StateHeadingLevel.Provider value={title ? 3 : 2}>{children}</StateHeadingLevel.Provider>
     </section>
   );
 }
@@ -108,28 +110,42 @@ export function Loading({ label = 'Consultando información' }: { label?: string
 export function Empty({
   title = 'No disponible',
   children,
+  headingLevel,
 }: {
   title?: string;
   children?: ReactNode;
+  headingLevel?: 2 | 3;
 }) {
+  const contextLevel = useContext(StateHeadingLevel);
+  const Heading = (headingLevel ?? contextLevel) === 2 ? 'h2' : 'h3';
   return (
     <div className="empty">
       <span className="empty-symbol" aria-hidden="true">
         —
       </span>
-      <h3>{title}</h3>
+      <Heading>{title}</Heading>
       <p>{children || 'No hay información publicada para esta selección.'}</p>
     </div>
   );
 }
 
-export function Failure({ error, retry }: { error: Error; retry: () => void }) {
+export function Failure({
+  error,
+  retry,
+  headingLevel,
+}: {
+  error: Error;
+  retry: () => void;
+  headingLevel?: 2 | 3;
+}) {
+  const contextLevel = useContext(StateHeadingLevel);
+  const Heading = (headingLevel ?? contextLevel) === 2 ? 'h2' : 'h3';
   return (
     <div className="failure" role="alert">
       <div className="failure-icon" aria-hidden="true">
         !
       </div>
-      <h3>No se pudo cargar la información</h3>
+      <Heading>No se pudo cargar la información</Heading>
       <p>{error.message}</p>
       {error instanceof ApiError && (
         <small>

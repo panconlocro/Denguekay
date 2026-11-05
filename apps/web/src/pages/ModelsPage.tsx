@@ -220,7 +220,12 @@ export function ModelsPage() {
                 <Empty>No se publicaron métricas de este bloque para el regresor.</Empty>
               ) : (
                 <>
-                  <div className="table-scroll">
+                  <div
+                    className="table-scroll"
+                    role="region"
+                    aria-label="Comparación de errores con persistencia"
+                    tabIndex={0}
+                  >
                     <table className="baseline-table">
                       <caption className="sr-only">
                         Error de conteos del regresor y la persistencia
@@ -275,7 +280,12 @@ export function ModelsPage() {
             title="Comparación por horizonte"
             subtitle={`Mismo bloque: ${validBlock ? blockLabel(block) : 'Sin bloque disponible'} · versiones en uso de cada horizonte`}
           >
-            <div className="table-scroll">
+            <div
+              className="table-scroll"
+              role="region"
+              aria-label="Métricas comparadas por horizonte"
+              tabIndex={0}
+            >
               <table className="horizon-performance">
                 <caption className="sr-only">
                   Métricas y versiones por horizonte del mismo bloque temporal

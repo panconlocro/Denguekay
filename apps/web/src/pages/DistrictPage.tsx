@@ -169,7 +169,12 @@ function DistrictDetail({ district, context }: { district: District; context: Ap
           title="Pronóstico por horizonte"
           subtitle="Cada fila conserva su propia semana objetivo"
         >
-          <div className="table-scroll">
+          <div
+            className="table-scroll"
+            role="region"
+            aria-label="Pronóstico por horizonte"
+            tabIndex={0}
+          >
             <table className="horizon-comparison">
               <thead>
                 <tr>

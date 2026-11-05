@@ -134,3 +134,20 @@ La validación inicial de entradas aprobó silver 107/107 y gold h2 42/42, 30 48
 Los hashes de las dos bases, gold y silver permanecen iguales a fase 2. No se repitió la suite
 Python completa ni el CI; la validación de entrega de fase 7 espera revisión del usuario.
 El [cierre de fase 6](docs/fase-06-desempeno-y-ayuda.md) describe fuentes y evidencia.
+
+## Fase 7: validación de entrega
+
+Pasaron 80 pruebas unitarias, instalación limpia desde lockfile, generación de tipos sin diferencias,
+lint, formato, TypeScript y build. Se aprobaron 56 recorridos con fixtures y 60 con v2, en escritorio
+y móvil, incluidos axe para las seis vistas, foco, teclado, 320 px y movimiento reducido. Se corrigieron
+contrastes, tablas desplazables, semántica, foco de navegación, tooltips y paginación inconsistente.
+
+La suite general sí se repitió con el paquete editable y Optuna instalados: 465 pruebas, 4 fallos,
+0 errores y 30 omisiones. Tres fallos comparan exactamente gold con el respaldo y uno corresponde
+a predicciones congeladas en CPU. No se modificaron entradas ni líneas base. La suite local general
+no se presenta como verde; PostgreSQL/CUDA no se validaron aquí.
+
+CI y arquitectura están en un commit de soporte separado. El PR borrador de entrega reúne ambos
+alcances desde `develop` con merge commits, sin fusionar las ramas permanentes. Consultar los checks
+del PR para el resultado remoto; el [informe de fase 7](docs/fase-07-validacion-entrega.md) registra
+la evidencia local, sus límites y las condiciones de integración.

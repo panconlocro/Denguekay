@@ -13,6 +13,7 @@ import { PriorityTable } from '../components/PriorityTable';
 import { PublicationNotice } from '../components/PublicationNotice';
 import { AppLink, Card, DataTag, Empty, Failure, Loading, RiskChip } from '../components/ui';
 import { RiskMapView as RiskMap, SeriesChartView as SeriesChart } from '../components/Visuals';
+import { alertProbability } from '../lib/alerts';
 
 export function DashboardPage() {
   const {
@@ -55,7 +56,7 @@ export function DashboardPage() {
     .filter((a) => selected(a.ubigeo))
     .sort(
       (a, b) =>
-        (b.prediccion.probabilidad_brote ?? -1) - (a.prediccion.probabilidad_brote ?? -1) ||
+        (alertProbability(b) ?? -1) - (alertProbability(a) ?? -1) ||
         a.ubigeo.localeCompare(b.ubigeo),
     );
   const experimental = configuration.horizontes.find((h) => h.horizonte === horizon)?.experimental;
@@ -244,7 +245,7 @@ export function DashboardPage() {
                       <div>
                         <strong>{a.distrito}</strong>
                         <small>
-                          Prob. {percent(a.prediccion.probabilidad_brote)} ·{' '}
+                          Prob. {percent(alertProbability(a))} ·{' '}
                           {weekLabel(a.prediccion.semana_objetivo)}
                         </small>
                       </div>
@@ -303,7 +304,7 @@ function Indicators({ summary, predictions }: { summary: Dashboard; predictions?
   const highRisk = summary.niveles_riesgo.alto;
   const veryHighRisk = summary.niveles_riesgo.muy_alto;
   return (
-    <div className="indicators" aria-label="Indicadores de la región Piura">
+    <div className="indicators" role="group" aria-label="Indicadores de la región Piura">
       <Card>
         <DataTag observed />
         <p className="metric-label">Casos observados · última semana</p>

@@ -1,3 +1,4 @@
+import { useEffect, useReducer, useRef } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import type { AppContext } from '../App';
 import { Card, Empty, RiskChip } from '../components/ui';
@@ -28,8 +29,19 @@ export function HelpPage() {
   });
   const selected = topics.find((topic) => topic.id === params.get('ayuda_tema')) || topics[0];
   const selectedIndex = topics.findIndex((topic) => topic.id === selected?.id);
+  const topicHeading = useRef<HTMLHeadingElement>(null);
+  const pendingTopicFocus = useRef<string | null>(null);
+  const [focusRequest, requestTopicFocus] = useReducer((request: number) => request + 1, 0);
+
+  useEffect(() => {
+    if (pendingTopicFocus.current && pendingTopicFocus.current === selected?.id) {
+      pendingTopicFocus.current = null;
+      topicHeading.current?.focus();
+    }
+  }, [selected?.id, focusRequest]);
 
   function search(value: string) {
+    pendingTopicFocus.current = null;
     setParams(
       (current) => {
         const next = new URLSearchParams(current);
@@ -42,6 +54,8 @@ export function HelpPage() {
   }
 
   function select(id: string, clearSearch = false) {
+    pendingTopicFocus.current = id;
+    requestTopicFocus();
     setParams((current) => {
       const next = new URLSearchParams(current);
       next.set('ayuda_tema', id);
@@ -114,7 +128,9 @@ export function HelpPage() {
             {selected ? (
               <article aria-labelledby={`help-title-${selected.id}`}>
                 <p className="eyebrow">{content.ui.topic}</p>
-                <h2 id={`help-title-${selected.id}`}>{selected.title}</h2>
+                <h2 ref={topicHeading} id={`help-title-${selected.id}`} tabIndex={-1}>
+                  {selected.title}
+                </h2>
                 <p className="help-topic-summary">{selected.summary}</p>
                 {selected.paragraphs.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>

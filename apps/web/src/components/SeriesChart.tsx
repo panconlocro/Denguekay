@@ -190,12 +190,12 @@ function SeriesContent({ series }: { series: Series }) {
                 .filter((_, i) => i % Math.max(1, Math.ceil(points.length / 6)) === 0)
                 .map((p) => p.x)}
               tickFormatter={(value) => labels.get(value) || ''}
-              tick={{ fontSize: 10, fill: '#8a929c' }}
+              tick={{ fontSize: 10, fill: 'var(--muted)' }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 10, fill: '#8a929c' }}
+              tick={{ fontSize: 10, fill: 'var(--muted)' }}
               axisLine={false}
               tickLine={false}
               width={55}

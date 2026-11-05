@@ -117,6 +117,11 @@ export function RiskMap({
                 );
                 element.setAttribute('aria-pressed', String(p.ubigeo === selected));
                 element.addEventListener('keydown', (event) => {
+                  if (event instanceof KeyboardEvent && event.key === 'Escape') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    layer.closeTooltip();
+                  }
                   if (
                     event instanceof KeyboardEvent &&
                     (event.key === 'Enter' || event.key === ' ')
@@ -136,7 +141,7 @@ export function RiskMap({
             : 'Límites distritales'}
         </span>
       </div>
-      <div className="map-legend" aria-label="Leyenda de riesgo">
+      <div className="map-legend" role="group" aria-label="Leyenda de riesgo">
         {data.leyenda.map((l) => (
           <div key={l.nivel || 'missing'}>
             <RiskChip level={l.nivel} label={l.etiqueta} />

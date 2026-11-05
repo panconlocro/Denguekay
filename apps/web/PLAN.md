@@ -28,15 +28,15 @@ de soporte fuera de esta carpeta, como CI y arquitectura global, se tramitan por
 
 ## Fases y condiciones de cierre
 
-| Fase                         | Entregable                                                                   | Condición de cierre                                                                         | Estado                                                         |
-| ---------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 1. Contrato y alcance        | Matriz componente → endpoint → campo; inventario de datos y brechas          | Fuentes, faltantes y condiciones de integración documentados sin inventar datos             | Revisada; usuario autorizó continuar con «siguiente fase»      |
-| 2. Base visual e integración | Auditar la base existente, componentes, navegación, estados y cliente tipado | Fuente de API identificada, entorno de pruebas claramente diferenciado y estados coherentes | Revisada; usuario autorizó continuar con «siguiente fase»      |
-| 3. Tablero                   | Indicadores, priorización, resumen geográfico y vigencia                     | Datos comprobados por horizonte y alcance de filtros explícito                              | Revisada; usuario autorizó continuar con «ahora fase 4»        |
-| 4. Mapa y detalle            | Mapa, selección, magnitud, intervalos y serie distrital                      | Recorrido completo, fechas coherentes y ausencia de valores sustituidos                     | Revisada; usuario autorizó continuar con «ahora haz la fase 5» |
-| 5. Alertas                   | Listados activos/retirados, filtros, orden y detalle                         | Paginación completa y avisos experimentales diferenciados                                   | Revisada; usuario autorizó continuar con «go fase 6»           |
-| 6. Desempeño y ayuda         | Métricas por bloque, persistencia, importancias y manual                     | Métricas trazables a una versión y recursos de ayuda reales                                 | Implementada; pendiente de revisión del usuario                |
-| 7. Validación de entrega     | Pruebas funcionales, accesibilidad, fidelidad visual, build y documentación  | Evidencia de la implementación acordada y CI del PR en verde                                | Pendiente; las pruebas previas no sustituyen este cierre       |
+| Fase                         | Entregable                                                                   | Condición de cierre                                                                         | Estado                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| 1. Contrato y alcance        | Matriz componente → endpoint → campo; inventario de datos y brechas          | Fuentes, faltantes y condiciones de integración documentados sin inventar datos             | Revisada; usuario autorizó continuar con «siguiente fase»           |
+| 2. Base visual e integración | Auditar la base existente, componentes, navegación, estados y cliente tipado | Fuente de API identificada, entorno de pruebas claramente diferenciado y estados coherentes | Revisada; usuario autorizó continuar con «siguiente fase»           |
+| 3. Tablero                   | Indicadores, priorización, resumen geográfico y vigencia                     | Datos comprobados por horizonte y alcance de filtros explícito                              | Revisada; usuario autorizó continuar con «ahora fase 4»             |
+| 4. Mapa y detalle            | Mapa, selección, magnitud, intervalos y serie distrital                      | Recorrido completo, fechas coherentes y ausencia de valores sustituidos                     | Revisada; usuario autorizó continuar con «ahora haz la fase 5»      |
+| 5. Alertas                   | Listados activos/retirados, filtros, orden y detalle                         | Paginación completa y avisos experimentales diferenciados                                   | Revisada; usuario autorizó continuar con «go fase 6»                |
+| 6. Desempeño y ayuda         | Métricas por bloque, persistencia, importancias y manual                     | Métricas trazables a una versión y recursos de ayuda reales                                 | Revisada; usuario autorizó continuar con «go fase 7 pa ir a dormir» |
+| 7. Validación de entrega     | Pruebas funcionales, accesibilidad, fidelidad visual, build y documentación  | Evidencia de la implementación acordada y CI del PR en verde                                | Validación local realizada; entrega para revisión y CI remoto       |
 
 ## Fase actual
 
@@ -69,4 +69,9 @@ identificador y distinción de registros históricos y experimentales.
 El usuario autorizó la fase 6 con «go fase 6». El [cierre de desempeño y ayuda](docs/fase-06-desempeno-y-ayuda.md)
 documenta métricas por bloque, comparación con persistencia, importancias publicadas y un manual PDF
 real con contenido compartido con la ayuda. Se conserva la API y demo de las fases anteriores.
-La fase 7 (validación de entrega y soporte de CI) espera la siguiente revisión del usuario.
+El usuario autorizó la fase 7 con «go fase 7 pa ir a dormir». El [informe de entrega](docs/fase-07-validacion-entrega.md)
+documenta validación funcional y de accesibilidad, correcciones detectadas y límites de la suite general.
+La implementación permanece en `feat/web-dashboard`; CI y arquitectura se prepararon desde `develop`
+en `chore/web-ci`. Una rama de entrega desde `develop` incorpora ambas mediante merge commits para
+presentar un PR borrador con paquete y workflow completos, conservando la historia original.
+El estado remoto del CI y la revisión del usuario determinan la integración; no se fusiona automáticamente.

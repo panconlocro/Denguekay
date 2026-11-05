@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { number, percent } from '../src/lib/format';
 import { shiftWeeks } from '../src/lib/series';
+import AxeBuilder from '@axe-core/playwright';
 
 test('keyboard map selection opens coherent district details and all horizons', async ({
   page,
@@ -14,6 +15,10 @@ test('keyboard map selection opens coherent district details and all horizons', 
   const marker = page.getByRole('button', { name: /^Seleccionar Piura:/ });
   await expect(marker).toBeVisible();
   await marker.focus();
+  await expect(page.locator('.leaflet-tooltip')).toBeVisible();
+  await marker.press('Escape');
+  await expect(page.locator('.leaflet-tooltip')).toHaveCount(0);
+  await expect(marker).toBeFocused();
   await marker.press('Enter');
   await expect(page).toHaveURL(/\/mapa\?.*seleccion=200101/);
   await expect(page.getByLabel('Distrito del panel')).toHaveValue('200101');
@@ -23,6 +28,7 @@ test('keyboard map selection opens coherent district details and all horizons', 
   await expect(page.locator('.district-facts')).toContainText(
     `≈ ${number(p.casos_estimados, 2)} casos`,
   );
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.evaluate(() => {
     (document.activeElement as HTMLElement | null)?.blur();
     window.scrollTo(0, 0);
