@@ -14,6 +14,10 @@ La [fase 2](docs/fase-02-integracion-demo-v2.md) integra una demo local v2 autor
 con base y artefactos separados de la BD antigua. La interfaz identifica el entorno y verifica las
 versiones de v2 antes de mostrar sus resultados. Su corte sigue siendo diciembre de 2025.
 
+La [fase 3](docs/fase-03-tablero.md) completa el tablero: listado paginado de todos los distritos,
+cobertura de magnitud regional comprobada, alcance de filtros explícito y anticipación desde la
+emisión real. Una semana objetivo se identifica como histórica desde que comienza.
+
 ## Ejecutar en desarrollo
 
 Se necesita Node.js 20.19+ y una API configurada según

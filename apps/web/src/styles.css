@@ -485,6 +485,41 @@ small {
   font-size: 11px;
   font-weight: 600;
 }
+.publication-notice {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+}
+.publication-notice strong {
+  font-size: 11px;
+}
+.publication-notice p {
+  margin: 5px 0;
+}
+.publication-notice small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .publication-notice {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
 .indicators {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -556,6 +591,15 @@ small {
 .dashboard-top > .card {
   display: flex;
   flex-direction: column;
+}
+.dashboard-top .map-frame {
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-top .risk-map {
+  flex: 1;
+  height: auto;
+  min-height: 440px;
 }
 .dashboard-bottom {
   display: grid;
@@ -1110,6 +1154,9 @@ td a {
   .risk-map {
     height: 380px;
   }
+  .dashboard-top .risk-map {
+    min-height: 380px;
+  }
   .dashboard-bottom .stack {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1262,6 +1309,9 @@ td a {
   }
   .risk-map {
     height: 340px;
+  }
+  .dashboard-top .risk-map {
+    min-height: 340px;
   }
   .map-frame {
     min-height: 340px;

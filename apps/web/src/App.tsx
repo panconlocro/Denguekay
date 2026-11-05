@@ -17,7 +17,7 @@ import { Filters } from './components/Filters';
 import { SourceNotice } from './components/SourceNotice';
 import { Card, Failure, Icon, Loading } from './components/ui';
 import { dataSource, verifyDemoV2 } from './lib/dataSource';
-import { date, targetPassed, weekLabel } from './lib/format';
+import { date, targetStarted, weekLabel } from './lib/format';
 import { DashboardPage } from './pages/DashboardPage';
 import {
   AlertsPage,
@@ -36,6 +36,8 @@ export type AppContext = {
   province: string;
   district: string;
   search: string;
+  catalogueReady: boolean;
+  cataloguePending: boolean;
 };
 
 const navigation = [
@@ -118,7 +120,17 @@ function Layout() {
         'Página no encontrada';
   const currentSummary = !configuration || summary.isError ? undefined : summary.data;
   const context = configuration
-    ? { configuration, districts, horizon, enabled, province, district, search }
+    ? {
+        configuration,
+        districts,
+        horizon,
+        enabled,
+        province,
+        district,
+        search,
+        catalogueReady: catalogue.isSuccess && !catalogue.isError && !!catalogue.data?.disponible,
+        cataloguePending: catalogue.isPending,
+      }
     : null;
   return (
     <div className="app-shell">
@@ -173,8 +185,8 @@ function Layout() {
                 : 'Conectando con la API'}
             </span>
             <span>Objetivo: {weekLabel(currentSummary?.semana_objetivo)}</span>
-            {targetPassed(currentSummary?.semana_objetivo) && (
-              <strong className="historical-pill">Consulta histórica · objetivo pasado</strong>
+            {targetStarted(currentSummary?.semana_objetivo) && (
+              <strong className="historical-pill">Consulta histórica · objetivo iniciado</strong>
             )}
           </div>
         </header>

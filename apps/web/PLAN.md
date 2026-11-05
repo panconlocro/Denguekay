@@ -31,8 +31,8 @@ de soporte fuera de esta carpeta, como CI y arquitectura global, se tramitan por
 | Fase                         | Entregable                                                                   | Condición de cierre                                                                         | Estado                                                    |
 | ---------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | 1. Contrato y alcance        | Matriz componente → endpoint → campo; inventario de datos y brechas          | Fuentes, faltantes y condiciones de integración documentados sin inventar datos             | Revisada; usuario autorizó continuar con «siguiente fase» |
-| 2. Base visual e integración | Auditar la base existente, componentes, navegación, estados y cliente tipado | Fuente de API identificada, entorno de pruebas claramente diferenciado y estados coherentes | Implementada; pendiente de revisión del usuario           |
-| 3. Tablero                   | Indicadores, priorización, resumen geográfico y vigencia                     | Datos comprobados por horizonte y alcance de filtros explícito                              | Pendiente; existe versión inicial                         |
+| 2. Base visual e integración | Auditar la base existente, componentes, navegación, estados y cliente tipado | Fuente de API identificada, entorno de pruebas claramente diferenciado y estados coherentes | Revisada; usuario autorizó continuar con «siguiente fase» |
+| 3. Tablero                   | Indicadores, priorización, resumen geográfico y vigencia                     | Datos comprobados por horizonte y alcance de filtros explícito                              | Implementada; pendiente de revisión del usuario           |
 | 4. Mapa y detalle            | Mapa, selección, magnitud, intervalos y serie distrital                      | Recorrido completo, fechas coherentes y ausencia de valores sustituidos                     | Pendiente; existe versión inicial                         |
 | 5. Alertas                   | Listados activos/retirados, filtros, orden y detalle                         | Paginación completa y avisos experimentales diferenciados                                   | Pendiente; existe versión inicial                         |
 | 6. Desempeño y ayuda         | Métricas por bloque, persistencia, importancias y manual                     | Métricas trazables a una versión y recursos de ayuda reales                                 | Pendiente; existen vistas iniciales                       |
@@ -51,5 +51,10 @@ entrenamiento ni publicación durante esa fase.
 Para la fase 2 el usuario eligió expresamente «Preparar demo local de v2». Se ejecutó el constructor
 existente del backend con el gold regenerado, generando una SQLite y artefactos nuevos, separados de
 la base antigua. El [informe de fase 2](docs/fase-02-integracion-demo-v2.md) registra la integración,
-las verificaciones y sus límites. La fase 3 requiere la siguiente aprobación; las versiones iniciales
-de sus pantallas siguen siendo la base para revisarlas.
+las verificaciones y sus límites.
+
+El usuario autorizó la fase 3 con «siguiente fase». El [cierre del tablero](docs/fase-03-tablero.md)
+documenta la paginación completa, la comprobación de magnitud regional, los alcances de los filtros y
+la vigencia y anticipación desde la emisión real. Solo cambió el frontend: no se entrenó de nuevo,
+no se ejecutaron inferencias ni se modificaron la API o la base de demo. La fase 4 (mapa y detalle)
+queda pendiente de revisión del usuario.

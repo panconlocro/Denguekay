@@ -31,6 +31,9 @@ export function Filters({
           onChange={(e) => change('provincia', e.target.value)}
         >
           <option value="">Todas</option>
+          {province && !provinces.some(([id]) => id === province) && (
+            <option value={province}>Provincia no reconocida ({province})</option>
+          )}
           {provinces.map(([id, name]) => (
             <option key={id} value={id}>
               {name}
@@ -46,6 +49,10 @@ export function Filters({
           onChange={(e) => change('distrito', e.target.value)}
         >
           <option value="">Todos</option>
+          {district &&
+            !districts.some(
+              (d) => d.ubigeo === district && (!province || d.ubigeo_provincia === province),
+            ) && <option value={district}>Distrito fuera de selección ({district})</option>}
           {districts
             .filter((d) => !province || d.ubigeo_provincia === province)
             .map((d) => (

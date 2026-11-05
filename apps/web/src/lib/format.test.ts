@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { horizonStatus, number, percent, riskRange, targetPassed } from './format';
+import { horizonStatus, number, percent, riskRange, targetStarted } from './format';
 
 describe('presentation invariants', () => {
   it('keeps risk boundaries unambiguous', () => {
@@ -17,7 +17,7 @@ describe('presentation invariants', () => {
   it('never calls an experimental model operational', () => {
     const h = { horizonte: 4, disponible: true, experimental: true, semana_corte_vigente: null };
     expect(horizonStatus(h)).toBe('Experimental');
-    expect(horizonStatus({ ...h, experimental: false })).toBe('Operativo');
+    expect(horizonStatus({ ...h, experimental: false })).toBe('Validado');
     expect(horizonStatus({ ...h, disponible: false })).toBe('No disponible');
   });
   it('does not confuse the latest publication with a future target', () => {
@@ -28,8 +28,10 @@ describe('presentation invariants', () => {
       fecha_inicio: '2026-01-04',
       fecha_fin: '2026-01-10',
     };
-    expect(targetPassed(week, new Date('2026-11-04T12:00:00Z'))).toBe(true);
-    expect(targetPassed(week, new Date('2026-01-10T12:00:00Z'))).toBe(false);
-    expect(targetPassed(null)).toBe(false);
+    expect(targetStarted(week, new Date('2026-11-04T12:00:00Z'))).toBe(true);
+    expect(targetStarted(week, new Date('2026-01-10T12:00:00Z'))).toBe(true);
+    expect(targetStarted(week, new Date('2026-01-04T04:59:59Z'))).toBe(false);
+    expect(targetStarted(week, new Date('2026-01-04T05:00:00Z'))).toBe(true);
+    expect(targetStarted(null)).toBe(false);
   });
 });

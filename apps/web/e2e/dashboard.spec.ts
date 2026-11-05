@@ -10,7 +10,7 @@ test('published dashboard, geographic filters and district navigation', async ({
   await expect(page.getByText('Entorno de pruebas · muestra v0', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Distritos prioritarios' })).toBeVisible();
   await expect(page.getByText('Experimental: modelo no validado', { exact: true })).toBeVisible();
-  await expect(page.getByText('Consulta histórica · objetivo pasado')).toBeVisible();
+  await expect(page.getByText('Consulta histórica · objetivo iniciado')).toBeVisible();
   await expect(page.locator('.priorities tbody tr')).toHaveCount(3);
   await expect(page.locator('.leaflet-interactive').first()).toBeVisible();
   if (process.env.WEB_SCREENSHOT_DIR)

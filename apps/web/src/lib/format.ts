@@ -35,9 +35,9 @@ export function weekLabel(week: Week | null | undefined) {
     : 'Sin semana publicada';
 }
 export function horizonStatus(h: Configuration['horizontes'][number]) {
-  return !h.disponible ? 'No disponible' : h.experimental ? 'Experimental' : 'Operativo';
+  return !h.disponible ? 'No disponible' : h.experimental ? 'Experimental' : 'Validado';
 }
-export function targetPassed(week: Week | null | undefined, now = new Date()) {
+export function targetStarted(week: Week | null | undefined, now = new Date()) {
   const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(now);
-  return !!week && week.fecha_fin < today;
+  return !!week && week.fecha_inicio <= today;
 }

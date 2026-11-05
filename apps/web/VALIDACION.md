@@ -68,3 +68,17 @@ El [informe de fase 2](docs/fase-02-integracion-demo-v2.md) contiene cifras y ev
 
 No se repitió la suite Python completa y no se afirma que esté en verde. Persisten los límites de
 entorno y equivalencia ya documentados. No se registró un modelo final en MLflow ni se desplegó.
+
+## Fase 3: tablero
+
+El 05/11/2026 pasaron 18 pruebas unitarias, ESLint, TypeScript, build y 20 recorridos de navegador:
+12 con v2 y 8 con fixtures, en escritorio y móvil. Cubren paginación de los 65 distritos, filtros con
+indicadores regionales estables, magnitud parcial, conteos ausentes, anticipación, URLs inválidas y
+errores por consulta con recuperación. Los datos alterados de esos escenarios solo existen en el
+navegador de pruebas; no se cambió la demo. La comprobación de dimensiones del mapa y de los assets
+visibles pasó al repetir el recorrido principal después del ajuste visual; capturas inspeccionadas.
+
+Great Expectations al iniciar la fase: silver 107/107, gold 42/42. Los hashes de datos y bases
+verificados en fase 2 permanecen iguales. El [informe del tablero](docs/fase-03-tablero.md) documenta
+la implementación y sus límites. No se entrenó ni se modificó la API. La suite Python completa sigue
+pendiente por las incidencias registradas anteriormente.
