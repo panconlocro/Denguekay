@@ -1,6 +1,6 @@
 # Denguekay web
 
-Primera entrega del frontend de vigilancia de dengue en Piura, basada en el punto 6 de OE2 v1.3 y los
+Frontend de vigilancia de dengue en Piura, basado en el punto 6 de OE2 v1.3 y los
 [mockups de Figma](https://www.figma.com/design/YntyrKwEpxRMCkAoLLhdC6). React, Vite y TypeScript;
 tokens de Figma, Inter local, TanStack Query, React Leaflet y Recharts.
 Solo consume lecturas de /api/v1; no lee datos, modelos ni la BD directamente.
@@ -17,6 +17,10 @@ versiones de v2 antes de mostrar sus resultados. Su corte sigue siendo diciembre
 La [fase 3](docs/fase-03-tablero.md) completa el tablero: listado paginado de todos los distritos,
 cobertura de magnitud regional comprobada, alcance de filtros explícito y anticipación desde la
 emisión real. Una semana objetivo se identifica como histórica desde que comienza.
+
+La [fase 4](docs/fase-04-mapa-y-detalle.md) completa el mapa con selección y panel distrital, y el
+detalle con comparación de horizontes, intervalos, observaciones del corte y series de 26/52 semanas
+o rango personalizado. Los umbrales históricos se consultan por semana; no se extrapolan al objetivo.
 
 ## Ejecutar en desarrollo
 
@@ -63,8 +67,11 @@ es una operación explícita, independiente de iniciar el frontend.
 - Tablero conectado: indicadores regionales, predicciones priorizadas, mapa, avisos y horizontes.
 - Filtros de provincia/distrito para mapa y listados; no alteran los indicadores regionales.
 - Horizonte y predeterminado leídos de /configuracion; filtros conservados en la URL.
-- Navegación de las seis vistas. Mapa, selección distrital, serie, avisos paginados, versiones del modelo
-  y ayuda tienen una implementación inicial funcional.
+- Navegación de las seis vistas. Mapa con selección por clic o teclado, panel y recuentos de riesgo;
+  detalle con comparación de horizontes, observaciones e intervalos. Avisos, versiones y ayuda
+  conservan su implementación inicial hasta sus fases específicas.
+- Series con rangos de 26/52 semanas o fechas semanales personalizadas, guardados en la URL;
+  umbral histórico por semana, huecos explícitos y tabla alternativa con procedencia del pronóstico.
 - Estados de carga, ausencia, error y reintento por consulta. Un resultado fallido no conserva datos
   anteriores en pantalla. Un cambio de horizonte no reutiliza predicciones de otro horizonte.
 - Vista móvil a 390 px, navegación inferior, tabla alternativa al gráfico y movimiento reducido.
@@ -83,7 +90,7 @@ es una operación explícita, independiente de iniciar el frontend.
 - Desempeño muestra versiones reales; las métricas por bloque e importancias completas quedan para su
   entrega. Ayuda contiene la guía inicial; PDF, capacitación y soporte están pendientes de publicación.
 - El objetivo corresponde al corte publicado: mapa y resumen no aceptan corte histórico.
-  Los rangos personalizados de la serie y los umbrales futuros quedan pendientes.
+  La serie permite rangos personalizados. El umbral futuro de brote sigue sin publicarse por la API.
 - No se muestran explicaciones individuales ni agregados de vecinos que la API no expone.
 - Siguen pendientes las correcciones de backend de la revisión: sumas regionales incompletas, coherencia
   al desactivar modelos experimentales y rangos de series con fecha final implícita. Los casos observados

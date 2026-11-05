@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { allPages, get } from './client';
-import type { Alert, District, Prediction } from './types';
+import type { Alert, District, Observation, Prediction } from './types';
 
 export function useDistricts() {
   return useQuery({
@@ -51,5 +51,56 @@ export function useRiskMap(horizon: number, enabled = true) {
     queryKey: ['map', horizon],
     enabled,
     queryFn: ({ signal }) => get('/api/v1/mapa-riesgo', { horizonte: horizon }, signal),
+  });
+}
+
+export function useDistrictPrediction(ubigeo: string, horizon: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ['district-prediction', ubigeo, horizon],
+    enabled: enabled && !!ubigeo,
+    queryFn: ({ signal }) =>
+      get('/api/v1/predicciones', { ubigeo, horizonte: horizon, tamano_pagina: 100 }, signal),
+  });
+}
+
+export function useObservations(ubigeo: string, from?: string, to?: string, enabled = true) {
+  return useQuery({
+    queryKey: ['observations', ubigeo, from, to],
+    enabled: enabled && !!ubigeo && !!from && !!to,
+    queryFn: ({ signal }) =>
+      allPages<Observation>((page) =>
+        get(
+          '/api/v1/observaciones',
+          {
+            ubigeo,
+            desde: from,
+            hasta: to,
+            pagina: page,
+            tamano_pagina: 100,
+          },
+          signal,
+        ),
+      ),
+  });
+}
+
+export function useDistrictAlerts(ubigeo: string, horizon: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ['district-alerts', ubigeo, horizon],
+    enabled: enabled && !!ubigeo,
+    queryFn: ({ signal }) =>
+      allPages<Alert>((page) =>
+        get(
+          '/api/v1/alertas',
+          {
+            ubigeo,
+            horizonte: horizon,
+            estado: 'activa',
+            pagina: page,
+            tamano_pagina: 100,
+          },
+          signal,
+        ),
+      ),
   });
 }

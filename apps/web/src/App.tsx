@@ -19,14 +19,9 @@ import { Card, Failure, Icon, Loading } from './components/ui';
 import { dataSource, verifyDemoV2 } from './lib/dataSource';
 import { date, targetStarted, weekLabel } from './lib/format';
 import { DashboardPage } from './pages/DashboardPage';
-import {
-  AlertsPage,
-  DistrictPage,
-  HelpPage,
-  MapPage,
-  ModelsPage,
-  NotFoundPage,
-} from './pages/SecondaryPages';
+import { MapPage } from './pages/MapPage';
+import { DistrictPage } from './pages/DistrictPage';
+import { AlertsPage, HelpPage, ModelsPage, NotFoundPage } from './pages/SecondaryPages';
 
 export type AppContext = {
   configuration: Configuration;
@@ -99,7 +94,12 @@ function Layout() {
   const province = match
     ? districts.find((d) => d.ubigeo === district)?.ubigeo_provincia || ''
     : params.get('provincia') || '';
-  const search = params.toString() ? `?${params}` : '';
+  const navigationParams = new URLSearchParams(params);
+  if (match) {
+    navigationParams.set('distrito', district);
+    if (province) navigationParams.set('provincia', province);
+  }
+  const search = navigationParams.toString() ? `?${navigationParams}` : '';
   const change = (key: string, value: string) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);

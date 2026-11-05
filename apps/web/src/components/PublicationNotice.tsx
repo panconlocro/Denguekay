@@ -2,7 +2,13 @@ import type { Prediction } from '../api/types';
 import { emissionTiming } from '../lib/dashboard';
 import { date, number, weekLabel } from '../lib/format';
 
-export function PublicationNotice({ rows }: { rows: Prediction[] }) {
+export function PublicationNotice({
+  rows,
+  scopeLabel = 'Región Piura',
+}: {
+  rows: Prediction[];
+  scopeLabel?: string;
+}) {
   const timing = emissionTiming(rows);
   const first = rows[0];
   if (!first) return null;
@@ -12,7 +18,7 @@ export function PublicationNotice({ rows }: { rows: Prediction[] }) {
       aria-label="Vigencia y anticipación de las predicciones"
     >
       <div>
-        <strong>Corte y objetivo · Región Piura</strong>
+        <strong>Corte y objetivo · {scopeLabel}</strong>
         <p>
           {weekLabel(first.semana_corte)} → {weekLabel(first.semana_objetivo)}
         </p>

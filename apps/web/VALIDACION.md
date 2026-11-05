@@ -82,3 +82,18 @@ Great Expectations al iniciar la fase: silver 107/107, gold 42/42. Los hashes de
 verificados en fase 2 permanecen iguales. El [informe del tablero](docs/fase-03-tablero.md) documenta
 la implementación y sus límites. No se entrenó ni se modificó la API. La suite Python completa sigue
 pendiente por las incidencias registradas anteriormente.
+
+## Fase 4: mapa y detalle
+
+El 05/11/2026 pasaron 27 pruebas unitarias, ESLint, TypeScript, build, formato y 36 recorridos en
+navegador: 20 con v2 y 16 con fixtures. Cubren mapa → panel → detalle, selección de marcador con
+teclado y foco estable, horizontes, intervalos, umbral histórico, rangos de 26/52 semanas y fechas
+personalizadas, recarga, ausencia de datos y recuperación de errores. Las capturas de escritorio y
+móvil se inspeccionaron frente a los nodos Figma de mapa y detalle.
+
+Pasaron las 9 guardas de estructura y contrato OpenAPI con los archivos preparados en el índice.
+
+Great Expectations al iniciar la fase: silver 107/107 y gold 42/42. Los hashes de datos y bases
+permanecen iguales a los comprobados en fase 2. No se entrenó ni se modificó la API. El
+[informe de fase 4](docs/fase-04-mapa-y-detalle.md) registra el alcance y los límites. La suite Python
+general mantiene sus incidencias documentadas; esta fase no certifica toda la suite en verde.

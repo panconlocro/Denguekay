@@ -32,8 +32,8 @@ de soporte fuera de esta carpeta, como CI y arquitectura global, se tramitan por
 | ---------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | 1. Contrato y alcance        | Matriz componente → endpoint → campo; inventario de datos y brechas          | Fuentes, faltantes y condiciones de integración documentados sin inventar datos             | Revisada; usuario autorizó continuar con «siguiente fase» |
 | 2. Base visual e integración | Auditar la base existente, componentes, navegación, estados y cliente tipado | Fuente de API identificada, entorno de pruebas claramente diferenciado y estados coherentes | Revisada; usuario autorizó continuar con «siguiente fase» |
-| 3. Tablero                   | Indicadores, priorización, resumen geográfico y vigencia                     | Datos comprobados por horizonte y alcance de filtros explícito                              | Implementada; pendiente de revisión del usuario           |
-| 4. Mapa y detalle            | Mapa, selección, magnitud, intervalos y serie distrital                      | Recorrido completo, fechas coherentes y ausencia de valores sustituidos                     | Pendiente; existe versión inicial                         |
+| 3. Tablero                   | Indicadores, priorización, resumen geográfico y vigencia                     | Datos comprobados por horizonte y alcance de filtros explícito                              | Revisada; usuario autorizó continuar con «ahora fase 4»   |
+| 4. Mapa y detalle            | Mapa, selección, magnitud, intervalos y serie distrital                      | Recorrido completo, fechas coherentes y ausencia de valores sustituidos                     | Implementada; pendiente de revisión del usuario           |
 | 5. Alertas                   | Listados activos/retirados, filtros, orden y detalle                         | Paginación completa y avisos experimentales diferenciados                                   | Pendiente; existe versión inicial                         |
 | 6. Desempeño y ayuda         | Métricas por bloque, persistencia, importancias y manual                     | Métricas trazables a una versión y recursos de ayuda reales                                 | Pendiente; existen vistas iniciales                       |
 | 7. Validación de entrega     | Pruebas funcionales, accesibilidad, fidelidad visual, build y documentación  | Evidencia de la implementación acordada y CI del PR en verde                                | Pendiente; las pruebas previas no sustituyen este cierre  |
@@ -56,5 +56,9 @@ las verificaciones y sus límites.
 El usuario autorizó la fase 3 con «siguiente fase». El [cierre del tablero](docs/fase-03-tablero.md)
 documenta la paginación completa, la comprobación de magnitud regional, los alcances de los filtros y
 la vigencia y anticipación desde la emisión real. Solo cambió el frontend: no se entrenó de nuevo,
-no se ejecutaron inferencias ni se modificaron la API o la base de demo. La fase 4 (mapa y detalle)
-queda pendiente de revisión del usuario.
+no se ejecutaron inferencias ni se modificaron la API o la base de demo.
+
+El usuario autorizó la fase 4 con «ahora fase 4». El [cierre de mapa y detalle](docs/fase-04-mapa-y-detalle.md)
+documenta selección geográfica, comparación de horizontes, observaciones del corte y series con
+umbrales históricos y rangos configurables. Esta fase mantiene la misma API y demo. La fase 5,
+alertas, requiere la siguiente revisión del usuario.

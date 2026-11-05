@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
-import { circleMarker, geoJSON } from 'leaflet';
+import { useEffect, useRef } from 'react';
+import { circleMarker, CircleMarker, geoJSON, Path } from 'leaflet';
+import type { GeoJSON as LeafletGeoJSON } from 'leaflet';
 import { GeoJSON, MapContainer, TileLayer, useMap } from 'react-leaflet';
 import type { RiskMapData } from '../api/types';
 import { percent, riskRange } from '../lib/format';
@@ -24,7 +25,26 @@ function FitBounds({ features }: { features: Feature[] }) {
   return null;
 }
 
-export function RiskMap({ data, select }: { data: RiskMapData; select: (ubigeo: string) => void }) {
+export function RiskMap({
+  data,
+  select,
+  selected = '',
+}: {
+  data: RiskMapData;
+  select: (ubigeo: string) => void;
+  selected?: string;
+}) {
+  const layers = useRef<LeafletGeoJSON>(null);
+  useEffect(() => {
+    layers.current?.eachLayer((layer) => {
+      if (!(layer instanceof Path)) return;
+      const feature = (layer as Path & { feature: Feature }).feature;
+      const active = feature.id === selected;
+      layer.setStyle({ color: active ? '#10262b' : '#ffffff', weight: active ? 3 : 1.8 });
+      if (layer instanceof CircleMarker) layer.setRadius(active ? 10 : 7);
+      layer.getElement()?.setAttribute('aria-pressed', String(active));
+    });
+  }, [data.features, selected]);
   return (
     <>
       <div className="map-frame">
@@ -45,25 +65,30 @@ export function RiskMap({ data, select }: { data: RiskMapData; select: (ubigeo: 
           <FitBounds features={data.features} />
           <GeoJSON
             key={JSON.stringify(data.features)}
+            ref={layers}
             data={data}
             style={(feature) => ({
-              color: '#ffffff',
-              weight: 1.5,
+              color: feature?.id === selected ? '#10262b' : '#ffffff',
+              weight: feature?.id === selected ? 3 : 1.5,
               fillColor:
                 riskColors[
-                  (feature?.properties.nivel_riesgo as keyof typeof riskColors) || 'missing'
+                  (feature?.properties.estado === 'disponible' &&
+                    (feature.properties.nivel_riesgo as keyof typeof riskColors)) ||
+                    'missing'
                 ],
               fillOpacity: 0.8,
             })}
             pointToLayer={(feature, latlng) =>
               circleMarker(latlng, {
-                radius: 7,
-                color: '#ffffff',
-                weight: 1.8,
+                radius: feature.id === selected ? 10 : 7,
+                color: feature.id === selected ? '#10262b' : '#ffffff',
+                weight: feature.id === selected ? 3 : 1.8,
                 fillOpacity: 0.95,
                 fillColor:
                   riskColors[
-                    (feature.properties.nivel_riesgo as keyof typeof riskColors) || 'missing'
+                    (feature.properties.estado === 'disponible' &&
+                      (feature.properties.nivel_riesgo as keyof typeof riskColors)) ||
+                      'missing'
                   ],
               })
             }
@@ -73,10 +98,35 @@ export function RiskMap({ data, select }: { data: RiskMapData; select: (ubigeo: 
               const name = document.createElement('strong');
               name.textContent = p.distrito;
               const text = document.createElement('div');
-              text.textContent = `${p.nivel_riesgo_etiqueta} · ${percent(p.probabilidad_brote)}`;
+              const available = p.estado === 'disponible';
+              text.textContent = available
+                ? `${p.nivel_riesgo_etiqueta} · ${percent(p.probabilidad_brote)}`
+                : `Sin datos · ${p.motivo || 'Sin predicción disponible'}`;
               tooltip.append(name, text);
               layer.bindTooltip(tooltip);
               layer.on('click', () => select(p.ubigeo));
+              layer.on('add', () => {
+                if (!(layer instanceof Path)) return;
+                const element = layer.getElement();
+                if (!element) return;
+                element.setAttribute('tabindex', '0');
+                element.setAttribute('role', 'button');
+                element.setAttribute(
+                  'aria-label',
+                  `Seleccionar ${p.distrito}: ${available ? p.nivel_riesgo_etiqueta : 'Sin datos'}`,
+                );
+                element.setAttribute('aria-pressed', String(p.ubigeo === selected));
+                element.addEventListener('keydown', (event) => {
+                  if (
+                    event instanceof KeyboardEvent &&
+                    (event.key === 'Enter' || event.key === ' ')
+                  ) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    select(p.ubigeo);
+                  }
+                });
+              });
             }}
           />
         </MapContainer>
