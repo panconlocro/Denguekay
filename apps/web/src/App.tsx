@@ -22,7 +22,9 @@ import { DashboardPage } from './pages/DashboardPage';
 import { MapPage } from './pages/MapPage';
 import { DistrictPage } from './pages/DistrictPage';
 import { AlertsPage, AlertDetailPage } from './pages/AlertsPage';
-import { HelpPage, ModelsPage, NotFoundPage } from './pages/SecondaryPages';
+import { NotFoundPage } from './pages/SecondaryPages';
+import { ModelsPage } from './pages/ModelsPage';
+import { HelpPage } from './pages/HelpPage';
 
 export type AppContext = {
   configuration: Configuration;

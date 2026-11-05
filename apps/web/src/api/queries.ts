@@ -113,3 +113,41 @@ export function useAlert(id: number, enabled: boolean) {
       get('/api/v1/alertas/{identificador}', {}, signal, { identificador: id }),
   });
 }
+
+export function useModels(horizon: number, enabled = true) {
+  return useQuery({
+    queryKey: ['models', horizon],
+    enabled,
+    queryFn: ({ signal }) => get('/api/v1/modelos/activo', { horizonte: horizon }, signal),
+  });
+}
+
+export function useModelDetail(id?: number) {
+  return useQuery({
+    queryKey: ['model-detail', id],
+    enabled: id !== undefined,
+    queryFn: async ({ signal }) => {
+      const detail = await get('/api/v1/modelos/{identificador}', {}, signal, {
+        identificador: id!,
+      });
+      if (detail.id_version !== id)
+        throw new Error('La versión recibida no corresponde a la solicitada.');
+      return detail;
+    },
+  });
+}
+
+export function useModelVariables(id?: number) {
+  return useQuery({
+    queryKey: ['model-variables', id],
+    enabled: id !== undefined,
+    queryFn: async ({ signal }) => {
+      const result = await get('/api/v1/modelos/{identificador}/variables', {}, signal, {
+        identificador: id!,
+      });
+      if (result.id_version !== id)
+        throw new Error('Las variables recibidas no corresponden a la versión solicitada.');
+      return result;
+    },
+  });
+}

@@ -113,3 +113,24 @@ limitaciones. No se reentrenó v2 ni se modificó la API. La suite Python comple
 las incidencias ya documentadas.
 
 Pasaron las 9 guardas de estructura y contrato OpenAPI con los archivos nuevos preparados en el índice.
+
+## Fase 6: desempeño y ayuda
+
+La fase 6 añade métricas por bloque, comparación con persistencia, importancias originales y
+trazabilidad por versión. Ayuda incluye búsqueda, leyenda del servicio y un PDF real de cuatro
+páginas, generado desde el mismo contenido de la interfaz.
+
+Pasaron 39 pruebas unitarias, ESLint, TypeScript, build y formato. Playwright aprobó 40 recorridos
+con la demo v2 y 36 con fixtures v0 (76 en total, escritorio y móvil). Se revisaron capturas de ambas
+vistas y las cuatro páginas del manual. Los casos sintéticos solo alteran respuestas interceptadas
+en pruebas; los datos de la demo permanecen de lectura. El perfil v2 completo pasó con dos workers
+tras un agotamiento de tiempo al iniciar un contexto de Chrome con seis.
+
+Se corrigió el estado de desempeño de un horizonte sin modelo y se comprobó su salida hacia otro
+horizonte disponible. Las 9 guardas de estructura y contrato OpenAPI pasaron con los nuevos archivos
+preparados en el índice.
+
+La validación inicial de entradas aprobó silver 107/107 y gold h2 42/42, 30 485 filas cada uno.
+Los hashes de las dos bases, gold y silver permanecen iguales a fase 2. No se repitió la suite
+Python completa ni el CI; la validación de entrega de fase 7 espera revisión del usuario.
+El [cierre de fase 6](docs/fase-06-desempeno-y-ayuda.md) describe fuentes y evidencia.

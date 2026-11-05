@@ -11,6 +11,7 @@ export type Alert = Schemas['AlertaRespuesta'];
 export type Week = Schemas['SemanaRespuesta'];
 export type Series = Schemas['SeriesRespuesta'];
 export type Model = Schemas['ModeloEnUso'];
+export type ModelDetail = Schemas['ModeloDetalle'];
 export type Observation = Schemas['ObservacionRespuesta'];
 export type Page<T> = {
   disponible: boolean;

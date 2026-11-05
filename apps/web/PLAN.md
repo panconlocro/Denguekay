@@ -34,8 +34,8 @@ de soporte fuera de esta carpeta, como CI y arquitectura global, se tramitan por
 | 2. Base visual e integración | Auditar la base existente, componentes, navegación, estados y cliente tipado | Fuente de API identificada, entorno de pruebas claramente diferenciado y estados coherentes | Revisada; usuario autorizó continuar con «siguiente fase»      |
 | 3. Tablero                   | Indicadores, priorización, resumen geográfico y vigencia                     | Datos comprobados por horizonte y alcance de filtros explícito                              | Revisada; usuario autorizó continuar con «ahora fase 4»        |
 | 4. Mapa y detalle            | Mapa, selección, magnitud, intervalos y serie distrital                      | Recorrido completo, fechas coherentes y ausencia de valores sustituidos                     | Revisada; usuario autorizó continuar con «ahora haz la fase 5» |
-| 5. Alertas                   | Listados activos/retirados, filtros, orden y detalle                         | Paginación completa y avisos experimentales diferenciados                                   | Implementada; pendiente de revisión del usuario                |
-| 6. Desempeño y ayuda         | Métricas por bloque, persistencia, importancias y manual                     | Métricas trazables a una versión y recursos de ayuda reales                                 | Pendiente; existen vistas iniciales                            |
+| 5. Alertas                   | Listados activos/retirados, filtros, orden y detalle                         | Paginación completa y avisos experimentales diferenciados                                   | Revisada; usuario autorizó continuar con «go fase 6»           |
+| 6. Desempeño y ayuda         | Métricas por bloque, persistencia, importancias y manual                     | Métricas trazables a una versión y recursos de ayuda reales                                 | Implementada; pendiente de revisión del usuario                |
 | 7. Validación de entrega     | Pruebas funcionales, accesibilidad, fidelidad visual, build y documentación  | Evidencia de la implementación acordada y CI del PR en verde                                | Pendiente; las pruebas previas no sustituyen este cierre       |
 
 ## Fase actual
@@ -64,5 +64,9 @@ umbrales históricos y rangos configurables. Esta fase mantiene la misma API y d
 
 El usuario autorizó la fase 5 con «ahora haz la fase 5». El [cierre de avisos](docs/fase-05-avisos.md)
 documenta filtros, historial activo y retirado, orden sobre todas las páginas, detalle por
-identificador y distinción de registros históricos y experimentales. La fase 6 (desempeño y ayuda)
-requiere la siguiente revisión del usuario.
+identificador y distinción de registros históricos y experimentales.
+
+El usuario autorizó la fase 6 con «go fase 6». El [cierre de desempeño y ayuda](docs/fase-06-desempeno-y-ayuda.md)
+documenta métricas por bloque, comparación con persistencia, importancias publicadas y un manual PDF
+real con contenido compartido con la ayuda. Se conserva la API y demo de las fases anteriores.
+La fase 7 (validación de entrega y soporte de CI) espera la siguiente revisión del usuario.

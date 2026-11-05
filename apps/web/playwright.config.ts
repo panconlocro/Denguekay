@@ -4,9 +4,10 @@ const demo = process.env.WEB_TEST_SOURCE === 'demo-v2';
 export default defineConfig({
   testDir: './e2e',
   testMatch: demo
-    ? ['demo-v2.spec.ts', 'map-detail.spec.ts', 'alerts.spec.ts']
-    : ['dashboard.spec.ts', 'map-detail.spec.ts', 'alerts.spec.ts'],
+    ? ['demo-v2.spec.ts', 'map-detail.spec.ts', 'alerts.spec.ts', 'models-help.spec.ts']
+    : ['dashboard.spec.ts', 'map-detail.spec.ts', 'alerts.spec.ts', 'models-help.spec.ts'],
   fullyParallel: false,
+  workers: 2,
   use: {
     baseURL: 'http://127.0.0.1:5174',
     launchOptions: process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {},

@@ -1,0 +1,196 @@
+.performance-page {
+  display: grid;
+  gap: 18px;
+}
+.model-alternatives {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.performance-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: end;
+}
+.performance-heading h2 {
+  margin: 5px 0;
+  font-size: 22px;
+}
+.performance-heading p {
+  margin: 0;
+  color: var(--muted);
+}
+.period-control {
+  display: grid;
+  gap: 6px;
+  min-width: 220px;
+  font-weight: 600;
+}
+.performance-page select {
+  display: block;
+  max-width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+  color: var(--ink);
+}
+.performance-page > .scope-note {
+  margin: 0;
+}
+.classification-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.metric-tile {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  background: var(--canvas);
+}
+.metric-tile h3 {
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+.metric-tile strong {
+  display: block;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.metric-tile p {
+  color: var(--muted);
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+.performance-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+  min-width: 0;
+}
+.performance-bottom > * {
+  min-width: 0;
+}
+.performance-page table {
+  font-variant-numeric: tabular-nums;
+}
+.horizon-performance small {
+  display: block;
+  font-weight: normal;
+  margin-top: 4px;
+}
+.version-cell {
+  max-width: 260px;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.version-cell .button {
+  margin-top: 6px;
+}
+.importance-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 17px;
+}
+.importance-list li > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.importance-list li span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.importance-list strong {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.importance-track {
+  height: 7px;
+  margin-top: 7px;
+  background: #e7edf5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.importance-track span {
+  height: 100%;
+  display: block;
+  background: #4169ab;
+  border-radius: inherit;
+}
+.importance-data > p:first-child {
+  overflow-wrap: anywhere;
+}
+.model-provenance + .model-provenance {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+.model-provenance h3,
+.performance-page .model-tile h3 {
+  overflow-wrap: anywhere;
+}
+.provenance-facts {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0;
+}
+.provenance-facts div {
+  display: grid;
+  gap: 3px;
+}
+.provenance-facts dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+.provenance-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.model-provenance summary {
+  cursor: pointer;
+  color: #31568c;
+  font-weight: 600;
+}
+.model-provenance pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  padding: 12px;
+  background: var(--canvas);
+  border-radius: 6px;
+}
+@media (max-width: 1000px) {
+  .performance-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .performance-heading {
+    display: grid;
+    align-items: start;
+  }
+  .period-control {
+    min-width: 0;
+  }
+  .classification-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .metric-tile {
+    padding: 12px;
+  }
+  .metric-tile strong {
+    font-size: 24px;
+  }
+  .table-scroll .baseline-table {
+    min-width: 520px;
+  }
+  .table-scroll .horizon-performance {
+    min-width: 860px;
+  }
+}

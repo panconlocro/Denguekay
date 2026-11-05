@@ -93,8 +93,9 @@ es una operación explícita, independiente de iniciar el frontend.
   Si no cargan las teselas, los marcadores permanecen sobre el fondo del mapa.
 - La API no publica serie regional ni incidencia: esos componentes explican su ausencia.
   Seleccionar un distrito muestra su serie real; no se inventan curvas ni poblaciones.
-- Desempeño muestra versiones reales; las métricas por bloque e importancias completas quedan para su
-  entrega. Ayuda contiene la guía inicial; PDF, capacitación y soporte están pendientes de publicación.
+- Desempeño muestra métricas por bloque, comparación con persistencia, importancias y trazabilidad
+  de cada versión. Ayuda incluye búsqueda, leyenda vigente y un manual PDF descargable de cuatro
+  páginas. Capacitación y canal de soporte siguen pendientes de definición y publicación.
 - El objetivo corresponde al corte publicado: mapa y resumen no aceptan corte histórico.
   La serie permite rangos personalizados. El umbral futuro de brote sigue sin publicarse por la API.
 - No se muestran explicaciones individuales ni agregados de vecinos que la API no expone.
@@ -110,11 +111,13 @@ es una operación explícita, independiente de iniciar el frontend.
 - ./src/api/: cliente de lectura, consultas y tipos OpenAPI.
 - ./src/components/: filtros, estados, mapa y serie temporal.
 - ./src/lib/: formato numérico, fechas de Lima y colores de riesgo.
-- ./src/pages/: tablero y versiones iniciales de las otras vistas.
+- ./src/pages/: tablero, mapa, detalle, avisos, desempeño y ayuda.
+- ./src/content/help.json: contenido compartido entre ayuda y manual.
 - ./src/test/: configuración de pruebas unitarias.
 - ./src/App.tsx: navegación, filtros en URL y estructura responsive.
 - ./src/tokens.css y ./src/styles.css: guía visual.
 - public/assets/: logotipo e iconos originales de Figma.
+- public/manual-usuario.pdf: manual descargable desde Ayuda.
 - e2e/: recorridos en navegador y API temporal aislada.
 
 ## Comprobaciones
@@ -170,3 +173,25 @@ los tres horizontes, el recorrido distrital y el bloqueo de una conexión con ot
 
 El CI del frontend y el mapa global de arquitectura se integrarán como cambios de soporte separados.
 Esta rama conserva el alcance apps/web establecido en CONTRIBUTING.md.
+
+## Desempeño y ayuda (fase 6)
+
+`/modelo` conserva el bloque en `modelo_bloque` y la tarea de importancias en `modelo_importancia`.
+Las métricas provienen del detalle de cada versión seleccionada por la API. Se muestra el mismo
+bloque en la tabla de horizontes, sin sustituir períodos ausentes ni confundir la evaluación con
+el ajuste de servicio. Las importancias conservan el método y los valores originales publicados:
+gain en v0 y SHAP en la demo v2. Los filtros geográficos no recalculan métricas ni importancias.
+
+`/ayuda` conserva tema y búsqueda en `ayuda_tema` y `ayuda_buscar`. La leyenda se consulta en la
+configuración conectada. El manual evita copiar métricas y límites de riesgo que pueden cambiar.
+Para regenerarlo tras modificar el contenido compartido, desde la raíz:
+
+```bash
+python apps/web/tools/build_manual.py
+```
+
+Requiere `reportlab` y `pypdf` en el entorno usado para autoría; no son dependencias del navegador.
+El generador verifica las cuatro páginas y el texto compartido. Después de regenerar se deben
+renderizar y revisar visualmente las páginas antes de versionar el PDF.
+
+El [cierre de fase 6](docs/fase-06-desempeno-y-ayuda.md) detalla las fuentes, decisiones y pruebas.

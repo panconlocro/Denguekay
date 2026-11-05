@@ -1,0 +1,205 @@
+.help-page {
+  display: grid;
+  gap: 20px;
+}
+.help-page .card {
+  min-width: 0;
+}
+.help-search-card form {
+  display: grid;
+  gap: 8px;
+}
+.help-search-card label {
+  font-weight: 600;
+}
+.help-search-row {
+  display: flex;
+  gap: 10px;
+}
+.help-search-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: white;
+}
+.help-search-input img {
+  flex: none;
+}
+.help-search-input:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.help-search-input input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+}
+.help-search-input input:focus-visible {
+  outline: none;
+}
+.help-search-input input::placeholder,
+.help-page .help-muted {
+  color: var(--muted);
+}
+.help-search-card #help-search-count {
+  font-size: 12px;
+  color: var(--muted);
+}
+.help-layout {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.8fr) minmax(300px, 2fr) minmax(220px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.help-index-column,
+.help-support-column {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.help-topic-index {
+  display: grid;
+  gap: 4px;
+}
+.help-topic-index button {
+  border-color: transparent;
+  text-align: left;
+  padding: 10px;
+  line-height: 1.5;
+}
+.help-topic-index button:hover {
+  background: var(--canvas);
+}
+.help-topic-index button[aria-current='true'] {
+  background: var(--surface-muted);
+  color: var(--primary);
+  border-color: var(--border);
+  box-shadow: inset 3px 0 var(--primary);
+  font-weight: 600;
+}
+.help-manual p {
+  margin-bottom: 14px;
+  color: var(--muted);
+}
+.help-topic-card article {
+  display: grid;
+  gap: 18px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.help-topic-card article h2 {
+  font-size: 22px;
+  line-height: 1.35;
+}
+.help-topic-card article .eyebrow {
+  color: var(--primary);
+  margin: 0;
+}
+.help-topic-summary {
+  color: var(--muted);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.help-steps {
+  margin: 0;
+  padding-left: 24px;
+}
+.help-steps li {
+  padding-left: 5px;
+  margin-bottom: 12px;
+}
+.help-steps li::marker {
+  color: var(--primary);
+  font-weight: 700;
+}
+.help-live-legend {
+  padding: 16px;
+  background: var(--canvas);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.help-live-legend ul {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.help-live-legend li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.help-topic-pagination {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.help-troubleshooting {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.help-troubleshooting li + li {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.help-troubleshooting button {
+  padding: 0;
+  min-height: 32px;
+  border: 0;
+  text-align: left;
+  color: var(--primary);
+  font-weight: 600;
+}
+.help-troubleshooting button:hover {
+  text-decoration: underline;
+}
+.help-troubleshooting p,
+.help-support-column .card > p {
+  margin-top: 10px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.help-support-column .help-support-status {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+@media (max-width: 1280px) {
+  .help-layout {
+    grid-template-columns: minmax(180px, 0.8fr) minmax(0, 2fr);
+  }
+  .help-support-column {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .help-layout,
+  .help-support-column {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .help-search-row {
+    flex-direction: column;
+  }
+  .help-search-input {
+    min-height: 44px;
+  }
+}
