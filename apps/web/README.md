@@ -177,7 +177,8 @@ los tres horizontes, el recorrido distrital y el bloqueo de una conexión con ot
 
 El CI del frontend y el mapa global de arquitectura se prepararon como un commit de soporte en
 `chore/web-ci`, desde `develop`. La rama de entrega reúne ese soporte con esta implementación para
-su PR borrador hacia `develop`, sin fusionar automáticamente. Esta rama de frontend conserva el
+su eventual PR hacia `develop`, sin fusionar automáticamente. Por decisión del usuario, la entrega
+se conserva local: no hay rama publicada ni PR creado. La rama de frontend conserva el
 alcance apps/web establecido en CONTRIBUTING.md.
 
 Las lecturas tienen un plazo de 20 segundos y cancelación al cambiar de consulta. Los listados

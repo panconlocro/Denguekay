@@ -150,4 +150,6 @@ no se presenta como verde; PostgreSQL/CUDA no se validaron aquí.
 CI y arquitectura están en un commit de soporte separado. El PR borrador de entrega reúne ambos
 alcances desde `develop` con merge commits, sin fusionar las ramas permanentes. Consultar los checks
 del PR para el resultado remoto; el [informe de fase 7](docs/fase-07-validacion-entrega.md) registra
-la evidencia local, sus límites y las condiciones de integración.
+la evidencia local, sus límites y las condiciones de integración. El usuario decidió mantener todo
+local: no se publicó ninguna rama ni se creó PR; el CI remoto queda pendiente. El snapshot completo
+de entrega también se comprobó localmente, incluido el paso E2E real del workflow.

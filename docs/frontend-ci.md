@@ -7,6 +7,10 @@ El alcance de soporte se mantiene en tres archivos: el workflow, `docs/architect
 
 ## Entrega completa y orden de integración
 
+**Estado de entrega:** el usuario decidió mantener todo local. `chore/web-delivery` reúne los commits
+de implementación y soporte; no se publicó ninguna rama ni se abrió un PR. Los pasos de publicación
+de esta guía describen una integración futura, no una operación ya realizada ni autorizada ahora.
+
 La fase 7 se presenta para revisión mediante una **rama de entrega desde `origin/develop`** y un
 **PR borrador hacia `develop`**. Se conserva la separación de los commits de implementación y soporte:
 
@@ -172,11 +176,17 @@ Los SVG locales y su procedencia van en `apps/web/public/assets/` y su `README.m
 
 ## Evidencia de este cambio de soporte
 
-La comprobación local se limita a la estructura del workflow, sintaxis de sus bloques Bash,
-ruta de omisión con el paquete realmente ausente, whitespace y alcance del diff. Los comandos
-de instalación, generación del contrato, lint, formato, pruebas, build y E2E anteriores quedan
-**pendientes** hasta disponer del snapshot frontend. Tampoco se ejecutó el workflow en GitHub.
-No hay resultado verde del frontend que pueda atribuirse a este worktree.
+En el checkout inicial de soporte se comprobó la estructura del workflow, sintaxis de sus bloques
+Bash, ruta de omisión con el paquete realmente ausente, whitespace y alcance del diff.
+En ese checkout no se ejecutaron instalación, contrato, lint, formato, pruebas, build ni E2E;
+la omisión no valida el frontend. El workflow tampoco se ejecutó en GitHub.
+
+Después se preparó el checkout completo de `chore/web-delivery`: pasaron `npm ci`, tipos sin diff,
+lint, formato, 80 pruebas unitarias y build. El bloque Bash del paso E2E se extrajo del YAML y se
+ejecutó localmente con su arranque/espera/limpieza de API, usando Chrome instalado en macOS.
+Esa comprobación no equivale al job de Ubuntu en GitHub; su log está en
+`/private/tmp/denguekay-phase7-workflow-local.log`. La comprobación de omisión descrita abajo se
+realizó en el checkout de soporte sin el frontend y conserva ese alcance.
 
 Resultados locales del soporte:
 

@@ -1,6 +1,7 @@
 # Fase 7 — Validación de entrega
 
-El usuario autorizó esta fase con «go fase 7 pa ir a dormir». Se revisaron las seis vistas,
+El usuario autorizó esta fase con «go fase 7 pa ir a dormir» y después decidió **mantener todo local**.
+No se publicó ninguna rama ni se creó PR. Se revisaron las seis vistas,
 integración con API, accesibilidad, datos ausentes, compilación, documentación y soporte CI.
 Los cambios de interfaz permanecen en `feat/web-dashboard`, dentro de `apps/web/`.
 El commit de CI y arquitectura se prepara aparte en `chore/web-ci`, desde `origin/develop`.
@@ -93,10 +94,17 @@ Tiene espera acotada de salud, limpieza del proceso y diagnóstico de fallos. No
 local, no importa investigación y no sustituye la demo v2 con métricas de fixtures.
 El workflow backend conserva las pruebas de PostgreSQL y cobertura existentes.
 
-Al preparar este informe, el CI remoto aún no se ha ejecutado; el resultado se consulta en el
-PR de entrega. La omisión del job cuando falta `package.json` no se considera una validación.
+El CI remoto no se ejecutó: la entrega se conserva local por decisión del usuario. La rama
+`chore/web-delivery` contiene el frontend y el workflow para una revisión y publicación posterior.
+La omisión del job cuando falta `package.json` no se considera una validación.
 La integración requiere revisión y los checks del PR aprobados. No se despliega ni se fusiona
 automáticamente `develop` o `main`.
+
+En el checkout completo de entrega se repitieron instalación desde lockfile, generación de tipos,
+lint, formato, 80 unitarias y build. También se ejecutó localmente el bloque Bash real del paso E2E
+del workflow, con espera de salud y limpieza de la API. Usa Chrome instalado en macOS en lugar del
+Chromium de Ubuntu; no equivale a una ejecución remota de GitHub Actions. Evidencia local del paso:
+`/private/tmp/denguekay-phase7-workflow-local.log`.
 
 Permanecen los límites del contrato ya identificados: serie regional e incidencia ausentes,
 polígonos publicables pendientes, futuro umbral distrital no expuesto y canal de soporte/capacitación

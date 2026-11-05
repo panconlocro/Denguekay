@@ -74,4 +74,5 @@ documenta validación funcional y de accesibilidad, correcciones detectadas y l�
 La implementación permanece en `feat/web-dashboard`; CI y arquitectura se prepararon desde `develop`
 en `chore/web-ci`. Una rama de entrega desde `develop` incorpora ambas mediante merge commits para
 presentar un PR borrador con paquete y workflow completos, conservando la historia original.
-El estado remoto del CI y la revisión del usuario determinan la integración; no se fusiona automáticamente.
+El usuario decidió **mantener todo local**. La rama de entrega queda preparada sin publicación ni PR.
+El CI remoto y la revisión siguen siendo condiciones para integrar; no se fusiona automáticamente.
