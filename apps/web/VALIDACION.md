@@ -97,3 +97,19 @@ Great Expectations al iniciar la fase: silver 107/107 y gold 42/42. Los hashes d
 permanecen iguales a los comprobados en fase 2. No se entrenó ni se modificó la API. El
 [informe de fase 4](docs/fase-04-mapa-y-detalle.md) registra el alcance y los límites. La suite Python
 general mantiene sus incidencias documentadas; esta fase no certifica toda la suite en verde.
+
+## Fase 5: avisos
+
+El 05/11/2026 pasaron 34 pruebas unitarias, ESLint, TypeScript, build y 52 recorridos de navegador:
+28 con v2 y 24 con fixtures. Cubren historial activo/retirado, paginación completa, orden, filtros,
+detalle, fechas ausentes, enlace directo desalineado, recuperación y regresiones de fases anteriores.
+Tras ajustar la presentación móvil se repitió el módulo de avisos en ambos perfiles, con capturas
+inspeccionadas y comprobación de ausencia de recorte horizontal en la ficha móvil.
+
+Great Expectations al iniciar la fase: silver 107/107 y gold 42/42. Los hashes de datos y bases se
+mantienen iguales. La demo conserva sus cero avisos reales; los registros masivos solo se inyectan
+en respuestas del navegador de pruebas. El [informe de fase 5](docs/fase-05-avisos.md) recoge las
+limitaciones. No se reentrenó v2 ni se modificó la API. La suite Python completa sigue pendiente por
+las incidencias ya documentadas.
+
+Pasaron las 9 guardas de estructura y contrato OpenAPI con los archivos nuevos preparados en el índice.

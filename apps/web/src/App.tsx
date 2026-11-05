@@ -21,7 +21,8 @@ import { date, targetStarted, weekLabel } from './lib/format';
 import { DashboardPage } from './pages/DashboardPage';
 import { MapPage } from './pages/MapPage';
 import { DistrictPage } from './pages/DistrictPage';
-import { AlertsPage, HelpPage, ModelsPage, NotFoundPage } from './pages/SecondaryPages';
+import { AlertsPage, AlertDetailPage } from './pages/AlertsPage';
+import { HelpPage, ModelsPage, NotFoundPage } from './pages/SecondaryPages';
 
 export type AppContext = {
   configuration: Configuration;
@@ -53,6 +54,7 @@ export function App() {
         <Route path="distritos" element={<DistrictPage />} />
         <Route path="distritos/:ubigeo" element={<DistrictPage />} />
         <Route path="alertas" element={<AlertsPage />} />
+        <Route path="alertas/:id" element={<AlertDetailPage />} />
         <Route path="modelo" element={<ModelsPage />} />
         <Route path="ayuda" element={<HelpPage />} />
         <Route path="*" element={<NotFoundPage />} />
@@ -65,6 +67,7 @@ function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const match = useMatch('/distritos/:ubigeo');
+  const alertMatch = useMatch('/alertas/:id');
   const source = dataSource(import.meta.env.VITE_DATA_SOURCE);
   const identity = useQuery({
     queryKey: ['demo-v2-identity'],
@@ -102,15 +105,18 @@ function Layout() {
   const search = navigationParams.toString() ? `?${navigationParams}` : '';
   const change = (key: string, value: string) => {
     const next = new URLSearchParams(params);
+    next.delete('aviso_pagina');
     if (value) next.set(key, value);
     else next.delete(key);
     if (key === 'provincia') next.delete('distrito');
-    if (match && (key === 'distrito' || key === 'provincia'))
+    if (alertMatch) navigate(`/alertas?${next}`);
+    else if (match && (key === 'distrito' || key === 'provincia'))
       navigate(`/distritos${key === 'distrito' && value ? `/${value}` : ''}?${next}`);
     else setParams(next);
   };
   const reset = () => {
-    if (match) navigate('/distritos');
+    if (alertMatch) navigate('/alertas');
+    else if (match) navigate('/distritos');
     else setParams({});
   };
   const title =

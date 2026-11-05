@@ -34,6 +34,11 @@ export function weekLabel(week: Week | null | undefined) {
     ? `SE ${String(week.semana).padStart(2, '0')} · ${week.anio}`
     : 'Sin semana publicada';
 }
+export function dateTime(value: string | null | undefined) {
+  return value
+    ? `${date(value)} · ${new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(value))} (Lima)`
+    : 'Sin fecha publicada';
+}
 export function horizonStatus(h: Configuration['horizontes'][number]) {
   return !h.disponible ? 'No disponible' : h.experimental ? 'Experimental' : 'Validado';
 }

@@ -22,6 +22,10 @@ La [fase 4](docs/fase-04-mapa-y-detalle.md) completa el mapa con selección y pa
 detalle con comparación de horizontes, intervalos, observaciones del corte y series de 26/52 semanas
 o rango personalizado. Los umbrales históricos se consultan por semana; no se extrapolan al objetivo.
 
+La [fase 5](docs/fase-05-avisos.md) completa avisos: activos y retirados, filtros y página en la URL,
+orden sobre todos los registros cargados y detalle por identificador con estado, fechas y motivo.
+Un registro activo con objetivo iniciado se identifica como histórico.
+
 ## Ejecutar en desarrollo
 
 Se necesita Node.js 20.19+ y una API configurada según
@@ -68,8 +72,10 @@ es una operación explícita, independiente de iniciar el frontend.
 - Filtros de provincia/distrito para mapa y listados; no alteran los indicadores regionales.
 - Horizonte y predeterminado leídos de /configuracion; filtros conservados en la URL.
 - Navegación de las seis vistas. Mapa con selección por clic o teclado, panel y recuentos de riesgo;
-  detalle con comparación de horizontes, observaciones e intervalos. Avisos, versiones y ayuda
-  conservan su implementación inicial hasta sus fases específicas.
+  detalle con comparación de horizontes, observaciones e intervalos. Versiones y ayuda conservan
+  su implementación inicial hasta su fase específica.
+- Avisos activos/retirados con filtros geográficos, nivel, semana y orden; detalle trazable y
+  navegación de vuelta que conserva el listado. Las fechas se muestran en hora de Lima.
 - Series con rangos de 26/52 semanas o fechas semanales personalizadas, guardados en la URL;
   umbral histórico por semana, huecos explícitos y tabla alternativa con procedencia del pronóstico.
 - Estados de carga, ausencia, error y reintento por consulta. Un resultado fallido no conserva datos

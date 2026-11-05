@@ -104,3 +104,12 @@ export function useDistrictAlerts(ubigeo: string, horizon: number, enabled: bool
       ),
   });
 }
+
+export function useAlert(id: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ['alert-detail', id],
+    enabled,
+    queryFn: ({ signal }) =>
+      get('/api/v1/alertas/{identificador}', {}, signal, { identificador: id }),
+  });
+}
