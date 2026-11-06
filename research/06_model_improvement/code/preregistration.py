@@ -644,6 +644,79 @@ def adopt_phase4(verdict: pd.DataFrame) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Climate step b: CHIRPS v3 rainfall over L + 5a (step b-VII; written on 2026-11-06, pending Rosa's review)
+# ---------------------------------------------------------------------------
+
+STEP_B_RAIN_COLUMN = "precip_total_mm_media5_h2"   # same definition as the rainfall of A3 in gold.py
+STEP_B_COLUMNS = {"b1": [STEP_B_RAIN_COLUMN], "b2": [PHASE1B_PRIME_COLUMN, STEP_B_RAIN_COLUMN]}
+STEP_B_MIN_HORIZONS_WON = 2
+STEP_B_SIMPLICITY = ("b1", "b2")   # a tie in a cross keeps the earlier (simpler) one
+STEP_B_REFERENCE_DAYS = 14
+
+STEP_B = {
+    "fecha": "2026-11-06",
+    "estado": "propuesto el 2026-11-06 (paso b-VII), commiteado sin correr nada; pendiente de la revisión de Rosa",
+    "decisiones": "plan.md, «Decisiones de Rosa (2026-11-06, lluvia de CHIRPS v3)», puntos 1, 2, 3 y 5",
+    "fuente": "CHIRPS v3 diario sat, versión final de Google Earth Engine (UCSB-CHC/CHIRPS/V3/DAILY_SAT), media del "
+              "polígono distrital ponderada por área (COD-AB de Perú, IGN/OCHA, CC BY-IGO 3.0); silver "
+              "`precip_chirps_v3_semanal_desde_2000.csv` (90 675 filas, 65 distritos, semanas MMWR de 7 días del "
+              "2000-01-02 al 2026-09-20, todas `final`, sin vacíos; escrito en b-V el 2026-11-06). Guarda de método "
+              "de b-IV: diferencia máxima 0,063 mm día-distrito frente a la media local. No se une con la lluvia "
+              "«Best match» de Open-Meteo",
+    "base": "L + 5a",
+    "variantes": {
+        "b1": f"C3 + `{STEP_B_RAIN_COLUMN}`: lluvia CHIRPS como media de las 5 semanas que terminan en la semana "
+              "del origen (la definición de la A3 de la V2, con la alineación h=2), calculada en memoria",
+        "b2": f"C3 + `{PHASE1B_PRIME_COLUMN}` (humedad de ERA5-Land, la H de la 1b′) + `{STEP_B_RAIN_COLUMN}` "
+              "(lluvia CHIRPS): la A3 de la V2 con fuentes largas",
+    },
+    "comun": "E3 · S4_s3, hiperparámetros de la V1, orígenes desde 2005, bloques 2008-2024 + calendario_2025, Platt "
+             "por horizonte con 1e-6, alerta p >= 0,50, dos μ con la mezcla 5a, 5 semillas. Sin ajuste de "
+             "hiperparámetros ni de columnas después de ver resultados",
+    "disponibilidad": f"una semana de lluvia se usa en un origen solo si su `fecha_disponible` (fin de la péntada "
+                      f"preliminar de su sábado + 5 días) es <= origen_cierre + {STEP_B_REFERENCE_DAYS} días "
+                      "(referencia de Rosa, hipótesis por el atraso de la Sala del MINSA)",
+    "regla": "decide_multi_season (fases 2 y 3, igual que la 1b′): 5 temporadas (2010, 2015, 2016, 2022, 2023), F1 "
+             "primaria; AUPRC, Brier, razón MAE y antelación como guardas. Cada variante frente a L + 5a",
+    "adopcion": f"gana en >= {STEP_B_MIN_HORIZONS_WON} de 3 horizontes y ninguno «pierde» ni «compensa (empate)». "
+                "Si se adoptan las dos, se cruzan b2 frente a b1 con la misma regla; un empate deja b1 (más simple)",
+    "lecturas_que_no_deciden": [
+        "la regla de razón MAE de la fase 5 (decide_phase5)",
+        "sin 2010 (3 de 4) y 2024 como contraste",
+        "recall en las 2 primeras semanas de brotes nuevos frente a brotes en curso",
+        "frente a la V2 en 2022 y 2023 con sus predicciones guardadas, y la HU0007-4 por celda",
+        f"diferencia CHIRPS − «Best match» de `{STEP_B_RAIN_COLUMN}` 2017-2025 por año, en los 65 distritos",
+        "versiones de las semanas que llegan a los orígenes (se espera solo `final`); la brecha preliminar-final "
+        "se mide aparte en b-VI y no cambia este veredicto",
+    ],
+    "guardas_antes_de_mirar_resultados": [
+        "G25: la función que calcula la lluvia, aplicada al silver vigente («Best match»), reproduce exactamente "
+        f"`{STEP_B_RAIN_COLUMN}` del gold (misma definición)",
+        "G26: test de no fuga por perturbación: cambiar la lluvia de semanas posteriores a la del origen no "
+        "cambia la variable",
+        f"G27 (tipo G21): ningún origen usa una semana con fecha_disponible > origen_cierre + "
+        f"{STEP_B_REFERENCE_DAYS} días (tabla completa, con la fecha_disponible del silver)",
+        "G28: ningún origen desde 2005 queda sin lluvia (b1) ni sin lluvia y humedad (b2)",
+        "G29: L + 5a reproduce fase5.json",
+        "b2: G17 y G19 de la 1b′ se repiten sobre H",
+        "si una guarda falla, se detiene el paso y se explica; no se ajusta nada para que pase",
+    ],
+    "codigo": "code/phase_b_rain.py (variable, G25, G27, G28); tests/test_phase_b_rain.py (G26)",
+    "notebook": "notebooks/12_paso_b_lluvia_chirps.ipynb",
+    "mlflow": "denguekay/mejora_modelo_paso_b_lluvia_chirps",
+    "despues": "si b1 o b2 se adopta, la base cambia y se repite el Niño 1+2 (paso c) con su misma regla; si no, la "
+               "base sigue siendo L + 5a y el paso c no se corre. Luego la fase 7",
+}
+
+
+def adopt_step_b(verdict: pd.DataFrame) -> bool:
+    """Adoption of a step b variant (b1 or b2): >= 2 horizons won and none lost or offset."""
+    won = int(verdict.veredicto.eq("gana").sum())
+    bad = verdict.veredicto.isin(["pierde", "compensa (empate)"]).any()
+    return won >= STEP_B_MIN_HORIZONS_WON and not bad
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 

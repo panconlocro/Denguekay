@@ -55,7 +55,8 @@ b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](p
    (2026-11-06, lluvia de CHIRPS v3)»). Histórico final desde Google Earth Engine, semanas recientes con el
    preliminar del CHC, y lluvia por distrito como media del polígono ponderada por área. Variantes b1 (L + 5a +
    lluvia) y b2 (L + 5a + humedad + lluvia), cada una frente a L + 5a. Pasos internos b-I a b-VII, en la rama
-   `feat/chirps-precipitation`. **Cerrados b-I a b-IV (2026-11-06); en curso: b-V.**
+   `feat/chirps-precipitation`. **Cerrados b-I a b-IV (2026-11-06). b-V parcial: silver solo con la versión final;
+   preliminar en pausa. b-VII: preregistro `STEP_B` propuesto, pendiente de la revisión de Rosa.**
    - b-I · Polígonos: COD-AB de Perú (IGN, OCHA en HDX, CC BY-IGO 3.0), 65 de 65 distritos, pcode = «PE» + ubigeo
      en todos, nombres coincidentes, los 65 centroides de la V2 dentro de su polígono, diferencia de área máxima
      0,40 % (Arenal). Referencia en `data/reference/distritos_piura_limites.geojson`.
@@ -72,6 +73,14 @@ b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](p
      1122 mm en marzo de 2017).
    - La descarga anterior desde los COG del CHC (24 días de 2000 en `data/bronze/chirps/v3_sat/final/`) se detuvo
      por el límite de tasa; esos días se usaron en la guarda de b-IV.
+   - b-V · Preliminar del CHC (2026-11-06): el listado llega al 2026-10-31; se bajó solo el 2026-10-01 (grilla igual
+     a la del final, desfase entero) y el CHC respondió 429 en la tercera petición, con 60 s entre peticiones.
+     Por decisión de Rosa, b-V (preliminar) y b-VI se retoman otro día con pausas más largas, empezando por el 27
+     al 30 de septiembre de 2026. Silver `data/silver/precip_chirps_v3_semanal_desde_2000.csv` solo con la
+     versión final: 90 675 filas (65 distritos × 1395 semanas MMWR de 7 días, 2000-01-02 a 2026-09-20), sin
+     vacíos; `fecha_disponible` de la última semana: 2026-10-05. El día preliminar bajado no entra al silver.
+   - b-VII · Preregistro `STEP_B` en `code/preregistration.py` (b1 y b2 frente a L + 5a, regla de la 1b′, guardas
+     G25 a G29); variable y guardas en `code/phase_b_rain.py`. Sin correr.
 c) Repetir el Niño 1+2 solo si la base cambia en (b). La fase 4 del 2026-11-04 queda como primera medición.
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si se retoma la lluvia; y la **fase 7** (síntesis frente a la
