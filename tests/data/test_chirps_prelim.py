@@ -64,6 +64,8 @@ class ListingTest(unittest.TestCase):
     def test_status(self):
         with self.assertRaises(cpr.RateLimited):
             cpr.check_response(429)
+        with self.assertRaisesRegex(cpr.RateLimited, "Retry-After: '120'"):
+            cpr.check_response(429, {"Retry-After": "120"})
         with self.assertRaises(RuntimeError):
             cpr.check_response(404)
         cpr.check_response(200)

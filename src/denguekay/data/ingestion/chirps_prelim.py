@@ -69,9 +69,11 @@ def days_to_fetch(listed: list[date], first_day: date) -> list[date]:
     return days
 
 
-def check_response(status: int) -> None:
+def check_response(status: int, headers=None) -> None:
+    """429 -> RateLimited (with the Retry-After header, if any, in the message); any other non-200 -> error."""
     if status == 429:
-        raise RateLimited("HTTP 429")
+        retry = (headers or {}).get("Retry-After")
+        raise RateLimited(f"HTTP 429 (Retry-After: {retry!r})")
     if status != 200:
         raise RuntimeError(f"HTTP {status}")
 
@@ -92,7 +94,7 @@ class Pacer:
 
 def fetch_listing(year: int, get) -> str:
     r = get(PRELIM_DIR_URL.format(y=year), headers={"User-Agent": USER_AGENT}, timeout=60)
-    check_response(r.status_code)
+    check_response(r.status_code, r.headers)
     return r.text
 
 
@@ -100,7 +102,7 @@ def fetch_global(day: date, tmp_dir: Path, get) -> dict:
     """Download one global file whole into ``tmp_dir``; sha256, bytes and Last-Modified of the response."""
     url = day_url(day)
     r = get(url, headers={"User-Agent": USER_AGENT}, timeout=TIMEOUT_S)
-    check_response(r.status_code)
+    check_response(r.status_code, r.headers)
     content = r.content
     expected = r.headers.get("Content-Length")
     if expected is not None and int(expected) != len(content):

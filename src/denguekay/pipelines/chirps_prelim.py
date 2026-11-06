@@ -3,6 +3,7 @@ CHIRPS v3 preliminary from the CHC and the weekly silver (study 06, step b-V).
 
     python -u -m denguekay.pipelines.chirps_prelim download   # days without final, paced, stops at the first 429
     python -u -m denguekay.pipelines.chirps_prelim silver     # final (Earth Engine) + preliminary -> weekly silver
+    python -u -m denguekay.pipelines.chirps_prelim silver --solo-final   # only the final version
 
 ``download`` starts on the day after the last final month (``chirps_ee.LAST_MONTH``) and ends on the last day
 listed in ``prelim/sat/AAAA/``. Global files go to a temporary folder outside data/ and are deleted once cut.
@@ -55,12 +56,13 @@ def download(log=print) -> int:
     return 0 if summary["estado"] == "completa" else 2
 
 
-def silver(log=print) -> int:
+def silver(final_only: bool = False, log=print) -> int:
     from denguekay.data.processing import chirps_precipitation as cp
 
     districts = ce.load_districts()
     final = cp.daily_final_from_ee(BRONZE_CHIRPS_EE_FINAL)
-    prelim = cp.daily_prelim_from_bronze(BRONZE_CHIRPS_PRELIM, districts)
+    # final_only: the preliminary days already in bronze stay there and do not enter the silver
+    prelim = final.iloc[:0] if final_only else cp.daily_prelim_from_bronze(BRONZE_CHIRPS_PRELIM, districts)
     daily = cp.combine_daily(final, prelim)
     weekly, left_out = cp.weekly_by_version(daily)
     path = cp.write_silver(weekly, SILVER_CHIRPS_PRECIP)
@@ -74,8 +76,9 @@ def silver(log=print) -> int:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("accion", choices=["download", "silver"])
+    parser.add_argument("--solo-final", action="store_true", help="silver solo con la versión final de Earth Engine")
     args = parser.parse_args(argv)
-    return download() if args.accion == "download" else silver()
+    return download() if args.accion == "download" else silver(final_only=args.solo_final)
 
 
 if __name__ == "__main__":
