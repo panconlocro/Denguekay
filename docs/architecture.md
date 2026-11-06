@@ -137,6 +137,7 @@ bronze/
 ├── meteo/cache_meteo_2000_2016/       # estudio 06 (1b): historia 2000-2016, caché aparte
 ├── meteo/cache_meteo_era5_land_2000_2016/  # estudio 06 (1b′): ERA5-Land 2000-2016 (humedad y temperatura)
 ├── enso/                    # sstoi.indices de NOAA CPC (Niño 1+2), un archivo por fecha de descarga
+├── limites/hdx_cod_ab_per/  # COD-AB de Perú (IGN, publicado por OCHA en HDX, CC BY-IGO) tal cual, con su manifiesto
 ├── chirps/v3_sat/           # CHIRPS v3 diario (sat): final/AAAA/ y prelim/AAAA/ con la ventana de Piura por día, y los manifiestos de cada corrida
 ├── socio/                   # el Excel del censo/proyecciones, sin tocar
 └── epi/                     # Excel y respuestas crudas de la Sala Situacional MINSA
@@ -181,8 +182,13 @@ El plan de construcción está en `research/02_feature_engineering/docs/plan.md`
 ```
 reference/
 ├── catalogo_ubigeos_piura.csv   # provincia, distrito y UBIGEO
-└── distritos_piura_coords.csv   # 65 centroides; se cruza con el catálogo
+├── distritos_piura_coords.csv   # 65 centroides; se cruza con el catálogo
+└── distritos_piura_limites.geojson  # 65 polígonos distritales (EPSG:4326, ubigeo string) para la lluvia por polígono
 ```
+Los polígonos de `distritos_piura_limites.geojson` vienen del COD-AB de Perú: Instituto Geográfico Nacional (IGN),
+publicado por OCHA en HDX (https://data.humdata.org/dataset/cod-ab-per), licencia CC BY-IGO 3.0
+(http://creativecommons.org/licenses/by/3.0/igo/legalcode). Se versionan con esa atribución. GADM no se versiona:
+su licencia no permite redistribuir.
 **Va acá:** tablas maestras chicas que usan varios notebooks (catálogos, diccionarios de códigos, listas de distritos). A diferencia de bronze/silver/gold, esta carpeta **sí se puede subir a Git** porque es chica y cambia poco — es la excepción a la regla de "data/ no se versiona".
 
 ---
@@ -207,7 +213,8 @@ data/
 ├── seasons.py       # temporadas epidemiológicas del panel
 ├── ingestion/
 │   ├── openmeteo.py            # clima diario de Open-Meteo por distrito
-│   ├── gadm_districts.py       # límites distritales GADM y centroides
+│   ├── gadm_districts.py       # límites distritales GADM y centroides (V2)
+│   ├── district_boundaries.py  # polígonos distritales del COD-AB de Perú (IGN, HDX) -> reference/ (V3, lluvia por polígono)
 │   ├── chirps.py               # CHIRPS v3 diario (sat): ventana de Piura por día desde los COG, con reanudación
 │   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
 │   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE

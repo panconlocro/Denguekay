@@ -42,6 +42,8 @@ BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per downl
 BRONZE_CHIRPS = BRONZE / "chirps" / "v3_sat"
 BRONZE_CHIRPS_FINAL = BRONZE_CHIRPS / "final"
 BRONZE_CHIRPS_PRELIM = BRONZE_CHIRPS / "prelim"   # weekly app update (not downloaded yet)
+# Peru COD-AB (IGN, published by OCHA on HDX, CC BY-IGO): the downloaded archive as is, with its manifest
+BRONZE_BOUNDARIES = BRONZE / "limites" / "hdx_cod_ab_per"
 SILVER_SALA = SILVER / "epi_sala_semanal.csv"
 SILVER_METEO_2000_2016 = SILVER / "meteo_semanal_distrital_2000_2016.csv"   # study 06, phase 1b
 # Study 06, 1b': humidity and temperature from ERA5-Land 2000-2025 (no precipitation), apart from the silver in use.
@@ -60,6 +62,8 @@ SILVER_INTEGRATED = SILVER_INTEGRATED_DIR / "meteo_socio_epi_piura_2017_2025.csv
 
 UBIGEO_CATALOG = REFERENCE / "catalogo_ubigeos_piura.csv"
 DISTRICT_COORDS = REFERENCE / "distritos_piura_coords.csv"
+# The 65 Piura district polygons (from the COD-AB) for the area-weighted CHIRPS mean; versioned
+DISTRICT_BOUNDARIES = REFERENCE / "distritos_piura_limites.geojson"
 GOLD_MANIFEST = GOLD / "manifest_fase6.json"
 # Gold before the cleanup (all the candidates, h=2 and h=4): the input of the v0 and of study 03. Only copy.
 GOLD_BACKUP = GOLD / "respaldo_pre_b3"
