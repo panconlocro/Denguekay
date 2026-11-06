@@ -55,9 +55,23 @@ b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](p
    (2026-11-06, lluvia de CHIRPS v3)»). Histórico final desde Google Earth Engine, semanas recientes con el
    preliminar del CHC, y lluvia por distrito como media del polígono ponderada por área. Variantes b1 (L + 5a +
    lluvia) y b2 (L + 5a + humedad + lluvia), cada una frente a L + 5a. Pasos internos b-I a b-VII, en la rama
-   `feat/chirps-precipitation`; **en curso: b-I (polígonos distritales).** La descarga anterior desde los COG del CHC
-   (24 días de 2000 en `data/bronze/chirps/v3_sat/final/`) se detuvo por el límite de tasa; esos días se usan en la
-   guarda de método de b-IV.
+   `feat/chirps-precipitation`. **Cerrados b-I a b-IV (2026-11-06); en curso: b-V.**
+   - b-I · Polígonos: COD-AB de Perú (IGN, OCHA en HDX, CC BY-IGO 3.0), 65 de 65 distritos, pcode = «PE» + ubigeo
+     en todos, nombres coincidentes, los 65 centroides de la V2 dentro de su polígono, diferencia de área máxima
+     0,40 % (Arenal). Referencia en `data/reference/distritos_piura_limites.geojson`.
+   - b-II y b-III · `earthengine-api>=1.7,<2` en el `.venv` del worktree; registro no comercial y autenticación
+     hechos por Rosa (proyecto `denguekay`).
+   - b-IV · Guarda de método en memoria sobre los 24 días de `final/` (2000-01-01 a 2000-01-24), con tolerancias
+     fijadas antes de correr (commit `d4332e7`): grilla idéntica (píxel 0,05000000074505806°, desfase entero);
+     (a) píxel: diferencia máxima 0,0 en 48 264 píxeles, misma máscara; (b) media por polígono de Earth Engine
+     frente a la local: 1560 pares, 0 nulos, 0 fuera de tolerancia, diferencia máxima 0,063 mm (Sicchez,
+     2000-01-14), media 0,0007 mm. Descarga de `UCSB-CHC/CHIRPS/V3/DAILY_SAT` en
+     `data/bronze/chirps/v3_sat/ee_final/`: 321 de 321 meses (2000-01 a 2026-09), 635 050 filas distrito-día,
+     0 nulos, 0 a 140,9 mm/d, 6657 s. Cordura: Piura 470 mm en marzo de 2017 y 155 mm en marzo de 2023; Frías
+     1030 y 511 mm. Rosa lo cotejó con el CHIRPS v3 mensual en el punto del distrito (Piura 446 y 151 mm; Frías
+     1122 mm en marzo de 2017).
+   - La descarga anterior desde los COG del CHC (24 días de 2000 en `data/bronze/chirps/v3_sat/final/`) se detuvo
+     por el límite de tasa; esos días se usaron en la guarda de b-IV.
 c) Repetir el Niño 1+2 solo si la base cambia en (b). La fase 4 del 2026-11-04 queda como primera medición.
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si se retoma la lluvia; y la **fase 7** (síntesis frente a la
