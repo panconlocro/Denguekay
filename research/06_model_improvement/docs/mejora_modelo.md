@@ -21,6 +21,7 @@ aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (p
 | 1b′ · Humedad ERA5-Land | L + 5a + H (`hum_rel_media_media5_h2` sobre ERA5-Land 2000–2025) | nada: empate en los tres horizontes; la base sigue siendo L + 5a |
 | 6 · Otra familia (lectura) | 6a GLM NB2 (no convergió), enmienda 6a′ GLM Poisson + α NB2, 6b LightGBM; C3 sin clima | nada (lectura): LightGBM empata con L + 5a; 6a′ empata o mejora (gana F1 en h4, mejor antelación, peor Brier en 2016); 6′ con clima, pendiente |
 | b · Lluvia CHIRPS v3 | b1 L + 5a + lluvia CHIRPS (`precip_total_mm_media5_h2`, media del polígono); b2 L + 5a + humedad ERA5-Land + lluvia CHIRPS; b3 (agregada después) clima completo: humedad, lluvia, temperatura y Niño 1+2 | nada: b1 y b2 empatan en los tres horizontes; b3 empata en la alerta y en el conteo; la base sigue siendo L + 5a |
+| d · Ventanas de clima | d1 L + 5a + lluvia CHIRPS, temperatura y humedad ERA5-Land por ventanas (o, o−1..o−4, o−5..o−8, o−9..o−12) + días >= 20 mm; frente a L + 5a y frente a b3 | nada: empate en los tres criterios (alerta, conteo y Brier) y en los tres horizontes, frente a L + 5a y frente a b3 |
 
 **Base candidata: L + 5a.**
 
@@ -93,7 +94,9 @@ b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](p
      entre peticiones) y la medición preliminar frente a final de b-VI. No cambian el veredicto de b.
 c) ~~Repetir el Niño 1+2 solo si la base cambia en (b)~~: la base no cambió; el paso c no se corre. La fase 4 del
    2026-11-04 queda como la medición del Niño 1+2.
-d) **Ventanas de clima: preregistrado el 2026-11-06 y aprobado por Rosa con tres respuestas y un agregado.** Agregado
+d) **Ventanas de clima: corrido el 2026-11-06, empate en los criterios (a), (b) y (c) en h2, h3 y h4 frente a L + 5a
+   y frente a b3; d1 no se adopta y la base sigue siendo L + 5a** (ver «Paso d de clima · Ventanas: resultados»).
+   Preregistrado y aprobado por Rosa con tres respuestas y un agregado. Agregado
    después de ver b1, b2 y b3 (preregistro `STEP_D` en `code/preregistration.py`). d1 = L + 5a + 14 columnas en
    memoria: lluvia CHIRPS, temperatura y humedad de ERA5-Land en la semana del origen y medias de o−1..o−4,
    o−5..o−8 y o−9..o−12; días con >= 20 mm (índice R20mm del ETCCDI) en o−3..o y o−7..o−4 desde el bronze diario
@@ -584,6 +587,49 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
 - **Para el serving:** antes de predecir, la app debe verificar que el clima de la última semana usada (humedad y
   lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
   péntada en 2025).
+
+## Paso d de clima · Ventanas de clima: resultados (2026-11-06)
+
+Preregistro `STEP_D` (commit `b7ad38c`; respuestas de Rosa y criterio (c) antes de correr en `658d0bd`), agregado
+después de ver b1, b2 y b3. Notebook `14_paso_d_ventanas_clima.ipynb`; cifras en `metricas/paso_d.json`; predicciones
+en `models/experimentos/mejora_modelo/paso_d/` (no versionado); MLflow `denguekay/mejora_modelo_paso_b_lluvia_chirps`
+(`851bf57f64214ed48d38c84914304f71`). d1 = C3 + 14 columnas de ventanas (sin Niño).
+
+- **Guardas (todas pasan):** G17, G25 y G30 (diferencia 0 en 30 095 filas); G29 (L + 5a reproduce `fase5.json`,
+  4,9e-11); G35a (las sumas semanales del bronze diario de Earth Engine son iguales al silver en las 90 675 semanas,
+  diferencia 0, ninguna semana sin par); G35b ((o + 4 × media o−1..o−4) / 5 igual a la media de 5 semanas validada:
+  diferencia máxima 5,7e-14 en lluvia, 7,1e-15 en temperatura y 4,3e-14 en humedad); G35c (tests sintéticos de las
+  ventanas y de los días >= 20 mm); G36 (no fuga: test sintético y, en los datos reales, cambiar todo el clima posterior
+  al 2016-12-31 no cambia ninguna columna en 40 820 orígenes hasta esa fecha y sí en 30 355 posteriores); G37 (0 de
+  71 110 orígenes desde 2005 sin valor); G38 (0 de 71 175 orígenes afectados contra `origen_cierre` + 14 días en lluvia,
+  días fuertes, temperatura y humedad; margen mínimo 4 días en CHIRPS); G39 (las predicciones guardadas de b3
+  reproducen `paso_b3.json`, 4,9e-11).
+- **Veredicto: empate en los tres criterios y en los tres horizontes, frente a L + 5a y frente a b3; d1 no se adopta
+  y la base sigue siendo L + 5a.** Frente a L + 5a: F1 a favor en 1, 0 y 2 de 5 temporadas; razón MAE a favor en 3 y
+  en contra en 1 en los tres horizontes; Brier a favor en 2, 2 y 3 (en contra en 0, 0 y 1). Antelación frente a
+  L + 5a: 0,021 [−0,016; 0,057] en h2, −0,016 [−0,052; 0,016] en h3 y −0,010 [−0,047; 0,021] en h4. Frente a b3,
+  ningún «pierde» (d1 no pierde frente a b3 en ningún criterio).
+- **Métricas reportadas (mediana de 5 semillas; no deciden):** el Brier de las tres variantes difiere en milésimas en
+  cada celda; d1 y b3 lo bajan algo en 2023 y 2024 (2024 · h4: 0,089 L + 5a, 0,085 b3, 0,084 d1). Brier skill score
+  frente a la climatología fuera de muestra: entre 0,34 y 0,76 en todas las celdas y variantes (todas mejoran a la
+  climatología); las diferencias entre variantes son de 0,00 a 0,02. AUPRC general: diferencias de hasta 0,03
+  (2010 · h4: 0,600, 0,632 y 0,612). AUPRC con persistencia < umbral_brote_casos: d1 es la más alta en 12 de 18
+  celdas, pero con pocas filas positivas (24 a 141 por celda) y sin un patrón estable (en 2015 · h3–h4 y 2022 · h3–h4 baja
+  frente a L + 5a). Ese subconjunto deja fuera, por la definición literal, las filas con umbral 0 (2024 de 3380 en
+  2022 · h2), que son la mayoría.
+- **Lectura del criterio (c) para b3 frente a L + 5a (declarada posterior a ver b3):** b3 gana por el Brier en h2 y h3
+  (4 de 5 temporadas a favor y 0 en contra, sin vetos) y empata en h4; la alerta y el conteo de b3 eran empate, así
+  que con el criterio (c) b3 se habría adoptado. Es una lectura: el criterio se fijó después de ver b3 y no cambia
+  su decisión.
+- **HU0007-4 (2022 y 2023):** la clasificación se cumple solo en 2023 · h2 con las tres variantes; la regresión, en 3
+  de 6 celdas con d1 (2023 · h2, h3 y h4), 5 de 6 con b3 y 1 de 6 con L + 5a.
+- **SHAP de d1 (semilla 17):** sigue mandando `propia_semanas_desde_ultimo_caso` (1,15 a 1,53); entre el clima, la
+  temperatura de la semana del origen es la mayor (0,19 a 0,24) y la de o−1..o−4 la siguiente (0,09 a 0,19); las
+  ventanas de o−5 a o−12 de temperatura pesan menos (0,004 a 0,06). La lluvia (0,002 a 0,09), la humedad (0,007 a
+  0,09) y los días >= 20 mm (0,0002 a 0,08) pesan poco; en 2024 los días >= 20 mm de o−3..o y la humedad de o−9..o−12
+  suben a 0,06–0,09. *Hipótesis:* la temperatura reciente sigue representando el ciclo estacional.
+- **Lectura (observación, no conclusión):** separar las ventanas no cambia la alerta, el conteo ni el Brier frente a
+  L + 5a; con b1, b2, b3 y d1 son cuatro empates del clima sobre L + 5a.
 
 ## Paso b de clima · Variante b3 (clima completo): resultados (2026-11-06)
 

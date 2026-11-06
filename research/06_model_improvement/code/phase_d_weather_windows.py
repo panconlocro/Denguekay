@@ -332,3 +332,42 @@ def reported_metrics(data: pd.DataFrame, clim: pd.Series, blocks) -> pd.DataFram
                      "n_bajo_umbral": int(below.sum()), "positivos_bajo_umbral": int(yb.sum()),
                      "auprc_bajo_umbral": float(average_precision_score(yb, p[below])) if yb.any() else np.nan})
     return pd.DataFrame(rows)
+
+
+# --- Run helpers (notebook 14) --------------------------------------------------------------------------------
+
+def read_b3_predictions() -> dict[int, pd.DataFrame]:
+    """Saved b3 predictions per seed (``models/experimentos/mejora_modelo/paso_b3/``, notebook 13)."""
+    import phase3_onsets as p3
+
+    path = p3.OUTPUT_DIR.parent / "paso_b3" / "predicciones_b3.csv.gz"
+    saved = pd.read_csv(path, dtype={"ubigeo": "string"}, float_precision="round_trip")
+    saved["ubigeo"] = saved.ubigeo.astype(object)
+    return {int(s): g.drop(columns="semilla").reset_index(drop=True) for s, g in saved.groupby("semilla")}
+
+
+def brier_compare(candidate: dict, reference: dict) -> dict:
+    """Criterion (c): ``decide_step_d_brier`` over the 5 deciding seasons (seed medians, tie threshold = seed
+    ranges of both, lead time of seed 17 as in ``phase3_onsets.compare``)."""
+    import preregistration as pr
+    from denguekay.evaluation import protocol as pa
+
+    blocks = [pr.block_name(s) for s in pr.DECIDING_SEASONS]
+    med = [pa.seed_median([e["metricas"] for e in v["evaluaciones"].values()]) for v in (candidate, reference)]
+    ranges = pa.tie_threshold(*(pa.seed_ranges([e["metricas"] for e in v["evaluaciones"].values()])
+                                for v in (candidate, reference)))
+    seed = pr.SEEDS[0]
+    lead = pr.lead_time_difference_multi(candidate["evaluaciones"][seed]["antelacion"],
+                                         reference["evaluaciones"][seed]["antelacion"], "alerta_050")
+    verdict = pr.decide_step_d_brier(*(m[m.bloque.isin(blocks)] for m in med), ranges[ranges.bloque.isin(blocks)], lead)
+    return {"veredicto": verdict, "umbral_empate": ranges[ranges.bloque.isin(blocks)]}
+
+
+def reported_by_variant(variant: dict, series: pd.DataFrame, blocks) -> pd.DataFrame:
+    """``reported_metrics`` per seed on the protocol's ``datos`` and their median over the seeds."""
+    per_seed = []
+    for seed, e in variant["evaluaciones"].items():
+        data = e["datos"]
+        per_seed.append(reported_metrics(data, climatology(data, series), blocks).assign(semilla=seed))
+    every = pd.concat(per_seed, ignore_index=True)
+    return every.drop(columns="semilla").groupby(["horizonte", "bloque"]).median().reset_index()
