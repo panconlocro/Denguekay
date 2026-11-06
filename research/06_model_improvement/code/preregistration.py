@@ -717,6 +717,92 @@ def adopt_step_b(verdict: pd.DataFrame) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Climate step b, variant b3 (added on 2026-11-06 after seeing b1 and b2; pending Rosa's review)
+# ---------------------------------------------------------------------------
+
+STEP_B3_TEMP_COLUMN = "temp_media_media5_h2"   # gold naming: weekly temp_media, 5-week mean, h=2 alignment
+STEP_B3_COLUMNS = [PHASE1B_PRIME_COLUMN, STEP_B_RAIN_COLUMN, STEP_B3_TEMP_COLUMN, *PHASE4_COLUMNS["4b"]]
+# Counterfactual reading of the Niño: origins chosen before looking at any b3 result (first Saturday of February
+# and of March of the two seasons with most cases), the 65 districts, and the values of the anomaly to impose
+STEP_B3_COUNTERFACTUAL_ORIGINS = ("2017-02-04", "2017-03-04", "2023-02-04", "2023-03-04")
+STEP_B3_COUNTERFACTUAL_VALUES = (2.0, 3.3, 5.25)
+STEP_B3_COUNTERFACTUAL_SEED = 17
+
+STEP_B3 = {
+    "fecha": "2026-11-06",
+    "estado": "agregada el 2026-11-06 DESPUÉS de ver b1 y b2 (empate en los tres horizontes las dos); propuesta y "
+              "commiteada sin correr nada; pendiente de la revisión de Rosa",
+    "motivo": [
+        "probar el clima completo, con interacciones (humedad, lluvia, temperatura y Niño juntos en el árbol), y la "
+        "temperatura, que nunca se probó en el estudio",
+        "el Niño Costero de magnitud extraordinaria que el ENFEN prevé para setiembre de 2026 a mayo de 2027 "
+        "(Comunicado Oficial ENFEN N.° 16-2026, según Rosa; Claude lo encontró citado en la prensa, Panamericana "
+        "del 16/09/2026, y no pudo abrir el texto oficial en gob.pe)",
+    ],
+    "variante": f"b3 = C3 + `{PHASE1B_PRIME_COLUMN}` (humedad ERA5-Land, la H de la 1b′) + `{STEP_B_RAIN_COLUMN}` "
+                f"(lluvia CHIRPS v3, silver de b-V) + `{STEP_B3_TEMP_COLUMN}` (temperatura media de ERA5-Land, media "
+                "de las 5 semanas que terminan en la semana del origen, alineación h=2, de "
+                "`meteo_humedad_era5_land_2000_2025.csv`) + `nino12_anom_media3` (la 4b de la fase 4: media de los "
+                "3 últimos meses publicados al origen)",
+    "comun": "igual que L + 5a: E3 · S4_s3, hiperparámetros de la V1, orígenes desde 2005, bloques 2008-2024 + "
+             "calendario_2025, Platt por horizonte con 1e-6, alerta p >= 0,50, dos μ con la mezcla 5a, 5 semillas",
+    "base": "L + 5a",
+    "regla": "fijada antes de correr b3, DESPUÉS de ver que el clima mejora en parte el conteo (razón MAE a favor en "
+             "2 a 4 de 5 temporadas en b1 y b2, y en 2024). b3 se adopta si (a) gana la alerta con "
+             "decide_multi_season frente a L + 5a (adopt_step_b: >= 2 horizontes ganados y ninguno «pierde» ni "
+             "«compensa (empate)») y la regla del conteo no tiene ningún «pierde»; o (b) gana el conteo con la regla "
+             "de la fase 5 (decide_phase5; adopt_phase5: >= 2 horizontes ganados y ninguno «pierde» ni «compensa "
+             "(empate)») y la regla de la alerta no tiene ningún «pierde». Un empate deja L + 5a",
+    "guardas_antes_de_mirar_resultados": [
+        "G25 a G29 del paso b (lluvia: definición, no fuga, disponibilidad contra origen_cierre + 14 días, "
+        "cobertura de las 4 columnas de clima desde 2005, L + 5a reproduce fase5.json)",
+        "G17 y G19 de la 1b′ sobre la humedad",
+        "G21 y G22 de la fase 4 sobre el Niño (ningún origen usa un mes con fecha_disponible > origen_cierre; test "
+        "de no fuga por perturbación)",
+        f"G30: definición de `{STEP_B3_TEMP_COLUMN}`: la función, aplicada a la temperatura del silver vigente "
+        "(«Best match»), es igual a build_observed_climate(h=2) de gold.py (el gold no trae temperatura)",
+        "G31: test de no fuga por perturbación de la temperatura",
+        "G32: ningún origen desde 2005 sin temperatura (incluida en la cobertura de G28)",
+        "G33: disponibilidad de la temperatura contra origen_cierre + 14 días (ERA5-Land, 5 días de retraso)",
+        "G34: la anomalía Niño 1+2 de 2026-10 vale 5,25 en el archivo crudo de la NOAA (`sstoi_20261103.indices`) y "
+        "en el silver",
+        "si una guarda falla, se detiene b3 y se explica; no se ajusta nada para que pase",
+    ],
+    "lecturas_que_no_deciden": [
+        "SHAP de b3 por horizonte (media de |SHAP| del regresor, semilla 17) en temporada_2022, temporada_2023 y "
+        "temporada_2024, en el formato de complemento_clima.shap_por_horizonte_semilla_17 del estudio 05",
+        "HU0007-4 por celda y comparación con la V2 en 2022 y 2023",
+        "sin 2010 (3 de 4), 2024 como contraste y recall de las 2 primeras semanas de brotes nuevos",
+        "riesgo de extrapolación del Niño: rango de nino12_anom_media3 en los orígenes desde 2005 frente al valor "
+        "actual (media de agosto a octubre de 2026 en el silver)",
+        "contrafactual del Niño: con el modelo de b3 del bloque que predice cada origen (semilla "
+        f"{STEP_B3_COUNTERFACTUAL_SEED}), en los orígenes {', '.join(STEP_B3_COUNTERFACTUAL_ORIGINS)} y los 65 "
+        f"distritos, nino12_anom_media3 = {', '.join(str(v) for v in STEP_B3_COUNTERFACTUAL_VALUES)} y su valor real, "
+        "con todo lo demás fijo: probabilidad calibrada (el Platt del bloque y horizonte, ajustado con las "
+        "predicciones fuera de muestra anteriores de b3, como en el protocolo), distritos en alerta (p >= 0,50) y "
+        "casos predichos con la mezcla 5a (la w del bloque y horizonte de b3), por origen y horizonte",
+        "b3 frente a L + 5a en temporada_2017 y temporada_2023 (F1, AUPRC, Brier y razón MAE por horizonte)",
+    ],
+    "comparaciones": "b3 es la tercera variante del paso b (después de b1 y b2): con más comparaciones aumenta la "
+                     "probabilidad de un «gana» por azar; se reporta junto con los empates de b1 y b2",
+    "mlflow": "denguekay/mejora_modelo_paso_b_lluvia_chirps (el mismo experimento del paso b)",
+    "codigo": "code/phase_b3_full_climate.py (temperatura, G30, G33, G34, rango del Niño); "
+              "tests/test_phase_b3_full_climate.py (G31 y la regla)",
+    "notebook": "notebooks/13_paso_b3_clima_completo.ipynb",
+    "despues": "si b3 se adopta, la base cambia a L + 5a + b3 y se le consulta a Rosa antes de la fase 7 (el Niño ya "
+               "está dentro de b3, así que el paso c no se repite aparte); si no, la base sigue siendo L + 5a",
+}
+
+
+def adopt_step_b3(alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame) -> bool:
+    """b3: wins the alert (adopt_step_b) with no «pierde» in the count, or wins the count (adopt_phase5) with no
+    «pierde» in the alert. Anything else (a tie) keeps L + 5a."""
+    alert_loses = alert_verdict.veredicto.eq("pierde").any()
+    count_loses = count_verdict.veredicto.eq("pierde").any()
+    return bool((adopt_step_b(alert_verdict) and not count_loses) or (adopt_phase5(count_verdict) and not alert_loses))
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 
