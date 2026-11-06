@@ -99,6 +99,39 @@ p ≥ 0,50 ni la etiqueta de brote (canal endémico).
 5. **Posible desfase entrenamiento–app:** el entrenamiento usa el final `sat` y la app el preliminar `sat`, que usa
    menos estaciones; pueden diferir.
 
+## Decisiones de Rosa (2026-11-06, lluvia de CHIRPS v3)
+
+1. **Fuente única de lluvia de la V3: CHIRPS v3 diario `sat`.** Histórico con la versión final desde Google Earth
+   Engine (`UCSB-CHC/CHIRPS/V3/DAILY_SAT`, proyecto de Google Cloud `denguekay`, uso no comercial); las semanas que aún
+   no tienen final usan el preliminar `sat` del CHC (`prelim/sat/AAAA/chirps-v3.0.prelim.AAAA.MM.DD.tif`), que se
+   reemplaza por el final cuando se publica. Ninguna semana mezcla versiones.
+2. **Lluvia por distrito como media del polígono distrital ponderada por área** (límites del IGN publicados en HDX,
+   COD-AB, licencia CC BY-IGO), no el píxel del centroide.
+3. **No se une CHIRPS con la lluvia «Best match» de Open-Meteo.** En enero a abril de 2017, 2019 y 2023 (715 pares
+   distrito-mes, comparación fuera del estudio), Open-Meteo da en promedio un 65 % más (de 1,08 a 3,43 veces según el
+   mes), con correlación 0,82; unirlas metería un salto en 2017.
+4. **Hechos al 2026-11-06:** el preliminar llega al 2026-10-31 (publicado el 2 de noviembre; TIF globales de unos
+   11 MB, no COG) y existe desde 2025; la final en el CHC y en Earth Engine llega al 2026-09-30 (publicada el 15 de
+   octubre); el CHC respondió 429 tras unos 11 archivos pedidos con 1,5 a 3 s de pausa.
+5. **Variantes del paso b) de clima** (cada una frente a L + 5a; después, el paso c, Niño 1+2, solo si la base
+   cambia):
+   - **b1** = L + 5a + lluvia CHIRPS como media de 5 semanas hasta el origen, con la misma definición que la A3 de la
+     V2 (`precip_total_mm_media5_h2`);
+   - **b2** = L + 5a + H (humedad ERA5-Land, `hum_rel_media_media5_h2`) + lluvia CHIRPS: la A3 de la V2 con fuentes
+     largas.
+6. **Pasos internos del paso b) de clima** (no son fases nuevas del estudio; Claude se detiene al final de cada uno):
+   - b-I: polígonos distritales y verificación de los 65 distritos;
+   - b-II: `--dry-run` de `earthengine-api`;
+   - b-III: registro no comercial y autenticación (los hace Rosa);
+   - b-IV: ingesta de Earth Engine y guarda de método (media local por polígono frente a la de Earth Engine en los
+     24 días del final ya bajados);
+   - b-V: preliminar del CHC (un archivo por petición, pausado, se detiene ante el primer 429);
+   - b-VI: medición preliminar frente a final (descriptiva), en enero a abril de 2025 y de 2026, sobre la media de
+     5 semanas de b1;
+   - b-VII: preregistro de b1 y b2.
+7. **`data/` sigue siendo de solo lectura:** cada paso que escriba en `data/` necesita el OK explícito y acotado de
+   Rosa.
+
 ## Fase 0 · Diagnóstico y techo (solo lectura, sin entrenar variantes)
 
 - Con las predicciones OOS guardadas de la V2, separa el error por estado:

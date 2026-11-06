@@ -3,10 +3,10 @@
 Informe del estudio 06. Plan y decisiones de Rosa en [plan.md](plan.md); preregistros en
 `code/preregistration.py`.
 
-## Estado actual (2026-11-04)
+## Estado actual (2026-11-06)
 
 Rama `exp/model-improvement`. Para retomar: leer `CLAUDE.md`, [plan.md](plan.md) y este informe, y seguir desde
-aquí. El estudio está en pausa por decisión de Rosa (2026-11-04), con la lluvia pendiente.
+aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (paso b de clima) el 2026-11-06.
 
 **Fases cerradas (todas confirmadas por Rosa):**
 
@@ -51,15 +51,13 @@ tiene lluvia útil y se entrena desde 2005. Ver [plan.md](plan.md), «Decisiones
 
 a) ~~1b′: L + 5a + humedad de ERA5-Land~~: corrida el 2026-11-04, empate en los tres horizontes; la base sigue
    siendo L + 5a.
-b) **Lluvia de CHIRPS v3 sobre L + 5a: en pausa (Rosa, 2026-11-04).** La ingesta está en la rama
-   `feat/chirps-precipitation` (sin PR), con `fecha_disponible` por semana (fin de péntada + 5 días) y la guarda tipo
-   G21 contra `origen_cierre` + 14 días (0 orígenes afectados). La descarga desde los COG del servidor de la CHC
-   choca con su límite de tasa (HTTP 429 a las pocas decenas de peticiones, con bloqueos de más de media hora): se
-   bajaron 24 días (2000-01-01 a 2000-01-24) en `data/bronze/chirps/v3_sat/final/`, que se conservan; ninguna de
-   las dos corridas llegó a escribir su manifiesto. **Opciones pendientes, a decidir por Rosa:**
-   1. bajar la lluvia por Google Earth Engine (CHIRPS v3 diario `sat` publicado en su catálogo), con una cuenta y
-      una ingesta nueva;
-   2. dejar la lluvia fuera de la V3 y anotarla como trabajo futuro.
+b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](plan.md), «Decisiones de Rosa
+   (2026-11-06, lluvia de CHIRPS v3)»). Histórico final desde Google Earth Engine, semanas recientes con el
+   preliminar del CHC, y lluvia por distrito como media del polígono ponderada por área. Variantes b1 (L + 5a +
+   lluvia) y b2 (L + 5a + humedad + lluvia), cada una frente a L + 5a. Pasos internos b-I a b-VII, en la rama
+   `feat/chirps-precipitation`; **en curso: b-I (polígonos distritales).** La descarga anterior desde los COG del CHC
+   (24 días de 2000 en `data/bronze/chirps/v3_sat/final/`) se detuvo por el límite de tasa; esos días se usan en la
+   guarda de método de b-IV.
 c) Repetir el Niño 1+2 solo si la base cambia en (b). La fase 4 del 2026-11-04 queda como primera medición.
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si se retoma la lluvia; y la **fase 7** (síntesis frente a la
