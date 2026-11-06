@@ -20,6 +20,7 @@ aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (p
 | 4 · Niño 1+2 | 4a anomalía del último mes disponible, 4b media de 3 meses, sobre L + 5a | nada: empate en los tres horizontes (primera medición) |
 | 1b′ · Humedad ERA5-Land | L + 5a + H (`hum_rel_media_media5_h2` sobre ERA5-Land 2000–2025) | nada: empate en los tres horizontes; la base sigue siendo L + 5a |
 | 6 · Otra familia (lectura) | 6a GLM NB2 (no convergió), enmienda 6a′ GLM Poisson + α NB2, 6b LightGBM; C3 sin clima | nada (lectura): LightGBM empata con L + 5a; 6a′ empata o mejora (gana F1 en h4, mejor antelación, peor Brier en 2016); 6′ con clima, pendiente |
+| b · Lluvia CHIRPS v3 | b1 L + 5a + lluvia CHIRPS (`precip_total_mm_media5_h2`, media del polígono); b2 L + 5a + humedad ERA5-Land + lluvia CHIRPS | nada: empate en los tres horizontes en las dos; la base sigue siendo L + 5a |
 
 **Base candidata: L + 5a.**
 
@@ -55,8 +56,9 @@ b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](p
    (2026-11-06, lluvia de CHIRPS v3)»). Histórico final desde Google Earth Engine, semanas recientes con el
    preliminar del CHC, y lluvia por distrito como media del polígono ponderada por área. Variantes b1 (L + 5a +
    lluvia) y b2 (L + 5a + humedad + lluvia), cada una frente a L + 5a. Pasos internos b-I a b-VII, en la rama
-   `feat/chirps-precipitation`. **Cerrados b-I a b-IV (2026-11-06). b-V parcial: silver solo con la versión final;
-   preliminar en pausa. b-VII: preregistro `STEP_B` propuesto, pendiente de la revisión de Rosa.**
+   `feat/chirps-precipitation`. **Corrido el 2026-11-06: b1 y b2 empatan en los tres horizontes; la base sigue
+   siendo L + 5a** (ver «Paso b de clima · Lluvia de CHIRPS v3: resultados»). Cerrados b-I a b-IV y b-VII. b-V
+   parcial (silver solo con la versión final); el preliminar (resto de b-V) y b-VI quedan en pausa.
    - b-I · Polígonos: COD-AB de Perú (IGN, OCHA en HDX, CC BY-IGO 3.0), 65 de 65 distritos, pcode = «PE» + ubigeo
      en todos, nombres coincidentes, los 65 centroides de la V2 dentro de su polígono, diferencia de área máxima
      0,40 % (Arenal). Referencia en `data/reference/distritos_piura_limites.geojson`.
@@ -79,11 +81,16 @@ b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](p
      al 30 de septiembre de 2026. Silver `data/silver/precip_chirps_v3_semanal_desde_2000.csv` solo con la
      versión final: 90 675 filas (65 distritos × 1395 semanas MMWR de 7 días, 2000-01-02 a 2026-09-20), sin
      vacíos; `fecha_disponible` de la última semana: 2026-10-05. El día preliminar bajado no entra al silver.
-   - b-VII · Preregistro `STEP_B` en `code/preregistration.py` (b1 y b2 frente a L + 5a, regla de la 1b′, guardas
-     G25 a G29); variable y guardas en `code/phase_b_rain.py`. Sin correr.
-c) Repetir el Niño 1+2 solo si la base cambia en (b). La fase 4 del 2026-11-04 queda como primera medición.
+   - b-VII · Preregistro `STEP_B` en `code/preregistration.py` (commit `b82bf80`, aprobado por Rosa tal cual el
+     2026-11-06: b1 y b2 frente a L + 5a, regla de la 1b′, cruce b2 frente a b1 con empate a favor de b1, guardas
+     G25 a G29); variable y guardas en `code/phase_b_rain.py`.
+   - Pendiente (sin fecha): preliminar del 2026-09-27 al 2026-10-31 con pausas más largas (propuesta: 10 min
+     entre peticiones) y la medición preliminar frente a final de b-VI. No cambian el veredicto de b.
+c) ~~Repetir el Niño 1+2 solo si la base cambia en (b)~~: la base no cambió; el paso c no se corre. La fase 4 del
+   2026-11-04 queda como la medición del Niño 1+2.
 
-**Por hacer:** la 6′ (otra familia con clima, lectura), si se retoma la lluvia; y la **fase 7** (síntesis frente a la
+**Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
+**fase 7** (síntesis frente a la
 V2 con la HU0007-4 por celda, pruebas obligatorias, auditoría con `revisor-modelado`, intervalo del conteo con la μ
 mezclada y congelamiento). No se ha empezado.
 
@@ -562,6 +569,41 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
 - **Para el serving:** antes de predecir, la app debe verificar que el clima de la última semana usada (humedad y
   lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
   péntada en 2025).
+
+## Paso b de clima · Lluvia de CHIRPS v3: resultados (2026-11-06)
+
+Preregistro `STEP_B` (commit `b82bf80`), sin enmiendas. Notebook `12_paso_b_lluvia_chirps.ipynb`; cifras en
+`metricas/paso_b.json`; predicciones en `models/experimentos/mejora_modelo/paso_b/` (no versionado); MLflow
+`denguekay/mejora_modelo_paso_b_lluvia_chirps` (`c2c52c15a2bf4e71a5d7b339e51c04e6`). Silver de entrada
+`data/silver/precip_chirps_v3_semanal_desde_2000.csv` (90 675 filas, 2000-01-02 a 2026-09-20, todo `final`).
+
+- **Guardas (todas pasan):** G25: la lluvia calculada con el silver vigente («Best match») es igual a
+  `precip_total_mm_media5_h2` del gold en las 30 095 filas con valor (diferencia 0, mismos vacíos). G26: el test de
+  no fuga por perturbación pasa. G27: 0 de 71 175 orígenes con lluvia usan una semana publicada después de
+  `origen_cierre` + 14 días (margen mínimo 4 días; contra `origen_cierre` solo, los 71 175 quedarían afectados).
+  G28: 0 de 71 110 orígenes desde 2005 sin valor en b1 y en b2. G29: L + 5a reproduce `fase5.json` (diferencia
+  máxima 4,9e-11 en 18 filas). b2: G17 (diferencia 0 en 30 095 filas) y G19 (0 de 71 110 sin H) pasan. Todas las
+  semanas de lluvia que llegan a los orígenes desde 2005 son `final`.
+- **Veredicto (regla de 5 temporadas): empate en h2, h3 y h4 en b1 y en b2**; ninguna se adopta, no hay cruce y la
+  base sigue siendo L + 5a. F1 a favor en 0, 0 y 1 de 5 temporadas (h2, h3, h4) en las dos variantes y en contra en
+  0; ninguna guarda veta. En las guardas, la razón MAE va a favor en 2 a 4 de 5 temporadas (y en contra en 1) y la
+  AUPRC en 1 a 3; no deciden.
+- **Antelación (semilla 17, 193 episodios):** b1 +0,005 [−0,021; 0,031] en h2, −0,010 [−0,036; 0,016] en h3 y
+  −0,010 [−0,026; 0,000] en h4; b2 −0,005 en los tres (IC95 que incluyen 0).
+- **Lecturas que no deciden:** sin 2010, empate en los tres horizontes en las dos; la regla de razón MAE de la
+  fase 5, empate en los tres. Contraste 2024: F1 casi igual (b1 0,805, 0,792 y 0,769 frente a 0,799, 0,788 y 0,761)
+  y razón MAE más baja (b1 0,903, 0,860 y 0,844 frente a 1,136, 1,238 y 1,362). Recall de brotes nuevos (2 primeras
+  semanas, 15 celdas): b1 mejora en 1 y empeora en 3; b2 mejora en 1 y empeora en 5. Frente a la V2 en 2022 y 2023,
+  b1 y b2 quedan como L + 5a (en 2022 · h4, F1 0,649 y 0,646 frente a 0,652 de L + 5a y 0,333 de la V2). HU0007-4:
+  la clasificación se cumple solo en 2023 · h2, igual que en L + 5a; la regresión se cumple en 2023 · h2, h3 y h4
+  con b1 y b2 (L + 5a solo en h4).
+- **CHIRPS − «Best match»** (`precip_total_mm_media5_h2`, 2017–2025, 65 distritos): CHIRPS es más baja todos los
+  años (diferencia media de −6,8 a −13,1 mm; media de CHIRPS de 3,9 a 22,6 mm frente a 11,5 a 35,6 mm de «Best
+  match») con correlación 0,77–0,90 por año. Va en el mismo sentido que la comparación mensual del plan (Open-Meteo
+  da en promedio un 65 % más).
+- **Lectura (observación, no conclusión):** con la información de L + 5a, la lluvia de CHIRPS (sola o con la
+  humedad) no mejora la alerta en las temporadas que deciden. La baja de la razón MAE en 2024 y en las guardas es
+  una observación del conteo que la regla no usa para decidir; con pocos brotes, no se generaliza.
 
 ## Fase 1b′ · Humedad de ERA5-Land: resultados (2026-11-04)
 
