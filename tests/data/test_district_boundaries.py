@@ -20,21 +20,21 @@ class TestDistrictBoundaries(unittest.TestCase):
             db.check_archive_response(202, {"x-amzn-waf-action": "challenge"}, b"")
         with self.assertRaises(RuntimeError):
             db.check_archive_response(200, {}, b"<html>")
-        db.check_archive_response(200, {}, b"PK...")
+        db.check_archive_response(200, {}, b"PK\x03\x04...")
 
     def test_local_copy_is_saved_once_with_its_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
-            src = Path(tmp) / "in" / db.RESOURCE_NAME
-            src.parent.mkdir()
-            src.write_bytes(b"PKdata")
+            source = Path(tmp) / "in" / db.RESOURCE_NAME
+            source.parent.mkdir()
+            source.write_bytes(b"PK\x03\x04data")
             info = db.resource_info(PACKAGE)
-            path, manifest = db.register_local_copy(src, info, Path(tmp) / "bronze")
-            self.assertEqual(path.read_bytes(), src.read_bytes())
+            path, manifest = db.register_local_copy(source, info, Path(tmp) / "bronze")
+            self.assertEqual(path.read_bytes(), source.read_bytes())
             meta = json.loads(manifest.read_text(encoding="utf-8"))
             self.assertEqual(meta["bytes"], 8)
             self.assertEqual(meta["licencia_id"], "cc-by-igo")
             with self.assertRaises(FileExistsError):
-                db.register_local_copy(src, info, Path(tmp) / "bronze")
+                db.register_local_copy(source, info, Path(tmp) / "bronze")
 
 
     def test_pcode_maps_to_a_six_digit_string_ubigeo(self):
