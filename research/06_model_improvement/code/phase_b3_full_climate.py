@@ -113,3 +113,93 @@ def nino_training_range(origins: pd.DataFrame, since: str = "2005-01-01") -> dic
     sel = pd.to_datetime(origins.origen_cierre) >= pd.Timestamp(since)
     v = origins.loc[sel, NINO_COLUMN]
     return {"minimo": float(v.min()), "maximo": float(v.max()), "origenes": int(sel.sum())}
+
+
+# --- Readings that need the fitted model of a block (SHAP and the Niño counterfactual) -------------------------
+
+def fit_block(inp: dict, origins: pd.DataFrame, block: str, seed: int, columns: list[str], hp: dict) -> dict:
+    """Refit the b3 regressor of one block exactly as ``phase3_onsets.predict_blocks_weighted`` does."""
+    import phase1_history as p1
+    import phase3_onsets as p3
+    from denguekay.model import horizon_strategies as eh
+    from denguekay.model import probabilistic_output as sp
+
+    kind, period = next((k, per) for b, k, per in p1.seasonal_blocks(p1.FIRST_BLOCK_SEASON_LONG) if b == block)
+    test_sets, cutoff = eh._common_cutoffs(inp["matrices"], kind, period)
+    margin_all = sp.e3_margin(origins, p3.FORMULATION)
+    train = p3._training(origins, cutoff)
+    reg, alphas = p3._fit(train, seed, list(columns), sp.e3_parameters(hp), margin_all, None)
+    return {"regresor": reg, "alphas": alphas, "x_reg": train[list(columns)], "margen": margin_all, "corte": cutoff}
+
+
+def shap_by_horizon(fitted: dict) -> pd.DataFrame:
+    """Mean |SHAP| per variable and horizon on the block's training rows (format of study 05)."""
+    from denguekay.model import probabilistic_output as sp
+
+    return sp.shap_importance_by_horizon(fitted["regresor"], fitted["x_reg"])
+
+
+def calibrator_for(pred: pd.DataFrame, block: str, h: int):
+    """Platt of ``block`` and horizon ``h`` fitted as ``protocol.calibrate_chronologically`` (earlier blocks,
+    labels closed by the block's first origin)."""
+    from denguekay.evaluation import protocol as pa
+
+    by_h = pred[pred.horizonte.eq(h)].copy()
+    by_h["semana_inicio"] = pd.to_datetime(by_h.semana_inicio)
+    by_h["origen_cierre"] = pd.to_datetime(by_h.origen_cierre)
+    onsets = by_h.groupby("bloque").semana_inicio.min()
+    cutoff = pa.block_cutoff(by_h[by_h.bloque.eq(block)])
+    previous = by_h[by_h.bloque.map(onsets).lt(onsets[block])]
+    available = previous[(previous.semana_inicio + pd.Timedelta(days=6)).le(cutoff)]
+    return pa.fit_calibrator(available.probabilidad_brote, available.brote)
+
+
+def nino_counterfactual(inp: dict, origins: pd.DataFrame, pred_seed: pd.DataFrame, w_table: pd.DataFrame,
+                        dates, values, columns: list[str], hp: dict, seed: int) -> pd.DataFrame:
+    """Per origin date, horizon and value of ``NINO_COLUMN`` (``"real"`` = the value it has): mean calibrated
+    probability over the 65 districts, districts with p >= 0.50 and predicted cases (5a mixture), everything else
+    fixed. The model, α, Platt and w are those of the block that predicts the date (seed ``seed``)."""
+    import phase3_onsets as p3
+    from denguekay.model import probabilistic_output as sp
+
+    f = sp.FORMULATIONS[p3.FORMULATION]
+    rows = []
+    close = pd.to_datetime(origins.origen_cierre)
+    pred = pred_seed.copy()
+    pred["origen_cierre"] = pd.to_datetime(pred.origen_cierre)
+    pred["semana_inicio"] = pd.to_datetime(pred.semana_inicio)
+    fitted_cache = {}
+    for d in pd.to_datetime(list(dates)):
+        sel = origins[close.eq(d)]
+        block = pred.loc[pred.origen_cierre.eq(d), "bloque"].unique()
+        if len(sel) == 0 or len(block) != 1:
+            raise ValueError(f"El origen {d.date()} no está en un único bloque")
+        block = block[0]
+        if block not in fitted_cache:
+            fitted_cache[block] = fit_block(inp, origins, block, seed, columns, hp)
+        fit = fitted_cache[block]
+        idx = origins.index.get_indexer(sel.index)
+        for value in ["real", *values]:
+            x = sel[list(columns)].copy()
+            if value != "real":
+                x[NINO_COLUMN] = float(value)
+            counts = sp.predict_count(fit["regresor"], x, f["conteo"], fit["margen"][idx])
+            for step, h in enumerate(p3.H):
+                target = pd.DataFrame({"ubigeo": sel.ubigeo.to_numpy(), "semana_inicio": sel[f"semana_inicio_h{h}"].to_numpy(),
+                                       "mu": counts[:, step]})
+                ref = pred[pred.horizonte.eq(h) & pred.bloque.eq(block)]
+                t = target.merge(ref[["ubigeo", "semana_inicio", "umbral_brote_casos", "persistencia", "casos_Dengue",
+                                      "brote", "casos_predichos"]], on=["ubigeo", "semana_inicio"], how="inner", validate="one_to_one")
+                raw = sp.negative_binomial_probability(t.mu, fit["alphas"][step], t.umbral_brote_casos)
+                p = calibrator_for(pred, block, h)(raw)
+                w = float(w_table.loc[w_table.horizonte.eq(h) & w_table.bloque.eq(block), "w"].iloc[0])
+                cases = w * t.mu + (1 - w) * t.persistencia
+                rows.append({"origen_cierre": str(d.date()), "bloque": block, "horizonte": h,
+                             "nino12_anom_media3": value if value == "real" else float(value),
+                             "valor_real_medio": float(sel[NINO_COLUMN].mean()), "distritos": len(t),
+                             "probabilidad_media": float(np.mean(p)), "distritos_en_alerta": int((p >= 0.5).sum()),
+                             "casos_predichos": float(cases.sum()), "casos_observados": float(t.casos_Dengue.sum()),
+                             "brotes_observados": int(t.brote.sum()),
+                             # with the real value, the refit must give the saved μ of seed 17 (reproducibility)
+                             "dif_max_mu_guardada": float(np.max(np.abs(t.mu - t.casos_predichos))) if value == "real" else None})
+    return pd.DataFrame(rows)

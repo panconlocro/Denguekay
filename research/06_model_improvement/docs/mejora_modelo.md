@@ -20,7 +20,7 @@ aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (p
 | 4 · Niño 1+2 | 4a anomalía del último mes disponible, 4b media de 3 meses, sobre L + 5a | nada: empate en los tres horizontes (primera medición) |
 | 1b′ · Humedad ERA5-Land | L + 5a + H (`hum_rel_media_media5_h2` sobre ERA5-Land 2000–2025) | nada: empate en los tres horizontes; la base sigue siendo L + 5a |
 | 6 · Otra familia (lectura) | 6a GLM NB2 (no convergió), enmienda 6a′ GLM Poisson + α NB2, 6b LightGBM; C3 sin clima | nada (lectura): LightGBM empata con L + 5a; 6a′ empata o mejora (gana F1 en h4, mejor antelación, peor Brier en 2016); 6′ con clima, pendiente |
-| b · Lluvia CHIRPS v3 | b1 L + 5a + lluvia CHIRPS (`precip_total_mm_media5_h2`, media del polígono); b2 L + 5a + humedad ERA5-Land + lluvia CHIRPS | nada: empate en los tres horizontes en las dos; la base sigue siendo L + 5a |
+| b · Lluvia CHIRPS v3 | b1 L + 5a + lluvia CHIRPS (`precip_total_mm_media5_h2`, media del polígono); b2 L + 5a + humedad ERA5-Land + lluvia CHIRPS; b3 (agregada después) clima completo: humedad, lluvia, temperatura y Niño 1+2 | nada: b1 y b2 empatan en los tres horizontes; b3 empata en la alerta y en el conteo; la base sigue siendo L + 5a |
 
 **Base candidata: L + 5a.**
 
@@ -84,8 +84,9 @@ b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](p
    - b-VII · Preregistro `STEP_B` en `code/preregistration.py` (commit `b82bf80`, aprobado por Rosa tal cual el
      2026-11-06: b1 y b2 frente a L + 5a, regla de la 1b′, cruce b2 frente a b1 con empate a favor de b1, guardas
      G25 a G29); variable y guardas en `code/phase_b_rain.py`.
-   - b3 · Agregada el 2026-11-06 después de ver b1 y b2 (preregistro `STEP_B3`, aprobado por Rosa con dos cambios
-     antes de correr: «compensa» también bloquea en la otra regla y ERA5-Land se publica con 7 días de retraso): L + 5a + humedad ERA5-Land + lluvia CHIRPS + `temp_media_media5_h2` (ERA5-Land) +
+   - b3 · **Corrida el 2026-11-06: empate en la alerta y en el conteo en h2, h3 y h4; no se adopta.** Agregada
+     después de ver b1 y b2 (preregistro `STEP_B3`, aprobado por Rosa con dos cambios antes de correr: «compensa»
+     también bloquea en la otra regla y ERA5-Land se publica con 7 días de retraso): L + 5a + humedad ERA5-Land + lluvia CHIRPS + `temp_media_media5_h2` (ERA5-Land) +
      `nino12_anom_media3`. Se adopta si gana la alerta (regla del paso b) o el conteo (regla de la fase 5), sin
      «pierde» ni «compensa» en la otra; guardas G25 a G34, G17, G19, G21 y G22. Código en `code/phase_b3_full_climate.py`.
    - Pendiente (sin fecha): preliminar del 2026-09-27 al 2026-10-31 con pausas más largas (propuesta: 10 min
@@ -573,6 +574,58 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
 - **Para el serving:** antes de predecir, la app debe verificar que el clima de la última semana usada (humedad y
   lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
   péntada en 2025).
+
+## Paso b de clima · Variante b3 (clima completo): resultados (2026-11-06)
+
+Preregistro `STEP_B3` (commit `31553db`; cambios de Rosa antes de correr en `96af5cd`), agregado después de ver b1 y
+b2: es la tercera comparación del paso b. Notebook `13_paso_b3_clima_completo.ipynb`; cifras en
+`metricas/paso_b3.json`; predicciones en `models/experimentos/mejora_modelo/paso_b3/` (no versionado); MLflow
+`denguekay/mejora_modelo_paso_b_lluvia_chirps` (`fa2a7b5bff2f45cd84d30e6d707e59b6`). b3 = C3 +
+`hum_rel_media_media5_h2` + `precip_total_mm_media5_h2` + `temp_media_media5_h2` + `nino12_anom_media3`.
+
+- **Guardas (todas pasan):** G17 y G25 (diferencia 0 en 30 095 filas con valor, mismos vacíos); G19, G28 y G32 (0 de
+  71 110 orígenes desde 2005 sin valor); G21 (0 de 71 175 orígenes con un mes del Niño publicado después de
+  `origen_cierre`); G22, G26 y G31 (tests de no fuga del Niño, la lluvia y la temperatura); G27 (lluvia: 0
+  afectados contra `origen_cierre` + 14 días, margen mínimo 4 días); G29 (L + 5a reproduce `fase5.json`, 4,9e-11);
+  G30 (temperatura igual a `build_observed_climate` h=2 en 30 095 filas, diferencia 0); G33 (temperatura con 7 días
+  de retraso: 0 de 71 175 afectados contra `origen_cierre` + 14 días); G34 (2026-10 = 5,25 en el crudo
+  `sstoi_20261103.indices` y en el silver).
+- **Veredicto: empate en h2, h3 y h4 en la alerta y en el conteo; b3 no se adopta y la base sigue siendo L + 5a.**
+  Alerta: F1 a favor en 1, 1 y 2 de 5 temporadas y en contra en 1; ninguna guarda veta. Conteo (regla de la fase
+  5): razón MAE a favor en 3 de 5 temporadas y en contra en 1 en los tres horizontes (hacen falta 4 y 0).
+- **Antelación (semilla 17, 193 episodios):** 0,000 [−0,036; 0,036] en h2, −0,026 [−0,062; 0,005] en h3 y −0,016
+  [−0,047; 0,010] en h4 (IC95 que incluyen 0).
+- **Lecturas que no deciden:**
+  - Sin 2010: empate en los tres horizontes.
+  - 2024 (contraste): F1 0,805, 0,797 y 0,770 frente a 0,799, 0,788 y 0,761; razón MAE 0,907, 0,857 y 0,819 frente a
+    1,136, 1,238 y 1,362.
+  - Recall de brotes nuevos (2 primeras semanas, 15 celdas): mejora en 2 y empeora en 9 (en 2022, de 0,122–0,163 a
+    0,082–0,102).
+  - Frente a la V2 en 2022 y 2023: en 2022 · h4, F1 0,635 (b3), 0,652 (L + 5a) y 0,333 (V2); razón MAE en 2022
+    0,888, 0,821 y 0,787 (b3) frente a 0,946, 0,927 y 0,929 (L + 5a) y 0,919, 0,883 y 0,838 (V2).
+  - HU0007-4 (6 celdas de 2022 y 2023): la clasificación se cumple solo en 2023 · h2 con las tres; la regresión se
+    cumple en 5 de 6 celdas con b3 (todas menos 2022 · h2), en 1 con L + 5a y en 2 con la V2.
+  - 2017 y 2023 frente a L + 5a: F1 casi igual (2017: 0,699, 0,657 y 0,624 frente a 0,703, 0,658 y 0,632; 2023:
+    0,861, 0,837 y 0,819 frente a 0,857, 0,835 y 0,811) y razón MAE algo más baja.
+  - SHAP del regresor (media de |SHAP|, semilla 17): la temperatura es la segunda variable en 2022, 2023 y 2024
+    (0,33 a 0,46), detrás de `propia_semanas_desde_ultimo_caso` (1,14 a 1,49) y por delante de `hist_media_4`; la
+    lluvia va de 0,06 a 0,18, la humedad de 0,03 a 0,06 y el Niño de 0,02 a 0,06. *Hipótesis:* la temperatura de 5
+    semanas sigue el ciclo estacional y podría estar repartiéndose el papel de `semana_epi_seno`/`coseno`, que bajan
+    frente al estudio 05; no se probó.
+  - Rango del Niño: `nino12_anom_media3` va de −1,74 a 3,11 en los orígenes desde 2005; el valor actual (agosto a
+    octubre de 2026, publicado el 2026-11-10) es 4,67, fuera de ese rango.
+  - Contrafactual del Niño (modelo del bloque, semilla 17; con el valor real reproduce el μ guardado, diferencia
+    0): con 3,3 y con 5,25 las predicciones son idénticas en los 4 orígenes (los árboles no distinguen valores por
+    encima del rango de entrenamiento). En 2017 (bloque entrenado hasta 2016), fijar el Niño en 2,0, 3,3 o 5,25
+    *baja* los casos predichos frente al valor real (0,39 y 0,58): en 2017-03-04, de 431, 482 y 532 a 402, 434 y 464
+    casos (h2, h3 y h4), con 1 distrito menos en alerta; los observados fueron 799, 1105 y 1671. En 2023 el efecto es
+    de hasta 4 % (2023-03-04 · h4: 960 con el real, 929 con 2,0 y 955 con 3,3 o 5,25; observados 1431). La probabilidad
+    media cambia menos de 0,03.
+- **Lectura (observación, no conclusión):** el clima completo no cambia la alerta en las temporadas que deciden y
+  empeora el recall de los brotes nuevos; mejora el conteo en 2022, 2024 y la HU0007-4 de regresión, pero no
+  alcanza la regla de la fase 5 (3 de 5 temporadas). El modelo no traduce una anomalía del Niño mayor en más casos:
+  con lo visto en 2000–2025 (máximo de 3,11 en los orígenes), no se puede
+  usar b3 para anticipar el efecto del Niño previsto para 2026–2027; es un riesgo a tratar en la fase 7 y en la app.
 
 ## Paso b de clima · Lluvia de CHIRPS v3: resultados (2026-11-06)
 
