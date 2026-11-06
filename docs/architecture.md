@@ -152,7 +152,7 @@ silver/
 ├── meteo_semanal_distrital.csv     # por fuente
 ├── meteo_semanal_distrital_2000_2016.csv  # estudio 06 (1b): historia, aparte del de 2017-2025
 ├── meteo_humedad_era5_land_2000_2025.csv  # estudio 06 (1b′): humedad y temperatura ERA5-Land, sin precipitación
-├── precip_chirps_v3_semanal_2000_2025.csv  # lluvia semanal CHIRPS v3 (final sat) por distrito, con fecha_disponible (V3)
+├── precip_chirps_v3_semanal_desde_2000.csv  # lluvia semanal CHIRPS v3 sat por distrito (media del polígono; final de Earth Engine y preliminar del CHC), con version y fecha_disponible (V3)
 ├── enso_nino12_mensual.csv         # Niño 1+2 mensual con la fecha desde la que se puede usar
 ├── socio_anual.csv
 ├── epi_piura_semanal.csv
@@ -218,11 +218,12 @@ data/
 │   ├── district_boundaries.py  # polígonos distritales del COD-AB de Perú (IGN, HDX) -> reference/ (V3, lluvia por polígono)
 │   ├── chirps.py               # CHIRPS v3 diario (sat): ventana de Piura por día desde los COG, con reanudación
 │   ├── chirps_ee.py            # CHIRPS v3 final desde Earth Engine: media por polígono, guarda de método y descarga mensual
+│   ├── chirps_prelim.py        # CHIRPS v3 preliminar del CHC: TIF global a carpeta temporal, verificación de grilla y recorte de Piura
 │   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
 │   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE
 ├── processing/
 │   ├── weekly_aggregation.py   # diario -> semanal por distrito
-│   ├── chirps_precipitation.py # CHIRPS por centroide -> lluvia semanal con fecha_disponible
+│   ├── chirps_precipitation.py # CHIRPS -> lluvia semanal con fecha_disponible (media del polígono: final + preliminar, sin mezclar versiones por semana)
 │   ├── socio_interpolation.py  # interpolación 2017-2025
 │   ├── epi_cases.py            # Excel epidemiológico (un caso por fila) -> silver semanal
 │   ├── epi_sala.py             # normalización y conciliación de la Sala
@@ -311,7 +312,8 @@ src/denguekay/serving/
 src/denguekay/pipelines/
 ├── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
 ├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS (celdas A y B del 03c)
-└── chirps_ee.py              # guarda de método y descarga mensual de CHIRPS v3 desde Earth Engine (estudio 06, b-IV)
+├── chirps_ee.py              # guarda de método y descarga mensual de CHIRPS v3 desde Earth Engine (estudio 06, b-IV)
+└── chirps_prelim.py          # preliminar de CHIRPS v3 desde el CHC y silver semanal (estudio 06, b-V)
 ```
 
 ## 3b. `apps/api/` — la API
