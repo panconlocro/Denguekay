@@ -138,7 +138,8 @@ bronze/
 ├── meteo/cache_meteo_era5_land_2000_2016/  # estudio 06 (1b′): ERA5-Land 2000-2016 (humedad y temperatura)
 ├── enso/                    # sstoi.indices de NOAA CPC (Niño 1+2), un archivo por fecha de descarga
 ├── limites/hdx_cod_ab_per/  # COD-AB de Perú (IGN, publicado por OCHA en HDX, CC BY-IGO) tal cual, con su manifiesto
-├── chirps/v3_sat/           # CHIRPS v3 diario (sat): final/AAAA/ y prelim/AAAA/ con la ventana de Piura por día, y los manifiestos de cada corrida
+├── chirps/v3_sat/           # CHIRPS v3 diario (sat): final/AAAA/ y prelim/AAAA/ con la ventana de Piura por día, y los manifiestos de cada corrida;
+│                            #   ee_final/AAAA/AAAA-MM.json: media por polígono distrital desde Earth Engine, tal cual llega, con un manifiesto por corrida
 ├── socio/                   # el Excel del censo/proyecciones, sin tocar
 └── epi/                     # Excel y respuestas crudas de la Sala Situacional MINSA
 ```
@@ -216,6 +217,7 @@ data/
 │   ├── gadm_districts.py       # límites distritales GADM y centroides (V2)
 │   ├── district_boundaries.py  # polígonos distritales del COD-AB de Perú (IGN, HDX) -> reference/ (V3, lluvia por polígono)
 │   ├── chirps.py               # CHIRPS v3 diario (sat): ventana de Piura por día desde los COG, con reanudación
+│   ├── chirps_ee.py            # CHIRPS v3 final desde Earth Engine: media por polígono, guarda de método y descarga mensual
 │   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
 │   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE
 ├── processing/
@@ -308,7 +310,8 @@ src/denguekay/serving/
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
 ├── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
-└── chirps_download.py        # corrida desatendida de la descarga de CHIRPS (celdas A y B del 03c)
+├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS (celdas A y B del 03c)
+└── chirps_ee.py              # guarda de método y descarga mensual de CHIRPS v3 desde Earth Engine (estudio 06, b-IV)
 ```
 
 ## 3b. `apps/api/` — la API

@@ -42,6 +42,8 @@ BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per downl
 BRONZE_CHIRPS = BRONZE / "chirps" / "v3_sat"
 BRONZE_CHIRPS_FINAL = BRONZE_CHIRPS / "final"
 BRONZE_CHIRPS_PRELIM = BRONZE_CHIRPS / "prelim"   # weekly app update (not downloaded yet)
+# Earth Engine (UCSB-CHC/CHIRPS/V3/DAILY_SAT): monthly reduceRegions responses per district polygon, as they arrive
+BRONZE_CHIRPS_EE_FINAL = BRONZE_CHIRPS / "ee_final"
 # Peru COD-AB (IGN, published by OCHA on HDX, CC BY-IGO): the downloaded archive as is, with its manifest
 BRONZE_BOUNDARIES = BRONZE / "limites" / "hdx_cod_ab_per"
 SILVER_SALA = SILVER / "epi_sala_semanal.csv"
