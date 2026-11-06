@@ -24,6 +24,8 @@ NINO_COLUMN = "nino12_anom_media3"
 RAW_ENSO_FILE = "sstoi_20261103.indices"
 CHECK_MONTH = (2026, 10)
 CHECK_ANOMALY = 5.25
+# Publication delay of ERA5-Land on Open-Meteo measured by Rosa on 2026-11-06 (data up to 2026-10-31); 1b' used 5
+ERA5_LAND_DELAY_DAYS = 7
 
 
 def era5_land_temperature(panel_2017: pd.DataFrame, path=SILVER_METEO_ERA5_LAND_2000_2025) -> pd.DataFrame:
@@ -78,7 +80,7 @@ def guard_temperature_definition(panel_2017: pd.DataFrame) -> dict:
 
 
 def guard_temperature_availability(origins: pd.DataFrame, reference_days: int = pbr.REFERENCE_DAYS,
-                                   delay_days: int = pb.ERA5_LAND_DELAY_DAYS) -> dict:
+                                   delay_days: int = ERA5_LAND_DELAY_DAYS) -> dict:
     """Availability: the last week used is published (its Saturday + ``delay_days``) by origen_cierre +
     ``reference_days``, in every origin with a value (same reference as the humidity in 1b')."""
     o = origins[origins[TEMP_COLUMN].notna()]

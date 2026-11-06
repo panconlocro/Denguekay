@@ -55,7 +55,10 @@ class TestTemperature(unittest.TestCase):
         weekly = _weekly()
         out = b3.add_temperature(_origins(weekly), b3.temperature_by_origin_week(weekly))
         g = b3.guard_temperature_availability(out)
-        self.assertTrue(g["pasa"])   # Saturday + 5 days <= origen_cierre + 14
+        self.assertTrue(g["pasa"])   # Saturday + 7 days <= origen_cierre + 14
+        self.assertEqual(b3.ERA5_LAND_DELAY_DAYS, 7)
+        self.assertFalse(b3.guard_temperature_availability(out, reference_days=6)["pasa"])
+        self.assertTrue(b3.guard_temperature_availability(out, reference_days=7)["pasa"])
         self.assertEqual(g["afectados_contra_origen_cierre"], g["origenes"])
         self.assertFalse(b3.guard_temperature_availability(out, reference_days=4)["pasa"])
         lagged = b3.add_temperature(_origins(weekly), b3.temperature_by_origin_week(weekly, extra_lag=1))
@@ -92,7 +95,8 @@ class TestRule(unittest.TestCase):
         v = self.v
         self.assertTrue(pr.adopt_step_b3(v("gana", "gana", "empate"), v("empate", "empate", "empate")))
         self.assertTrue(pr.adopt_step_b3(v("empate", "empate", "empate"), v("gana", "gana", "empate")))
-        self.assertTrue(pr.adopt_step_b3(v("compensa (empate)", "empate", "empate"), v("gana", "gana", "gana")))
+        self.assertFalse(pr.adopt_step_b3(v("compensa (empate)", "empate", "empate"), v("gana", "gana", "gana")))
+        self.assertFalse(pr.adopt_step_b3(v("gana", "gana", "gana"), v("empate", "compensa (empate)", "empate")))
         self.assertFalse(pr.adopt_step_b3(v("gana", "gana", "empate"), v("pierde", "empate", "empate")))
         self.assertFalse(pr.adopt_step_b3(v("pierde", "empate", "empate"), v("gana", "gana", "gana")))
         self.assertFalse(pr.adopt_step_b3(v("gana", "empate", "empate"), v("gana", "empate", "empate")))

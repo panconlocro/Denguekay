@@ -84,10 +84,10 @@ b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](p
    - b-VII · Preregistro `STEP_B` en `code/preregistration.py` (commit `b82bf80`, aprobado por Rosa tal cual el
      2026-11-06: b1 y b2 frente a L + 5a, regla de la 1b′, cruce b2 frente a b1 con empate a favor de b1, guardas
      G25 a G29); variable y guardas en `code/phase_b_rain.py`.
-   - b3 · Agregada el 2026-11-06 después de ver b1 y b2 (preregistro `STEP_B3`, sin correr, pendiente de la
-     revisión de Rosa): L + 5a + humedad ERA5-Land + lluvia CHIRPS + `temp_media_media5_h2` (ERA5-Land) +
+   - b3 · Agregada el 2026-11-06 después de ver b1 y b2 (preregistro `STEP_B3`, aprobado por Rosa con dos cambios
+     antes de correr: «compensa» también bloquea en la otra regla y ERA5-Land se publica con 7 días de retraso): L + 5a + humedad ERA5-Land + lluvia CHIRPS + `temp_media_media5_h2` (ERA5-Land) +
      `nino12_anom_media3`. Se adopta si gana la alerta (regla del paso b) o el conteo (regla de la fase 5), sin
-     «pierde» en la otra; guardas G25 a G34, G17, G19, G21 y G22. Código en `code/phase_b3_full_climate.py`.
+     «pierde» ni «compensa» en la otra; guardas G25 a G34, G17, G19, G21 y G22. Código en `code/phase_b3_full_climate.py`.
    - Pendiente (sin fecha): preliminar del 2026-09-27 al 2026-10-31 con pausas más largas (propuesta: 10 min
      entre peticiones) y la medición preliminar frente a final de b-VI. No cambian el veredicto de b.
 c) ~~Repetir el Niño 1+2 solo si la base cambia en (b)~~: la base no cambió; el paso c no se corre. La fase 4 del

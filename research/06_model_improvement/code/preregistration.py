@@ -730,8 +730,15 @@ STEP_B3_COUNTERFACTUAL_SEED = 17
 
 STEP_B3 = {
     "fecha": "2026-11-06",
-    "estado": "agregada el 2026-11-06 DESPUÉS de ver b1 y b2 (empate en los tres horizontes las dos); propuesta y "
-              "commiteada sin correr nada; pendiente de la revisión de Rosa",
+    "estado": "agregada el 2026-11-06 DESPUÉS de ver b1 y b2 (empate en los tres horizontes las dos); aprobada por "
+              "Rosa el 2026-11-06 con dos cambios hechos antes de correr (ver «cambios_de_rosa»)",
+    "cambios_de_rosa": [
+        "adopt_step_b3: en la otra regla bloquean tanto «pierde» como «compensa (empate)», igual que adopt_step_b. "
+        "Motivo: en la V2 el clima se adoptó por el conteo mientras la F1 de la alerta en 2022 · h4 caía de 0,525 "
+        "a 0,333; no se quiere repetir",
+        "G33: retraso de publicación de ERA5-Land = 7 días, no 5 (medido por Rosa el 2026-11-06: Open-Meteo con "
+        "models=era5_land trae relative_humidity_2m_mean hasta el 2026-10-31)",
+    ],
     "motivo": [
         "probar el clima completo, con interacciones (humedad, lluvia, temperatura y Niño juntos en el árbol), y la "
         "temperatura, que nunca se probó en el estudio",
@@ -750,9 +757,10 @@ STEP_B3 = {
     "regla": "fijada antes de correr b3, DESPUÉS de ver que el clima mejora en parte el conteo (razón MAE a favor en "
              "2 a 4 de 5 temporadas en b1 y b2, y en 2024). b3 se adopta si (a) gana la alerta con "
              "decide_multi_season frente a L + 5a (adopt_step_b: >= 2 horizontes ganados y ninguno «pierde» ni "
-             "«compensa (empate)») y la regla del conteo no tiene ningún «pierde»; o (b) gana el conteo con la regla "
-             "de la fase 5 (decide_phase5; adopt_phase5: >= 2 horizontes ganados y ninguno «pierde» ni «compensa "
-             "(empate)») y la regla de la alerta no tiene ningún «pierde». Un empate deja L + 5a",
+             "«compensa (empate)») y la regla del conteo no tiene ningún «pierde» ni «compensa (empate)»; o (b) gana "
+             "el conteo con la regla de la fase 5 (decide_phase5; adopt_phase5: >= 2 horizontes ganados y ninguno "
+             "«pierde» ni «compensa (empate)») y la regla de la alerta no tiene ningún «pierde» ni «compensa "
+             "(empate)». Un empate deja L + 5a",
     "guardas_antes_de_mirar_resultados": [
         "G25 a G29 del paso b (lluvia: definición, no fuga, disponibilidad contra origen_cierre + 14 días, "
         "cobertura de las 4 columnas de clima desde 2005, L + 5a reproduce fase5.json)",
@@ -763,7 +771,8 @@ STEP_B3 = {
         "(«Best match»), es igual a build_observed_climate(h=2) de gold.py (el gold no trae temperatura)",
         "G31: test de no fuga por perturbación de la temperatura",
         "G32: ningún origen desde 2005 sin temperatura (incluida en la cobertura de G28)",
-        "G33: disponibilidad de la temperatura contra origen_cierre + 14 días (ERA5-Land, 5 días de retraso)",
+        "G33: disponibilidad de la temperatura contra origen_cierre + 14 días (ERA5-Land, 7 días de retraso; la "
+        "humedad sale de las mismas semanas)",
         "G34: la anomalía Niño 1+2 de 2026-10 vale 5,25 en el archivo crudo de la NOAA (`sstoi_20261103.indices`) y "
         "en el silver",
         "si una guarda falla, se detiene b3 y se explica; no se ajusta nada para que pase",
@@ -795,10 +804,11 @@ STEP_B3 = {
 
 
 def adopt_step_b3(alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame) -> bool:
-    """b3: wins the alert (adopt_step_b) with no «pierde» in the count, or wins the count (adopt_phase5) with no
-    «pierde» in the alert. Anything else (a tie) keeps L + 5a."""
-    alert_loses = alert_verdict.veredicto.eq("pierde").any()
-    count_loses = count_verdict.veredicto.eq("pierde").any()
+    """b3: wins the alert (adopt_step_b) with no «pierde» nor «compensa (empate)» in the count, or wins the count
+    (adopt_phase5) with neither in the alert. Anything else (a tie) keeps L + 5a."""
+    bad = ["pierde", "compensa (empate)"]
+    alert_loses = alert_verdict.veredicto.isin(bad).any()
+    count_loses = count_verdict.veredicto.isin(bad).any()
     return bool((adopt_step_b(alert_verdict) and not count_loses) or (adopt_phase5(count_verdict) and not alert_loses))
 
 
