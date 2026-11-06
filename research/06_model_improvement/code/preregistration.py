@@ -813,6 +813,120 @@ def adopt_step_b3(alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame) -> b
 
 
 # ---------------------------------------------------------------------------
+# Climate step d: weather windows (added on 2026-11-06 after seeing b1, b2 and b3; pending Rosa's review)
+# ---------------------------------------------------------------------------
+
+STEP_D_SOURCES = ("precip_total_mm", "temp_media", "hum_rel_media")
+STEP_D_WINDOWS = ("s0", "media_s1_4", "media_s5_8", "media_s9_12")
+STEP_D_HEAVY_RAIN_MM = 20.0
+STEP_D_HEAVY_COLUMNS = ["dias_precip_20mm_s0_3", "dias_precip_20mm_s4_7"]
+STEP_D_COLUMNS = [f"{s}_{w}" for s in STEP_D_SOURCES for w in STEP_D_WINDOWS] + STEP_D_HEAVY_COLUMNS
+STEP_D_REPORT_SEASONS = (*DECIDING_SEASONS, CONTRAST_SEASON)
+STEP_D_SHAP_BLOCKS = ("temporada_2022", "temporada_2023", "temporada_2024")
+STEP_D_SHAP_SEED = 17
+STEP_D_NO_LEAK_CUT = "2016-12-31"   # real-data perturbation: every week after it is changed
+
+STEP_D = {
+    "fecha": "2026-11-06",
+    "estado": "agregado el 2026-11-06 DESPUÉS de ver b1, b2 y b3 (empate en los tres horizontes las tres); "
+              "propuesto y commiteado sin correr nada; pendiente de la revisión de Rosa",
+    "motivo": "la media de 5 semanas heredada de la V2 no dice cuándo llovió, y los inicios de brote podrían depender "
+              "de ventanas más antiguas (hipótesis de Rosa)",
+    "variante": "d1 = C3 + 14 columnas calculadas en memoria con el último dato disponible en la semana del origen "
+                "o (nunca semanas posteriores): para la lluvia CHIRPS v3 (silver de b-V), la temperatura media y la "
+                "humedad relativa de ERA5-Land (silvers de la 1b′ y de b3), el valor de la semana o y las medias de "
+                "o−1..o−4, o−5..o−8 y o−9..o−12, sin solaparse (12 columnas); para la lluvia, además, los días con "
+                f">= {STEP_D_HEAVY_RAIN_MM:g} mm en o−3..o y en o−7..o−4, contados sobre las medias diarias por "
+                "polígono ponderadas por área que devolvió Earth Engine (bronze `ee_final`, los mismos días que suma "
+                "el silver). Sin Niño",
+    "columnas": STEP_D_COLUMNS,
+    "umbral_lluvia_fuerte": {
+        "valor": f">= {STEP_D_HEAVY_RAIN_MM:g} mm por día (media del polígono distrital)",
+        "justificacion": [
+            "es el índice R20mm de la lista de 27 índices del ETCCDI "
+            "(https://etccdi.pacificclimate.org/list_27_indices.shtml, consultada el 2026-11-06): conteo anual de "
+            "días con PRCP >= 20 mm; un umbral estándar, no elegido mirando el modelo",
+            "en los datos (bronze `ee_final`, 2005-2025, 65 distritos; sin mirar resultados del modelo): 20 mm cae "
+            "entre el percentil 90 (17,8 mm) y el 95 (26,4 mm) de los días con >= 1 mm; con > 20 mm hay una mediana "
+            "de 3,1 días al año por distrito (mínimo 0,33, máximo 16,3); todos los distritos tienen alguno, pero 18 "
+            "lo superan en 5 o menos de los 21 años. De enero a abril, el 33 % de las ventanas de 4 semanas tienen "
+            "al menos un día (74 % en 2017 y 61 % en 2023)",
+            "con 10 mm la variable se acerca a «hubo lluvia» en la sierra (mediana de 6,1 días al año, máximo 35,5); "
+            "con 30 mm, 26 distritos lo superan en 5 o menos años y la variable queda casi siempre en 0",
+            "la media del polígono suaviza los extremos de los píxeles, así que 20 mm por polígono es más exigente "
+            "que 20 mm en una estación; queda como hipótesis, no se verificó contra estaciones",
+            "Rosa escribió «más de 20 mm»; el ETCCDI usa >= 20 mm. Se propone >= para seguir el índice; con datos "
+            "continuos la diferencia es mínima. A confirmar por Rosa",
+        ],
+    },
+    "comun": "igual que L + 5a: E3 · S4_s3, hiperparámetros de la V1, orígenes desde 2005, bloques 2008-2024 + "
+             "calendario_2025, Platt por horizonte con 1e-6, alerta p >= 0,50, dos μ con la mezcla 5a, 5 semillas. "
+             "Sin ajuste de hiperparámetros, de ventanas, del umbral ni de columnas después de ver resultados",
+    "disponibilidad": "CHIRPS y días fuertes: cada semana usada tiene `fecha_disponible` (silver) <= origen_cierre + "
+                      f"{STEP_B_REFERENCE_DAYS} días; ERA5-Land: la semana más reciente usada (la del origen) se publica "
+                      f"su sábado + 7 días <= origen_cierre + {STEP_B_REFERENCE_DAYS} días (retraso medido por Rosa)",
+    "comparaciones": {
+        "d1_frente_a_L_5a": "regla de b3 (adopt_step_b3): gana la alerta (decide_multi_season + adopt_step_b) sin "
+                            "«pierde» ni «compensa (empate)» en el conteo, o gana el conteo (decide_phase5 + "
+                            "adopt_phase5) sin «pierde» ni «compensa (empate)» en la alerta; un empate deja L + 5a",
+        "d1_frente_a_b3": "la misma regla con b3 como referencia (predicciones guardadas de b3, 5 semillas). b3 no se "
+                          "adoptó, así que este cruce responde si las ventanas le ganan a la media de 5 semanas con "
+                          "el Niño, y no cambia la base por sí solo. Propuesta a confirmar por Rosa: la base pasa a "
+                          "d1 solo si d1 gana frente a L + 5a; si además pierde frente a b3, se reporta y se le "
+                          "consulta a Rosa antes de la fase 7. d1 y b3 difieren en dos cosas (ventanas y Niño), así "
+                          "que el cruce no separa sus efectos",
+    },
+    "metricas_reportadas_que_no_deciden": [
+        "Brier y AUPRC por celda (horizonte × temporada de 2010, 2015, 2016, 2022, 2023 y 2024), mediana de las 5 "
+        "semillas, para L + 5a, b3 y d1 (las del protocolo, con la probabilidad calibrada)",
+        "Brier skill score frente a la climatología: 1 − Brier / Brier_clim. Climatología (propuesta, fuera de "
+        "muestra): para cada bloque y horizonte, la frecuencia de brote del mismo distrito en las semanas "
+        "epidemiológicas a ±2 de la semana objetivo (circular, la 53 cuenta como 52), con las etiquetas de la serie "
+        "desde 2005 cerradas al primer origen del bloque (las mismas que puede usar el calibrador); un distrito sin "
+        "esas filas toma la frecuencia de todos. Mediana de las 5 semillas",
+        "AUPRC restringido a los distrito-semana con persistencia < umbral_brote_casos en el origen (con el número "
+        "de filas y de positivos); mediana de las 5 semillas; vacío si la celda no tiene positivos",
+    ],
+    "guardas_antes_de_mirar_resultados": [
+        "G29: L + 5a reproduce fase5.json",
+        "G39: las predicciones guardadas de b3, evaluadas de nuevo, reproducen las métricas de paso_b3.json",
+        "G35 (definición): (a) las sumas semanales del bronze diario de Earth Engine son iguales a precip_total_mm "
+        "del silver en las mismas semanas (las del silver, todas presentes); (b) para cada fuente, (semana o + 4 × "
+        "media o−1..o−4) / 5 es igual a la media de 5 semanas ya validada (G25 lluvia, G17 humedad, G30 "
+        "temperatura); (c) tests con datos sintéticos de cada ventana y del conteo de días fuertes",
+        "G36 (no fuga por perturbación): test sintético y, sobre los datos reales, cambiar la lluvia, los días "
+        f"fuertes, la temperatura y la humedad de las semanas posteriores a {STEP_D_NO_LEAK_CUT} no cambia ninguna "
+        "columna de los orígenes hasta esa semana (y sí cambia alguna posterior)",
+        "G37 (cobertura): ningún origen desde 2005 sin alguna de las 14 columnas",
+        f"G38 (disponibilidad contra origen_cierre + {STEP_B_REFERENCE_DAYS} días): CHIRPS y días fuertes con la "
+        "fecha_disponible del silver; ERA5-Land con 7 días de retraso",
+        "G17, G25 y G30 se repiten porque G35b se apoya en ellas",
+        "si una guarda falla, se detiene el paso d y se explica; no se ajusta nada para que pase",
+    ],
+    "lecturas_que_no_deciden": [
+        "SHAP de d1 por horizonte (media de |SHAP| del regresor, semilla 17) en temporada_2022, temporada_2023 y "
+        "temporada_2024, en el formato de b3",
+        "HU0007-4 por celda (2022 y 2023) para L + 5a, b3 y d1",
+    ],
+    "multiples_comparaciones": "d es la cuarta variante de clima después de b1, b2 y b3 (todas en empate) y se "
+                               "compara dos veces; con más comparaciones aumenta la probabilidad de un «gana» por "
+                               "azar; se reporta junto con los empates anteriores",
+    "mlflow": "denguekay/mejora_modelo_paso_b_lluvia_chirps (el experimento del paso b)",
+    "metricas": "docs/metricas/paso_d.json",
+    "codigo": "code/phase_d_weather_windows.py (columnas, G35-G38, climatología y métricas reportadas); "
+              "tests/test_phase_d_weather_windows.py (ventanas, conteo, G36 sintética, regla, climatología)",
+    "notebook": "notebooks/14_paso_d_ventanas_clima.ipynb (se escribe al correr)",
+    "despues": "si d1 se adopta, la base cambia a L + 5a + d1 y se le consulta a Rosa antes de la fase 7; si no, la "
+               "base sigue siendo L + 5a",
+}
+
+
+def adopt_step_d(alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame) -> bool:
+    """d1 against a reference (L + 5a or b3): the rule of b3."""
+    return adopt_step_b3(alert_verdict, count_verdict)
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 

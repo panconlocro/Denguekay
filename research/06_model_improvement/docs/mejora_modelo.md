@@ -93,6 +93,15 @@ b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](p
      entre peticiones) y la medición preliminar frente a final de b-VI. No cambian el veredicto de b.
 c) ~~Repetir el Niño 1+2 solo si la base cambia en (b)~~: la base no cambió; el paso c no se corre. La fase 4 del
    2026-11-04 queda como la medición del Niño 1+2.
+d) **Ventanas de clima: preregistrado el 2026-11-06, sin correr, pendiente de la revisión de Rosa.** Agregado
+   después de ver b1, b2 y b3 (preregistro `STEP_D` en `code/preregistration.py`). d1 = L + 5a + 14 columnas en
+   memoria: lluvia CHIRPS, temperatura y humedad de ERA5-Land en la semana del origen y medias de o−1..o−4,
+   o−5..o−8 y o−9..o−12; días con >= 20 mm (índice R20mm del ETCCDI) en o−3..o y o−7..o−4 desde el bronze diario
+   de Earth Engine. Sin Niño. Dos comparaciones con la regla de b3: d1 frente a L + 5a y d1 frente a b3. Métricas
+   reportadas que no deciden: Brier y AUPRC por celda, Brier skill score frente a una climatología fuera de muestra
+   y AUPRC restringido a persistencia < umbral_brote_casos. Guardas G35 a G39 (más G17, G25, G29 y G30). Código en
+   `code/phase_d_weather_windows.py`. Puntos a confirmar por Rosa: > o >= 20 mm, la definición de la climatología
+   y qué hacer si d1 gana frente a L + 5a pero pierde frente a b3.
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la
