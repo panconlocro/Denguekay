@@ -825,11 +825,23 @@ STEP_D_REPORT_SEASONS = (*DECIDING_SEASONS, CONTRAST_SEASON)
 STEP_D_SHAP_BLOCKS = ("temporada_2022", "temporada_2023", "temporada_2024")
 STEP_D_SHAP_SEED = 17
 STEP_D_NO_LEAK_CUT = "2016-12-31"   # real-data perturbation: every week after it is changed
+STEP_D_BRIER_PRIMARY = "brier"      # criterion (c), added by Rosa before running
+STEP_D_BRIER_GUARDS = ("auprc", "f1_050", "razon_mae")   # plus the lead time
 
 STEP_D = {
     "fecha": "2026-11-06",
     "estado": "agregado el 2026-11-06 DESPUÉS de ver b1, b2 y b3 (empate en los tres horizontes las tres); "
-              "propuesto y commiteado sin correr nada; pendiente de la revisión de Rosa",
+              "aprobado por Rosa el 2026-11-06 con tres respuestas y un agregado (criterio c), hechos antes de "
+              "correr (ver «respuestas_de_rosa»)",
+    "respuestas_de_rosa": [
+        "umbral: >= 20 mm (R20mm del ETCCDI)",
+        "climatología del Brier skill score: la propuesta, tal cual",
+        "si las comparaciones no coinciden: la base pasa a d1 solo si gana frente a L + 5a; si además pierde "
+        "frente a b3, se consulta a Rosa antes de la fase 7",
+        "agregado: criterio de adopción (c) por la calidad de la probabilidad, frente a L + 5a y frente a b3. "
+        "Motivo declarado por Rosa: la calidad de la p sin corte importa más que el F1 al corte de 0,50, que es "
+        "un umbral de uso",
+    ],
     "motivo": "la media de 5 semanas heredada de la V2 no dice cuándo llovió, y los inicios de brote podrían depender "
               "de ventanas más antiguas (hipótesis de Rosa)",
     "variante": "d1 = C3 + 14 columnas calculadas en memoria con el último dato disponible en la semana del origen "
@@ -855,8 +867,7 @@ STEP_D = {
             "con 30 mm, 26 distritos lo superan en 5 o menos años y la variable queda casi siempre en 0",
             "la media del polígono suaviza los extremos de los píxeles, así que 20 mm por polígono es más exigente "
             "que 20 mm en una estación; queda como hipótesis, no se verificó contra estaciones",
-            "Rosa escribió «más de 20 mm»; el ETCCDI usa >= 20 mm. Se propone >= para seguir el índice; con datos "
-            "continuos la diferencia es mínima. A confirmar por Rosa",
+            "Rosa escribió primero «más de 20 mm» y confirmó >= 20 mm, como el ETCCDI, antes de correr",
         ],
     },
     "comun": "igual que L + 5a: E3 · S4_s3, hiperparámetros de la V1, orígenes desde 2005, bloques 2008-2024 + "
@@ -868,14 +879,23 @@ STEP_D = {
     "comparaciones": {
         "d1_frente_a_L_5a": "regla de b3 (adopt_step_b3): gana la alerta (decide_multi_season + adopt_step_b) sin "
                             "«pierde» ni «compensa (empate)» en el conteo, o gana el conteo (decide_phase5 + "
-                            "adopt_phase5) sin «pierde» ni «compensa (empate)» en la alerta; un empate deja L + 5a",
+                            "adopt_phase5) sin «pierde» ni «compensa (empate)» en la alerta; o (c) gana por el "
+                            "Brier (decide_step_d_brier + adopt_step_b) sin «pierde» ni «compensa (empate)» ni en "
+                            "la alerta (F1) ni en el conteo; un empate deja L + 5a",
         "d1_frente_a_b3": "la misma regla con b3 como referencia (predicciones guardadas de b3, 5 semillas). b3 no se "
                           "adoptó, así que este cruce responde si las ventanas le ganan a la media de 5 semanas con "
-                          "el Niño, y no cambia la base por sí solo. Propuesta a confirmar por Rosa: la base pasa a "
+                          "el Niño, y no cambia la base por sí solo. Aceptado por Rosa: la base pasa a "
                           "d1 solo si d1 gana frente a L + 5a; si además pierde frente a b3, se reporta y se le "
                           "consulta a Rosa antes de la fase 7. d1 y b3 difieren en dos cosas (ventanas y Niño), así "
                           "que el cruce no separa sus efectos",
     },
+    "criterio_c": "agregado por Rosa antes de correr. decide_step_d_brier: la regla multi-temporada (mismas 5 "
+                  "temporadas, MIN_IN_FAVOUR = 4 a favor y 0 en contra, umbral de empate = rango de semillas) con el "
+                  "Brier (probabilidad calibrada, menor es mejor) como métrica principal y AUPRC, F1 a 0,50, razón "
+                  "MAE y antelación como guardas (una guarda veta si está en contra en >= 3 de 5; la antelación veta "
+                  "si su IC95 queda por debajo de 0 con >= 4 temporadas en contra y ninguna a favor, como en "
+                  "decide_phase5). Se adopta por (c) si gana en >= 2 horizontes sin «pierde» ni «compensa (empate)» "
+                  "en el Brier, y ni la alerta (F1) ni el conteo tienen «pierde» ni «compensa (empate)»",
     "metricas_reportadas_que_no_deciden": [
         "Brier y AUPRC por celda (horizonte × temporada de 2010, 2015, 2016, 2022, 2023 y 2024), mediana de las 5 "
         "semillas, para L + 5a, b3 y d1 (las del protocolo, con la probabilidad calibrada)",
@@ -883,7 +903,7 @@ STEP_D = {
         "muestra): para cada bloque y horizonte, la frecuencia de brote del mismo distrito en las semanas "
         "epidemiológicas a ±2 de la semana objetivo (circular, la 53 cuenta como 52), con las etiquetas de la serie "
         "desde 2005 cerradas al primer origen del bloque (las mismas que puede usar el calibrador); un distrito sin "
-        "esas filas toma la frecuencia de todos. Mediana de las 5 semillas",
+        "esas filas toma la frecuencia de todos (aceptada por Rosa). Mediana de las 5 semillas",
         "AUPRC restringido a los distrito-semana con persistencia < umbral_brote_casos en el origen (con el número "
         "de filas y de positivos); mediana de las 5 semillas; vacío si la celda no tiene positivos",
     ],
@@ -907,6 +927,8 @@ STEP_D = {
         "SHAP de d1 por horizonte (media de |SHAP| del regresor, semilla 17) en temporada_2022, temporada_2023 y "
         "temporada_2024, en el formato de b3",
         "HU0007-4 por celda (2022 y 2023) para L + 5a, b3 y d1",
+        "criterio (c) para b3 frente a L + 5a: declarado como posterior a ver los resultados de b3; es una lectura "
+        "y no cambia la decisión de b3",
     ],
     "multiples_comparaciones": "d es la cuarta variante de clima después de b1, b2 y b3 (todas en empate) y se "
                                "compara dos veces; con más comparaciones aumenta la probabilidad de un «gana» por "
@@ -921,9 +943,64 @@ STEP_D = {
 }
 
 
-def adopt_step_d(alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame) -> bool:
-    """d1 against a reference (L + 5a or b3): the rule of b3."""
-    return adopt_step_b3(alert_verdict, count_verdict)
+def decide_step_d_brier(candidate: pd.DataFrame, reference: pd.DataFrame, ranges: pd.DataFrame,
+                        lead_time_diff: pd.DataFrame, seasons: tuple[int, ...] = DECIDING_SEASONS,
+                        min_in_favour: int = MIN_IN_FAVOUR, guard_veto: int = GUARD_VETO_AGAINST) -> pd.DataFrame:
+    """Criterion (c) of step d per horizon: the Brier decides; AUPRC, F1 at 0.50, razón MAE and lead time guard
+    (same structure as ``decide_phase5``)."""
+    blocks = [block_name(s) for s in seasons]
+    metrics = (STEP_D_BRIER_PRIMARY, *STEP_D_BRIER_GUARDS)
+    rows = []
+    for h in sorted(candidate.horizonte.unique()):
+        c = candidate[candidate.horizonte.eq(h)].set_index("bloque")
+        r = reference[reference.horizonte.eq(h)].set_index("bloque")
+        e = ranges[ranges.horizonte.eq(h)].set_index("bloque")
+        counts = {m: _season_signs({b: DIRECTION[m] * (c.at[b, m] - r.at[b, m]) for b in blocks},
+                                   {b: e.at[b, m] for b in blocks}) for m in metrics}
+        f, a = counts[STEP_D_BRIER_PRIMARY]
+        improves, worsens = f >= min_in_favour and a == 0, a >= min_in_favour and f == 0
+        lead = lead_time_diff[lead_time_diff.horizonte.eq(h)].iloc[0]
+        lf, la = _season_signs({b: float(lead[f"diferencia_{b}"]) for b in blocks},
+                               {b: 1 / float(lead[f"episodios_{b}"]) for b in blocks})
+        lead_worse = bool(lead.ic95_superior < 0 and la >= min_in_favour and lf == 0)
+        lead_better = bool(lead.ic95_inferior > 0 and lf >= min_in_favour and la == 0)
+        veto_a = [m for m in STEP_D_BRIER_GUARDS if counts[m][1] >= guard_veto] + (["antelacion"] if lead_worse else [])
+        veto_b = [m for m in STEP_D_BRIER_GUARDS if counts[m][0] >= guard_veto] + (["antelacion"] if lead_better else [])
+        if improves and not veto_a:
+            verdict = "gana"
+        elif worsens and not veto_b:
+            verdict = "pierde"
+        elif improves or worsens:
+            verdict = "compensa (empate)"
+        else:
+            verdict = "empate"
+        rows.append({"horizonte": h, "veredicto": verdict, "vetos": ", ".join(veto_a) or None,
+                     "vetos_contra_referencia": ", ".join(veto_b) or None,
+                     **{f"a_favor_{m}": v[0] for m, v in counts.items()},
+                     **{f"en_contra_{m}": v[1] for m, v in counts.items()},
+                     "a_favor_antelacion": lf, "en_contra_antelacion": la})
+    return pd.DataFrame(rows)
+
+
+def adopt_step_d_criteria(alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame,
+                          brier_verdict: pd.DataFrame) -> dict:
+    """Criteria (a) alert, (b) count and (c) Brier of step d; each one blocked by «pierde» or «compensa (empate)»
+    in the alert or the count (and (a), (b) by the other one, as in b3)."""
+    bad = ["pierde", "compensa (empate)"]
+    alert_bad = bool(alert_verdict.veredicto.isin(bad).any())
+    count_bad = bool(count_verdict.veredicto.isin(bad).any())
+    a = bool(adopt_step_b(alert_verdict) and not count_bad)
+    b = bool(adopt_phase5(count_verdict) and not alert_bad)
+    c = bool(adopt_step_b(brier_verdict) and not alert_bad and not count_bad)
+    return {"a_alerta": a, "b_conteo": b, "c_brier": c, "adopta": a or b or c}
+
+
+def adopt_step_d(alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame,
+                 brier_verdict: pd.DataFrame | None = None) -> bool:
+    """d1 against a reference (L + 5a or b3): the rule of b3, plus criterion (c) when the Brier verdict is given."""
+    if brier_verdict is None:
+        return adopt_step_b3(alert_verdict, count_verdict)
+    return adopt_step_d_criteria(alert_verdict, count_verdict, brier_verdict)["adopta"]
 
 
 # ---------------------------------------------------------------------------

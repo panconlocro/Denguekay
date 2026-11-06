@@ -182,8 +182,40 @@ class TestRule(unittest.TestCase):
         self.assertFalse(pr.adopt_step_d(v("gana", "gana", "gana"), v("compensa (empate)", "empate", "empate")))
         self.assertFalse(pr.adopt_step_d(v("empate", "empate", "empate"), v("empate", "empate", "empate")))
 
+    def test_criterion_c(self):
+        def v(*verdicts):
+            return pd.DataFrame({"horizonte": [2, 3, 4], "veredicto": list(verdicts)})
+
+        tie = v("empate", "empate", "empate")
+        self.assertTrue(pr.adopt_step_d(tie, tie, v("gana", "gana", "empate")))
+        self.assertFalse(pr.adopt_step_d(tie, tie, v("gana", "empate", "empate")))
+        self.assertFalse(pr.adopt_step_d(v("compensa (empate)", "empate", "empate"), tie, v("gana", "gana", "gana")))
+        self.assertFalse(pr.adopt_step_d(tie, v("empate", "pierde", "empate"), v("gana", "gana", "gana")))
+        self.assertFalse(pr.adopt_step_d(tie, tie, v("gana", "gana", "compensa (empate)")))
+        crit = pr.adopt_step_d_criteria(tie, tie, v("gana", "gana", "empate"))
+        self.assertEqual((crit["a_alerta"], crit["b_conteo"], crit["c_brier"]), (False, False, True))
+
+    def test_brier_decision(self):
+        """decide_step_d_brier: 4 of 5 seasons with a lower Brier beyond the tie threshold and none against wins;
+        an AUPRC against in 3 seasons vetoes."""
+        blocks = [pr.block_name(s) for s in pr.DECIDING_SEASONS]
+        ref = pd.DataFrame({"horizonte": 2, "bloque": blocks, "brier": 0.10, "auprc": 0.5, "f1_050": 0.5,
+                            "razon_mae": 0.9})
+        cand = ref.assign(brier=[0.08, 0.08, 0.08, 0.08, 0.10])
+        ranges = ref.assign(brier=0.005, auprc=0.01, f1_050=0.01, razon_mae=0.01)
+        lead = pd.DataFrame({"horizonte": [2], "ic95_inferior": [-0.1], "ic95_superior": [0.1],
+                             **{f"diferencia_{b}": [0.0] for b in blocks}, **{f"episodios_{b}": [10] for b in blocks}})
+        self.assertEqual(pr.decide_step_d_brier(cand, ref, ranges, lead).veredicto.iloc[0], "gana")
+        worse_auprc = cand.assign(auprc=[0.4, 0.4, 0.4, 0.5, 0.5])
+        out = pr.decide_step_d_brier(worse_auprc, ref, ranges, lead).iloc[0]
+        self.assertEqual(out.veredicto, "compensa (empate)")
+        self.assertEqual(out.vetos, "auprc")
+        self.assertEqual(pr.decide_step_d_brier(ref, cand, ranges, lead).veredicto.iloc[0], "pierde")
+
     def test_record(self):
-        self.assertIn("pendiente de la revisión de Rosa", pr.STEP_D["estado"])
+        self.assertIn("aprobado por Rosa", pr.STEP_D["estado"])
+        self.assertEqual(pr.STEP_D_HEAVY_RAIN_MM, 20.0)
+        self.assertIn("criterio_c", pr.STEP_D)
         self.assertEqual(pr.STEP_D["columnas"], pr.STEP_D_COLUMNS)
         self.assertEqual(set(pr.STEP_D["comparaciones"]), {"d1_frente_a_L_5a", "d1_frente_a_b3"})
 
