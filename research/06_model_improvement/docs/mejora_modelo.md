@@ -159,8 +159,10 @@ f) **Matriz de clima: corrida el 2026-11-08; solo b3 se adopta y la base sigue s
    15 comparaciones (12 + los 3 cruces fijos). Código de e1, e2 y n1 en `code/phase_climate_matrix.py` (guardas G45
    a G50), notebook `16_matriz_clima.ipynb`, cifras en `metricas/matriz_clima.json`. **Después, Rosa eligió L + 5a +
    d3 como base con contexto** (b3 retadora; ver arriba y [plan.md](plan.md)).
-g) **Diagnóstico frente a la persistencia (solo lectura, d3, b3 y L + 5a): hecho el 2026-11-08, pendiente del OK de
-   Rosa** (ver «Diagnóstico frente a la persistencia»). El conteo se queda corto en los picos, no en la subida de 2026;
+g) **Diagnóstico frente a la persistencia (solo lectura, d3, b3 y L + 5a): hecho y aprobado por Rosa el 2026-11-08**
+   (ver «Diagnóstico frente a la persistencia»). Las limitaciones para la fase 7 y la hipótesis de los inicios de
+   invierno están en [plan.md](plan.md), «Decisiones de Rosa (2026-11-08, diagnóstico frente a la persistencia
+   aprobado)». El conteo se queda corto en los picos, no en la subida de 2026;
    la w retrospectiva es cercana a 0 en 2026; la persistencia avisa más inicios limpios que p >= 0,50 (18 de 20 son de
    junio a agosto, con el umbral estacional bajando); la calibración en promedio de 2026 es buena y `posterior_2026`
    subpronostica. Propuesta: probar solo la alerta combinada (p >= 0,50 o la persistencia) y documentar el resto como

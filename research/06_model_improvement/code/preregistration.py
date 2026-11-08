@@ -1334,6 +1334,119 @@ CLIMATE_MATRIX = {
 
 
 # ---------------------------------------------------------------------------
+# Combined alert (Rosa, 2026-11-08, after the diagnosis against persistence)
+# ---------------------------------------------------------------------------
+
+COMBINED_ALERT_VARIANTS = ("d3", "b3")          # d3 = the V3 base, b3 = the challenger; each against itself
+COMBINED_ALERT_PRIMARY = "f1_050"
+COMBINED_ALERT_GUARDS = ("precision_050",)      # plus the lead time on clean onsets (guard, not a way to win)
+COMBINED_ALERT_NINO = (2017, 2026)              # Niño seasons; posterior_2026 is reported with them
+COMBINED_ALERT_NORMAL = (2010, 2015, 2016, 2022, 2023, 2024)
+COMBINED_ALERT_REPORTED = (2010, 2015, 2016, 2017, 2022, 2023, 2024, 2026)
+
+
+def decide_combined_alert(candidate: pd.DataFrame, reference: pd.DataFrame, ranges: pd.DataFrame,
+                          lead_time_diff: pd.DataFrame, outbreak_weeks_2026: dict[int, int]) -> pd.DataFrame:
+    """Verdict per horizon of the combined alert against the 0.50 alert alone of the same variant.
+
+    The alert rule of SEASON_2026 as Rosa stated it on 2026-11-08: F1 at 0.50 is the primary metric over the 6
+    seasons (wins with >= 5 of 6 in favour and 0 against; loses symmetrically); precision at 0.50 and the lead time
+    on clean onsets are guards (a guard against in >= 4 of 6 vetoes a win -> «compensa (empate)»). Unlike
+    ``decide_multi_season``, the lead time is only a guard: it cannot make a win by itself. A horizon where 2026 has
+    fewer than ``SEASON_2026_MIN_OUTBREAK_WEEKS`` outbreak weeks uses the 5 usual seasons (4 of 5, veto 3 of 5).
+    A season's lead-time difference counts beyond one onset (``> 1/n``), as in ``decide_multi_season``.
+    """
+    rows = []
+    for h in sorted(candidate.horizonte.unique()):
+        six = outbreak_weeks_2026.get(h, 0) >= SEASON_2026_MIN_OUTBREAK_WEEKS
+        seasons = SEASON_2026_DECIDING if six else DECIDING_SEASONS
+        k, veto = (SEASON_2026_MIN_IN_FAVOUR, SEASON_2026_GUARD_VETO) if six else (MIN_IN_FAVOUR, GUARD_VETO_AGAINST)
+        blocks = [block_name(s) for s in seasons]
+        c = candidate[candidate.horizonte.eq(h)].set_index("bloque")
+        r = reference[reference.horizonte.eq(h)].set_index("bloque")
+        e = ranges[ranges.horizonte.eq(h)].set_index("bloque")
+        counts = {m: _season_signs({b: c.at[b, m] - r.at[b, m] for b in blocks}, {b: e.at[b, m] for b in blocks})
+                  for m in (COMBINED_ALERT_PRIMARY, *COMBINED_ALERT_GUARDS)}
+        lead = lead_time_diff[lead_time_diff.horizonte.eq(h)].iloc[0]
+        counts["antelacion"] = _season_signs({b: float(lead[f"diferencia_{b}"]) for b in blocks},
+                                             {b: 1 / float(lead[f"episodios_{b}"]) for b in blocks})
+        f, a = counts[COMBINED_ALERT_PRIMARY]
+        improves, worsens = f >= k and a == 0, a >= k and f == 0
+        veto_a = [m for m in (*COMBINED_ALERT_GUARDS, "antelacion") if counts[m][1] >= veto]
+        veto_b = [m for m in (*COMBINED_ALERT_GUARDS, "antelacion") if counts[m][0] >= veto]
+        if improves and not veto_a:
+            verdict = "gana"
+        elif worsens and not veto_b:
+            verdict = "pierde"
+        elif improves or worsens:
+            verdict = "compensa (empate)"
+        else:
+            verdict = "empate"
+        rows.append({"horizonte": h, "veredicto": verdict, "temporadas": len(seasons),
+                     "vetos": ", ".join(veto_a) or None, "vetos_contra_referencia": ", ".join(veto_b) or None,
+                     **{f"a_favor_{m}": v[0] for m, v in counts.items()},
+                     **{f"en_contra_{m}": v[1] for m, v in counts.items()}})
+    return pd.DataFrame(rows)
+
+
+def adopt_combined_alert(verdict: pd.DataFrame) -> bool:
+    """>= 2 horizons won and no «pierde» nor «compensa (empate)» (the adoption of SEASON_2026, on the alert)."""
+    return bool(verdict.veredicto.eq("gana").sum() >= STEP_B_MIN_HORIZONS_WON
+                and not verdict.veredicto.isin(["pierde", "compensa (empate)"]).any())
+
+
+COMBINED_ALERT = {
+    "fecha": "2026-11-08",
+    "estado": "preregistrada el 2026-11-08 DESPUÉS del diagnóstico frente a la persistencia (que mostró que la "
+              "persistencia avisa más inicios limpios de 2026 que p >= 0,50); commiteada antes de calcular",
+    "pedido_de_rosa": "alerta combinada = probabilidad calibrada >= 0,50 o alerta de la persistencia, sobre las "
+                      "predicciones guardadas, sin reentrenar; d3 (base) y b3 (retadora), cada una frente a sí misma "
+                      "con la alerta solo por p >= 0,50",
+    "definicion": {
+        "alerta_050": "probabilidad_calibrada >= 0,50 (protocol.ALERT_THRESHOLD), Platt por horizonte con los "
+                      "bloques anteriores (protocolo del estudio)",
+        "alerta_persistencia": "la ya existente del protocolo (denguekay.evaluation.protocol.add_protocol_alerts -> "
+                               "metrics.alerts_from_counts): persistencia > umbral_brote_casos de la semana objetivo "
+                               "y persistencia >= MIN_OUTBREAK_CASES (2 casos); persistencia = casos del distrito en "
+                               "la semana del origen",
+        "alerta_combinada": "alerta_050 o alerta_persistencia; reemplaza a alerta_050 en las métricas a 0,50 "
+                            "(F1, precisión, recall, vp, fp, fn) y en la antelación",
+    },
+    "datos": "predicciones guardadas de d3 (models/experimentos/mejora_modelo/matriz_clima/predicciones_d3.csv.gz) "
+             "y b3 (temporada_2026/predicciones_b3.csv.gz), 5 semillas, reevaluadas con el protocolo del estudio "
+             "(p26.inputs_2026, mezcla 5a); medianas de 5 semillas",
+    "regla": "decide_combined_alert: F1 a 0,50 principal sobre 2010, 2015, 2016, 2022, 2023 y 2026 (gana con >= 5 de "
+             "6 a favor y 0 en contra; pierde simétrico); guardas: precisión a 0,50 y antelación en los inicios "
+             "limpios (en contra en >= 4 de 6 veta la victoria -> «compensa (empate)»); umbral de empate = mayor "
+             "rango entre semillas de las dos alertas (protocol.tie_threshold); antelación con la semilla 17 y la "
+             "banda de un inicio por temporada; un horizonte con < 30 semanas brote en 2026 usa las 5 temporadas "
+             "habituales. Adopción: >= 2 horizontes ganados y ningún «pierde» ni «compensa» "
+             "(adopt_combined_alert)",
+    "no_cambia": "la probabilidad, el Brier, la AUPRC y el conteo son los mismos en las dos alertas; por eso no "
+                 "entran en la regla",
+    "reportado_sin_decidir": [
+        "precisión, recall y F1 a 0,50 por temporada y horizonte (2010, 2015, 2016, 2017, 2022, 2023, 2024, 2026 y "
+        "posterior_2026) de las dos alertas",
+        "falsas alarmas añadidas (fp combinada − fp sola, mediana de semillas) en años normales (2010, 2015, 2016, "
+        "2022, 2023, 2024) y en años de Niño (2017, 2026 y posterior_2026)",
+        "HU0007-4 por celda (sp.hu0007_4_compliance) con la alerta combinada",
+        "lectura: el veredicto de la regla de la alerta tal como está en decide_multi_season (la antelación también "
+        "puede ganar)",
+    ],
+    "declaraciones": [
+        "se fijó después de ver el diagnóstico frente a la persistencia y con 2026 entre las temporadas que deciden",
+        "la alerta combinada avisa en un superconjunto de las semanas de p >= 0,50: el recall y la antelación no "
+        "pueden empeorar, así que la guarda de la antelación no puede vetar; la única que puede es la precisión",
+        "dos comparaciones (d3 y b3); se adopta para cada variante por separado",
+    ],
+    "codigo": "code/phase_combined_alert.py; tests/test_combined_alert.py",
+    "notebook": "notebooks/18_alerta_combinada.ipynb",
+    "metricas": "docs/metricas/alerta_combinada.json",
+    "despues": "con el OK de Rosa, el preregistro del ajuste de hiperparámetros sobre L + 5a + d3 (sin correr)",
+}
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 

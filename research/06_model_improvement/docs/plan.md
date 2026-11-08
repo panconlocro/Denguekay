@@ -301,6 +301,26 @@ Diferencia de Brier en % (variante / referencia − 1; negativo = mejor), de `me
 | Años normales (el resto) | 18 | −0,52 | −1,85 | +1,36 |
 | Todas | 27 | −2,34 | −1,90 | −0,44 |
 
+## Decisiones de Rosa (2026-11-08, diagnóstico frente a la persistencia aprobado)
+
+**Limitaciones anotadas para la fase 7** (del diagnóstico de solo lectura, `metricas/diagnostico_persistencia.json`):
+
+1. **El conteo se queda corto en los picos** (18–38 % menos casos en el pico de la temporada 2026; 35–65 % en el de
+   `posterior_2026`) **y en la subida de `posterior_2026`** (21–51 % menos). En la subida de la temporada 2026, no.
+2. **En 2026 la predicción del conteo no le agrega nada a la persistencia:** la w de 5a que habría sido óptima en el
+   propio bloque es 0,02–0,32 en la temporada 2026 y 0 en `posterior_2026`. **No se ajusta w con 2026.**
+3. **La probabilidad subpronostica cuando la tasa de brote sale de lo habitual:** en `posterior_2026` (tasa 36,7 %) la
+   probabilidad media es 0,58–0,81 de la tasa observada; en la temporada 2026, 0,92–0,99.
+
+**Hipótesis anotada:** 18 de los 20 inicios limpios de la temporada 2026 son de junio a agosto. En los 20, el umbral
+estacional de la semana del inicio es más bajo que el de la semana del origen (h3), mientras los casos no bajan:
+transmisión que no bajó en el invierno de Niño, con un umbral que sí baja. d3 avisa más de esos inicios que L + 5a
+(con >= 2 semanas por p >= 0,50: 3 / 4 / 5 frente a 2 / 2 / 2 en h2 / h3 / h4). Es una hipótesis, no un hallazgo.
+
+**Siguiente:** preregistrar y calcular la alerta combinada (p >= 0,50 o la alerta de la persistencia) sobre las
+predicciones guardadas de d3 y b3; después del OK de Rosa, el preregistro del ajuste de hiperparámetros sobre
+L + 5a + d3.
+
 ## Fase 7 · Síntesis, pruebas y congelamiento
 
 - Configuración elegida frente a la V2, con el protocolo nuevo, y la HU0007-4 por celda.
