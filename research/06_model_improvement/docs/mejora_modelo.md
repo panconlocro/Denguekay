@@ -23,11 +23,23 @@ aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (p
 | b · Lluvia CHIRPS v3 | b1 L + 5a + lluvia CHIRPS (`precip_total_mm_media5_h2`, media del polígono); b2 L + 5a + humedad ERA5-Land + lluvia CHIRPS; b3 (agregada después) clima completo: humedad, lluvia, temperatura y Niño 1+2 | nada: b1 y b2 empatan en los tres horizontes; b3 empata en la alerta y en el conteo; la base sigue siendo L + 5a |
 | 2026 · Temporada 2026 (regla del Brier sobre 6 temporadas) | L + 5a, b3, d1 y d2 = d1 + Niño 1+2, con 2026 entre las temporadas que deciden | **b3**: gana por el Brier en h2 y h3 (5 de 6 temporadas a favor, 0 en contra), empata en h4, sin «pierde» ni «compensa» en la alerta ni en el conteo; d1 y d2 empatan en todo. La regla se fijó después de ver los pasos b y d |
 | d · Ventanas de clima | d1 L + 5a + lluvia CHIRPS, temperatura y humedad ERA5-Land por ventanas (o, o−1..o−4, o−5..o−8, o−9..o−12) + días >= 20 mm; frente a L + 5a y frente a b3 | nada: empate en los tres criterios (alerta, conteo y Brier) y en los tres horizontes, frente a L + 5a y frente a b3 |
-| Matriz de clima (regla `SEASON_2026` + filtro LOSO >= 16 de 24) | 12 variantes sobre L + 5a: medias b1–b4, ventanas d1–d5, anomalías e1 y e2, n1 = b3 con el Niño monótono | **b3 sigue** (única adoptada; 19 de 24 celdas LOSO). d3 (ventanas de temperatura) gana el Brier solo en h2 y no gana la regla; el resto empata en todo. e1 pierde frente a b3 en Brier h4, F1 h3 y conteo h3 |
+| Matriz de clima (regla `SEASON_2026` + filtro LOSO >= 16 de 24) | 12 variantes sobre L + 5a: medias b1–b4, ventanas d1–d5, anomalías e1 y e2, n1 = b3 con el Niño monótono | Por la regla, **b3 sigue** (única adoptada; 19 de 24 celdas LOSO). d3 (ventanas de temperatura) gana el Brier solo en h2 y no gana la regla; el resto empata en todo. e1 pierde frente a b3 en Brier h4, F1 h3 y conteo h3. **Rosa eligió d3 como base con contexto (b3 retadora)** |
 
-**Base candidata: L + 5a + b3** (adoptada por la regla `SEASON_2026` el 2026-11-08 y la única que la matriz de clima
-adopta el mismo día; antes, L + 5a). Antes de la
-fase 7 se le consulta a Rosa.
+**Base de la V3: L + 5a + d3** (las 4 ventanas de temperatura de ERA5-Land), **con b3 como retadora**. Decisión de
+Rosa del 2026-11-08, **con contexto y no por la regla `SEASON_2026`** (por la regla solo se adopta b3): tomada después
+de ver la matriz y usando 2026 para elegir, por el objetivo de anticipar brotes en años de Niño. Justificación y tabla
+de diferencias de Brier por temporada y horizonte en [plan.md](plan.md), «Decisiones de Rosa (2026-11-08, después de
+la matriz de clima)». Resumen (diferencia media de Brier frente a L + 5a, negativo = mejor):
+
+| Promedio de celdas | Celdas | d3 vs L + 5a | b3 vs L + 5a | d3 vs b3 |
+|---|---|---|---|---|
+| Decisivas (2010, 2015, 2016, 2022, 2023, 2026) | 18 | −1,38 % | −1,96 % | +0,58 % |
+| Años de Niño (2017, 2026, `posterior_2026`) | 9 | −5,97 % | −2,00 % | −4,05 % |
+| Todas | 27 | −2,34 % | −1,90 % | −0,44 % |
+
+d3 es peor que L + 5a en 2016 (+0,4 / +0,9 / +2,3 % en h2 / h3 / h4); b3 es peor que L + 5a en 2017. **Se
+congelarán las dos y se evaluarán de forma prospectiva en la temporada 2026-2027.** Antes de la fase 7 se le
+consulta a Rosa. Antes: L + 5a + b3 (regla `SEASON_2026`, 2026-11-08) y L + 5a.
 
 - Modelo: C3 (`base_6` + B3) · E3 · S4_s3 · XGBoost con los hiperparámetros de la V1, entrenado con los orígenes
   desde 2005, bloques por temporada (ventana creciente), α dentro de la muestra, Platt por horizonte con recorte 1e-6,
@@ -145,8 +157,11 @@ f) **Matriz de clima: corrida el 2026-11-08; solo b3 se adopta y la base sigue s
    por las comparaciones múltiples antes de ver b4, d3, d4, d5, e1, e2 y n1. 12 variantes sobre L + 5a (medias b1,
    b2, b3, b4; ventanas d1 a d5; anomalías e1 y e2 con la climatología del bloque; n1 = b3 con el Niño monótono);
    15 comparaciones (12 + los 3 cruces fijos). Código de e1, e2 y n1 en `code/phase_climate_matrix.py` (guardas G45
-   a G50), notebook `16_matriz_clima.ipynb`, cifras en `metricas/matriz_clima.json`. **Siguiente: el diagnóstico
-   frente a la persistencia** (sin empezar).
+   a G50), notebook `16_matriz_clima.ipynb`, cifras en `metricas/matriz_clima.json`. **Después, Rosa eligió L + 5a +
+   d3 como base con contexto** (b3 retadora; ver arriba y [plan.md](plan.md)).
+g) **Diagnóstico frente a la persistencia (solo lectura, d3, b3 y L + 5a):** error del conteo por fase de la curva,
+   peso w de 5a, probabilidad antes de los 20 inicios de 2026, calibración de 2026 y propuesta de ajuste. Luego, con
+   el OK de Rosa, el preregistro del ajuste de hiperparámetros sobre L + 5a + d3 (sin correr).
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la

@@ -260,6 +260,47 @@ Sirven para saber si XGBoost es el límite o si lo son los datos.
 6. **Orden:** primero los datos (Sala 2026, ERA5-Land 2026, CHIRPS por FTP y b-VI) con una excepción de escritura
    acotada; después del OK de Rosa, el preregistro completo y la evaluación.
 
+## Decisiones de Rosa (2026-11-08, después de la matriz de clima)
+
+1. **La base de la V3 es L + 5a + d3** (las 4 ventanas de temperatura de ERA5-Land: semana del origen y medias de
+   o−1..o−4, o−5..o−8 y o−9..o−12) **y b3 queda como retadora.** **No sale de la regla `SEASON_2026`**: d3 gana el
+   Brier en un solo horizonte (h2) y es peor que L + 5a en 2016 en los tres (+0,4 %, +0,9 % y +2,3 %). Es una
+   decisión con contexto, **tomada después de ver los resultados de la matriz y usando 2026 para elegir**.
+   Justificación de Rosa:
+   - el objetivo operativo actual es anticipar brotes en años de Niño (el ENFEN prevé un Niño Costero extraordinario
+     de setiembre de 2026 a mayo de 2027; fuente citada por Rosa);
+   - en los periodos de Niño (2017, 2026 y `posterior_2026`), d3 baja el Brier frente a L + 5a un 5,97 % de media,
+     frente al 2,00 % de b3; b3 es peor que L + 5a en 2017 en los tres horizontes;
+   - en años normales d3 cuesta hasta 2–3 % de Brier frente a b3; en las 27 celdas, d3 −2,34 % y b3 −1,90 % frente a
+     L + 5a;
+   - mejora 21 de 24 celdas LOSO; es la mejor en F1 y en conteo en 2026 y en `posterior_2026`;
+   - es más simple: 4 columnas de clima y una sola fuente (ERA5-Land), sin CHIRPS ni NOAA en la operación semanal.
+2. **Se congelan las dos, d3 y b3,** y se evalúan de forma prospectiva en la temporada 2026-2027.
+3. **Siguiente:** diagnóstico de solo lectura frente a la persistencia (d3, b3 y L + 5a); después del OK de Rosa, el
+   preregistro del ajuste de hiperparámetros sobre L + 5a + d3.
+
+Diferencia de Brier en % (variante / referencia − 1; negativo = mejor), de `metricas/matriz_clima.json`
+(mediana de 5 semillas):
+
+| Bloque | h | d3 vs L + 5a | b3 vs L + 5a | d3 vs b3 |
+|---|---|---|---|---|
+| 2010 | 2 / 3 / 4 | −0,84 / −0,66 / −0,74 | −1,09 / −1,97 / −2,76 | +0,25 / +1,34 / +2,08 |
+| 2015 | 2 / 3 / 4 | −0,55 / −0,66 / −1,74 | −0,53 / −0,64 / −2,68 | −0,02 / −0,03 / +0,97 |
+| 2016 | 2 / 3 / 4 | +0,42 / +0,94 / +2,32 | −0,98 / −1,59 / −0,51 | +1,42 / +2,57 / +2,85 |
+| 2017 (Niño) | 2 / 3 / 4 | −2,49 / −2,30 / −2,34 | +1,16 / +0,76 / +1,03 | −3,60 / −3,04 / −3,34 |
+| 2022 | 2 / 3 / 4 | −0,52 / −0,72 / −0,11 | −1,31 / −1,24 / −0,12 | +0,80 / +0,52 / +0,01 |
+| 2023 | 2 / 3 / 4 | −0,56 / −1,10 / −1,80 | −1,92 / −2,62 / −3,24 | +1,39 / +1,56 / +1,48 |
+| 2024 | 2 / 3 / 4 | −0,65 / −0,93 / −1,47 | −1,91 / −3,52 / −4,62 | +1,29 / +2,68 / +3,31 |
+| 2026 (Niño) | 2 / 3 / 4 | −4,44 / −7,22 / −6,90 | −3,34 / −4,90 / −3,83 | −1,13 / −2,44 / −3,19 |
+| posterior_2026 (Niño) | 2 / 3 / 4 | −8,41 / −9,37 / −10,28 | −4,43 / −2,69 / −1,74 | −4,16 / −6,87 / −8,70 |
+
+| Promedio de celdas | Celdas | d3 vs L + 5a | b3 vs L + 5a | d3 vs b3 |
+|---|---|---|---|---|
+| Decisivas (2010, 2015, 2016, 2022, 2023, 2026) | 18 | −1,38 | −1,96 | +0,58 |
+| Años de Niño (2017, 2026, `posterior_2026`) | 9 | −5,97 | −2,00 | −4,05 |
+| Años normales (el resto) | 18 | −0,52 | −1,85 | +1,36 |
+| Todas | 27 | −2,34 | −1,90 | −0,44 |
+
 ## Fase 7 · Síntesis, pruebas y congelamiento
 
 - Configuración elegida frente a la V2, con el protocolo nuevo, y la HU0007-4 por celda.
