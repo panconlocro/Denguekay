@@ -120,16 +120,20 @@ e) **Temporada 2026 (decisiones de Rosa del 2026-11-08, ver [plan.md](plan.md)).
      (35 días, el 2026-10-01 sin cambios); final y preliminar de enero a abril de 2025 y 2026 (471 archivos, sin
      errores; faltan en el servidor 9 días del preliminar de 2025). Silver nuevo
      `precip_chirps_v3_semanal_desde_2000_20261108.csv` (91 000 filas: las 90 675 del vigente idénticas + 5 semanas
-     `prelim` del 2026-09-27 al 2026-10-25); el vigente se reemplaza solo con el OK de Rosa.
+     `prelim` del 2026-09-27 al 2026-10-25). Con el OK de Rosa (2026-11-08) reemplazó al vigente
+     `precip_chirps_v3_semanal_desde_2000.csv` (una sola escritura; el archivo con fecha ya no existe).
    - Final por FTP frente a Earth Engine (240 días de enero a abril de 2025 y 2026, 15 600 pares distrito-día):
      diferencia media 0,003 mm, máxima 0,145 mm; 2 pares fuera de la tolerancia de b-IV (distrito 200503, 2026-01-10
-     y 2026-03-12: 1,58 frente a 1,65 mm y 3,31 frente a 3,20 mm).
+     y 2026-03-12: 1,58 frente a 1,65 mm y 3,31 frente a 3,20 mm). Rosa los acepta como diferencia menor.
    - Semanas brote (sin las provisionales): temporada 2026, 89 por horizonte (19 distritos, 20 inicios limpios);
      posterior_2026 (2026-08-30 a 2026-10-11), 167 (36 distritos, 17 inicios limpios). Las dos superan el mínimo de 30.
    - b-VI (preliminar frente a final, enero a abril): ver «Paso b-VI» en `metricas/datos_2026.json`. En 2025 el
      preliminar llueve 5 % más que el final por semana (correlación semanal 0,95); en 2026, 7 % menos (0,94). La media
      de 5 semanas de b3 cambia en promedio 2,3 mm (2025) y 3,1 mm (2026) con correlación 0,98 y 0,97; los días
      >= 20 mm de o−3..o cambian en 106 de 845 orígenes (2025) y 219 de 1040 (2026), correlación 0,93 y 0,85.
+     Aprobado por Rosa como descriptivo. **Riesgo anotado para d1 y d2 en producción:** los días >= 20 mm son la
+     variable más sensible al preliminar (en enero a abril de 2026 el preliminar cuenta 170 días distrito con >= 20 mm
+     frente a 213 del final; en 2025, 142 frente a 109).
    - Pendiente: el preregistro completo de la evaluación y la evaluación (después del OK de Rosa).
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
