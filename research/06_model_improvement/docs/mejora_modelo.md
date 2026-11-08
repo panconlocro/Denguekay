@@ -159,9 +159,12 @@ f) **Matriz de clima: corrida el 2026-11-08; solo b3 se adopta y la base sigue s
    15 comparaciones (12 + los 3 cruces fijos). Código de e1, e2 y n1 en `code/phase_climate_matrix.py` (guardas G45
    a G50), notebook `16_matriz_clima.ipynb`, cifras en `metricas/matriz_clima.json`. **Después, Rosa eligió L + 5a +
    d3 como base con contexto** (b3 retadora; ver arriba y [plan.md](plan.md)).
-g) **Diagnóstico frente a la persistencia (solo lectura, d3, b3 y L + 5a):** error del conteo por fase de la curva,
-   peso w de 5a, probabilidad antes de los 20 inicios de 2026, calibración de 2026 y propuesta de ajuste. Luego, con
-   el OK de Rosa, el preregistro del ajuste de hiperparámetros sobre L + 5a + d3 (sin correr).
+g) **Diagnóstico frente a la persistencia (solo lectura, d3, b3 y L + 5a): hecho el 2026-11-08, pendiente del OK de
+   Rosa** (ver «Diagnóstico frente a la persistencia»). El conteo se queda corto en los picos, no en la subida de 2026;
+   la w retrospectiva es cercana a 0 en 2026; la persistencia avisa más inicios limpios que p >= 0,50 (18 de 20 son de
+   junio a agosto, con el umbral estacional bajando); la calibración en promedio de 2026 es buena y `posterior_2026`
+   subpronostica. Propuesta: probar solo la alerta combinada (p >= 0,50 o la persistencia) y documentar el resto como
+   limitación. Después del OK: el preregistro del ajuste de hiperparámetros sobre L + 5a + d3 (sin correr).
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la
@@ -643,6 +646,76 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
 - **Para el serving:** antes de predecir, la app debe verificar que el clima de la última semana usada (humedad y
   lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
   péntada en 2025).
+
+## Diagnóstico frente a la persistencia (solo lectura, 2026-11-08)
+
+Notebook `17_diagnostico_persistencia.ipynb`, código en `code/diagnosis_persistence.py` (tests en
+`tests/test_diagnosis_persistence.py`), cifras en `metricas/diagnostico_persistencia.json`. Sin entrenar ni
+preregistrar nada: predicciones guardadas de L + 5a y b3 (`temporada_2026`) y d3 (`matriz_clima`) reevaluadas con el
+protocolo; medianas de 5 semillas. Fases de la curva regional con `episodes.curve_phase`. En `temporada_2026` no hay
+fase de bajada (la curva sigue por encima del 60 % del máximo hasta el final) y en `posterior_2026` (7 semanas) solo
+hay subida y pico.
+
+**1 · Conteo por fase** (suma predicha / suma observada del conteo publicado, h2 / h3 / h4):
+
+| Bloque · fase (semanas, casos) | L + 5a | b3 | d3 |
+|---|---|---|---|
+| 2026 · valle (27, 234) | 1,38 / 1,46 / 1,54 | 1,55 / 1,64 / 1,71 | 1,51 / 1,59 / 1,65 |
+| 2026 · subida (9, 1354) | 1,06 / 1,07 / 0,96 | 1,12 / 1,17 / 1,15 | 1,06 / 1,11 / 1,02 |
+| 2026 · pico (17, 5979) | 0,77 / 0,69 / 0,66 | 0,75 / 0,66 / 0,62 | 0,82 / 0,74 / 0,71 |
+| posterior · subida (4, 2294) | 0,73 / 0,65 / 0,56 | 0,69 / 0,60 / 0,49 | 0,79 / 0,71 / 0,60 |
+| posterior · pico (3, 3337) | 0,56 / 0,44 / 0,39 | 0,57 / 0,43 / 0,35 | 0,65 / 0,54 / 0,48 |
+
+En la temporada 2026 el conteo **no se queda corto en la subida** (entre −4 % y +17 %): **se queda corto en el pico**
+(18–38 % menos) y sobrepronostica el valle. En `posterior_2026`, el arranque de la temporada 2026-2027, se queda
+corto **en la subida y en el pico** (21–65 % menos), más cuanto mayor el horizonte. La persistencia también se queda
+corta, pero su error medio es igual o menor: la razón MAE del conteo publicado es 1,03–1,10 en el pico de 2026 para
+L + 5a y b3, y 0,94–0,99 para d3; en el pico de `posterior_2026`, 1,12–1,22 para L + 5a y b3 y 0,98–1,01 para d3.
+d3 es la que menos se queda corta en los picos de los dos bloques y en la subida de `posterior_2026`.
+
+**2 · Peso w de 5a.** w usado en `temporada_2026` (h2 / h3 / h4): L + 5a 0,62 / 0,65 / 0,68; b3 0,86 / 0,88 / 0,91;
+d3 0,72 / 0,73 / 0,75. Es parecido al de 2011–2017 (L + 5a 0,58–0,75) y menor que el de 2018–2024 (0,73–0,87).
+Razón MAE en 2026 (h2 / h3 / h4) con w = 1 (solo el modelo): L + 5a 1,21 / 1,23 / 1,23; b3 1,17 / 1,16 / 1,13; d3
+1,09 / 1,11 / 1,09. Con la w usada: 1,06 / 1,10 / 1,07; 1,11 / 1,12 / 1,10; 1,03 / 1,05 / 1,01. Con w = 0 es 1 por
+definición. **La w retrospectiva** (la de menor MAE en el propio bloque; usa el futuro) es 0,02–0,32 en 2026 y **0 en
+`posterior_2026`** para las tres. Es decir, en 2026 la μ del modelo no agrega nada al conteo frente a la persistencia.
+
+**3 · Los 20 inicios limpios de 2026.** Probabilidad calibrada mediana para la semana del inicio (h2 / h3 / h4):
+L + 5a 0,18 / 0,25 / 0,07; b3 0,20 / 0,27 / 0,09; d3 0,21 / 0,29 / 0,085. Inicios avisados con >= 2 semanas por
+p >= 0,50: L + 5a 2 / 2 / 2; b3 2 / 3 / 2; d3 3 / 4 / 5. **Por la persistencia: 4 / 9 / 8.** Hallazgo de la lectura:
+18 de los 20 inicios caen entre junio y agosto de 2026. En los 20, el umbral de brote de la semana del inicio es más
+bajo que el de la semana del origen de h3 (por ejemplo, 200601: 461 casos en el origen frente a 51 en el inicio), y en
+varios distritos los casos siguen en un nivel que no era brote en el origen pero supera el umbral más bajo del
+inicio (200114: 79 casos frente a 143 y 43; 200401: 82 frente a 168 y 71). *Hipótesis:* estos «inicios» son en buena
+parte transmisión que no bajó fuera de temporada (invierno de Niño) mientras el umbral estacional sí bajó. La
+persistencia los avisa casi por construcción; el modelo espera la bajada estacional. d3 los sigue un poco mejor.
+
+**4 · Calibración** (probabilidad media / tasa observada de semanas brote, h2 / h3 / h4):
+
+| Bloque (tasa observada) | L + 5a | b3 | d3 |
+|---|---|---|---|
+| temporada_2026 (2,6 %) | 0,93 / 0,92 / 0,92 | 0,96 / 0,95 / 0,95 | 0,99 / 0,98 / 0,99 |
+| posterior_2026 (36,7 %) | 0,74 / 0,66 / 0,58 | 0,78 / 0,68 / 0,59 | 0,81 / 0,73 / 0,64 |
+
+En la temporada 2026 la calibración en promedio es buena (d3, 0,98–0,99). En `posterior_2026` las tres
+subpronostican, más a mayor horizonte, con una tasa de brote del 37 %.
+
+**5 · Propuesta (sin correr), para que Rosa decida:**
+
+- **Lo único que propongo probar antes de congelar:** una alerta combinada, «p >= 0,50 **o** alerta de la
+  persistencia», sobre las predicciones guardadas de d3 y b3. No hay que entrenar nada ni cambiar la probabilidad, y
+  el Brier no cambia. Es una regla fija, así que se puede preregistrar. Se juzgaría con la F1, la precisión y la
+  antelación en los inicios limpios de las 6 temporadas decisivas, frente a la alerta p >= 0,50 sola, con la regla de
+  la alerta de `SEASON_2026`. Riesgo: más falsos positivos en años normales (la precisión puede caer). La operación
+  semanal ya tiene la persistencia, así que no agrega fuentes.
+- **Documentar como limitación (sin ajuste):**
+  - el conteo se queda corto en los picos (18–38 % en 2026 y 35–65 % en `posterior_2026`), y la μ no le gana a la
+    persistencia en 2026 (w retrospectiva cerca de 0). El intervalo del conteo de la fase 7 debería reflejarlo;
+  - la probabilidad subpronostica cuando la tasa de brote sale del rango histórico (`posterior_2026`).
+- **No propongo:**
+  - una w «reciente»: la w de los bloques 2018–2024 (0,73–0,96 según variante y horizonte) queda lejos de la retrospectiva;
+  - recalibrar con pesos por recencia: en la temporada 2026 la calibración en promedio ya es buena, y
+    `posterior_2026` solo se reporta.
 
 ## Matriz de clima: resultados (2026-11-08)
 
