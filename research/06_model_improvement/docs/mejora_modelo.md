@@ -167,6 +167,10 @@ g) **Diagnóstico frente a la persistencia (solo lectura, d3, b3 y L + 5a): hech
    junio a agosto, con el umbral estacional bajando); la calibración en promedio de 2026 es buena y `posterior_2026`
    subpronostica. Propuesta: probar solo la alerta combinada (p >= 0,50 o la persistencia) y documentar el resto como
    limitación. Después del OK: el preregistro del ajuste de hiperparámetros sobre L + 5a + d3 (sin correr).
+h) **Alerta combinada (p >= 0,50 o la persistencia): preregistrada (`COMBINED_ALERT`, commit `4d9d97c`) y calculada
+   el 2026-11-08; no se adopta ni en d3 ni en b3** (empate en h2, h3 y h4: la F1 no llega a 5 de 6 y la precisión
+   está en contra en 5–6 de 6; ver «Alerta combinada: resultados»). **Siguiente, con el OK de Rosa:** el preregistro
+   del ajuste de hiperparámetros sobre L + 5a + d3 (sin correr).
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la
@@ -648,6 +652,59 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
 - **Para el serving:** antes de predecir, la app debe verificar que el clima de la última semana usada (humedad y
   lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
   péntada en 2025).
+
+## Alerta combinada: resultados (2026-11-08)
+
+Preregistro `COMBINED_ALERT` (commit `4d9d97c`, antes de calcular); notebook `18_alerta_combinada.ipynb`, código
+`code/phase_combined_alert.py`, cifras en `metricas/alerta_combinada.json`. Alerta combinada = p calibrada >= 0,50 **o**
+la alerta de la persistencia del protocolo (`add_protocol_alerts` → `alerts_from_counts`: persistencia > umbral de la
+semana objetivo y persistencia >= 2 casos). Predicciones guardadas de d3 y b3, sin reentrenar; medianas de 5 semillas.
+La probabilidad, el Brier, la AUPRC y el conteo no cambian.
+
+**Veredicto (regla preregistrada): no se adopta ni en d3 ni en b3; empate en h2, h3 y h4 en las dos.** La F1 no llega
+a 5 de 6 temporadas a favor (d3: 3, 4 y 4 a favor, con 1, 2 y 0 en contra; b3: 3, 2 y 4, con 2, 2 y 0), y la precisión
+está en contra en 5 o 6 de las 6 temporadas en todos los horizontes. La antelación mejora (d3: +3,8, +5,2 y +9,9 puntos
+de inicios avisados con >= 2 semanas, IC 95 % por encima de 0), pero en la regla preregistrada es solo una guarda (puntos porcentuales de los 213 inicios limpios de
+las 6 temporadas).
+**Lectura:** con la regla de la alerta tal como está en `decide_multi_season` (donde la antelación también puede
+ganar), las dos ganarían en h4.
+
+**F1 a 0,50, sola → combinada (d3; h2 / h3 / h4):**
+
+| Bloque | F1 sola | F1 combinada | Falsas alarmas sola → combinada |
+|---|---|---|---|
+| 2010 | 0,720 / 0,602 / 0,443 | 0,695 / 0,636 / 0,547 | 40 / 35 / 25 → 70 / 88 / 106 |
+| 2015 | 0,768 / 0,665 / 0,518 | 0,793 / 0,747 / 0,703 | 68 / 55 / 32 → 109 / 122 / 141 |
+| 2016 | 0,660 / 0,622 / 0,581 | 0,660 / 0,615 / 0,585 | 184 / 175 / 160 → 200 / 222 / 239 |
+| 2017 (Niño) | 0,703 / 0,658 / 0,620 | 0,704 / 0,659 / 0,629 | 170 / 154 / 131 → 221 / 251 / 255 |
+| 2022 | 0,702 / 0,704 / 0,650 | 0,702 / 0,691 / 0,658 | 107 / 100 / 97 → 150 / 168 / 193 |
+| 2023 | 0,859 / 0,834 / 0,811 | 0,864 / 0,839 / 0,825 | 108 / 104 / 81 → 128 / 140 / 135 |
+| 2024 | 0,801 / 0,794 / 0,763 | 0,800 / 0,788 / 0,754 | 235 / 268 / 280 → 248 / 287 / 331 |
+| 2026 (Niño) | 0,703 / 0,648 / 0,539 | 0,744 / 0,759 / 0,643 | 7 / 7 / 14 → 14 / 14 / 25 |
+| posterior_2026 (Niño) | 0,845 / 0,779 / 0,736 | 0,854 / 0,796 / 0,770 | 11 / 10 / 8 → 13 / 13 / 12 |
+
+La precisión baja en todas las celdas de d3 (por ejemplo, 2010 h4: 0,745 → 0,547) y el recall sube en todas (2026 h3:
+0,517 → 0,708). b3 sigue el mismo patrón (tabla completa en el JSON).
+
+**Falsas alarmas añadidas** (suma de bloques, h2 / h3 / h4):
+
+| | d3 · falsas alarmas añadidas | d3 · aciertos añadidos | b3 · falsas alarmas añadidas | b3 · aciertos añadidos |
+|---|---|---|---|---|
+| Años normales (2010, 2015, 2016, 2022, 2023, 2024) | +163 / +290 / +470 | +115 / +221 / +388 | +158 / +313 / +497 | +108 / +214 / +365 |
+| Años de Niño (2017, 2026, `posterior_2026`) | +60 / +107 / +139 | +40 / +71 / +89 | +51 / +84 / +117 | +39 / +66 / +93 |
+
+En d3, la alerta sola tiene 742 / 737 / 675 falsas alarmas en los años normales y 188 / 171 / 153 en los de Niño: la
+combinada las aumenta entre 22 % y 91 %.
+
+**HU0007-4 (clasificación: precisión >= 0,60, recall >= 0,80, F1 >= 0,70) en las 27 celdas por variante:**
+- con la alerta sola cumplen 4 celdas de d3 (2023 h2; 2024 h2, h3 y h4) y 4 de b3 (las mismas);
+- con la combinada cumplen 6 de d3 (las 4 de antes más 2023 h3 y `posterior_2026` h2) y 6 de b3 (las 4 de antes más
+  2023 h3 y h4);
+- la parte de regresión no cambia con la alerta.
+
+**Lectura (observación):** la combinada cambia precisión por recall. Gana F1 y antelación donde la persistencia tiene
+información (por ejemplo 2026, `posterior_2026` y 2015) y pierde precisión en todas partes. En años normales agrega más falsas
+alarmas que aciertos en los tres horizontes (por ejemplo, h4 de d3: +470 frente a +388).
 
 ## Diagnóstico frente a la persistencia (solo lectura, 2026-11-08)
 
