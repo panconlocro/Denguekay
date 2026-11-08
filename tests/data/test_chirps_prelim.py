@@ -238,9 +238,9 @@ class FtpTest(unittest.TestCase):
             out = Path(tmp) / "prelim"
             fake = FakeFtp(self._files(tmp, days))
             slept = []
-            with cpr.FtpSource(ftp_factory=fake) as src:
-                self.assertEqual(src.listing("prelim", 2026), days)
-                s = cpr.download_ftp(days, "prelim", source=src, tmp_dir=Path(tmp_dl), ref=REF, stamp="20261108",
+            with cpr.FtpSource(ftp_factory=fake) as source:
+                self.assertEqual(source.listing("prelim", 2026), days)
+                s = cpr.download_ftp(days, "prelim", source=source, tmp_dir=Path(tmp_dl), ref=REF, stamp="20261108",
                                      folder=out, sleep=slept.append, log=lambda *_: None)
             self.assertIn(("pasv", True), fake.commands)
             self.assertIn(("voidcmd", "TYPE I"), fake.commands)
@@ -249,14 +249,14 @@ class FtpTest(unittest.TestCase):
             self.assertEqual(list(Path(tmp_dl).iterdir()), [])
             first = cpr.ftp_target(days[0], "prelim", out).read_bytes()
             # same files again: nothing written
-            with cpr.FtpSource(ftp_factory=fake) as src:
-                s = cpr.download_ftp(days, "prelim", source=src, tmp_dir=Path(tmp_dl), ref=REF, stamp="20261109",
+            with cpr.FtpSource(ftp_factory=fake) as source:
+                s = cpr.download_ftp(days, "prelim", source=source, tmp_dir=Path(tmp_dl), ref=REF, stamp="20261109",
                                      folder=out, sleep=lambda _: None, log=lambda *_: None)
             self.assertEqual((s["sin_cambios"], s["revisiones"]), (["2026-10-01", "2026-10-02"], []))
             # day 1 revised: the new window goes apart, the first one stays
             fake.files.update(self._files(tmp, days[:1], seed=50))
-            with cpr.FtpSource(ftp_factory=fake) as src:
-                s = cpr.download_ftp(days, "prelim", source=src, tmp_dir=Path(tmp_dl), ref=REF, stamp="20261110",
+            with cpr.FtpSource(ftp_factory=fake) as source:
+                s = cpr.download_ftp(days, "prelim", source=source, tmp_dir=Path(tmp_dl), ref=REF, stamp="20261110",
                                      folder=out, sleep=lambda _: None, log=lambda *_: None)
             self.assertEqual(s["revisiones"], ["2026-10-01"])
             self.assertTrue(cpr.revision_path(days[0], "prelim", "20261110", out).exists())
@@ -267,13 +267,13 @@ class FtpTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as tmp_dl:
             files = self._files(tmp, days)
             fake = FakeFtp(files, fail_on=cpr.ftp_remote_path(days[1], "prelim"))
-            with cpr.FtpSource(ftp_factory=fake) as src:
-                s = cpr.download_ftp(days, "prelim", source=src, tmp_dir=Path(tmp_dl), ref=REF, stamp="x",
+            with cpr.FtpSource(ftp_factory=fake) as source:
+                s = cpr.download_ftp(days, "prelim", source=source, tmp_dir=Path(tmp_dl), ref=REF, stamp="x",
                                      folder=Path(tmp) / "p", sleep=lambda _: None, log=lambda *_: None)
             self.assertEqual((s["estado"], len(s["dias"])), ("detenida_error", 1))
             self.assertIn("421", s["error"])
-            with cpr.FtpSource(ftp_factory=FakeFtp(files, wrong_size=5)) as src:
-                s = cpr.download_ftp(days, "prelim", source=src, tmp_dir=Path(tmp_dl), ref=REF, stamp="x",
+            with cpr.FtpSource(ftp_factory=FakeFtp(files, wrong_size=5)) as source:
+                s = cpr.download_ftp(days, "prelim", source=source, tmp_dir=Path(tmp_dl), ref=REF, stamp="x",
                                      folder=Path(tmp) / "q", sleep=lambda _: None, log=lambda *_: None)
             self.assertEqual((s["estado"], len(s["dias"])), ("detenida_error", 0))
             self.assertEqual(list(Path(tmp_dl).iterdir()), [])
