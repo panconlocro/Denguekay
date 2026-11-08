@@ -1104,6 +1104,12 @@ SEASON_2026 = {
                        "en propia_log_casos_temporada_anterior. Solo compara variantes entre sí; nunca se reporta como "
                        "rendimiento esperado y no decide",
     },
+    "enmienda_2026_11_08": "al correr (antes de entrenar ningún modelo) la serie no se pudo armar: el panel integrado "
+                           "termina en la semana 52 de 2025 (2025-12-21) y le falta la 53 (2025-12-28), así que había un "
+                           "hueco antes de 2026. Se agrega la semana 53 de 2025 desde el mismo silver de la Sala (65 "
+                           "filas). G40 compara las filas de la serie del estudio y reporta aparte las agregadas; G41 "
+                           "compara cada predicción guardada y cuenta aparte las filas nuevas de los bloques guardados "
+                           "(los objetivos de esa semana en calendario_2025). Ningún bloque anterior cambia por esto",
     "mlflow": "denguekay/mejora_modelo_temporada_2026",
     "metricas": "docs/metricas/temporada_2026.json",
     "codigo": "code/phase_2026.py; notebook notebooks/15_temporada_2026.ipynb",

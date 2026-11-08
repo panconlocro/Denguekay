@@ -60,14 +60,28 @@ def sala_2026(provisional: int = pr.SEASON_2026_PROVISIONAL_WEEKS) -> tuple[pd.D
     return s[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"]], dropped
 
 
+def sala_missing_2025(panel: pd.DataFrame) -> pd.DataFrame:
+    """Sala 2025 weeks that the integrated panel lacks (week 53 of 2025, 2025-12-28): without them the series has a
+    gap before 2026. Same source (silver epi_sala_semanal.csv) as the 2025 weeks of the panel."""
+    sala = pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"})
+    s = sala[sala.anio.eq(2025)].copy()
+    s["ubigeo"] = s.ubigeo.astype(str)
+    have = set(zip(panel.ubigeo.astype(str), panel.anio, panel.semana))
+    s = s[[k not in have for k in zip(s.ubigeo, s.anio, s.semana)]]
+    s = s.merge(p0.week_grid(2025, 2025), on=["anio", "semana"], how="left", validate="many_to_one")
+    return s[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"]]
+
+
 def inputs_2026() -> dict:
-    """``phase3_onsets.phase3_inputs`` with the Sala 2026 appended to the panel (in memory)."""
+    """``phase3_onsets.phase3_inputs`` with the Sala 2025 weeks the panel lacks and the Sala 2026 appended to the
+    panel (in memory)."""
     base = p3.phase3_inputs()
     panel = base["panel"]
     s26, provisional = sala_2026()
+    s25 = sala_missing_2025(panel)
     recent = panel[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"]].assign(
         ubigeo=lambda d: d.ubigeo.astype(str), semana_inicio=lambda d: pd.to_datetime(d.semana_inicio))
-    extended = pd.concat([recent, s26], ignore_index=True)
+    extended = pd.concat([recent, s25, s26], ignore_index=True)
     cases, _ = p0.long_case_series(extended)
     labels = p0.long_labels(cases)
     matrices = p1.long_matrices(cases, labels)
@@ -75,24 +89,31 @@ def inputs_2026() -> dict:
     series = labels[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue", "brote"]].copy()
     series["semana_inicio"] = pd.to_datetime(series.semana_inicio)
     return {"casos": cases, "matrices": matrices, "origenes": origins, "serie": series, "etiquetas": labels,
-            "panel": panel, "base": base, "sala_2026": s26, "semanas_provisionales": provisional}
+            "panel": panel, "base": base, "sala_2026": s26, "sala_2025_agregada": s25,
+            "semanas_provisionales": provisional}
 
 
 def guard_series(inp: dict) -> dict:
-    """G40: 2005-2025 cases and labels equal the study's; the 2026 rows are the Sala's (65 x weeks)."""
+    """G40: 2005-2025 cases and labels equal the study's on every row of the study's series (the only new rows
+    before 2026 are the Sala weeks the panel lacked, reported); the 2026 rows are the Sala's (65 x weeks)."""
     key = ["ubigeo", "anio", "semana"]
     old = inp["base"]["etiquetas"]
     new = inp["etiquetas"]
     m = old.merge(new[new.anio.le(2025)], on=key, how="outer", suffixes=("_v", "_n"), indicator=True)
+    added = m[m._merge.eq("right_only")]
+    added_keys = set(zip(inp["sala_2025_agregada"].ubigeo, inp["sala_2025_agregada"].anio, inp["sala_2025_agregada"].semana))
+    unexpected = int(sum(k not in added_keys for k in zip(added.ubigeo, added.anio, added.semana)))
     both = m[m._merge.eq("both")]
     diff = {c: int((both[f"{c}_v"] != both[f"{c}_n"]).sum()) for c in ("casos_Dengue", "umbral_brote_casos", "brote")}
     n26 = new[new.anio.eq(2026)].merge(inp["sala_2026"], on=key, suffixes=("", "_sala"), how="outer", indicator=True)
-    out = {"filas_2005_2025": len(old), "sin_par": int(m._merge.ne("both").sum()), "distintas": diff,
+    out = {"filas_2005_2025": len(old), "sin_par": int(m._merge.eq("left_only").sum()), "distintas": diff,
+           "filas_agregadas_2025": len(added), "semanas_agregadas_2025": sorted(set(map(int, added.semana))),
+           "casos_agregados_2025": int(added.casos_Dengue_n.sum()), "agregadas_fuera_de_la_sala": unexpected,
            "filas_2026": int(new.anio.eq(2026).sum()), "distritos_2026": int(new[new.anio.eq(2026)].ubigeo.nunique()),
            "semanas_2026": int(new[new.anio.eq(2026)].semana.nunique()),
            "2026_sin_par_con_la_sala": int(n26._merge.ne("both").sum()),
            "2026_casos_distintos": int((n26.casos_Dengue != n26.casos_Dengue_sala).sum())}
-    out["pasa"] = bool(out["sin_par"] == 0 and not any(diff.values()) and out["2026_sin_par_con_la_sala"] == 0
+    out["pasa"] = bool(out["sin_par"] == 0 and unexpected == 0 and not any(diff.values()) and out["2026_sin_par_con_la_sala"] == 0
                        and out["2026_casos_distintos"] == 0 and out["distritos_2026"] == 65)
     return out
 
@@ -158,20 +179,23 @@ def run_variant(inp: dict, origins: pd.DataFrame, columns: list[str], hp: dict, 
 
 def guard_old_blocks(preds: dict[int, pd.DataFrame], saved: dict[int, pd.DataFrame],
                      tol: float = OLD_BLOCK_TOLERANCE) -> dict:
-    """G41: the rerun reproduces the saved predictions of every saved block (same keys, |diff| <= tol)."""
+    """G41: the rerun reproduces every saved prediction (each saved key is found and |diff| <= tol); new rows of
+    the saved blocks (the targets of the added 2025 week) are counted apart."""
     key = ["ubigeo", "semana_inicio", "horizonte", "bloque"]
-    worst, rows, missing = {"casos_predichos": 0.0, "probabilidad_brote": 0.0}, 0, 0
+    worst, rows, missing, extra = {"casos_predichos": 0.0, "probabilidad_brote": 0.0}, 0, 0, 0
     for seed, s in saved.items():
         a = preds[seed]
         a = a[a.bloque.isin(set(s.bloque))].assign(semana_inicio=pd.to_datetime(a.semana_inicio).dt.strftime("%Y-%m-%d"))
         b = s.assign(semana_inicio=pd.to_datetime(s.semana_inicio).dt.strftime("%Y-%m-%d"))
         m = a.merge(b, on=key, suffixes=("", "_guardada"), how="outer", indicator=True, validate="one_to_one")
-        missing += int(m._merge.ne("both").sum())
+        missing += int(m._merge.eq("right_only").sum())
+        extra += int(m._merge.eq("left_only").sum())
         both = m[m._merge.eq("both")]
         rows += len(both)
         for c in worst:
             worst[c] = max(worst[c], float(np.abs(both[c] - both[f"{c}_guardada"]).max()))
-    return {"filas": rows, "sin_par": missing, "diferencia_maxima": worst, "tolerancia": tol,
+    return {"filas": rows, "guardadas_sin_par": missing, "filas_nuevas_en_bloques_guardados": extra,
+            "diferencia_maxima": worst, "tolerancia": tol,
             "pasa": bool(missing == 0 and all(v <= tol for v in worst.values()))}
 
 
