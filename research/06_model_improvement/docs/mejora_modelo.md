@@ -3,7 +3,7 @@
 Informe del estudio 06. Plan y decisiones de Rosa en [plan.md](plan.md); preregistros en
 `code/preregistration.py`.
 
-## Estado actual (2026-11-06)
+## Estado actual (2026-11-08)
 
 Rama `exp/model-improvement`. Para retomar: leer `CLAUDE.md`, [plan.md](plan.md) y este informe, y seguir desde
 aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (paso b de clima) el 2026-11-06.
@@ -23,8 +23,10 @@ aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (p
 | b · Lluvia CHIRPS v3 | b1 L + 5a + lluvia CHIRPS (`precip_total_mm_media5_h2`, media del polígono); b2 L + 5a + humedad ERA5-Land + lluvia CHIRPS; b3 (agregada después) clima completo: humedad, lluvia, temperatura y Niño 1+2 | nada: b1 y b2 empatan en los tres horizontes; b3 empata en la alerta y en el conteo; la base sigue siendo L + 5a |
 | 2026 · Temporada 2026 (regla del Brier sobre 6 temporadas) | L + 5a, b3, d1 y d2 = d1 + Niño 1+2, con 2026 entre las temporadas que deciden | **b3**: gana por el Brier en h2 y h3 (5 de 6 temporadas a favor, 0 en contra), empata en h4, sin «pierde» ni «compensa» en la alerta ni en el conteo; d1 y d2 empatan en todo. La regla se fijó después de ver los pasos b y d |
 | d · Ventanas de clima | d1 L + 5a + lluvia CHIRPS, temperatura y humedad ERA5-Land por ventanas (o, o−1..o−4, o−5..o−8, o−9..o−12) + días >= 20 mm; frente a L + 5a y frente a b3 | nada: empate en los tres criterios (alerta, conteo y Brier) y en los tres horizontes, frente a L + 5a y frente a b3 |
+| Matriz de clima (regla `SEASON_2026` + filtro LOSO >= 16 de 24) | 12 variantes sobre L + 5a: medias b1–b4, ventanas d1–d5, anomalías e1 y e2, n1 = b3 con el Niño monótono | **b3 sigue** (única adoptada; 19 de 24 celdas LOSO). d3 (ventanas de temperatura) gana el Brier solo en h2 y no gana la regla; el resto empata en todo. e1 pierde frente a b3 en Brier h4, F1 h3 y conteo h3 |
 
-**Base candidata: L + 5a + b3** (adoptada por la regla `SEASON_2026` el 2026-11-08; antes, L + 5a). Antes de la
+**Base candidata: L + 5a + b3** (adoptada por la regla `SEASON_2026` el 2026-11-08 y la única que la matriz de clima
+adopta el mismo día; antes, L + 5a). Antes de la
 fase 7 se le consulta a Rosa.
 
 - Modelo: C3 (`base_6` + B3) · E3 · S4_s3 · XGBoost con los hiperparámetros de la V1, entrenado con los orígenes
@@ -137,12 +139,14 @@ e) **Temporada 2026 (decisiones de Rosa del 2026-11-08, ver [plan.md](plan.md)).
      variable más sensible al preliminar (en enero a abril de 2026 el preliminar cuenta 170 días distrito con >= 20 mm
      frente a 213 del final; en 2025, 142 frente a 109).
    - **Evaluación corrida el 2026-11-08: b3 se adopta** (ver «Temporada 2026: resultados»).
-f) **Matriz de clima: preregistrada el 2026-11-08 (después de ver 2026), sin correr, pendiente de la revisión de
-   Rosa.** `CLIMATE_MATRIX` en `code/preregistration.py`: 12 variantes sobre L + 5a (medias b1, b2, b3, b4;
-   ventanas d1 a d5; anomalías e1 y e2 con la climatología del bloque; n1 = b3 con el Niño monótono), con la regla
-   `SEASON_2026`; cruces entre las adoptadas (base por `select_matrix_base`) y d1, d2 y e1 frente a b3. Entre 15 y 81
-   comparaciones. El código de e1, e2 y n1 (guardas G45 a G50) se escribe después de la revisión. Luego, el
-   diagnóstico frente a la persistencia.
+f) **Matriz de clima: corrida el 2026-11-08; solo b3 se adopta y la base sigue siendo L + 5a + b3** (ver «Matriz
+   de clima: resultados»). Preregistrada después de ver 2026 (`CLIMATE_MATRIX` en `code/preregistration.py`) y
+   aprobada por Rosa con el filtro LOSO (>= 16 de 24 celdas con mejor Brier que L + 5a, también para b3), agregado
+   por las comparaciones múltiples antes de ver b4, d3, d4, d5, e1, e2 y n1. 12 variantes sobre L + 5a (medias b1,
+   b2, b3, b4; ventanas d1 a d5; anomalías e1 y e2 con la climatología del bloque; n1 = b3 con el Niño monótono);
+   15 comparaciones (12 + los 3 cruces fijos). Código de e1, e2 y n1 en `code/phase_climate_matrix.py` (guardas G45
+   a G50), notebook `16_matriz_clima.ipynb`, cifras en `metricas/matriz_clima.json`. **Siguiente: el diagnóstico
+   frente a la persistencia** (sin empezar).
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la
@@ -624,6 +628,59 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
 - **Para el serving:** antes de predecir, la app debe verificar que el clima de la última semana usada (humedad y
   lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
   péntada en 2025).
+
+## Matriz de clima: resultados (2026-11-08)
+
+Notebook `16_matriz_clima.ipynb`, cifras en `metricas/matriz_clima.json`, MLflow
+`denguekay/mejora_modelo_matriz_clima` (run `3e33511d09124833a0d7fa63e875daa3`). GPU, 5 semillas.
+
+**Guardas: todas pasan.** G40, G17, G25, G30, G35a/b, G42, G43 (lluvia, ventanas, temperatura, Niño), G44; G45
+(e1 + ventana de la climatología = d1, bloques 2008 y 2026 y sintética), G46, G47 (bloques 2016 y 2026), G48 (todos
+los cortes), G49 (n1 monótona en cada bloque, peor diferencia 0,0) y G50 (restricción 0 = b3, diferencia 0,0).
+Reutilización: L + 5a, b3, d1 y d2 reproducen con la semilla 17 las predicciones de `temporada_2026` (G41,
+diferencia 0,0); b1 y b2 las de `paso_b` (G41, 0,0; 975 filas nuevas de los bloques 2026). El resto se entrenó.
+
+**Veredictos frente a L + 5a (regla `SEASON_2026` + filtro LOSO):**
+
+| Variante | Columnas | Brier h2/h3/h4 | F1 h2/h3/h4 | Conteo h2/h3/h4 | Celdas LOSO mejores (de 24) | Adoptada |
+|---|---|---|---|---|---|---|
+| b1 | 1 | empate/empate/empate | empate ×3 | empate ×3 | 16 | no |
+| b2 | 2 | empate ×3 | empate ×3 | empate ×3 | 15 | no |
+| b4 | 3 | empate ×3 | empate ×3 | empate ×3 | 20 | no |
+| d3 | 4 | **gana**/empate/empate | empate ×3 | empate ×3 | 21 | no (gana un solo horizonte) |
+| d5 | 4 | empate ×3 | empate ×3 | empate ×3 | 17 | no |
+| b3 | 4 | **gana/gana**/empate | empate ×3 | empate ×3 | 19 | **sí** |
+| n1 | 4 | empate ×3 | empate ×3 | empate ×3 | 19 | no |
+| d4 | 6 | empate ×3 | empate ×3 | empate ×3 | 12 | no |
+| d1 | 14 | empate ×3 | empate ×3 | empate ×3 | 22 | no |
+| e1 | 14 | empate ×3 | empate ×3 | empate ×3 | 17 | no |
+| d2 | 15 | empate ×3 | empate ×3 | empate ×3 | 23 | no |
+| e2 | 15 | empate ×3 | empate ×3 | empate ×3 | 17 | no |
+
+Una sola adoptada, así que no hay cruces entre adoptadas; **base: b3** (`select_matrix_base`). Cruces fijos frente a
+b3: d1 y d2 empatan en todo; e1 **pierde** en Brier h4, F1 h3 y conteo h3. Comparaciones hechas: 15.
+
+**Métricas reportadas (no deciden).** Brier de `temporada_2026` en h2: 0,010 en b3, b4, d1, d2, d3 y n1; 0,011 en
+L + 5a y el resto. F1 a 0,50 de `temporada_2026` h2/h3/h4: L + 5a 0,658/0,557/0,424; b3 0,671/0,611/0,455; d3
+0,703/0,648/0,539 (la más alta). En `posterior_2026` (solo se reporta), d3 tiene el Brier más bajo en los tres
+horizontes (0,087/0,104/0,120 frente a 0,095/0,115/0,134 de L + 5a y 0,091/0,112/0,132 de b3) y la razón MAE más
+cerca de 1 (1,01/1,01/1,07). HU0007-4: ninguna celda de ninguna variante cumple la parte de clasificación ni la de
+regresión en `temporada_2026` ni en `posterior_2026` (78 celdas). Brier mediano frente a L + 5a (sobre las 6
+temporadas y 3 horizontes): b3 −0,00065, n1 −0,00063, d2 −0,00062; e1 +0,00022, e2 +0,00014, d4 +0,00005.
+
+**n1 (Niño monótono):** la pendiente de Platt es positiva en todos los bloques (mínima 0,842; mediana 1,22 a 1,26 por
+horizonte), así que la restricción no invierte la probabilidad. n1 empata con L + 5a en todo; frente a b3 no se
+compara (la regla no la adopta).
+
+**SHAP (semilla 17; b3, n1 y d2, las tres con mejor Brier mediano; bloques 2022, 2023 y 2026, h2):** domina
+`propia_semanas_desde_ultimo_caso` (1,26 a 1,53), luego `hist_media_4` y la temperatura (`temp_media_media5_h2`
+0,30 a 0,34 en b3 y n1; `temp_media_s0` 0,17 a 0,20 en d2) y la estacionalidad. El Niño pesa poco y menos en 2026
+(b3: 0,043 en 2022, 0,020 en 2023, 0,007 en 2026). Detalle por horizonte en el JSON.
+
+**Lectura (observación, no conclusión):** con 15 comparaciones y empates casi en todo, la matriz no muestra una
+variante de clima mejor que b3 por la regla preregistrada. d3 (solo ventanas de temperatura) es la única señal
+distinta: gana el Brier en h2, tiene 21 de 24 celdas LOSO mejores y es la mejor en las métricas reportadas de 2026
+y `posterior_2026`, pero no alcanza la regla y es una de 15 comparaciones; queda como hipótesis, no como hallazgo.
 
 ## Temporada 2026: resultados (2026-11-08)
 
