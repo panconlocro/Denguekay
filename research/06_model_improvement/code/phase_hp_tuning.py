@@ -82,8 +82,51 @@ def time_trials(matrices, origins, columns, configurations: dict[str, dict]) -> 
     return pd.DataFrame(rows)
 
 
+def study_columns() -> list[str]:
+    return [*p3._config()[0], *pr.MATRIX_VARIANTS["d3"]]
+
+
+def reference_scores(matrices, origins, columns, path) -> pd.DataFrame:
+    """Per-cell scores of the exact inherited hyperparameters (reg_alpha = 0, seed 17), computed once and saved."""
+    if path.exists():
+        return pd.read_csv(path)
+    ref = run_trial(matrices, origins, columns, inherited())
+    ref.to_csv(path, index=False)
+    return ref
+
+
+def run_search(out_dir, n_trials: int = pr.HP_TUNING_N_TRIALS, timeout: float = pr.HP_TUNING_TIMEOUT_S):
+    """Run (or resume) the preregistered TPE study, saved in ``out_dir/optuna.db``. The timeout caps this
+    invocation's wall clock: no trial starts after it; the running one finishes."""
+    import optuna
+
+    import phase_2026 as p26
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    inp = p26.inputs_2026()
+    origins, _ = p26.add_climate(inp)
+    columns = study_columns()
+    reference = reference_scores(inp["matrices"], origins, columns, out_dir / "referencia_heredados.csv")
+    optuna.logging.set_verbosity(optuna.logging.INFO)
+    st = optuna.create_study(study_name=STUDY_NAME, storage=f"sqlite:///{(out_dir / 'optuna.db').as_posix()}",
+                             direction="minimize", load_if_exists=True,
+                             sampler=optuna.samplers.TPESampler(seed=pr.HP_TUNING_TPE_SEED,
+                                                                n_startup_trials=pr.HP_TUNING_STARTUP_TRIALS))
+    if not st.trials:
+        st.enqueue_trial({**inherited(), "reg_alpha": 1e-3}, user_attrs={"es_base": True})
+    done = sum(t.state != optuna.trial.TrialState.WAITING for t in st.trials)
+    start = time.perf_counter()
+    if n_trials - done > 0:
+        st.optimize(objective_fn(inp["matrices"], origins, columns, reference), n_trials=n_trials - done,
+                    timeout=timeout, catch=(Exception,))
+    return st, time.perf_counter() - start
+
+
+STUDY_NAME = "ajuste_hp_d3"
+
+
 def objective_fn(matrices, origins, columns, reference: pd.DataFrame):
-    """Optuna objective (the study itself is run only after Rosa's OK)."""
+    """Optuna objective."""
     def function(trial):
         params = suggest(trial)
         start = time.perf_counter()
@@ -93,3 +136,13 @@ def objective_fn(matrices, origins, columns, reference: pd.DataFrame):
         value = relative_objective(cells, reference)
         return value if math.isfinite(value) else float("nan")
     return function
+
+
+if __name__ == "__main__":
+    # Long search (overnight): python research/06_model_improvement/code/phase_hp_tuning.py
+    from denguekay.config.paths import MODELS
+
+    out = MODELS / "experimentos" / "mejora_modelo" / "ajuste_hp"
+    st, seconds = run_search(out)
+    states = pd.Series([t.state.name for t in st.trials]).value_counts().to_dict()
+    print(f"FIN: {seconds:.0f} s en esta corrida; trials por estado {states}", flush=True)

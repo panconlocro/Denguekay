@@ -1471,6 +1471,7 @@ HP_TUNING_SPACE = {
 HP_TUNING_N_TRIALS = 300
 HP_TUNING_STARTUP_TRIALS = 20        # random trials before TPE models the space
 HP_TUNING_TIMES = {"heredados (160 × 3)": 11.6, "800 × 5": 64.4, "1500 × 8 (máximo)": 210.4}   # s, GPU, 2026-11-08
+HP_TUNING_TIMEOUT_S = 10 * 3600     # wall-clock cap of the search (Rosa, 2026-11-08, before running)
 
 
 def hp_tuning_choose(top_medians: dict[int, float]) -> int:
@@ -1491,8 +1492,14 @@ def adopt_hp_tuning(brier_verdict: pd.DataFrame, alert_verdict: pd.DataFrame, co
 
 HP_TUNING = {
     "fecha": "2026-11-08",
-    "estado": "preregistrado el 2026-11-08, sin correr; pendiente de la revisión de Rosa. Medido antes solo el tiempo "
-              "por trial (no se miraron los valores del objetivo)",
+    "estado": "preregistrado el 2026-11-08 y aprobado por Rosa tal cual el mismo día, con un agregado antes de correr "
+              "(ver «agregado_de_rosa»). Medido antes solo el tiempo por trial (no se miraron los valores del objetivo)",
+    "agregado_de_rosa": [
+        "tope de 10 horas de pared para la búsqueda (timeout de Optuna: no empieza trials nuevos después del tope; el "
+        "que está corriendo termina). Si se alcanza, se sigue con los trials completos hasta ese momento y se reporta",
+        "las temporadas de ajuste no incluyen ningún Niño fuerte (2017 queda fuera para no tocar el filtro fuera de "
+        "temporada): la comparación final y el filtro son los que protegen el desempeño en años de Niño",
+    ],
     "base": "L + 5a + d3 (base de la V3, decisión de Rosa del 2026-11-08): columnas de CONFIG_2026_V1 + las 4 ventanas "
             "de temperatura de ERA5-Land; E3 · S4_s3, orígenes desde 2005, Platt por horizonte, mezcla 5a",
     "heredados": "hiperparámetros de CONFIG_2026_V1: n_estimators 160, max_depth 3, learning_rate 0,05, "
@@ -1508,7 +1515,7 @@ HP_TUNING = {
     "trial_0": "los heredados con reg_alpha = 1e-3 (Optuna no admite 0 en escala log), encolado como en 05",
     "estudio": {"muestreador": "TPE", "semilla_tpe": HP_TUNING_TPE_SEED, "semilla_xgboost": HP_TUNING_XGB_SEED,
                 "trials": HP_TUNING_N_TRIALS, "trials_aleatorios_iniciales": HP_TUNING_STARTUP_TRIALS,
-                "pruning": False, "early_stopping": False,
+                "pruning": False, "early_stopping": False, "tope_de_pared_s": HP_TUNING_TIMEOUT_S,
                 "fallidos": "un trial que falla o da objetivo no finito queda como FAIL y se reporta",
                 "dispositivo": "GPU (CUDA) de la máquina de Rosa; en GPU los decimales pueden variar entre corridas "
                                "con la misma semilla"},

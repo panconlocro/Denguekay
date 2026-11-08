@@ -66,8 +66,17 @@ class TestRule(unittest.TestCase):
         self.assertFalse(pr.adopt_hp_tuning(tie, tie, tie, 24, 0.9))   # a tie keeps the inherited
 
     def test_record(self):
-        self.assertIn("sin correr", pr.HP_TUNING["estado"])
+        self.assertIn("aprobado por Rosa", pr.HP_TUNING["estado"])
         self.assertEqual(pr.HP_TUNING_N_TRIALS, 300)
+        self.assertEqual(pr.HP_TUNING_TIMEOUT_S, 36000)
+        self.assertEqual(pr.HP_TUNING["estudio"]["tope_de_pared_s"], 36000)
+        self.assertTrue(any("Niño fuerte" in x for x in pr.HP_TUNING["agregado_de_rosa"]))
+        self.assertNotIn(2017, pr.HP_TUNING_TRAIN_SEASONS)
+
+    def test_study_columns(self):
+        cols = ht.study_columns()
+        self.assertEqual(cols[-4:], pr.MATRIX_VARIANTS["d3"])
+        self.assertEqual(len(cols), len(set(cols)))
 
 
 if __name__ == "__main__":
