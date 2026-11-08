@@ -311,10 +311,11 @@ def climatology(pred: pd.DataFrame, series: pd.DataFrame, half_width: int = CLIM
     return out
 
 
-def reported_metrics(data: pd.DataFrame, clim: pd.Series, blocks) -> pd.DataFrame:
+def reported_metrics(data: pd.DataFrame, clim: pd.Series, blocks, floor: float | None = None) -> pd.DataFrame:
     """Per horizon and block of ``blocks``, on the protocol's ``datos`` (calibrated probability): Brier, Brier of
     the climatology, Brier skill score, AUPRC, and the AUPRC restricted to rows with ``persistencia`` <
-    ``umbral_brote_casos`` (with their rows and positives)."""
+    ``umbral_brote_casos`` (with their rows and positives). ``floor`` (season 2026): the limit is
+    max(umbral_brote_casos, floor), as the persistence alert."""
     from sklearn.metrics import average_precision_score
 
     d = data.assign(clim=clim.reindex(data.index).to_numpy())
@@ -323,7 +324,10 @@ def reported_metrics(data: pd.DataFrame, clim: pd.Series, blocks) -> pd.DataFram
         y, p = g.brote.to_numpy(int), g.probabilidad_calibrada.to_numpy(float)
         brier = float(np.mean((p - y) ** 2))
         brier_clim = float(np.mean((g.clim.to_numpy(float) - y) ** 2))
-        below = g.persistencia.to_numpy(float) < g.umbral_brote_casos.to_numpy(float)
+        limit = g.umbral_brote_casos.to_numpy(float)
+        if floor is not None:
+            limit = np.maximum(limit, floor)
+        below = g.persistencia.to_numpy(float) < limit
         yb = y[below]
         rows.append({"horizonte": h, "bloque": block, "n": len(g), "positivos": int(y.sum()),
                      "brier": brier, "brier_climatologia": brier_clim,

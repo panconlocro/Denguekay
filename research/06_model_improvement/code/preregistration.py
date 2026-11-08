@@ -1017,9 +1017,9 @@ SEASON_2026_PROVISIONAL_WEEKS = 2  # the last 2 published Sala weeks stay out of
 
 SEASON_2026 = {
     "fecha": "2026-11-08",
-    "estado": "regla de decisión aprobada por Rosa el 2026-11-08 antes de bajar los datos de 2026; el resto del "
-              "preregistro (guardas, lecturas, validación dejando una temporada fuera) se escribe después del punto 1 "
-              "de datos y de su OK",
+    "estado": "regla de decisión aprobada por Rosa el 2026-11-08 antes de bajar los datos de 2026; guardas, "
+              "métricas, lecturas y validación dejando una temporada fuera escritas el 2026-11-08 después del punto 1 de "
+              "datos (aprobado por Rosa) y ANTES de entrenar ningún modelo con 2026",
     "temporada_2026": "semana 35 de 2025 a semana 34 de 2026 (bloque temporada_2026, entrenado con los orígenes hasta "
                       "la temporada 2025; Platt y la w de 5a con los bloques anteriores)",
     "posterior_2026": "semanas 35 de 2026 en adelante (bloque posterior_2026, entrenado hasta la temporada 2026, lo que "
@@ -1047,6 +1047,66 @@ SEASON_2026 = {
         "publicado después del congelamiento (el resto de la temporada 2026-2027); ver plan.md, «Decisiones de Rosa "
         "(2026-11-08)»",
     ],
+    "datos": {
+        "casos": "serie larga del estudio (silver epi 2005-2016 + integrado 2017-2025) + la Sala 2026 del silver "
+                 "epi_sala_semanal.csv (semanas 1 a 41: la 42 y la 43 son provisionales y no entran), en memoria; "
+                 "etiquetas con la regla de gold (5 años previos)",
+        "lluvia": "silver precip_chirps_v3_semanal_desde_2000.csv (reemplazado el 2026-11-08: final hasta la semana del "
+                  "2026-09-20 y preliminar del 2026-09-27 al 2026-10-25)",
+        "dias_fuertes": "final: bronze ee_final; semanas preliminares: medias diarias por polígono de las ventanas "
+                        "preliminares del bronze, calculadas con chirps_precipitation.daily_from_windows de "
+                        "feat/chirps-precipitation (5b6f6cd) y guardadas como insumo del experimento en "
+                        "models/experimentos/mejora_modelo/temporada_2026/ (no en data/)",
+        "humedad_y_temperatura": "silver meteo_humedad_era5_land_2000_2026.csv",
+        "nino": "silver enso_nino12_mensual.csv (hasta 2026-10)",
+    },
+    "bloques": "los de siempre (temporada_2008 a temporada_2024 y calendario_2025) + temporada_2026 (temporada 2026) "
+               "+ posterior_2026 (temporada 2027 hasta la semana 41 de 2026); Platt por horizonte y w de 5a con los "
+               "bloques anteriores, como siempre; 5 semillas; las 4 variantes se reentrenan en todos los bloques",
+    "guardas_antes_de_mirar_resultados": [
+        "G40: la serie extendida reproduce exactamente casos y etiquetas 2005-2025 de la serie del estudio, y sus "
+        "filas de 2026 son las del silver de la Sala (65 distritos, semanas 1 a 41)",
+        "G41: L, b3 y d1 reentrenadas con los datos extendidos reproducen sus predicciones guardadas en los 19 "
+        "bloques anteriores (diferencia máxima de casos_predichos y probabilidad_brote <= 1e-6)",
+        "G29: L + 5a reproduce fase5.json",
+        "G17, G25, G30 y G35b: definición de humedad, lluvia, temperatura y ventanas (como en b3 y d)",
+        "G35a: las sumas semanales del diario (Earth Engine + preliminar) son iguales al silver de lluvia en todas sus "
+        "semanas, también las preliminares",
+        "G42: ningún origen desde 2005 hasta el último de posterior_2026 sin alguna columna de clima de b3, d1 o d2",
+        "G43: disponibilidad contra origen_cierre + 14 días: lluvia y días fuertes con la fecha_disponible del silver "
+        "(incluidas las semanas preliminares), ERA5-Land con 7 días, Niño con su fecha_disponible (G21)",
+        "G44: los tests de no fuga por perturbación de la lluvia, la temperatura, el Niño y las ventanas (G22, G26, "
+        "G31 y G36)",
+        "si una guarda falla, se detiene la evaluación y se explica; no se ajusta nada para que pase",
+    ],
+    "metricas_por_celda": "para L + 5a, b3, d1 y d2, mediana de 5 semillas, en las 6 temporadas que deciden, 2017, "
+                          "2024 y posterior_2026: Brier, Brier skill score con la climatología del paso d, AUPRC "
+                          "general y en inicios (persistencia < max(umbral_brote_casos, 2)), F1 a 0,50, razón MAE y "
+                          "RMSE, con el número de semanas brote; la HU0007-4 por celda en 2022, 2023 y 2026",
+    "lecturas_que_no_deciden": [
+        "posterior_2026 (entrenado hasta la temporada 2026), con sus semanas brote",
+        "las 2 semanas provisionales: casos y semanas brote observados",
+        "rango de nino12_anom_media3 en el entrenamiento de cada bloque frente a su valor en cada origen de "
+        "temporada_2026 y posterior_2026",
+        "qué orígenes usan lluvia preliminar (alguna semana de su ventana con version = prelim)",
+        "antelación en temporada_2026 (20 inicios limpios) y en posterior_2026 (17, debajo del mínimo: no evaluable)",
+    ],
+    "validacion_dejando_una_temporada_fuera": {
+        "temporadas": [2010, 2015, 2016, 2017, 2022, 2023, 2024, 2026],
+        "entrenamiento": "orígenes desde 2005 con sus 3 objetivos etiquetados, menos los que tienen la semana del "
+                         "origen o algún objetivo dentro de la temporada dejada fuera ampliada 4 semanas antes y 4 "
+                         "después; el resto de las temporadas, pasadas y futuras (hasta la semana 41 de 2026)",
+        "calibracion": "Platt por horizonte ajustado con las predicciones fuera de muestra de las otras 7 temporadas "
+                       "dejadas fuera (nunca con la evaluada); la w de 5a, igual",
+        "metricas": "las de metricas_por_celda menos la antelación, mediana de 5 semillas, por temporada y horizonte",
+        "lectura": "diferencias de b3, d1 y d2 frente a L + 5a (modelo sin clima frente a modelos con clima)",
+        "declaracion": "es optimista: usa temporadas futuras, y la temporada siguiente a la dejada fuera usa su total "
+                       "en propia_log_casos_temporada_anterior. Solo compara variantes entre sí; nunca se reporta como "
+                       "rendimiento esperado y no decide",
+    },
+    "mlflow": "denguekay/mejora_modelo_temporada_2026",
+    "metricas": "docs/metricas/temporada_2026.json",
+    "codigo": "code/phase_2026.py; notebook notebooks/15_temporada_2026.ipynb",
 }
 
 
