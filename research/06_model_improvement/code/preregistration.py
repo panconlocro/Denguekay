@@ -1447,6 +1447,124 @@ COMBINED_ALERT = {
 
 
 # ---------------------------------------------------------------------------
+# Hyperparameter tuning of L + 5a + d3 (Rosa, 2026-11-08; preregistered, not run)
+# ---------------------------------------------------------------------------
+
+HP_TUNING_TRAIN_SEASONS = (2008, 2009, 2011, 2012, 2013, 2014, 2018, 2019, 2020, 2021)
+HP_TUNING_OBJECTIVE_SEASONS = (2009, 2012, 2013, 2014, 2018, 2021)   # >= 50 outbreak weeks per horizon
+HP_TUNING_XGB_SEED = 17
+HP_TUNING_TPE_SEED = 20261108
+HP_TUNING_TOP_K = 5
+# Study 05 space (src/denguekay/evaluation/tuning.py SPACE) revised for the origins from 2005: (type, min, max, log).
+HP_TUNING_SPACE = {
+    "max_depth": ("int", 2, 8, False),
+    "min_child_weight": ("float", 1.0, 100.0, True),     # 05: 1-50; ~2.3 times the training rows
+    "learning_rate": ("float", 0.01, 0.3, True),
+    "n_estimators": ("int", 100, 1500, False),
+    "subsample": ("float", 0.5, 1.0, False),
+    "colsample_bytree": ("float", 0.5, 1.0, False),
+    "reg_lambda": ("float", 1e-3, 50.0, True),           # 05: up to 10; the inherited 5.0 sat in the upper half
+    "reg_alpha": ("float", 1e-3, 10.0, True),
+    "gamma": ("float", 0.0, 5.0, False),
+    "max_delta_step": ("float", 0.3, 2.0, False),
+}
+HP_TUNING_N_TRIALS = 300
+HP_TUNING_STARTUP_TRIALS = 20        # random trials before TPE models the space
+HP_TUNING_TIMES = {"heredados (160 × 3)": 11.6, "800 × 5": 64.4, "1500 × 8 (máximo)": 210.4}   # s, GPU, 2026-11-08
+
+
+def hp_tuning_choose(top_medians: dict[int, float]) -> int:
+    """Candidate among the top-K trials: the lowest 5-seed median of the objective; a tie keeps the lower trial
+    number (the earlier in the study)."""
+    return min(top_medians, key=lambda n: (top_medians[n], n))
+
+
+def adopt_hp_tuning(brier_verdict: pd.DataFrame, alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame,
+                    loso_better_cells: int, candidate_objective_median: float) -> bool:
+    """The candidate replaces the inherited hyperparameters only if its objective median beats them (< 1), it wins
+    with SEASON_2026 against L + 5a + d3 with the inherited ones, and its Brier is better in at least
+    ``MATRIX_LOSO_MIN_CELLS`` of the 24 leave-one-season-out cells. Anything else (a tie included) keeps the inherited."""
+    return bool(candidate_objective_median < 1.0
+                and adopt_season_2026(brier_verdict, alert_verdict, count_verdict)
+                and loso_better_cells >= MATRIX_LOSO_MIN_CELLS)
+
+
+HP_TUNING = {
+    "fecha": "2026-11-08",
+    "estado": "preregistrado el 2026-11-08, sin correr; pendiente de la revisión de Rosa. Medido antes solo el tiempo "
+              "por trial (no se miraron los valores del objetivo)",
+    "base": "L + 5a + d3 (base de la V3, decisión de Rosa del 2026-11-08): columnas de CONFIG_2026_V1 + las 4 ventanas "
+            "de temperatura de ERA5-Land; E3 · S4_s3, orígenes desde 2005, Platt por horizonte, mezcla 5a",
+    "heredados": "hiperparámetros de CONFIG_2026_V1: n_estimators 160, max_depth 3, learning_rate 0,05, "
+                 "min_child_weight 5, subsample 0,8, colsample_bytree 0,9, reg_lambda 5, reg_alpha 0, gamma 0, "
+                 "max_delta_step 0,7",
+    "espacio": {k: {"tipo": t, "min": lo, "max": hi, "log": lg} for k, (t, lo, hi, lg) in HP_TUNING_SPACE.items()},
+    "cambios_frente_al_estudio_05": [
+        "min_child_weight hasta 100 (05: 50): con los orígenes desde 2005 hay unas 2,3 veces más filas de "
+        "entrenamiento, y el mismo peso mínimo por hoja es relativamente más chico",
+        "reg_lambda hasta 50 (05: 10): el heredado (5) quedaba en la mitad alta de la escala log de 05",
+        "el resto igual a 05 (incluido max_delta_step 0,3–2 por la inestabilidad de 0 con count:poisson)",
+    ],
+    "trial_0": "los heredados con reg_alpha = 1e-3 (Optuna no admite 0 en escala log), encolado como en 05",
+    "estudio": {"muestreador": "TPE", "semilla_tpe": HP_TUNING_TPE_SEED, "semilla_xgboost": HP_TUNING_XGB_SEED,
+                "trials": HP_TUNING_N_TRIALS, "trials_aleatorios_iniciales": HP_TUNING_STARTUP_TRIALS,
+                "pruning": False, "early_stopping": False,
+                "fallidos": "un trial que falla o da objetivo no finito queda como FAIL y se reporta",
+                "dispositivo": "GPU (CUDA) de la máquina de Rosa; en GPU los decimales pueden variar entre corridas "
+                               "con la misma semilla"},
+    "separacion_de_temporadas": {
+        "deciden": "2010, 2015, 2016, 2022, 2023 y 2026 (SEASON_2026)",
+        "filtro_fuera_de_temporada": "2010, 2015, 2016, 2017, 2022, 2023, 2024 y 2026",
+        "ajuste_objetivo": "2009, 2012, 2013, 2014, 2018 y 2021 (174, 64, 85, 58, 62 y 90 semanas brote por horizonte; "
+                           "533 en total), disjuntas de las que deciden y de las del filtro",
+        "ajuste_entrenadas": "cada trial entrena solo los bloques 2008, 2009, 2011, 2012, 2013, 2014, 2018, 2019, 2020 "
+                             "y 2021 (2008, 2011, 2019 y 2020 tienen 85, 13, 1 y 2 semanas brote: solo sirven para "
+                             "calibrar los bloques siguientes) y calibra con Platt cronológico entre ellos",
+        "consecuencia": "las predicciones y etiquetas de las temporadas que deciden y de las del filtro no entran en el "
+                        "objetivo (ni como calibración); sí entran como filas de entrenamiento de los modelos de "
+                        "2018 y 2021, igual que en cualquier ventana creciente",
+        "alternativa_no_elegida": "agregar 2017 y 2024 al ajuste (más señal: 539 y 857 semanas brote) y dejar el "
+                                  "filtro fuera de temporada en 18 celdas (12 de 18); se descartó para no tocar el "
+                                  "filtro aprobado",
+    },
+    "objetivo": "sin corte: media sobre las 18 celdas (h2, h3, h4 × 2009, 2012, 2013, 2014, 2018, 2021) del Brier de la "
+                "probabilidad calibrada dividido por el de los heredados exactos (reg_alpha = 0, semilla 17) en la "
+                "misma celda; < 1 = mejor. Relativo para que cada temporada pese lo mismo (el Brier absoluto lo "
+                "dominan las temporadas grandes). El log-loss medio se registra por trial y no se optimiza",
+    "tiempo_por_trial_s": HP_TUNING_TIMES,
+    "propuesta_de_trials": f"{HP_TUNING_N_TRIALS} trials: con un promedio de ~70 s (el centro del espacio, 800 × 5, "
+                           "tarda 64 s) son unas 6 h, una noche; el peor caso (todo en el máximo) sería ~17,5 h. La "
+                           "búsqueda se guarda en un storage de Optuna y se puede reanudar",
+    "seleccion": f"las {HP_TUNING_TOP_K} mejores por el objetivo (sin el trial 0) se recalculan con las 5 semillas en "
+                 "los bloques de ajuste; candidata = la de menor mediana del objetivo (hp_tuning_choose). Si ninguna "
+                 "tiene mediana < 1, se quedan los heredados sin más comparaciones",
+    "decision": "la candidata se entrena con las 5 semillas en todos los bloques (como SEASON_2026) y se compara con "
+                "L + 5a + d3 con los heredados: regla SEASON_2026 (Brier principal sobre las 6 temporadas, alerta y "
+                "conteo sin «pierde» ni «compensa», >= 2 horizontes ganados) más el filtro fuera de temporada (Brier "
+                "mejor en >= 16 de 24 celdas). Una sola comparación. Empate o cualquier otro resultado: se quedan "
+                "los heredados (adopt_hp_tuning)",
+    "reportado_sin_decidir": [
+        "diferencia de Brier en % (candidata / heredados − 1) por temporada y horizonte, con los promedios de las "
+        "decisivas, los años de Niño (2017, 2026, posterior_2026), los normales y todas, para decidir con contexto",
+        "curva de optimización, importancia de hiperparámetros (fANOVA) y tiempo por trial",
+        "métricas de 2026 y posterior_2026 y la HU0007-4 por celda",
+    ],
+    "declaraciones": [
+        "d3 se eligió después de ver 2026; el ajuste se fija después de ver la matriz, el diagnóstico y la alerta "
+        "combinada",
+        "los hiperparámetros se eligen con temporadas posteriores a 2010, 2015 y 2016: para esos bloques, la elección "
+        "usa información del futuro (no sus etiquetas)",
+        "las temporadas de ajuste son chicas (533 semanas brote por horizonte, frente a 2745 de las 6 que deciden): "
+        "el objetivo es ruidoso y puede elegir configuraciones que no se trasladen",
+        "en 05 se ajustó y decidió con las mismas temporadas y las métricas salieron optimistas; aquí están separadas",
+    ],
+    "codigo": "code/phase_hp_tuning.py (bloques de ajuste, objetivo relativo, función de Optuna, medición de "
+              "tiempos); reutiliza src/denguekay/evaluation/tuning.py (logloss) y phase_2026.py",
+    "despues": "con el OK de Rosa, se corre la búsqueda (de noche) y después la selección y la decisión",
+}
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 

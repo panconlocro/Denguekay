@@ -169,8 +169,14 @@ g) **Diagnóstico frente a la persistencia (solo lectura, d3, b3 y L + 5a): hech
    limitación. Después del OK: el preregistro del ajuste de hiperparámetros sobre L + 5a + d3 (sin correr).
 h) **Alerta combinada (p >= 0,50 o la persistencia): preregistrada (`COMBINED_ALERT`, commit `4d9d97c`) y calculada
    el 2026-11-08; no se adopta ni en d3 ni en b3** (empate en h2, h3 y h4: la F1 no llega a 5 de 6 y la precisión
-   está en contra en 5–6 de 6; ver «Alerta combinada: resultados»). **Siguiente, con el OK de Rosa:** el preregistro
-   del ajuste de hiperparámetros sobre L + 5a + d3 (sin correr).
+   está en contra en 5–6 de 6; ver «Alerta combinada: resultados»). **Rosa (2026-11-08): no se adopta, por la regla y
+   también con contexto:** en h4 agrega más falsas alarmas que aciertos (d3: +470 frente a +388 en años normales y
+   +139 frente a +89 en años de Niño).
+   - **Idea para el dashboard (no es parte del modelo):** mostrar la señal de la persistencia por separado, como dato
+     observado (casos de la última semana frente al umbral de la semana objetivo), al lado de la probabilidad del
+     modelo.
+i) **Ajuste de hiperparámetros sobre L + 5a + d3: preregistro pedido por Rosa el 2026-11-08** (`HP_TUNING` en
+   `code/preregistration.py`; sin correr). Ver «Ajuste de hiperparámetros: preregistro».
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la
@@ -652,6 +658,42 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
 - **Para el serving:** antes de predecir, la app debe verificar que el clima de la última semana usada (humedad y
   lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
   péntada en 2025).
+
+## Ajuste de hiperparámetros: preregistro (2026-11-08, sin correr)
+
+`HP_TUNING` en `code/preregistration.py`; código en `code/phase_hp_tuning.py` (tests en `tests/test_hp_tuning.py`).
+Pendiente de la revisión de Rosa.
+
+- **Base:** L + 5a + d3. **Heredados:** los de `CONFIG_2026_V1` (160 árboles, profundidad 3, learning_rate 0,05,
+  min_child_weight 5, subsample 0,8, colsample 0,9, reg_lambda 5, reg_alpha 0, gamma 0, max_delta_step 0,7).
+- **Espacio:** el del estudio 05 con dos cambios por los orígenes desde 2005 (unas 2,3 veces más filas):
+  min_child_weight de 1 a 100 (05: hasta 50) y reg_lambda de 1e-3 a 50 (05: hasta 10). El resto, igual.
+  Trial 0 = los heredados con reg_alpha = 1e-3.
+- **Búsqueda:**
+  - Optuna TPE con semilla 20261108 y XGBoost con semilla 17;
+  - 20 trials aleatorios al inicio, sin pruning;
+  - **300 trials**. El tiempo por trial (medido en GPU, solo el tiempo) es 11,6 s con los heredados, 64 s en
+    800 × 5 y 210 s en el máximo (1500 × 8). Con ~70 s de promedio son unas 6 h, una noche; el peor caso, ~17,5 h.
+- **Separación de temporadas:**
+  - **Objetivo:** 2009, 2012, 2013, 2014, 2018 y 2021 (533 semanas brote por horizonte). Son disjuntas de las que
+    deciden (2010, 2015, 2016, 2022, 2023 y 2026) y de las del filtro fuera de temporada (además 2017 y 2024).
+  - Cada trial entrena solo 2008, 2009, 2011–2014 y 2018–2021, y calibra con Platt entre esos bloques. Así, las
+    etiquetas de las temporadas que deciden no entran en el objetivo, ni siquiera como calibración.
+  - Alternativa descartada: agregar 2017 y 2024 al ajuste a cambio de recortar el filtro a 18 celdas.
+- **Objetivo, sin corte:** media sobre 18 celdas (3 horizontes × 6 temporadas) del Brier calibrado dividido por el de
+  los heredados en la misma celda. Así cada temporada pesa lo mismo. El log-loss se registra, no se optimiza.
+- **Selección y decisión:**
+  - Las 5 mejores se recalculan con 5 semillas en los bloques de ajuste; la candidata es la de menor mediana.
+  - Si ninguna mejora a los heredados (mediana < 1), se quedan los heredados.
+  - Si alguna mejora, se entrena en todos los bloques y se compara con L + 5a + d3 heredado con la regla
+    `SEASON_2026` más el filtro fuera de temporada (>= 16 de 24). Es una sola comparación; un empate deja los
+    heredados.
+  - Se reporta la diferencia de Brier en % por temporada y horizonte, con los promedios de las decisivas, de los
+    años de Niño, de los normales y de todas.
+- **Declaraciones:**
+  - los hiperparámetros se eligen con temporadas posteriores a 2010, 2015 y 2016;
+  - el conjunto de ajuste es chico y ruidoso (533 frente a 2745 semanas brote);
+  - d3 se eligió después de ver 2026.
 
 ## Alerta combinada: resultados (2026-11-08)
 

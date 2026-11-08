@@ -339,3 +339,38 @@ L + 5a + d3.
     `EVALUATION_2026` aplicada a la V3 desde su commit de congelamiento;
   - se proponen los cambios a `denguekay/features/gold.py`, que regenera el equipo.
 - Se cierra con el tag `study/model-improvement` y la fila del estudio en `research/README.md`.
+
+### Paquete para el short paper (Rosa, 2026-11-08; sin correr nada ahora)
+
+El short paper se reescribe sobre la V3. Las observaciones del revisor (R01–R53 de
+`ShortPaper_Denguekay_EN_-_Q1_Review_v2_2.docx`) probablemente siguen aplicando. Una vez congeladas la V3 (d3) y su
+retadora (b3), se calcula de una vez, sin reentrenar si no hace falta, en **un JSON
+(`docs/metricas/paper_v3.json`) y una sección del informe pensados para el paper**:
+
+- **R23 · comparadores** con las mismas filas y cortes: estacional ingenuo (t−52), promedio histórico estacional y un
+  Poisson/NB autorregresivo simple (reutiliza el GLM de la fase 6, 6a′, si aplica).
+- **R25 y R38 · IC pareados** de las diferencias de conteo y de las métricas de alerta clave, con remuestreo por
+  distrito y por bloques temporales.
+- **R17 · intervalos del conteo:** cobertura y nitidez fuera de muestra (NB2 con las α por bloque y horizonte), con las
+  α reportadas.
+- **R18 y R36 · calibración:** diagramas de confiabilidad antes y después de Platt, pendiente e intercepto de
+  calibración, y filas y positivos de cada calibrador.
+- **R19 · cortes:** precisión, sensibilidad y falsas alertas por distrito y temporada para cortes de 0,2 a 0,8, como
+  lectura; el corte operativo sigue en 0,50.
+- **R20 · fechas:** entrenamiento, origen, calibración y evaluación exactos, con número de filas, por bloque y
+  horizonte.
+- **R22:** los resultados de 2025 (`calendario_2025`).
+- **R28:** los episodios afectados por bordes de bloque y la frecuencia de falsas alertas.
+- **R32 y R33 · errores:**
+  - MAE y RMSE absolutos en casos;
+  - métricas de alerta de la persistencia en las mismas filas;
+  - trayectorias observadas y predichas de distritos representativos (elegidos de antemano, antes de ver las
+    trayectorias) y de la región;
+  - errores por fase epidémica.
+- **R13 · diccionario de variables de la V3:** columna, unidades, fórmula, ventana y faltantes.
+- **R10:** prevalencia de semanas brote por distrito con el mínimo de 2 casos.
+- **R34 · reproducibilidad:**
+  - el tag de la V3 y el lock de dependencias;
+  - la información de GPU/CUDA y del driver;
+  - las semillas y los hashes de las entradas;
+  - los comandos que regeneran cada tabla.
