@@ -1179,11 +1179,22 @@ MATRIX_REUSE = ("L + 5a", "b3", "d1", "d2")   # temporada_2026 predictions saved
 MATRIX_SHAP_BLOCKS = ("temporada_2022", "temporada_2023", "temporada_2026")
 MATRIX_SHAP_TOP_BRIER = 3
 CLIMATOLOGY_BUFFER_WEEKS = 4
+MATRIX_LOSO_MIN_CELLS = 16   # of the 24 leave-one-season-out cells (8 seasons x 3 horizons) with a better Brier
+MATRIX_LOSO_CELLS = 24
 
 
 def matrix_comparisons(n_adopted: int) -> int:
     """Comparisons of the matrix: each variant against L + 5a, the fixed crosses and every pair of adopted ones."""
     return len(MATRIX_VARIANTS) + len(MATRIX_FIXED_CROSSES) + n_adopted * (n_adopted - 1) // 2
+
+
+def adopt_matrix(brier_verdict: pd.DataFrame, alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame,
+                 loso_better_cells: int) -> bool:
+    """A matrix variant is adopted if it wins with SEASON_2026 against L + 5a AND its Brier is better than L + 5a's
+    in at least ``MATRIX_LOSO_MIN_CELLS`` of the 24 leave-one-season-out cells (filter added by Rosa on 2026-11-08
+    against winners by chance)."""
+    return bool(adopt_season_2026(brier_verdict, alert_verdict, count_verdict)
+                and loso_better_cells >= MATRIX_LOSO_MIN_CELLS)
 
 
 def select_matrix_base(adopted: list[str], beats) -> str | None:
@@ -1203,7 +1214,19 @@ def select_matrix_base(adopted: list[str], beats) -> str | None:
 CLIMATE_MATRIX = {
     "fecha": "2026-11-08",
     "estado": "preregistrada el 2026-11-08 DESPUÉS de ver los resultados de la temporada 2026 (b3 adoptada por el "
-              "Brier; d1 y d2 en empate); commiteada sin correr nada; pendiente de la revisión de Rosa",
+              "Brier; d1 y d2 en empate); aprobada por Rosa el 2026-11-08 con tres respuestas y un agregado hechos "
+              "antes de correr (ver «respuestas_de_rosa»)",
+    "respuestas_de_rosa": [
+        "desempates del orden de simplicidad aceptados (d3 antes que d5; ventanas antes que anomalías)",
+        "los días >= 20 mm también como anomalía en e1 y e2: aceptado",
+        f"agregado (filtro contra ganadores por azar): una variante solo se adopta si, además de ganar con SEASON_2026 "
+        f"frente a L + 5a, mejora el Brier frente a L + 5a en al menos {MATRIX_LOSO_MIN_CELLS} de las "
+        f"{MATRIX_LOSO_CELLS} celdas de la validación dejando una temporada fuera (8 temporadas × 3 horizontes; "
+        "mediana de 5 semillas; mejora = Brier estrictamente menor). Aplica igual a b3 (19 de 24 en la corrida del "
+        "2026-11-08), para que la base vigente pase el mismo filtro. Se agregó para controlar las comparaciones "
+        "múltiples, ANTES de ver los resultados de b4, d3, d4, d5, e1, e2 y n1 (los de b1, b2, b3, d1 y d2 en "
+        "SEASON_2026 ya se habían visto en parte)",
+    ],
     "motivo": "Rosa quiere conocer todas las formas razonables de usar el clima, comparadas entre sí, antes del "
               "diagnóstico frente a la persistencia",
     "base": "L + 5a (sin clima). Todas las variantes: orígenes desde 2005, lluvia CHIRPS v3, temperatura y humedad "
@@ -1247,7 +1270,10 @@ CLIMATE_MATRIX = {
                         "pendiente de Platt es positiva (se reporta)",
     "regla": "SEASON_2026 (decide_season_2026 + adopt_season_2026): el Brier sobre 2010, 2015, 2016, 2022, 2023 y "
              "2026, gana con >= 5 de 6 a favor y 0 en contra, vetos con >= 4 de 6; adopción con >= 2 horizontes "
-             "ganados y sin «pierde» ni «compensa» en el Brier, la F1 ni la razón MAE",
+             "ganados y sin «pierde» ni «compensa» en el Brier, la F1 ni la razón MAE; y, para adoptar, el filtro "
+             f"de la validación dejando una temporada fuera (adopt_matrix: >= {MATRIX_LOSO_MIN_CELLS} de "
+             f"{MATRIX_LOSO_CELLS} celdas con mejor Brier que L + 5a). Los cruces entre adoptadas usan "
+             "SEASON_2026 sin el filtro",
     "comparaciones": {
         "1": "cada una de las 12 variantes frente a L + 5a",
         "2": "las adoptadas cruzadas entre sí, todos los pares, con la misma regla; la base resulta de "
@@ -1298,8 +1324,8 @@ CLIMATE_MATRIX = {
         "b1, b2, b3, d1 y d2 ya se compararon antes (pasos b y d y temporada 2026); aquí se repiten con la regla de "
         "SEASON_2026 para tenerlas en la misma tabla",
     ],
-    "codigo": "por escribir después de la revisión de Rosa: anomalías (e1, e2) y restricción monótona (n1) en "
-              "code/phase_climate_matrix.py, con sus tests (G45 a G50); el resto reutiliza phase_2026.py",
+    "codigo": "code/phase_climate_matrix.py (anomalías de e1 y e2, restricción monótona de n1, guardas G45 a G50); "
+              "tests/test_phase_climate_matrix.py; el resto reutiliza phase_2026.py",
     "notebook": "notebooks/16_matriz_clima.ipynb",
     "metricas": "docs/metricas/matriz_clima.json",
     "mlflow": "denguekay/mejora_modelo_matriz_clima",

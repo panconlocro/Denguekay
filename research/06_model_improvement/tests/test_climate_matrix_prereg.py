@@ -44,9 +44,21 @@ class TestMatrix(unittest.TestCase):
         self.assertEqual(pr.select_matrix_base(["e2", "d1", "b4"], beats), "d1")
         self.assertEqual(pr.select_matrix_base(["d1", "b4"], lambda a, b: False), "b4")   # a tie keeps the simpler
 
+    def test_loso_filter(self):
+        import pandas as pd
+
+        v = lambda *x: pd.DataFrame({"horizonte": [2, 3, 4], "veredicto": list(x)})
+        tie = v("empate", "empate", "empate")
+        win = v("gana", "gana", "empate")
+        self.assertTrue(pr.adopt_matrix(win, tie, tie, 16))
+        self.assertFalse(pr.adopt_matrix(win, tie, tie, 15))
+        self.assertFalse(pr.adopt_matrix(tie, tie, tie, 24))
+
     def test_record(self):
         m = pr.CLIMATE_MATRIX
         self.assertIn("DESPUÉS de ver los resultados de la temporada 2026", m["estado"])
+        self.assertIn("aprobada por Rosa", m["estado"])
+        self.assertEqual(pr.MATRIX_LOSO_MIN_CELLS, 16)
         self.assertTrue(any("por azar" in d for d in m["declaraciones"]))
         self.assertEqual(pr.MATRIX_FIXED_CROSSES, (("d1", "b3"), ("d2", "b3"), ("e1", "b3")))
 
