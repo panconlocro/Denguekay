@@ -358,18 +358,23 @@ def loso_calibrate_and_mix(pred: pd.DataFrame) -> pd.DataFrame:
     return pa.add_protocol_alerts(data)
 
 
-def loso_climatology(data: pd.DataFrame, series: pd.DataFrame) -> pd.Series:
-    """Climatology of the leave-one-season-out reading: the step d definition with every other season's labels."""
+def loso_climatology(data: pd.DataFrame, series: pd.DataFrame, half_width: int = pdw.CLIMATOLOGY_HALF_WIDTH) -> pd.Series:
+    """Climatology of the leave-one-season-out reading: the step d definition (same district, epi weeks within
+    ``half_width`` of the target's, circular over 52) with the labels of every season but the evaluated one."""
     from denguekay.evaluation import onsets as ons
 
-    s = series.assign(temporada=ons.with_season(series))
+    s = series.assign(temporada=ons.with_season(series), sem_epi=series.semana.clip(upper=52), ubigeo=series.ubigeo.astype(str))
+    weeks = np.arange(1, 53)
     out = pd.Series(np.nan, index=data.index, dtype=float)
     for block, g in data.groupby("bloque"):
-        season = int(block.removeprefix("fuera_"))
-        hist = s[s.temporada.ne(season)].drop(columns="temporada")
-        fake = g.assign(origen_cierre=pd.Timestamp("2100-01-01"))   # every other label counts as closed
-        clim = pdw.climatology(fake.assign(bloque="todo"), hist)
-        out.loc[g.index] = clim.to_numpy()
+        hist = s[s.temporada.ne(int(block.removeprefix("fuera_")))]
+        near = pdw._circular_week_distance(hist.sem_epi.to_numpy()[:, None], weeks[None, :]) <= half_width
+        y = hist.brote.to_numpy(float)[:, None]
+        overall = (near * y).sum(axis=0) / np.maximum(near.sum(axis=0), 1)
+        table = {u: (near[idx] * y[idx]).sum(axis=0) / np.maximum(near[idx].sum(axis=0), 1)
+                 for u, idx in hist.groupby("ubigeo").indices.items()}
+        wk = g.semana.clip(upper=52).to_numpy(int) - 1
+        out.loc[g.index] = [table[u][w] if u in table else overall[w] for u, w in zip(g.ubigeo.astype(str), wk)]
     return out
 
 
