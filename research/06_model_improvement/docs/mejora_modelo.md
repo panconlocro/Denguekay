@@ -21,9 +21,11 @@ aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (p
 | 1b′ · Humedad ERA5-Land | L + 5a + H (`hum_rel_media_media5_h2` sobre ERA5-Land 2000–2025) | nada: empate en los tres horizontes; la base sigue siendo L + 5a |
 | 6 · Otra familia (lectura) | 6a GLM NB2 (no convergió), enmienda 6a′ GLM Poisson + α NB2, 6b LightGBM; C3 sin clima | nada (lectura): LightGBM empata con L + 5a; 6a′ empata o mejora (gana F1 en h4, mejor antelación, peor Brier en 2016); 6′ con clima, pendiente |
 | b · Lluvia CHIRPS v3 | b1 L + 5a + lluvia CHIRPS (`precip_total_mm_media5_h2`, media del polígono); b2 L + 5a + humedad ERA5-Land + lluvia CHIRPS; b3 (agregada después) clima completo: humedad, lluvia, temperatura y Niño 1+2 | nada: b1 y b2 empatan en los tres horizontes; b3 empata en la alerta y en el conteo; la base sigue siendo L + 5a |
+| 2026 · Temporada 2026 (regla del Brier sobre 6 temporadas) | L + 5a, b3, d1 y d2 = d1 + Niño 1+2, con 2026 entre las temporadas que deciden | **b3**: gana por el Brier en h2 y h3 (5 de 6 temporadas a favor, 0 en contra), empata en h4, sin «pierde» ni «compensa» en la alerta ni en el conteo; d1 y d2 empatan en todo. La regla se fijó después de ver los pasos b y d |
 | d · Ventanas de clima | d1 L + 5a + lluvia CHIRPS, temperatura y humedad ERA5-Land por ventanas (o, o−1..o−4, o−5..o−8, o−9..o−12) + días >= 20 mm; frente a L + 5a y frente a b3 | nada: empate en los tres criterios (alerta, conteo y Brier) y en los tres horizontes, frente a L + 5a y frente a b3 |
 
-**Base candidata: L + 5a.**
+**Base candidata: L + 5a + b3** (adoptada por la regla `SEASON_2026` el 2026-11-08; antes, L + 5a). Antes de la
+fase 7 se le consulta a Rosa.
 
 - Modelo: C3 (`base_6` + B3) · E3 · S4_s3 · XGBoost con los hiperparámetros de la V1, entrenado con los orígenes
   desde 2005, bloques por temporada (ventana creciente), α dentro de la muestra, Platt por horizonte con recorte 1e-6,
@@ -134,7 +136,7 @@ e) **Temporada 2026 (decisiones de Rosa del 2026-11-08, ver [plan.md](plan.md)).
      Aprobado por Rosa como descriptivo. **Riesgo anotado para d1 y d2 en producción:** los días >= 20 mm son la
      variable más sensible al preliminar (en enero a abril de 2026 el preliminar cuenta 170 días distrito con >= 20 mm
      frente a 213 del final; en 2025, 142 frente a 109).
-   - Pendiente: el preregistro completo de la evaluación y la evaluación (después del OK de Rosa).
+   - **Evaluación corrida el 2026-11-08: b3 se adopta** (ver «Temporada 2026: resultados»).
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la
@@ -616,6 +618,66 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
 - **Para el serving:** antes de predecir, la app debe verificar que el clima de la última semana usada (humedad y
   lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
   péntada en 2025).
+
+## Temporada 2026: resultados (2026-11-08)
+
+Preregistro `SEASON_2026`: regla aprobada por Rosa antes de bajar los datos (commit `e02ebe1`); guardas, métricas,
+lecturas y validación dejando una temporada fuera escritas antes de entrenar (`5a6b27e`); enmienda antes de entrenar
+(`f2ddca2`): la semana 53 de 2025 (65 filas, 3 casos) se toma del silver de la Sala porque el panel integrado termina
+en la semana 52 y había un hueco antes de 2026. Notebook `15_temporada_2026.ipynb`; cifras en
+`metricas/temporada_2026.json`; predicciones en `models/experimentos/mejora_modelo/temporada_2026/` (no versionado);
+MLflow `denguekay/mejora_modelo_temporada_2026` (`2d22b09851374954a8cd46ed249ea155`). Dos correcciones de código
+después del primer intento y antes de mirar ningún veredicto: el umbral de empate de la regla del conteo
+(`df6fb03`) y la climatología de la lectura dejando una temporada fuera (`37c6415`); la segunda corrida
+reutilizó las predicciones ya entrenadas por la primera (mismo código y datos).
+
+- **Guardas (todas pasan):** G40 (la serie extendida reproduce las 71 175 filas 2005-2025 del estudio sin
+  diferencias en casos, umbral ni brote; agrega la semana 53 de 2025 y 2665 filas de 2026, 65 distritos × semanas 1 a
+  41, iguales a la Sala); G17, G25 y G30 (diferencia 0); G35a (las sumas semanales del diario son iguales al silver en
+  las 91 000 semanas, también las preliminares); G35b (≤ 5,7e-14); G42 (0 de 73 840 orígenes sin clima hasta el último
+  usado, 2026-10-03); G43 (0 orígenes afectados contra `origen_cierre` + 14 días en lluvia, días fuertes, temperatura,
+  humedad y Niño; margen mínimo 4 días); G44 (4 tests de no fuga); G41 (L, b3 y d1 reentrenadas reproducen sus
+  915 525 predicciones guardadas con diferencia 0; 975 filas nuevas por la semana 53 de 2025); G29 (4,9e-11).
+- **Semanas brote de 2026:** 89 por horizonte (supera el mínimo de 30), 20 inicios limpios.
+- **Veredicto: b3 se adopta.** Frente a L + 5a, el Brier de b3 está a favor en 5, 5 y 4 de las 6 temporadas y en
+  contra en ninguna: gana en h2 y h3 y empata en h4, sin vetos. Alerta (F1): empate en los tres horizontes (a favor
+  en 1, 2 y 3; en contra en 1). Conteo (razón MAE): empate en los tres (a favor en 3, en contra en 2). Antelación:
+  0,000 [−0,028; 0,033] en h2, −0,014 [−0,047; 0,014] en h3 y −0,014 [−0,042; 0,014] en h4. d1 y d2: empate en el
+  Brier, la alerta y el conteo en los tres horizontes. Con una sola adoptada no hay cruce. **Declaración:** la regla
+  del Brier se fijó después de ver que el criterio (c) habría adoptado b3 con las 5 temporadas (lectura del paso d);
+  la adopción de b3 no es independiente de haber mirado esos resultados.
+- **Temporada 2026 por variante (L + 5a / b3 / d1 / d2, mediana de 5 semillas):**
+  - Brier: 0,011 / 0,010 / 0,010 / 0,010 (h2), 0,012 / 0,011 / 0,011 / 0,011 (h3), 0,016 / 0,015 / 0,015 / 0,015 (h4).
+  - Brier skill score frente a la climatología: 0,630 / 0,642 / 0,645 / 0,644 (h2), 0,587 / 0,607 / 0,612 / 0,612
+    (h3), 0,463 / 0,484 / 0,496 / 0,495 (h4).
+  - AUPRC: 0,791 / 0,801 / 0,801 / 0,801 (h2), 0,743 / 0,762 / 0,771 / 0,771 (h3), 0,586 / 0,614 / 0,630 / 0,631 (h4).
+  - AUPRC en inicios (persistencia < max(umbral, 2); 29, 26 y 36 positivos): 0,246 / 0,275 / 0,265 / 0,263 (h2),
+    0,159 / 0,171 / 0,171 / 0,169 (h3), 0,115 / 0,137 / 0,135 / 0,137 (h4).
+  - F1 a 0,50: 0,658 / 0,671 / 0,671 / 0,676 (h2), 0,557 / 0,611 / 0,610 / 0,610 (h3), 0,424 / 0,455 / 0,511 / 0,522 (h4).
+  - Razón MAE: 1,064 / 1,113 / 1,082 / 1,088 (h2), 1,099 / 1,118 / 1,096 / 1,098 (h3), 1,072 / 1,097 / 1,083 / 1,087
+    (h4): ninguna variante supera a la persistencia en 2026. Razón RMSE entre 0,96 y 1,00.
+  - HU0007-4: ninguna celda de 2026 se cumple, ni en clasificación ni en regresión, con ninguna variante.
+  - Antelación (semilla 17, 20 inicios): avisados con >= 1 semana 10 % (h2), 5–15 % (h3) y 10–20 % (h4) según la
+    variante; la persistencia, 20 %, 45 % y 40 %.
+- **posterior_2026 (semanas 35 a 41 de 2026, entrenado hasta la temporada 2026; solo se reporta; 167 semanas brote,
+  17 inicios, debajo del mínimo para la antelación):** Brier 0,095 / 0,091 / 0,090 / 0,090 (h2) a 0,134 / 0,132 /
+  0,130 / 0,129 (h4); AUPRC 0,90 a 0,93 en todas; razón MAE 1,07 a 1,28 (peor que la persistencia; b3 es la más alta
+  en h4, 1,284).
+- **Niño por origen:** en temporada_2026 los 55 orígenes están dentro del rango de entrenamiento (−1,74 a 3,11; el
+  máximo en 2026 es 2,73); en posterior_2026, 4 de 9 orígenes están fuera (del 2026-09-12 al 2026-10-03, hasta 3,49).
+- **Lluvia preliminar:** solo el origen del 2026-10-03 (posterior_2026) usa una semana preliminar (la del 2026-09-27),
+  en b3 y en d1/d2.
+- **Semanas provisionales (fuera de las métricas):** 2026-10-18 y 2026-10-25, 2629 casos, 60 semanas brote en 37
+  distritos.
+- **Dejando una temporada fuera (lectura optimista, no decide; solo compara variantes):** en las 24 celdas (8
+  temporadas × 3 horizontes), el Brier mejora frente a L + 5a en 19 (b3), 22 (d1) y 23 (d2); la AUPRC en 19, 20 y 20;
+  la F1 en 14, 14 y 13; la razón MAE en 16, 17 y 17. Las mejoras se concentran en 2010, 2017, 2022, 2023, 2024 y 2026; en
+  2015 y 2016 las diferencias son de milésimas. Ejemplos: 2023 · h4 Brier 0,088 frente a 0,080 / 0,079 / 0,079; 2017 ·
+  h4 AUPRC 0,710 frente a 0,734 / 0,730 / 0,731. *Hipótesis:* con más temporadas de Niño en el entrenamiento, el clima
+  aporta algo más; no se puede afirmar porque esta lectura usa el futuro.
+- **Lectura (observación, no conclusión):** el clima mejora un poco la calidad de la probabilidad (Brier, BSS, AUPRC)
+  en las temporadas grandes y en 2026, pero no la alerta al corte de 0,50 ni el conteo; en 2026 ningún modelo supera a
+  la persistencia en el conteo ni cumple la HU0007-4.
 
 ## Paso d de clima · Ventanas de clima: resultados (2026-11-06)
 
