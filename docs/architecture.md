@@ -136,9 +136,10 @@ bronze/
 ├── meteo/cache_meteo_era5_land_2017_2025/  # estudio 06 (1b): 2017-2025 con ERA5-Land (0,1°), solo para comparar
 ├── meteo/cache_meteo_2000_2016/       # estudio 06 (1b): historia 2000-2016, caché aparte
 ├── meteo/cache_meteo_era5_land_2000_2016/  # estudio 06 (1b′): ERA5-Land 2000-2016 (humedad y temperatura)
+├── meteo/cache_meteo_era5_land_2026/  # estudio 06 (temporada 2026): ERA5-Land 2026 (humedad y temperatura)
 ├── enso/                    # sstoi.indices de NOAA CPC (Niño 1+2), un archivo por fecha de descarga
 ├── limites/hdx_cod_ab_per/  # COD-AB de Perú (IGN, publicado por OCHA en HDX, CC BY-IGO) tal cual, con su manifiesto
-├── chirps/v3_sat/           # CHIRPS v3 diario (sat): final/AAAA/ y prelim/AAAA/ con la ventana de Piura por día, y los manifiestos de cada corrida;
+├── chirps/v3_sat/           # CHIRPS v3 diario (sat): final/AAAA/, final_ftp/AAAA/ (final por FTP) y prelim/AAAA/ (revisiones en AAAA/<fecha_descarga>/) con la ventana de Piura por día, y los manifiestos de cada corrida;
 │                            #   ee_final/AAAA/AAAA-MM.json: media por polígono distrital desde Earth Engine, tal cual llega, con un manifiesto por corrida
 ├── socio/                   # el Excel del censo/proyecciones, sin tocar
 └── epi/                     # Excel y respuestas crudas de la Sala Situacional MINSA
@@ -152,6 +153,7 @@ silver/
 ├── meteo_semanal_distrital.csv     # por fuente
 ├── meteo_semanal_distrital_2000_2016.csv  # estudio 06 (1b): historia, aparte del de 2017-2025
 ├── meteo_humedad_era5_land_2000_2025.csv  # estudio 06 (1b′): humedad y temperatura ERA5-Land, sin precipitación
+├── meteo_humedad_era5_land_2000_2026.csv  # estudio 06 (temporada 2026): el mismo silver con 2026 (el de 2000-2025 queda)
 ├── precip_chirps_v3_semanal_desde_2000.csv  # lluvia semanal CHIRPS v3 sat por distrito (media del polígono; final de Earth Engine y preliminar del CHC), con version y fecha_disponible (V3)
 ├── enso_nino12_mensual.csv         # Niño 1+2 mensual con la fecha desde la que se puede usar
 ├── socio_anual.csv
@@ -218,7 +220,7 @@ data/
 │   ├── district_boundaries.py  # polígonos distritales del COD-AB de Perú (IGN, HDX) -> reference/ (V3, lluvia por polígono)
 │   ├── chirps.py               # CHIRPS v3 diario (sat): ventana de Piura por día desde los COG, con reanudación
 │   ├── chirps_ee.py            # CHIRPS v3 final desde Earth Engine: media por polígono, guarda de método y descarga mensual
-│   ├── chirps_prelim.py        # CHIRPS v3 preliminar del CHC: TIF global a carpeta temporal, verificación de grilla y recorte de Piura
+│   ├── chirps_prelim.py        # CHIRPS v3 preliminar (y final) del CHC por HTTPS o FTP: TIF global a carpeta temporal, verificación de tamaño, sha256 y grilla, y recorte de Piura
 │   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
 │   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE
 ├── processing/
@@ -313,7 +315,7 @@ src/denguekay/pipelines/
 ├── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
 ├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS (celdas A y B del 03c)
 ├── chirps_ee.py              # guarda de método y descarga mensual de CHIRPS v3 desde Earth Engine (estudio 06, b-IV)
-└── chirps_prelim.py          # preliminar de CHIRPS v3 desde el CHC y silver semanal (estudio 06, b-V)
+└── chirps_prelim.py          # preliminar y final de CHIRPS v3 desde el CHC (HTTPS o FTP) y silver semanal (estudio 06, b-V y temporada 2026)
 ```
 
 ## 3b. `apps/api/` — la API

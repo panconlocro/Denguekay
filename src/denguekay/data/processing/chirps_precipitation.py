@@ -164,3 +164,59 @@ def write_silver(weekly: pd.DataFrame, path: Path) -> Path:
     weekly.to_csv(tmp, index=False, encoding="utf-8")
     os.replace(tmp, path)
     return path
+
+
+def combine_daily_by_week(final: pd.DataFrame, prelim: pd.DataFrame) -> pd.DataFrame:
+    """One version per MMWR week (decision of 2026-11-06): a week whose 7 days all have final takes the final;
+    otherwise it takes the preliminary for its 7 days (a week with final on some days and preliminary on the rest,
+    such as the one of 2026-09-27, is all preliminary). Days of a week with neither complete stay as they come, so
+    ``weekly_by_version`` lists that week as left out."""
+    frames = []
+    for name, d in (("final", final), ("prelim", prelim)):
+        d = d.copy()
+        d["fecha"] = pd.to_datetime(d["fecha"])
+        d["ubigeo"] = d["ubigeo"].astype(str)
+        d["semana_inicio"] = d["fecha"].dt.to_period("W-SAT").dt.start_time
+        frames.append(d)
+    f, p = frames
+    complete = lambda d: d.groupby(["ubigeo", "semana_inicio"]).fecha.nunique().eq(7)
+    f_ok, p_ok = complete(f), complete(p)
+    f_weeks = set(f_ok[f_ok].index)
+    p_weeks = set(p_ok[p_ok].index) - f_weeks
+    key = lambda d: pd.Series(list(zip(d.ubigeo, d.semana_inicio)), index=d.index)
+    fk, pk = key(f), key(p)
+    use_f = f[fk.map(lambda k: k not in p_weeks)]               # complete final weeks, and incomplete ones
+    final_weeks_any = set(fk)
+    use_p = p[pk.map(lambda k: k in p_weeks or k not in final_weeks_any)]   # complete prelim weeks without final
+    daily = pd.concat([use_f, use_p], ignore_index=True).drop(columns="semana_inicio")
+    daily["fecha"] = daily["fecha"].dt.date
+    if daily.duplicated(["ubigeo", "fecha"]).any():
+        raise ValueError("Hay días repetidos por distrito.")
+    return daily.sort_values(["ubigeo", "fecha"]).reset_index(drop=True)
+
+
+def daily_from_windows(folder: Path, districts, version: str, pattern: str) -> pd.DataFrame:
+    """Daily area-weighted means (``chirps_ee.local_district_means``) of the saved Piura windows in
+    ``folder/AAAA/``; when a day has revisions (``folder/AAAA/<fecha_descarga>/``), the latest one is used. Every
+    window must share the same grid."""
+    import rasterio
+
+    from denguekay.data.ingestion.chirps_ee import local_district_means
+
+    latest = {}
+    for f in sorted(folder.glob(f"*/{pattern}")) + sorted(folder.glob(f"*/*/{pattern}")):
+        day = pd.Timestamp(f.stem[-10:].replace(".", "-")).date()
+        stamp = "" if f.parent.parent == folder else f.parent.name
+        if day not in latest or stamp > latest[day][0]:
+            latest[day] = (stamp, f)
+    windows, transform = {}, None
+    for day, (_, f) in sorted(latest.items()):
+        with rasterio.open(f) as ds:
+            windows[day] = ds.read(1)
+            t = tuple(ds.transform)[:6]
+        if transform is not None and t != transform:
+            raise ValueError(f"La ventana de {f.name} no coincide con la del primer día")
+        transform = t
+    if not windows:
+        return pd.DataFrame(columns=["ubigeo", "fecha", "precip_mm", "version"])
+    return local_district_means(windows, transform, districts).assign(version=version)

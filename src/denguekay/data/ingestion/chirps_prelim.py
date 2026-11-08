@@ -10,11 +10,19 @@ size and Last-Modified of the global file. Bronze is never overwritten.
 Pace: one file per request and at least ``MIN_PAUSE_S`` seconds between requests (the directory listing counts
 as one); the run stops at the first HTTP 429 or any other error and does not retry.
 
+FTP (decision of Rosa, 2026-11-08): the CHC's anonymous FTP (``FTP_HOST``) serves the same files without the
+HTTPS rate limit. ``FtpSource`` and ``download_ftp`` fetch the preliminary or the final of each day (passive mode,
+binary transfer, size checked against ``SIZE``, sha256, the GeoTIFF opened and ``check_grid`` against the final
+windows), one second apart, and stop at the first error. A day that is already in bronze is fetched again and
+compared: if its Piura window is identical nothing is written; if it was revised, the new window is saved apart in
+``AAAA/<fecha_descarga>/``. The final goes to ``BRONZE_CHIRPS_FINAL_FTP``.
+
 Source: https://www.chc.ucsb.edu/data/chirps3 (CC BY 4.0).
 """
 
 from __future__ import annotations
 
+import ftplib
 import hashlib
 import json
 import re
@@ -24,7 +32,7 @@ from pathlib import Path
 
 import numpy as np
 
-from denguekay.config.paths import BRONZE_CHIRPS_FINAL, BRONZE_CHIRPS_PRELIM
+from denguekay.config.paths import BRONZE_CHIRPS_FINAL, BRONZE_CHIRPS_FINAL_FTP, BRONZE_CHIRPS_PRELIM
 from denguekay.data.ingestion import chirps_ee as ce
 from denguekay.data.ingestion.chirps import USER_AGENT, save_window
 
@@ -194,5 +202,148 @@ def write_run_manifest(summary: dict, extra: dict, folder: Path = BRONZE_CHIRPS_
     n = 1
     while path.exists():
         path, n = folder / f"manifiesto_prelim_{stamp}_{n}.json", n + 1
+    path.write_text(json.dumps({**extra, **summary}, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
+    return path
+
+
+# --- FTP (2026-11-08) ------------------------------------------------------------------------------------------
+
+FTP_HOST = "ftp.chc.ucsb.edu"
+FTP_DIRS = {"prelim": "/products/CHIRPS/v3.0/daily/prelim/sat/{y}", "final": "/products/CHIRPS/v3.0/daily/final/sat/{y}"}
+FTP_FILES = {"prelim": PRELIM_FILE, "final": "chirps-v3.0.sat.{y}.{m:02d}.{d:02d}.tif"}
+FTP_FOLDERS = {"prelim": BRONZE_CHIRPS_PRELIM, "final": BRONZE_CHIRPS_FINAL_FTP}
+FTP_PAUSE_S = 1.0
+_FTP_NAME = {"prelim": re.compile(r"chirps-v3\.0\.prelim\.(\d{4})\.(\d{2})\.(\d{2})\.tif$"),
+             "final": re.compile(r"chirps-v3\.0\.sat\.(\d{4})\.(\d{2})\.(\d{2})\.tif$")}
+
+
+def ftp_file_name(day: date, version: str) -> str:
+    return FTP_FILES[version].format(y=day.year, m=day.month, d=day.day)
+
+
+def ftp_remote_path(day: date, version: str) -> str:
+    return FTP_DIRS[version].format(y=day.year) + "/" + ftp_file_name(day, version)
+
+
+def ftp_target(day: date, version: str, folder: Path | None = None) -> Path:
+    return (folder or FTP_FOLDERS[version]) / f"{day.year}" / ftp_file_name(day, version)
+
+
+def revision_path(day: date, version: str, stamp: str, folder: Path | None = None) -> Path:
+    """Where a revised window goes: ``AAAA/<stamp>/<file>`` (``stamp`` = download date), never over the first."""
+    return (folder or FTP_FOLDERS[version]) / f"{day.year}" / stamp / ftp_file_name(day, version)
+
+
+def parse_ftp_names(names: list[str], version: str) -> list[date]:
+    """Days in an FTP name listing (full paths or bare names)."""
+    out = set()
+    for n in names:
+        m = _FTP_NAME[version].search(n)
+        if m:
+            out.add(date(int(m.group(1)), int(m.group(2)), int(m.group(3))))
+    return sorted(out)
+
+
+class FtpSource:
+    """Anonymous, passive, binary FTP session with the CHC (``ftp_factory`` is replaced in the tests)."""
+
+    def __init__(self, host: str = FTP_HOST, timeout: int = 60, ftp_factory=ftplib.FTP):
+        self.host, self.timeout, self.ftp_factory, self.ftp = host, timeout, ftp_factory, None
+
+    def __enter__(self):
+        self.ftp = self.ftp_factory(self.host, timeout=self.timeout)
+        self.ftp.login()
+        self.ftp.set_pasv(True)
+        self.ftp.voidcmd("TYPE I")
+        return self
+
+    def __exit__(self, *exc):
+        try:
+            self.ftp.quit()
+        except ftplib.all_errors:
+            pass
+
+    def listing(self, version: str, year: int) -> list[date]:
+        return parse_ftp_names(self.ftp.nlst(FTP_DIRS[version].format(y=year)), version)
+
+    def fetch(self, day: date, version: str, tmp_dir: Path) -> dict:
+        """Download one global file into ``tmp_dir``; its size must equal what ``SIZE`` reports."""
+        remote = ftp_remote_path(day, version)
+        size = self.ftp.size(remote)
+        path = Path(tmp_dir) / ftp_file_name(day, version)
+        h = hashlib.sha256()
+        with open(path, "wb") as f:
+            def write(chunk):
+                f.write(chunk)
+                h.update(chunk)
+            self.ftp.retrbinary(f"RETR {remote}", write, blocksize=1 << 16)
+        got = path.stat().st_size
+        if size is None or got != size:
+            raise RuntimeError(f"{remote}: {got} bytes, el servidor informa {size}")
+        try:
+            modified = self.ftp.voidcmd(f"MDTM {remote}").split()[-1]
+        except ftplib.all_errors:
+            modified = None
+        return {"dia": day.isoformat(), "version": version, "ruta_ftp": remote, "bytes": got, "tamano_servidor": size,
+                "sha256": h.hexdigest(), "mdtm": modified, "ruta_temporal": path}
+
+
+def _read_window(path: Path) -> np.ndarray:
+    import rasterio
+
+    with rasterio.open(path) as ds:
+        return ds.read(1)
+
+
+def download_ftp(days: list[date], version: str, *, source, tmp_dir: Path, ref: dict, stamp: str,
+                 folder: Path | None = None, pause: float = FTP_PAUSE_S, sleep=time.sleep, log=print) -> dict:
+    """Fetch, check and cut each day; a day already in bronze is compared and, if revised, saved apart.
+    Stops at the first error (no retries)."""
+    base = folder or FTP_FOLDERS[version]
+    summary = {"estado": "completa", "error": None, "version": version, "dias": [], "sin_cambios": [],
+               "revisiones": [], "grillas_ok": 0}
+    t0 = time.time()
+    for i, day in enumerate(days):
+        if i:
+            sleep(pause)
+        try:
+            info = source.fetch(day, version, tmp_dir)
+            data, profile, grid = crop_to_reference(info["ruta_temporal"], ref)
+        except Exception as exc:  # noqa: BLE001 - FTP, size, GeoTIFF or grid: stop and report as is
+            summary.update(estado="detenida_error", error=f"{day}: {type(exc).__name__}: {exc}"[:300])
+            log(f"{day}: {exc}; se detiene.")
+            break
+        finally:
+            for p in Path(tmp_dir).glob("*.tif"):
+                p.unlink()
+        info.pop("ruta_temporal")
+        summary["grillas_ok"] += 1
+        target = ftp_target(day, version, base)
+        record = {**info, "grilla": grid, "sin_dato": int((data == ce.NODATA).sum())}
+        if target.exists():
+            if np.array_equal(_read_window(target), data):
+                summary["sin_cambios"].append(day.isoformat())
+                log(f"{day}: ya estaba, sin cambios")
+                continue
+            target = revision_path(day, version, stamp, base)
+            if target.exists():
+                raise FileExistsError(f"{target} ya existe")
+            summary["revisiones"].append(day.isoformat())
+        save_window(data, profile, target)
+        summary["dias"].append({**record, "archivo": target.relative_to(base).as_posix()})
+        log(f"{day}: {info['bytes']} bytes, grilla ok ({time.time() - t0:.0f} s)")
+    summary["segundos"] = round(time.time() - t0, 1)
+    return summary
+
+
+def write_ftp_manifest(summary: dict, extra: dict, version: str, folder: Path | None = None) -> Path:
+    """One JSON per FTP run in the version's folder, never overwritten."""
+    folder = folder or FTP_FOLDERS[version]
+    folder.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+    path = folder / f"manifiesto_ftp_{version}_{stamp}.json"
+    n = 1
+    while path.exists():
+        path, n = folder / f"manifiesto_ftp_{version}_{stamp}_{n}.json", n + 1
     path.write_text(json.dumps({**extra, **summary}, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     return path
