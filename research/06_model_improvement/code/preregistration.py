@@ -1004,6 +1004,76 @@ def adopt_step_d(alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame,
 
 
 # ---------------------------------------------------------------------------
+# Season 2026 evaluation: decision rule (approved by Rosa on 2026-11-08, before any 2026 data was downloaded)
+# ---------------------------------------------------------------------------
+
+SEASON_2026_DECIDING = (2010, 2015, 2016, 2022, 2023, 2026)
+SEASON_2026_MIN_IN_FAVOUR = 5      # out of 6, and none against
+SEASON_2026_GUARD_VETO = 4         # out of 6 (the 3 of 5 of the multi-season rule)
+SEASON_2026_MIN_OUTBREAK_WEEKS = 30   # EVALUATION_2026: below it, the horizon uses the 5-season rule
+SEASON_2026_VARIANTS = ("b3", "d1", "d2")   # each against L + 5a; d2 = d1 + nino12_anom_media3
+SEASON_2026_SIMPLICITY = ("b3", "d1", "d2")  # 4, 14 and 15 climate columns; a tie in a cross keeps the earlier
+SEASON_2026_PROVISIONAL_WEEKS = 2  # the last 2 published Sala weeks stay out of the metrics (reported apart)
+
+SEASON_2026 = {
+    "fecha": "2026-11-08",
+    "estado": "regla de decisión aprobada por Rosa el 2026-11-08 antes de bajar los datos de 2026; el resto del "
+              "preregistro (guardas, lecturas, validación dejando una temporada fuera) se escribe después del punto 1 "
+              "de datos y de su OK",
+    "temporada_2026": "semana 35 de 2025 a semana 34 de 2026 (bloque temporada_2026, entrenado con los orígenes hasta "
+                      "la temporada 2025; Platt y la w de 5a con los bloques anteriores)",
+    "posterior_2026": "semanas 35 de 2026 en adelante (bloque posterior_2026, entrenado hasta la temporada 2026, lo que "
+                      "tendría la app en septiembre de 2026); solo se reporta, no decide",
+    "semanas_provisionales": f"las {SEASON_2026_PROVISIONAL_WEEKS} últimas semanas publicadas en la Sala (al 2026-11-08, "
+                             "la 42 y la 43 de 2026) no entran en las métricas y se reportan aparte; si una bajada "
+                             "nueva las cambia, se usan los valores nuevos",
+    "variantes": "L + 5a (referencia, sin clima), b3, d1 y d2 = d1 + nino12_anom_media3, todas con orígenes desde 2005, "
+                 "lluvia CHIRPS v3 y temperatura y humedad de ERA5-Land",
+    "regla": "por horizonte, decide_step_d_brier sobre las temporadas 2010, 2015, 2016, 2022, 2023 y 2026: el Brier "
+             f"(probabilidad calibrada) gana con >= {SEASON_2026_MIN_IN_FAVOUR} de 6 temporadas a favor y 0 en contra "
+             "(umbral de empate = rango de semillas); AUPRC, F1 a 0,50, razón MAE y antelación son guardas y vetan con "
+             f">= {SEASON_2026_GUARD_VETO} de 6 en contra. Si 2026 no llega a {SEASON_2026_MIN_OUTBREAK_WEEKS} semanas "
+             "brote en un horizonte, ese horizonte usa las 5 temporadas de siempre (4 de 5 y vetos con 3 de 5)",
+    "adopcion": "frente a L + 5a: >= 2 horizontes ganados y ningún «pierde» ni «compensa (empate)» en el Brier, y "
+                "ningún «pierde» ni «compensa (empate)» en la alerta (F1, decide_multi_season) ni en el conteo (razón "
+                "MAE, decide_phase5), calculados sobre las mismas temporadas y con los mismos mínimos. Si se adopta "
+                "más de una variante, se cruzan entre sí con la misma regla y un empate deja la más simple (b3, luego "
+                "d1, luego d2)",
+    "declaraciones": [
+        "la regla (el Brier como métrica principal y 2026 entre las temporadas que deciden) se fijó DESPUÉS de ver "
+        "los pasos b y d (b1, b2, b3 y d1 empataron con L + 5a)",
+        "d2 se agrega después de ver d1; con b3, d1 y d2 son tres comparaciones más sobre L + 5a",
+        "con esto EVALUATION_2026 deja de ser independiente para la V3: la prueba independiente pasa a ser lo "
+        "publicado después del congelamiento (el resto de la temporada 2026-2027); ver plan.md, «Decisiones de Rosa "
+        "(2026-11-08)»",
+    ],
+}
+
+
+def decide_season_2026(candidate: pd.DataFrame, reference: pd.DataFrame, ranges: pd.DataFrame,
+                       lead_time_diff: pd.DataFrame, outbreak_weeks_2026: dict[int, int]) -> pd.DataFrame:
+    """Brier verdict per horizon over the 6 seasons, or over the usual 5 in a horizon where 2026 has fewer than
+    ``SEASON_2026_MIN_OUTBREAK_WEEKS`` outbreak weeks."""
+    rows = []
+    for h in sorted(candidate.horizonte.unique()):
+        six = outbreak_weeks_2026.get(h, 0) >= SEASON_2026_MIN_OUTBREAK_WEEKS
+        seasons = SEASON_2026_DECIDING if six else DECIDING_SEASONS
+        k, veto = (SEASON_2026_MIN_IN_FAVOUR, SEASON_2026_GUARD_VETO) if six else (MIN_IN_FAVOUR, GUARD_VETO_AGAINST)
+        sel = [c[c.horizonte.eq(h)] for c in (candidate, reference, ranges, lead_time_diff)]
+        rows.append(decide_step_d_brier(*sel, seasons=seasons, min_in_favour=k, guard_veto=veto)
+                    .assign(temporadas=len(seasons)))
+    return pd.concat(rows, ignore_index=True)
+
+
+def adopt_season_2026(brier_verdict: pd.DataFrame, alert_verdict: pd.DataFrame, count_verdict: pd.DataFrame) -> bool:
+    """>= 2 horizons won by the Brier, and no «pierde» nor «compensa (empate)» in the Brier, the alert or the count."""
+    bad = ["pierde", "compensa (empate)"]
+    won = int(brier_verdict.veredicto.eq("gana").sum())
+    return bool(won >= STEP_B_MIN_HORIZONS_WON
+                and not any(v.veredicto.isin(bad).any() for v in (brier_verdict, alert_verdict, count_verdict)))
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 

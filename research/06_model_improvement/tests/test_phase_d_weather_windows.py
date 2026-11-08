@@ -212,6 +212,31 @@ class TestRule(unittest.TestCase):
         self.assertEqual(out.vetos, "auprc")
         self.assertEqual(pr.decide_step_d_brier(ref, cand, ranges, lead).veredicto.iloc[0], "pierde")
 
+    def test_season_2026_rule(self):
+        """Six seasons need 5 in favour; a horizon where 2026 has < 30 outbreak weeks falls back to the 5 seasons."""
+        seasons = pr.SEASON_2026_DECIDING
+        blocks = [pr.block_name(s) for s in seasons]
+        ref = pd.DataFrame({"horizonte": 2, "bloque": blocks, "brier": 0.10, "auprc": 0.5, "f1_050": 0.5,
+                            "razon_mae": 0.9})
+        cand = ref.assign(brier=[0.08, 0.08, 0.08, 0.08, 0.10, 0.10])   # 4 of 6 (and 4 of the usual 5)
+        ranges = ref.assign(brier=0.005, auprc=0.01, f1_050=0.01, razon_mae=0.01)
+        lead = pd.DataFrame({"horizonte": [2], "ic95_inferior": [-0.1], "ic95_superior": [0.1],
+                             **{f"diferencia_{b}": [0.0] for b in blocks}, **{f"episodios_{b}": [10] for b in blocks}})
+        six = pr.decide_season_2026(cand, ref, ranges, lead, {2: 40}).iloc[0]
+        self.assertEqual((six.veredicto, six.temporadas), ("empate", 6))
+        five = pr.decide_season_2026(cand, ref, ranges, lead, {2: 29}).iloc[0]
+        self.assertEqual((five.veredicto, five.temporadas), ("gana", 5))
+        cand6 = cand.assign(brier=[0.08, 0.08, 0.08, 0.08, 0.10, 0.08])   # 5 of 6
+        self.assertEqual(pr.decide_season_2026(cand6, ref, ranges, lead, {2: 40}).veredicto.iloc[0], "gana")
+
+        def v(*verdicts):
+            return pd.DataFrame({"horizonte": [2, 3, 4], "veredicto": list(verdicts)})
+
+        tie = v("empate", "empate", "empate")
+        self.assertTrue(pr.adopt_season_2026(v("gana", "gana", "empate"), tie, tie))
+        self.assertFalse(pr.adopt_season_2026(v("gana", "gana", "empate"), v("compensa (empate)", "empate", "empate"), tie))
+        self.assertFalse(pr.adopt_season_2026(v("gana", "empate", "empate"), tie, tie))
+
     def test_record(self):
         self.assertIn("aprobado por Rosa", pr.STEP_D["estado"])
         self.assertEqual(pr.STEP_D_HEAVY_RAIN_MM, 20.0)

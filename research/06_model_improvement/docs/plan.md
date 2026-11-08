@@ -237,6 +237,29 @@ Detente.
 Una binomial negativa GLM con rezagos (casos y clima) y un LightGBM con la misma matriz y el mismo protocolo.
 Sirven para saber si XGBoost es el límite o si lo son los datos.
 
+## Decisiones de Rosa (2026-11-08, temporada 2026)
+
+1. **Lluvia de la V3: solo CHIRPS v3 `sat`; el preliminar y el final se bajan por FTP** (`ftp.chc.ucsb.edu`,
+   `/products/CHIRPS/v3.0/daily/{prelim,final}/sat/AAAA/`). La prueba del 2026-11-08 bajó los 31 días del preliminar de
+   octubre de 2026 en 108 s, sin errores, con la grilla igual al final y el sha256 del 2026-10-01 idéntico al de b-V.
+   Se descarta la familia Open-Meteo (OM, OM + Niño, R + 5a y d1-2017).
+2. **La temporada 2026 se usa para comparar modelos.** La temporada 2026 (semana 35 de 2025 a semana 34 de 2026) y las
+   semanas posteriores disponibles son temporadas de evaluación. Con eso, **`EVALUATION_2026` deja de ser
+   independiente para la V3**: la prueba independiente de la V3 pasa a ser lo publicado después de su congelamiento (el
+   resto de la temporada 2026-2027). Esto reemplaza, para la V3, lo dicho en el punto 3 de «Decisiones de Rosa
+   (2026-11-02)» y en la fase 7.
+3. **Regla de decisión** (`SEASON_2026` en `code/preregistration.py`): el Brier como métrica principal sobre 2010,
+   2015, 2016, 2022, 2023 y 2026; gana con >= 5 de 6 a favor y 0 en contra; vetos con >= 4 de 6; adopción sin «pierde»
+   ni «compensa» en el Brier, la F1 ni la razón MAE; cruce entre adoptadas con empate a favor de la más simple. Se fijó
+   después de ver los pasos b y d.
+4. **Bloques:** `temporada_2026` se entrena hasta la temporada 2025; `posterior_2026` (semana 35 de 2026 en adelante)
+   hasta la temporada 2026 y solo se reporta. Las 2 últimas semanas publicadas de la Sala son provisionales: no entran
+   en las métricas y se reportan aparte.
+5. **Validación dejando una temporada fuera** (2010, 2015, 2016, 2017, 2022, 2023, 2024 y 2026): lectura optimista
+   (usa el futuro) que solo compara variantes entre sí y nunca se reporta como rendimiento esperado.
+6. **Orden:** primero los datos (Sala 2026, ERA5-Land 2026, CHIRPS por FTP y b-VI) con una excepción de escritura
+   acotada; después del OK de Rosa, el preregistro completo y la evaluación.
+
 ## Fase 7 · Síntesis, pruebas y congelamiento
 
 - Configuración elegida frente a la V2, con el protocolo nuevo, y la HU0007-4 por celda.
