@@ -137,6 +137,12 @@ e) **Temporada 2026 (decisiones de Rosa del 2026-11-08, ver [plan.md](plan.md)).
      variable más sensible al preliminar (en enero a abril de 2026 el preliminar cuenta 170 días distrito con >= 20 mm
      frente a 213 del final; en 2025, 142 frente a 109).
    - **Evaluación corrida el 2026-11-08: b3 se adopta** (ver «Temporada 2026: resultados»).
+f) **Matriz de clima: preregistrada el 2026-11-08 (después de ver 2026), sin correr, pendiente de la revisión de
+   Rosa.** `CLIMATE_MATRIX` en `code/preregistration.py`: 12 variantes sobre L + 5a (medias b1, b2, b3, b4;
+   ventanas d1 a d5; anomalías e1 y e2 con la climatología del bloque; n1 = b3 con el Niño monótono), con la regla
+   `SEASON_2026`; cruces entre las adoptadas (base por `select_matrix_base`) y d1, d2 y e1 frente a b3. Entre 15 y 81
+   comparaciones. El código de e1, e2 y n1 (guardas G45 a G50) se escribe después de la revisión. Luego, el
+   diagnóstico frente a la persistencia.
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la

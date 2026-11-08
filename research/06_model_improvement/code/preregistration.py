@@ -1140,6 +1140,174 @@ def adopt_season_2026(brier_verdict: pd.DataFrame, alert_verdict: pd.DataFrame, 
 
 
 # ---------------------------------------------------------------------------
+# Climate matrix: every reasonable way to use the climate, compared (written on 2026-11-08 after seeing the
+# season 2026 results; not run; pending Rosa's review)
+# ---------------------------------------------------------------------------
+
+_NINO = "nino12_anom_media3"
+_WINDOWS = ("s0", "media_s1_4", "media_s5_8", "media_s9_12")
+_win = lambda source: [f"{source}_{w}" for w in _WINDOWS]
+_anom = lambda source: [f"{source}_anomalia_{w}" for w in _WINDOWS]
+MATRIX_HEAVY_ANOMALY = ["dias_precip_20mm_anomalia_s0_3", "dias_precip_20mm_anomalia_s4_7"]
+MATRIX_E1 = [*_anom("precip_total_mm"), *_anom("temp_media"), *_anom("hum_rel_media"), *MATRIX_HEAVY_ANOMALY]
+
+MATRIX_VARIANTS = {
+    # 5-week means
+    "b1": [STEP_B_RAIN_COLUMN],
+    "b2": [PHASE1B_PRIME_COLUMN, STEP_B_RAIN_COLUMN],
+    "b3": list(STEP_B3_COLUMNS),
+    "b4": [c for c in STEP_B3_COLUMNS if c != _NINO],
+    # weekly windows
+    "d1": list(STEP_D_COLUMNS),
+    "d2": [*STEP_D_COLUMNS, _NINO],
+    "d3": _win("temp_media"),
+    "d4": [*_win("precip_total_mm"), *STEP_D_HEAVY_COLUMNS],
+    "d5": _win("hum_rel_media"),
+    # anomalies against the block's district x epi-week climatology
+    "e1": list(MATRIX_E1),
+    "e2": [*MATRIX_E1, _NINO],
+    # monotone Niño
+    "n1": list(STEP_B3_COLUMNS),
+}
+MATRIX_MONOTONE = {"n1": {_NINO: 1}}   # +1: the prediction does not go down when the Niño goes up; the rest 0
+# Simplicity order for the crosses (a tie keeps the earlier one): fewer columns; with equal columns, without Niño
+# before with Niño; then unconstrained before constrained (b3 before n1); d3 before d5 and d1/d2 before e1/e2 are
+# arbitrary choices fixed now (windows need no per-block fit, anomalies do)
+MATRIX_SIMPLICITY = ("b1", "b2", "b4", "d3", "d5", "b3", "n1", "d4", "d1", "e1", "d2", "e2")
+MATRIX_FIXED_CROSSES = (("d1", "b3"), ("d2", "b3"), ("e1", "b3"))
+MATRIX_REUSE = ("L + 5a", "b3", "d1", "d2")   # temporada_2026 predictions saved on 2026-11-08
+MATRIX_SHAP_BLOCKS = ("temporada_2022", "temporada_2023", "temporada_2026")
+MATRIX_SHAP_TOP_BRIER = 3
+CLIMATOLOGY_BUFFER_WEEKS = 4
+
+
+def matrix_comparisons(n_adopted: int) -> int:
+    """Comparisons of the matrix: each variant against L + 5a, the fixed crosses and every pair of adopted ones."""
+    return len(MATRIX_VARIANTS) + len(MATRIX_FIXED_CROSSES) + n_adopted * (n_adopted - 1) // 2
+
+
+def select_matrix_base(adopted: list[str], beats) -> str | None:
+    """Base after the crosses: go through the adopted variants in ``MATRIX_SIMPLICITY`` order; a later one replaces
+    the current one only if it wins the cross (``beats(challenger, current) -> bool``, the SEASON_2026 rule). A tie
+    keeps the simpler. ``None`` if nothing was adopted."""
+    ordered = [v for v in MATRIX_SIMPLICITY if v in adopted]
+    if not ordered:
+        return None
+    best = ordered[0]
+    for challenger in ordered[1:]:
+        if beats(challenger, best):
+            best = challenger
+    return best
+
+
+CLIMATE_MATRIX = {
+    "fecha": "2026-11-08",
+    "estado": "preregistrada el 2026-11-08 DESPUÉS de ver los resultados de la temporada 2026 (b3 adoptada por el "
+              "Brier; d1 y d2 en empate); commiteada sin correr nada; pendiente de la revisión de Rosa",
+    "motivo": "Rosa quiere conocer todas las formas razonables de usar el clima, comparadas entre sí, antes del "
+              "diagnóstico frente a la persistencia",
+    "base": "L + 5a (sin clima). Todas las variantes: orígenes desde 2005, lluvia CHIRPS v3, temperatura y humedad "
+            "ERA5-Land, Niño 1+2 de la NOAA; los mismos bloques, Platt, 5a y semillas que SEASON_2026",
+    "variantes": {
+        "b1": "media de 5 semanas de la lluvia (paso b)",
+        "b2": "b1 + media de 5 semanas de la humedad (paso b)",
+        "b3": "b2 + media de 5 semanas de la temperatura + nino12_anom_media3",
+        "b4": "b3 sin el Niño",
+        "d1": "las 14 columnas del paso d (4 ventanas de lluvia, temperatura y humedad + 2 conteos de días >= 20 mm)",
+        "d2": "d1 + nino12_anom_media3",
+        "d3": "solo las 4 ventanas de temperatura",
+        "d4": "solo las 4 ventanas de lluvia + los 2 conteos de días >= 20 mm",
+        "d5": "solo las 4 ventanas de humedad",
+        "e1": "las 14 columnas de d1 como anomalía frente a la climatología distrito × semana epidemiológica del bloque",
+        "e2": "e1 + nino12_anom_media3",
+        "n1": "las columnas de b3 con monotone_constraints de XGBoost: +1 en nino12_anom_media3 y 0 en el resto",
+    },
+    "columnas": MATRIX_VARIANTS,
+    "anomalias_e1": {
+        "referencia": "la B5 del estudio 05 (denguekay.features.onset_features: anomalías de clima con la climatología "
+                      "ajustada con el corte de cada bloque, prepare_block) y features.climate.fit_climatology "
+                      "(media distrito × semana epidemiológica, la 53 comparte celda con la 52, solo semanas cerradas "
+                      "al corte)",
+        "climatologia": "para cada bloque, la media por distrito y semana epidemiológica de cada serie semanal "
+                        "(lluvia CHIRPS, temperatura y humedad ERA5-Land, y días >= 20 mm por semana) con las "
+                        "semanas desde 2000 cuyo sábado es <= el corte del bloque (su primer origen); se calcula "
+                        "dentro del bucle de bloques (prepare_block de predict_blocks_weighted), como la B5",
+        "columnas": "anomalía semanal = valor − climatología de su distrito y semana; cada ventana de d1 se calcula "
+                    "sobre la anomalía (media en las ventanas de lluvia, temperatura y humedad; suma en los dos "
+                    "conteos de días >= 20 mm), con las mismas semanas que d1",
+        "nota": "las filas de entrenamiento y de prueba de un bloque usan la misma climatología (la del corte), como "
+                "la B5; ningún dato posterior al corte entra",
+        "dejando_una_temporada_fuera": f"la climatología se ajusta con todas las semanas fuera de la temporada dejada "
+                                       f"fuera ampliada {CLIMATOLOGY_BUFFER_WEEKS} semanas antes y después",
+    },
+    "nino_monotono_n1": "XGBoost 3.4.1 respeta monotone_constraints con multi_strategy=multi_output_tree (comprobado "
+                        "el 2026-11-08 con datos sintéticos de relación decreciente: la predicción restringida quedó "
+                        "plana). La restricción actúa sobre la parte de los árboles; con la base_margin fija, μ es "
+                        "monótona en el Niño, y también la probabilidad NB2 (creciente en μ) y la calibrada si la "
+                        "pendiente de Platt es positiva (se reporta)",
+    "regla": "SEASON_2026 (decide_season_2026 + adopt_season_2026): el Brier sobre 2010, 2015, 2016, 2022, 2023 y "
+             "2026, gana con >= 5 de 6 a favor y 0 en contra, vetos con >= 4 de 6; adopción con >= 2 horizontes "
+             "ganados y sin «pierde» ni «compensa» en el Brier, la F1 ni la razón MAE",
+    "comparaciones": {
+        "1": "cada una de las 12 variantes frente a L + 5a",
+        "2": "las adoptadas cruzadas entre sí, todos los pares, con la misma regla; la base resulta de "
+             "select_matrix_base (orden de MATRIX_SIMPLICITY; una posterior reemplaza a la vigente solo si gana el "
+             "cruce; un empate deja la más simple)",
+        "3": "d1, d2 y e1 frente a b3 con la misma regla, aunque no se adopten; se reporta como cruce y no cambia la "
+             "base por sí solo",
+    },
+    "numero_de_comparaciones": "12 frente a L + 5a + 3 cruces fijos + k(k−1)/2 cruces entre las k adoptadas: entre 15 y "
+                               "81 (cada una con 3 reglas en 3 horizontes)",
+    "metricas_por_variante": "Brier, BSS frente a la climatología del paso d, AUPRC general y en inicios "
+                             "(persistencia < max(umbral_brote_casos, 2)), F1 a 0,50, razón MAE y razón RMSE, mediana de "
+                             "5 semillas, en las 6 temporadas que deciden, 2017, 2024 y posterior_2026; la HU0007-4 por "
+                             "celda en temporada_2026 y posterior_2026 (posterior_2026 solo se reporta)",
+    "dejando_una_temporada_fuera": "la lectura de SEASON_2026 (2010, 2015, 2016, 2017, 2022, 2023, 2024 y 2026) para las "
+                                   "12 variantes; optimista, solo compara variantes entre sí y no decide",
+    "shap": f"por horizonte (media de |SHAP| del regresor, semilla 17) en {', '.join(MATRIX_SHAP_BLOCKS)}, de las "
+            f"variantes adoptadas y de las {MATRIX_SHAP_TOP_BRIER} mejores por el Brier (mediana, sobre las 6 temporadas "
+            "y los 3 horizontes, de la diferencia de Brier frente a L + 5a)",
+    "reutilizacion": "las predicciones de L + 5a, b3, d1 y d2 guardadas el 2026-11-08 (todos los bloques, 5 semillas) se "
+                     "reutilizan si G41 confirma que se reproducen: se reentrena la semilla 17 de cada una en todos los "
+                     "bloques y debe coincidir con la guardada (diferencia <= 1e-6). b1 y b2 solo tienen guardados los "
+                     "bloques anteriores a 2026: se reentrenan completas y G41 se aplica a esos bloques. Si una guarda "
+                     "G41 falla, esa variante se reentrena completa y se reporta",
+    "guardas_antes_de_mirar_resultados": [
+        "las de SEASON_2026 (G17, G25, G29, G30, G35a, G35b, G40, G42, G43 y G44) sobre los mismos datos",
+        "b4, d3, d4 y d5 son subconjuntos de columnas ya validadas (b3 y d1): se repiten su cobertura y "
+        "disponibilidad",
+        "G45 (definición de e1): con datos sintéticos, la anomalía de cada ventana es la ventana del valor menos la "
+        "ventana de la climatología; en los datos reales, para cada bloque, columna de e1 + la misma ventana de la "
+        "climatología = columna de d1 (diferencia <= 1e-9)",
+        "G46 (no fuga de e1 por el origen): cambiar el clima de las semanas posteriores al origen no cambia ninguna "
+        "columna de e1",
+        "G47 (no fuga de e1 por el corte): cambiar el clima de las semanas posteriores al corte de un bloque no cambia "
+        "su climatología ni las columnas de e1 de los orígenes anteriores al corte",
+        "G48 (cobertura y disponibilidad de e1): ningún origen desde 2005 sin valor; las mismas semanas que d1, con su "
+        "disponibilidad contra origen_cierre + 14 días",
+        "G49 (n1 monótono): con el modelo de cada bloque (semilla 17), para 1000 orígenes al azar y el Niño en una grilla "
+        "de −3 a 6, μ no baja en ningún horizonte; se reporta la pendiente de Platt de cada bloque y horizonte",
+        "G50 (n1 sin la restricción reproduce b3): con monotone_constraints en 0, n1 da exactamente las predicciones "
+        "de b3 (semilla 17, un bloque)",
+        "si una guarda falla, se detiene y se explica; no se ajusta nada para que pase",
+    ],
+    "declaraciones": [
+        "la matriz se fijó DESPUÉS de ver los resultados de la temporada 2026",
+        "con 12 variantes y hasta 81 comparaciones crece la probabilidad de un «gana» por azar; los «gana» se "
+        "reportan junto con el número total de comparaciones y no se corrige el umbral",
+        "b1, b2, b3, d1 y d2 ya se compararon antes (pasos b y d y temporada 2026); aquí se repiten con la regla de "
+        "SEASON_2026 para tenerlas en la misma tabla",
+    ],
+    "codigo": "por escribir después de la revisión de Rosa: anomalías (e1, e2) y restricción monótona (n1) en "
+              "code/phase_climate_matrix.py, con sus tests (G45 a G50); el resto reutiliza phase_2026.py",
+    "notebook": "notebooks/16_matriz_clima.ipynb",
+    "metricas": "docs/metricas/matriz_clima.json",
+    "mlflow": "denguekay/mejora_modelo_matriz_clima",
+    "despues": "el diagnóstico frente a la persistencia",
+}
+
+
+# ---------------------------------------------------------------------------
 # Multi-season decision rule (phases 2 onwards and 1b)
 # ---------------------------------------------------------------------------
 
