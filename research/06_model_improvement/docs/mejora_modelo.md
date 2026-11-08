@@ -107,6 +107,31 @@ d) **Ventanas de clima: corrido el 2026-11-06, empate en los criterios (a), (b) 
    `code/phase_d_weather_windows.py`. Respuestas de Rosa: >= 20 mm; la climatología propuesta; la base pasa a d1
    solo si gana frente a L + 5a (si además pierde frente a b3, se le consulta antes de la fase 7).
 
+e) **Temporada 2026 (decisiones de Rosa del 2026-11-08, ver [plan.md](plan.md)).** Regla de decisión preregistrada
+   (`SEASON_2026`, commit `e02ebe1`); `EVALUATION_2026` deja de ser independiente para la V3. **Punto 1 (datos)
+   hecho el 2026-11-08** con una excepción de escritura acotada, ya cerrada (cifras en `metricas/datos_2026.json`):
+   - Sala: 2025 sin cambios frente al silver (3445 filas, 0 distintas, 1117 casos); 2026 agregado al silver
+     `epi_sala_semanal.csv` por upsert (2795 filas: 65 distritos × semanas 1 a 43, 15 716 casos; las filas previas
+     quedan idénticas). Semanas provisionales: la 42 y la 43 de 2026.
+   - ERA5-Land 2026 (65 distritos, 2026-01-01 a 2026-10-31, sin nulos) en `cache_meteo_era5_land_2026/` y silver nuevo
+     `meteo_humedad_era5_land_2000_2026.csv` (91 000 filas hasta la semana del 2026-10-25); reproduce exactamente el
+     de 2000-2025 en sus 88 140 filas.
+   - CHIRPS por FTP (código en `feat/chirps-precipitation`, commit `5b6f6cd`): preliminar del 2026-09-27 al 2026-10-31
+     (35 días, el 2026-10-01 sin cambios); final y preliminar de enero a abril de 2025 y 2026 (471 archivos, sin
+     errores; faltan en el servidor 9 días del preliminar de 2025). Silver nuevo
+     `precip_chirps_v3_semanal_desde_2000_20261108.csv` (91 000 filas: las 90 675 del vigente idénticas + 5 semanas
+     `prelim` del 2026-09-27 al 2026-10-25); el vigente se reemplaza solo con el OK de Rosa.
+   - Final por FTP frente a Earth Engine (240 días de enero a abril de 2025 y 2026, 15 600 pares distrito-día):
+     diferencia media 0,003 mm, máxima 0,145 mm; 2 pares fuera de la tolerancia de b-IV (distrito 200503, 2026-01-10
+     y 2026-03-12: 1,58 frente a 1,65 mm y 3,31 frente a 3,20 mm).
+   - Semanas brote (sin las provisionales): temporada 2026, 89 por horizonte (19 distritos, 20 inicios limpios);
+     posterior_2026 (2026-08-30 a 2026-10-11), 167 (36 distritos, 17 inicios limpios). Las dos superan el mínimo de 30.
+   - b-VI (preliminar frente a final, enero a abril): ver «Paso b-VI» en `metricas/datos_2026.json`. En 2025 el
+     preliminar llueve 5 % más que el final por semana (correlación semanal 0,95); en 2026, 7 % menos (0,94). La media
+     de 5 semanas de b3 cambia en promedio 2,3 mm (2025) y 3,1 mm (2026) con correlación 0,98 y 0,97; los días
+     >= 20 mm de o−3..o cambian en 106 de 845 orígenes (2025) y 219 de 1040 (2026), correlación 0,93 y 0,85.
+   - Pendiente: el preregistro completo de la evaluación y la evaluación (después del OK de Rosa).
+
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la
 V2 con la HU0007-4 por celda, pruebas obligatorias, auditoría con `revisor-modelado`, intervalo del conteo con la μ
