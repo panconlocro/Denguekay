@@ -167,6 +167,13 @@ def guard_coverage(origins: pd.DataFrame, columns: list[str], last_close) -> dic
 
 # --- Runs -------------------------------------------------------------------------------------------------------
 
+def evaluate_saved(path, series: pd.DataFrame) -> dict:
+    """Predictions saved by an earlier run of the same code, evaluated again (no retraining)."""
+    preds = read_saved(path)
+    return {"predicciones": preds, "evaluaciones": {s: p5.evaluate_mixture(p, series) for s, p in preds.items()},
+            "ajustes": None}
+
+
 def run_variant(inp: dict, origins: pd.DataFrame, columns: list[str], hp: dict, seeds=pr.SEEDS) -> dict:
     preds, evals, fits = {}, {}, []
     for seed in seeds:
@@ -226,6 +233,7 @@ def compare_2026(candidate: dict, reference: dict, outbreaks: dict[int, int]) ->
     lead = pr.lead_time_difference_multi(candidate["evaluaciones"][seed]["antelacion"],
                                          reference["evaluaciones"][seed]["antelacion"], "alerta_050", six)
     brier = pr.decide_season_2026(med_c, med_r, ranges, lead, outbreaks)
+    ranges5 = p5.tie_threshold(candidate, reference)   # the count rule's own threshold (with the RMSE ratio)
     alert, count = [], []
     for h in p3.H:
         use6 = outbreaks.get(h, 0) >= pr.SEASON_2026_MIN_OUTBREAK_WEEKS
@@ -236,8 +244,9 @@ def compare_2026(candidate: dict, reference: dict, outbreaks: dict[int, int]) ->
         ld = lead[lead.horizonte.eq(h)] if use6 else pr.lead_time_difference_multi(
             candidate["evaluaciones"][seed]["antelacion"], reference["evaluaciones"][seed]["antelacion"],
             "alerta_050", seasons).query("horizonte == @h")
+        sel5 = [*sel[:2], ranges5[ranges5.horizonte.eq(h) & ranges5.bloque.isin(blocks_)]]
         alert.append(pr.decide_multi_season(*sel, ld, seasons=seasons, min_in_favour=k, guard_veto=veto))
-        count.append(pr.decide_phase5(*sel, ld, seasons=seasons, min_in_favour=k, guard_veto=veto))
+        count.append(pr.decide_phase5(*sel5, ld, seasons=seasons, min_in_favour=k, guard_veto=veto))
     alert, count = pd.concat(alert, ignore_index=True), pd.concat(count, ignore_index=True)
     return {"brier": brier, "alerta": alert, "conteo": count, "antelacion": lead,
             "adopta": pr.adopt_season_2026(brier, alert, count)}
