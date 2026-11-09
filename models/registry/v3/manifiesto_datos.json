@@ -2242,6 +2242,46 @@
     }
    ],
    "segundos_armado": 25.9
+  },
+  {
+   "nombre": "predicciones_v3_cpu.zip",
+   "bytes": 67493368,
+   "sha256": "da4de32b261b96cdf9555fe399471323ef142e4bf9d15ac8a695b404fe57aa62",
+   "destino": "models/experimentos",
+   "archivos": [
+    {
+     "ruta": "models/experimentos/mejora_modelo/v3_cpu/comparacion_cpu_gpu.json",
+     "filas": null,
+     "bytes": 3842,
+     "sha256": "361671ae678c3246c9f90e667be6c3a896052bdc3d73c80505b1ceb3476d88a2"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/v3_cpu/corridas_cpu.json",
+     "filas": null,
+     "bytes": 1900,
+     "sha256": "f85f08f8581192ae04fbbfc390a682272550c831d3f285bc5fdf06cfcdbe7353"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/v3_cpu/predicciones_l5a_sin_clima_cpu_17_29_41_53_67.csv.gz",
+     "filas": 975000,
+     "bytes": 28801880,
+     "sha256": "e3d4c845d94252344c0ddafc8b74c3deb22aeda3d31d47676df5cf85629039ef"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/v3_cpu/predicciones_v3_cpu_17.csv.gz",
+     "filas": 195000,
+     "bytes": 7760825,
+     "sha256": "bc75e63840c1114c884ebd800345e31f2b6ba53bfbbedb872b6f5c853ba01edf"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/v3_cpu/predicciones_v3_cpu_29_41_53_67.csv.gz",
+     "filas": 780000,
+     "bytes": 31021364,
+     "sha256": "b5a450b815316d4d68619e3b69347c94cae1fe0f215dfea629be7ec11cb03f5f"
+    }
+   ],
+   "segundos_armado": 3.5,
+   "descripcion": "Referencia en CPU (device=cpu, n_jobs=2): V3 y L + 5a con 5 semillas, determinista con hilos fijos"
   }
  ]
 }

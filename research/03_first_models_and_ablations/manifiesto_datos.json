@@ -1,0 +1,1070 @@
+{
+ "tag": "archive/training",
+ "repositorio": "panconlocro/Denguekay",
+ "fecha": "2026-11-09",
+ "descripcion": "Paquetes del Release de archive/training. Se descargan y verifican con python -m denguekay.data.ingestion.release_bundles",
+ "paquetes": [
+  {
+   "nombre": "gold_anterior.zip",
+   "bytes": 2535493,
+   "sha256": "bed085de621adb2e12330aaf89a695b64277e4dbb925bf22deacea0c4b9d6d0b",
+   "destino": "data",
+   "archivos": [
+    {
+     "ruta": "data/gold/manifest_fase6.json",
+     "filas": null,
+     "bytes": 2859,
+     "sha256": "33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57"
+    },
+    {
+     "ruta": "data/gold/meteo_socio_epi_piura_2017_2025_h2_gold.csv",
+     "filas": 30485,
+     "bytes": 17562009,
+     "sha256": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3"
+    },
+    {
+     "ruta": "data/gold/meteo_socio_epi_piura_2017_2025_h4_gold.csv",
+     "filas": 30485,
+     "bytes": 17551302,
+     "sha256": "f9fbed66572e8641eee82ce1a148562f5121cf8dbd111498f73a8aa78f5f19c6"
+    }
+   ],
+   "segundos_armado": 0.6
+  },
+  {
+   "nombre": "artefactos_estudio03.zip",
+   "bytes": 24743319,
+   "sha256": "e5187e8f8feaf74b30c4dcb866c7f3e292340275fde8277cfae60bf1a24e70ed",
+   "destino": "models/experimentos",
+   "archivos": [
+    {
+     "ruta": "models/experimentos/ablacion_clima/predicciones_prueba.csv",
+     "filas": 13520,
+     "bytes": 1505994,
+     "sha256": "e37cece8f8d38a3d852e45678455be49188396b88ee20e46a886f1f7fab9a655"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_clima/predicciones_validacion.csv",
+     "filas": 81640,
+     "bytes": 9395564,
+     "sha256": "3b70c8ba82d87f573e738300817c3e5a40b98c0884438f6bc3c1e7b42a7d774c"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_clima/xgb_h2_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 179030,
+     "sha256": "39d7b00580f2ed4f374fd2ed8842831c563e95c266fe147a740f167aef15fa4e"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_clima/xgb_h2_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 176384,
+     "sha256": "da02ddd4a40244c9d1881c1ad3abc983a9c207254d1b22ad9431fbe13a9ad5b1"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_clima/xgb_h2_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184471,
+     "sha256": "0c2d1b8c79d3095575b0b67056eacb67075cb1b2d5322a8f3f1efa8542c3f7be"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_clima/xgb_h2_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 180626,
+     "sha256": "c6c84e3d51f593cd5e81917274afc8684cf5accf3798bc7eb06be7a7785a57a1"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_clima/xgb_h4_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 182198,
+     "sha256": "024a6cdcc768c743916708320f3f1e90ae2d0e91b7b6fe684f4026c030170b1c"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_clima/xgb_h4_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183924,
+     "sha256": "7d742a30591309018c41997ace1870748412e2a26e16209ba4903f4c098eec24"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_clima/xgb_h4_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184902,
+     "sha256": "ae3225032eddf447167fa8b29038a6af5b473912ea44201b1d040a04a28d83ba"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_clima/xgb_h4_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182287,
+     "sha256": "7b7e9c9576cfa916acbee1d080e74661598745262d1d59bc535b13573c27a800"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/predicciones_prueba.csv",
+     "filas": 27040,
+     "bytes": 3091875,
+     "sha256": "4203d377920dac857c172e3e0d004a87b6ff96a99e0aef70b3428d04a24c32e3"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/predicciones_validacion.csv",
+     "filas": 81640,
+     "bytes": 9216533,
+     "sha256": "d1515f7ed9449ca08ef37984f82abf4527cc2a4b22392c37bb62bfbb08471f0b"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h2_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 178317,
+     "sha256": "8c1bb61b16a457f76d59c6fffb11e76ae247bdc523cde8c124733f5e745c71c0"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h2_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 177148,
+     "sha256": "ca840a9e2c06aad1246b6168dacc0a3c98d4258da53539d0d00a079f0067d694"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h2_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184850,
+     "sha256": "592bfcdec1d16946bd8dc3d95514ac73f9a09720f7d2cb31d093efa46126fea6"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h2_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 180650,
+     "sha256": "ec8c2ec04f7cee007ef6cc492e5b4de2b35cb6547d760b33d7276ba8a7884079"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h2_mas_jerarquia_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 181189,
+     "sha256": "0b99385803129e4d2149a756b874eea5630d9a47374e59a7b7b9f5a2ea864b65"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h2_mas_jerarquia_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 179920,
+     "sha256": "8ce90a64ded515fe2698f2f61ba4907dfd9682d391589962661887faa3d0b2e1"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h2_mas_jerarquia_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185961,
+     "sha256": "83f7b9712446d2ac2baa4ceba0ea2f6c7bd5a504c9f23b76fa92cc59c7a4a3fd"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h2_mas_jerarquia_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183705,
+     "sha256": "1a95f8a84d960913785d89e4107c13bb4c10efd443f3e927afed80d3f8cc4789"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h4_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185693,
+     "sha256": "aeb5cd41be50ad23d80cd2b00de1514fbcccbe29c74edbbd862ca65f09da42b9"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h4_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183490,
+     "sha256": "1ee9ae3c126b98ee795c666ed23202d720f2e8bf143186beb97ba09d262b9db8"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h4_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184256,
+     "sha256": "15c3360a92236117cc9c3cc51fa2b7f189e0291aeb5c0fcad7b5c7c53bb968bd"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h4_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 181617,
+     "sha256": "4e8273fe8c9c77258a4845832b4a4ed045242968852fd08d3a7ccf76be2d6582"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h4_mas_jerarquia_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 183682,
+     "sha256": "c08253228fa542f330795233c1f10f2fbbfd9fc97b0f678fd0e2d3f339c50801"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h4_mas_jerarquia_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182774,
+     "sha256": "6db22d16022981b9a4664576b87bc98e3edd8e2000c98a6ae933b405bf423623"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h4_mas_jerarquia_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185914,
+     "sha256": "c11a1304d7f7f6d7dde3b09e42a7ae289deed819024da66a363be52b8b58b971"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_espacial/xgb_h4_mas_jerarquia_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183722,
+     "sha256": "d7e3ea91c02cf034bec82f243685121a7fb94b7552aacbf519ab2eabbc41760b"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/predicciones_prueba.csv",
+     "filas": 67600,
+     "bytes": 8633721,
+     "sha256": "008799f9e1a02c49c2a4826ea2f08634111d58c9379aaa344eef12becdc0a8eb"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/predicciones_validacion.csv.gz",
+     "filas": 632710,
+     "bytes": 8397057,
+     "sha256": "427c184c6e211a1b6ba6075abd30e1588e9935cbd85031cc79dabb6665e83989"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_agua_red_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 182326,
+     "sha256": "68c693ed1e891183165cf6e3e8baebd47ba31a351518233792d8fbf2e8b03654"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_agua_red_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182208,
+     "sha256": "aa4253c96aecb55a91332229f3cf7f5816f41d8298d46bdca04f61b075dbe057"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_agua_red_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185683,
+     "sha256": "c2ba48c257072c24eb974868f37ce361c5ab4392caa21903941817fda3d719f0"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_agua_red_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 181712,
+     "sha256": "635490022901a429a92700507aee819f1ed82b1f9407502a9488e593c7647f8f"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_alumbrado_red_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 181608,
+     "sha256": "6cde985c7d68a12cb0a1c9149d37af641dd25a8a2c2186c6e403cfdcbc0ca103"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_alumbrado_red_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 176715,
+     "sha256": "f4ee741aefcd4c06708c03e66717007f86e59dc2f942a9617d0cf2c6766c4607"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_alumbrado_red_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185032,
+     "sha256": "d72711c526c124f73604375268513133a50d554a27084e70513cdd150904acbe"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_alumbrado_red_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183317,
+     "sha256": "9f448f5c6a1539e6b5e0ccdbd6ab85092ddb08ade57acf8cf2cd1f2eaa6a2212"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_hogares_celular_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185519,
+     "sha256": "9cbf97f17308ada64893744e7b5fbd6a3d801ccd3858c22aac08ca793ab25799"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_hogares_celular_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 185179,
+     "sha256": "c8b6cc020973d89cd841a20449601f43c74dc341dee09f43a15dc3b0b0dad864"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_hogares_celular_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185718,
+     "sha256": "5f7f8b874cc08969c0f5b091918a7a7c1a2f53fbf421f14880d4470f5aec2bcd"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_hogares_celular_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183841,
+     "sha256": "6f0df2abe19a57df2a41ac94cb9f557d50e23a1271f86170fff607244510296a"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_hogares_lena_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 182277,
+     "sha256": "14a546350142b403bf1173ff4bc5b116620753a6ca694af512a1769dee8c4496"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_hogares_lena_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 177933,
+     "sha256": "852f920e0546bd7f624963773fd980476575f2104365a245f80f68215b23daee"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_hogares_lena_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184925,
+     "sha256": "ebbf9906ab1408d4bb149b114615dd52337640179f86634970070936c2b52886"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_anual__fraccion_hogares_lena_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182499,
+     "sha256": "b9c554bc68400c150f5b567a32643d7afe6a0d667966da34172e8c5bc5cb126d"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 178317,
+     "sha256": "8c1bb61b16a457f76d59c6fffb11e76ae247bdc523cde8c124733f5e745c71c0"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 177148,
+     "sha256": "ca840a9e2c06aad1246b6168dacc0a3c98d4258da53539d0d00a079f0067d694"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184850,
+     "sha256": "592bfcdec1d16946bd8dc3d95514ac73f9a09720f7d2cb31d093efa46126fea6"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 180650,
+     "sha256": "ec8c2ec04f7cee007ef6cc492e5b4de2b35cb6547d760b33d7276ba8a7884079"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_mujeres_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184483,
+     "sha256": "0c4dfe5935aa1ab757bd89a25c898a420dd203b64136cb5a4cb682355e6edf05"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_mujeres_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 181239,
+     "sha256": "27a64badceb8f8a1cd5523eb17fbd7cf49aac8c0f6fcaf2630e37ff382105715"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_mujeres_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184894,
+     "sha256": "1ed6669136a92a86aa10017395ca5f32fe2b0beff35016253b6700bb20c93628"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_mujeres_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182149,
+     "sha256": "8504d3b15899b2a19a050e96b38217876395819dbf1bf5ecd6c1b2b62574336a"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_rural_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185191,
+     "sha256": "f7cb15f7e07b1aadcfc7e95bc76545a419fab16c1076da8081b8b1e5a5bf0095"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_rural_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182401,
+     "sha256": "3821aa30bd4f533f7dacd6463b4deefd865422d07ac6781b8d5e348737cd00fc"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_rural_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185051,
+     "sha256": "8ed7a1085982dd9b10b97c10eb4aac7db13a31402ed361798b227ee147992fb7"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_rural_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 181726,
+     "sha256": "6bcfd87a0d4c9b5cc8414eed70d88f8616ac7615c3eb3c6b92b0058fa9736e62"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_sin_seguro_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 183119,
+     "sha256": "ade78bf5f5652e8615decbb97dd56f525dc8972c4390fba48dfe100e3b8a3fd1"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_sin_seguro_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 181164,
+     "sha256": "e5f2d26c92d3f288a5dbe0582207369c01bf4914e866f25655b5be8203818ae9"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_sin_seguro_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185216,
+     "sha256": "536449d2d584b208c48b5e8e657812deffe89c081889f8b24057baac8d1096f7"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h2_fija__fraccion_sin_seguro_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182354,
+     "sha256": "3572f2ede2eac01e7093cfd9bd2cffc3025f7b2989c3422b52289fe830efff50"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_alumbrado_red_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185213,
+     "sha256": "6a0cc046f03aaa602414b5ae26fe3096ecc2698216f483432e9b14284494f678"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_alumbrado_red_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182482,
+     "sha256": "6f0a5fb27193be00b860cfb8eab816e83730331c79914df4498bdb3a22923586"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_alumbrado_red_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185802,
+     "sha256": "50b0ac9d1049d216dea756b5ff6a63bf94a47adb4a81485bbf8a00ab0f425d5a"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_alumbrado_red_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 184652,
+     "sha256": "c2ac7abb189f9319834ac643b9f929fb94fec66d788bf4f4bc1a596d86c32132"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_menores_15_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 188829,
+     "sha256": "e52b63e65af8ddb133da748d24483651d7d4009c88e5fe56361d772d76a0a379"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_menores_15_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 188321,
+     "sha256": "459e475cd4031864026a955954abfa8a8427614d06518dee342363122b0bc911"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_menores_15_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185874,
+     "sha256": "76711dff1f14613b57f4d2d522606065f17468d7e12f94bcab5cf234a2a021ee"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_menores_15_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 184240,
+     "sha256": "3da8367d765652e348d4ac415e3df0387219c61150ef54a3cb87063b2d54cf1b"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_mujeres_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 189065,
+     "sha256": "ff0969a99fd14de91c55e4d01327236b838c6c1ee12dac0d04f2a822c79def23"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_mujeres_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 188072,
+     "sha256": "68395123c535a2e7535326dca7dd19ce310aaf9d9477d0881cda71fc01060dd4"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_mujeres_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184657,
+     "sha256": "deb94fabf1e38472e9e1dc88aa7e52cec2ec244e349e11da4097903dec20be5b"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_mujeres_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182467,
+     "sha256": "c64fb2eac91eeca4dd19780ea03d1c7e191540f4f43768bd1fdca195310d9d5c"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_sin_saneamiento_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 189762,
+     "sha256": "0a9e9e1ad9aa7fce87571080ec12f723411c7c000b8c401f2cf9387e49e2115a"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_sin_saneamiento_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 185665,
+     "sha256": "9acbed8acf85d543d447e778c06456423ba4d6377cb2847c6f203d084285c441"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_sin_saneamiento_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185627,
+     "sha256": "cb7e10e74ec12b83c4cf87e10007d197ff45e12bfe1c16881cf465fddedc5060"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_anual__fraccion_sin_saneamiento_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183785,
+     "sha256": "7762699bdd118da79c8f840b9d8a84752a19481d0b583fcae86b6fd11c3375ad"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185693,
+     "sha256": "aeb5cd41be50ad23d80cd2b00de1514fbcccbe29c74edbbd862ca65f09da42b9"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183490,
+     "sha256": "1ee9ae3c126b98ee795c666ed23202d720f2e8bf143186beb97ba09d262b9db8"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184256,
+     "sha256": "15c3360a92236117cc9c3cc51fa2b7f189e0291aeb5c0fcad7b5c7c53bb968bd"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 181617,
+     "sha256": "4e8273fe8c9c77258a4845832b4a4ed045242968852fd08d3a7ccf76be2d6582"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_agua_cisterna_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 187329,
+     "sha256": "82875effd654f5106df205007ac13d79593b17b2d9ce9a78ecd68f526cbc595b"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_agua_cisterna_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183949,
+     "sha256": "e7942f8445304c3ab8d05aa217815f0d0f26b3f45cee424b477e7eb5f7ec4225"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_agua_cisterna_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184954,
+     "sha256": "cebb3497a262f84e9ed7519604ed95899a75b46c0008d521af2c0ae272f5da22"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_agua_cisterna_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182376,
+     "sha256": "9f4c4e12d917154131c483a35a2a660a9e703107205402b0494c96858d82821f"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_menores_15_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 186951,
+     "sha256": "4e4af54ffce806a9c8f84e948038d2d8b1b5cb28b437de26b5d71b05bf2b3efb"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_menores_15_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182778,
+     "sha256": "6c0517808f7a4719c4aeccc751e0c886b5ae75dbe0183c1bcef137551111a722"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_menores_15_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185197,
+     "sha256": "718388da6dc7b0f571076abfce7a32897d049506c28209fab7352b2e85b4f669"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_menores_15_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183998,
+     "sha256": "a630de2e3c8c069985a4ebcd99bd22a57f8716e8c0ac4e141fcf714990c25ac4"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_sin_seguro_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 186218,
+     "sha256": "9ee7ea18d2f9b73ce02879cc158d5e56a3e9a2693a24189c155800f9bf5cfccd"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_sin_seguro_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 184998,
+     "sha256": "c8d722cd2877ed46289cd011b6b8454f2fbdb2153b9da8e32712708ce98d42b8"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_sin_seguro_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185025,
+     "sha256": "37eec5118a10eda0a4689084f2f25f1a2d99e3b24f8eb893aff7fe5a722a7046"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_fracciones/xgb_h4_fija__fraccion_sin_seguro_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182646,
+     "sha256": "91b2cfa91772de3bacdab5e7b17b22544d582b0a8735408d0833741f19c03867"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/predicciones_prueba.csv",
+     "filas": 54080,
+     "bytes": 6526177,
+     "sha256": "66d6f7a97c5a5797b8a84ebc8ff3e4385209d85ba4e948664eae4be03d9ee65d"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/predicciones_validacion.csv",
+     "filas": 81640,
+     "bytes": 9679744,
+     "sha256": "f6147341774fceeb8ab4ae74b0033f00a3a0c14cc49609b1d0c58b779c0cb67c"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 178317,
+     "sha256": "8c1bb61b16a457f76d59c6fffb11e76ae247bdc523cde8c124733f5e745c71c0"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 177148,
+     "sha256": "ca840a9e2c06aad1246b6168dacc0a3c98d4258da53539d0d00a079f0067d694"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184850,
+     "sha256": "592bfcdec1d16946bd8dc3d95514ac73f9a09720f7d2cb31d093efa46126fea6"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 180650,
+     "sha256": "ec8c2ec04f7cee007ef6cc492e5b4de2b35cb6547d760b33d7276ba8a7884079"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_poblacion_2017_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185155,
+     "sha256": "f309061df73a89f09172c2a3d5940981c54d5e9260a2e6e5f2f2676422e6dd35"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_poblacion_2017_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183110,
+     "sha256": "d0958981d35375f3a43b6eadf0760737fad906a040aa2a12cbefe9d12c960397"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_poblacion_2017_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185705,
+     "sha256": "1c0a19b062cb4826bf09d0ca12ae7848bb03feb5524b96df769b20831ae304bb"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_poblacion_2017_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182315,
+     "sha256": "b7ac7c22d7e6d509461582f2b4ecba2480bbf63b9336d2c99a3e1e70475d7a45"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_poblacion_y_sin_seguro_2017_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184167,
+     "sha256": "9e469f7b29859e7bdfcd0cc1d5a549e7c74c10e0360bceb44f45986ac150f7c2"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_poblacion_y_sin_seguro_2017_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183373,
+     "sha256": "836fa4c4b5e087bb44e9fb5cfc036beb155b06920fb4727d0cb4fa5eedbaad4d"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_poblacion_y_sin_seguro_2017_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185726,
+     "sha256": "6f84610d85689a5698147f77ac44a1ce793be0785fe3cd87f8382c9a7d2efce3"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_poblacion_y_sin_seguro_2017_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183558,
+     "sha256": "f83453287c8f4943e48c586e92df947ca914f4854e3cf253c807118c2ebe2fe5"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_sin_seguro_2017_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 183119,
+     "sha256": "ade78bf5f5652e8615decbb97dd56f525dc8972c4390fba48dfe100e3b8a3fd1"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_sin_seguro_2017_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 181164,
+     "sha256": "e5f2d26c92d3f288a5dbe0582207369c01bf4914e866f25655b5be8203818ae9"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_sin_seguro_2017_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185216,
+     "sha256": "536449d2d584b208c48b5e8e657812deffe89c081889f8b24057baac8d1096f7"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h2_sin_seguro_2017_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182354,
+     "sha256": "3572f2ede2eac01e7093cfd9bd2cffc3025f7b2989c3422b52289fe830efff50"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185693,
+     "sha256": "aeb5cd41be50ad23d80cd2b00de1514fbcccbe29c74edbbd862ca65f09da42b9"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183490,
+     "sha256": "1ee9ae3c126b98ee795c666ed23202d720f2e8bf143186beb97ba09d262b9db8"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184256,
+     "sha256": "15c3360a92236117cc9c3cc51fa2b7f189e0291aeb5c0fcad7b5c7c53bb968bd"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 181617,
+     "sha256": "4e8273fe8c9c77258a4845832b4a4ed045242968852fd08d3a7ccf76be2d6582"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_poblacion_2017_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 188823,
+     "sha256": "6679fb896e5402f36bcdcb65b5e1aa8c8d3c481914a034a9ffd33b25020bf54a"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_poblacion_2017_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 186288,
+     "sha256": "c8ce8c9ea6c959318ff11ff4ba385739b717b868b9536eca1f2eddbe134d2b62"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_poblacion_2017_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185877,
+     "sha256": "f26b4ac6bb1b2d67ed928357bb44fff21041b669bbd10ddda505451059be696d"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_poblacion_2017_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183324,
+     "sha256": "aedc04075c326367ad62e1923e0efaf918198c4734872a64524d3ba10754ba8d"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_poblacion_y_sin_seguro_2017_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 186969,
+     "sha256": "345edc09e34b95beab02d29dc8fadc40b39b56c062e8dc047cabad948b71fe33"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_poblacion_y_sin_seguro_2017_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 186654,
+     "sha256": "90200dc80c53fd09cab693584a33e74e56328306c280ef69ce0aa4fbd9a08caa"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_poblacion_y_sin_seguro_2017_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185675,
+     "sha256": "d2562bb5c3445a5c8419b2f1229ca9836ce1789b05c29e9059cc9a06373a7d41"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_poblacion_y_sin_seguro_2017_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183511,
+     "sha256": "75e2cc378dd201556dae8fd52f1fc111f77659745e59fecd91e86d74ca1c3a93"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_sin_seguro_2017_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 186218,
+     "sha256": "9ee7ea18d2f9b73ce02879cc158d5e56a3e9a2693a24189c155800f9bf5cfccd"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_sin_seguro_2017_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 184998,
+     "sha256": "c8d722cd2877ed46289cd011b6b8454f2fbdb2153b9da8e32712708ce98d42b8"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_sin_seguro_2017_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185025,
+     "sha256": "37eec5118a10eda0a4689084f2f25f1a2d99e3b24f8eb893aff7fe5a722a7046"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_poblacion_sin_seguro/xgb_h4_sin_seguro_2017_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182646,
+     "sha256": "91b2cfa91772de3bacdab5e7b17b22544d582b0a8735408d0833741f19c03867"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/predicciones_prueba.csv",
+     "filas": 60840,
+     "bytes": 7053683,
+     "sha256": "9ef2e5133efa9046e32e6366e90de7f9d708de2c1c6c93dcdf0cb443830a6ca1"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/predicciones_validacion.csv",
+     "filas": 204100,
+     "bytes": 23345879,
+     "sha256": "01ab48160d81682208fbc0623c0fd505e5e4ebccd75bc3358797fe975e84ae52"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_anual_poblacion_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184602,
+     "sha256": "423b2b350d30b713a64424192930862e6ee17d6e6a1a2204402571011575febd"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_anual_poblacion_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 180369,
+     "sha256": "368e501056f8c9fb2ad2964d73d0869e386c5f5612eb32de123c4b92f074a307"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_anual_poblacion_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185224,
+     "sha256": "a7e56ffc774033cd394ecb69f61b2e0df176a82d39f2e6070c1545bc8909b741"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_anual_poblacion_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183524,
+     "sha256": "865a6f78ac9795244a2622f97403129edd3dd961a4524d24a3cc57958ae0a56e"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_anual_tres_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 187198,
+     "sha256": "8d39e33fa32501c97b8e1cebeed6b3a0c35be7481125351f7c3fe1113c04d06c"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_anual_tres_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183697,
+     "sha256": "2d3a50b004b42e7808b7bf2ce68235b81e37d84418d6f507ed100389ddb8cb89"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_anual_tres_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185876,
+     "sha256": "45b5170e539411d4f49ecd48564d84374ba66eda741f12e0b528133a7b5c8341"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_anual_tres_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 184515,
+     "sha256": "2c3f259723f9fee6fee3589bee62c1a4a78886709a367e2a4c34a94c5f9c1d1d"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 178317,
+     "sha256": "8c1bb61b16a457f76d59c6fffb11e76ae247bdc523cde8c124733f5e745c71c0"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 177148,
+     "sha256": "ca840a9e2c06aad1246b6168dacc0a3c98d4258da53539d0d00a079f0067d694"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184850,
+     "sha256": "592bfcdec1d16946bd8dc3d95514ac73f9a09720f7d2cb31d093efa46126fea6"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 180650,
+     "sha256": "ec8c2ec04f7cee007ef6cc492e5b4de2b35cb6547d760b33d7276ba8a7884079"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_fija_poblacion_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185155,
+     "sha256": "f309061df73a89f09172c2a3d5940981c54d5e9260a2e6e5f2f2676422e6dd35"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_fija_poblacion_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183110,
+     "sha256": "d0958981d35375f3a43b6eadf0760737fad906a040aa2a12cbefe9d12c960397"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_fija_poblacion_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185705,
+     "sha256": "1c0a19b062cb4826bf09d0ca12ae7848bb03feb5524b96df769b20831ae304bb"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_fija_poblacion_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182315,
+     "sha256": "b7ac7c22d7e6d509461582f2b4ecba2480bbf63b9336d2c99a3e1e70475d7a45"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_fija_tres_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184498,
+     "sha256": "14fe5d95d81be519416b037f432c516b33b8451f5df54d14aa366ef049071e7e"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_fija_tres_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 180387,
+     "sha256": "8f87480c6c2ed825f8692eb825327b15a4f4bb22f43c87f82f3f8ca21a3d16e5"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_fija_tres_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185486,
+     "sha256": "005c53349f5e037b739ccddd75c16eba7dd67ce8107dfe098a4f63b05d772317"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h2_fija_tres_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 182687,
+     "sha256": "5326bb9640a974fa090b337865aadaa5b3b9fcae0ebd519d3c995e7e2966d73a"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_anual_poblacion_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 190158,
+     "sha256": "4216d3f58243cecaaed229f0e42635c700465b7d7497cb2c545684cfae6fed29"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_anual_poblacion_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183383,
+     "sha256": "f0d3bf31bf8adb06e146ff5d3e372d46669882c9e41d584aaf49ce75e6e6db71"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_anual_poblacion_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 186323,
+     "sha256": "1dfc3eb7228daba4e5db7b285eed094f5b5d92f70bc3e34aba83c2bee2fe03df"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_anual_poblacion_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 184185,
+     "sha256": "952b319f9a985980e0c236bf18c5ed40353d4f27e7e760d344b3aeeb20e9333f"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_anual_tres_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 191199,
+     "sha256": "1ff9df7b356ce94cefb219558fa7a58e27805edcf706da52a003d58e9579c651"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_anual_tres_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 191344,
+     "sha256": "239e6c7fe46a2ca1e905ad2306e26e66c52070fe0dec8be5cd360f44282bb8c8"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_anual_tres_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 186068,
+     "sha256": "b738672d2da998d339bb2847906335cc721ce7f682ea44af6a021091c31c2a9e"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_anual_tres_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 184707,
+     "sha256": "f5a2fb220154645ab324d4670ec25d866c326222081a7ed9dae8193960f24823"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_base_6_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185693,
+     "sha256": "aeb5cd41be50ad23d80cd2b00de1514fbcccbe29c74edbbd862ca65f09da42b9"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_base_6_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183490,
+     "sha256": "1ee9ae3c126b98ee795c666ed23202d720f2e8bf143186beb97ba09d262b9db8"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_base_6_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 184256,
+     "sha256": "15c3360a92236117cc9c3cc51fa2b7f189e0291aeb5c0fcad7b5c7c53bb968bd"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_base_6_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 181617,
+     "sha256": "4e8273fe8c9c77258a4845832b4a4ed045242968852fd08d3a7ccf76be2d6582"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_fija_poblacion_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 188823,
+     "sha256": "6679fb896e5402f36bcdcb65b5e1aa8c8d3c481914a034a9ffd33b25020bf54a"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_fija_poblacion_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 186288,
+     "sha256": "c8ce8c9ea6c959318ff11ff4ba385739b717b868b9536eca1f2eddbe134d2b62"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_fija_poblacion_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185877,
+     "sha256": "f26b4ac6bb1b2d67ed928357bb44fff21041b669bbd10ddda505451059be696d"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_fija_poblacion_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183324,
+     "sha256": "aedc04075c326367ad62e1923e0efaf918198c4734872a64524d3ba10754ba8d"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_fija_tres_clasificacion_calendario_2025.json",
+     "filas": null,
+     "bytes": 189001,
+     "sha256": "b12dc9b3968a97c905c133eba0a299315f32a329c3a9a940bf238b730a175b2a"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_fija_tres_clasificacion_temporada_2024.json",
+     "filas": null,
+     "bytes": 185447,
+     "sha256": "2b4828ccc7b33e0f1fd3535a12ade415158fe574f134453a931c168e5d2449d0"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_fija_tres_regresion_calendario_2025.json",
+     "filas": null,
+     "bytes": 185537,
+     "sha256": "fff06dc8e097a832ffce732f109167f2fcb1c1da4aba2fbd5b637441b81bb5c1"
+    },
+    {
+     "ruta": "models/experimentos/ablacion_sociodemografica/xgb_h4_fija_tres_regresion_temporada_2024.json",
+     "filas": null,
+     "bytes": 183302,
+     "sha256": "5c7318c0aad07b1dde5be1bce89babd7e3902826ae811b505120548ab8e7563c"
+    },
+    {
+     "ruta": "models/experimentos/predicciones_por_fold.csv",
+     "filas": 67860,
+     "bytes": 7951538,
+     "sha256": "350133d05d8458788398476ea2cae911b224854c761bb79f831ab67083a53c70"
+    }
+   ],
+   "segundos_armado": 3.4
+  }
+ ]
+}

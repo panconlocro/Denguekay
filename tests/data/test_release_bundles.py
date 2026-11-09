@@ -72,6 +72,16 @@ class TestReleaseBundles(unittest.TestCase):
         with self.assertRaises(rb.BundleError):
             rb.verify_bundle(zip_path, {**entry, "destino": "data"})
 
+    def test_manifest_per_version_or_study(self):
+        from denguekay.config.paths import MODEL_REGISTRY
+
+        self.assertEqual(rb.manifest_path("v3"), MODEL_REGISTRY / "v3" / rb.MANIFEST_NAME)
+        self.assertEqual(rb.manifest_path(), MODEL_REGISTRY / "v3" / rb.MANIFEST_NAME)
+        with self.assertRaises(ValueError):
+            rb.manifest_path("v3", "06_model_improvement")
+        with self.assertRaises(FileNotFoundError):
+            rb.manifest_path("v9")
+
     def test_release_url(self):
         self.assertEqual(rb.release_url("o/r", "model/v3", "d.zip"),
                          "https://github.com/o/r/releases/download/model/v3/d.zip")
