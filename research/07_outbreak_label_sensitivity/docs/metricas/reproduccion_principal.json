@@ -1,0 +1,157 @@
+{
+  "pasa": true,
+  "metricas_guardadas": {
+    "celdas": 570,
+    "sin_par": 0,
+    "diferencia_maxima": {
+      "brier": 0.0,
+      "auprc": 0.0
+    },
+    "tolerancia": 1e-12,
+    "pasa": true
+  },
+  "metricas_reajustadas": {
+    "celdas": 570,
+    "sin_par": 0,
+    "conteos_exactos": true,
+    "brier": {
+      "maximo": 7.632783294297951e-17,
+      "tolerancia": 1e-06,
+      "misma_mascara_na": true,
+      "pasa": true
+    },
+    "auprc": {
+      "maximo": 0.0,
+      "tolerancia": 1e-06,
+      "misma_mascara_na": true,
+      "pasa": true
+    },
+    "pasa": true
+  },
+  "por_variante": {
+    "V3": {
+      "etiquetas_exactas": true,
+      "umbral": {
+        "maximo": 0.0,
+        "tolerancia": 1e-09,
+        "misma_mascara_na": true,
+        "pasa": true
+      },
+      "probabilidad_cruda": {
+        "maximo": 7.771561172376096e-16,
+        "tolerancia": 1e-09,
+        "misma_mascara_na": true,
+        "pasa": true
+      },
+      "platt_por_semilla": {
+        "17": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 7.771561172376096e-16,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        },
+        "29": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 8.881784197001252e-16,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        },
+        "41": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 9.43689570931383e-16,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        },
+        "53": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 8.881784197001252e-16,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        },
+        "67": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 6.661338147750939e-16,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        }
+      }
+    },
+    "L + 5a": {
+      "etiquetas_exactas": true,
+      "umbral": {
+        "maximo": 0.0,
+        "tolerancia": 1e-09,
+        "misma_mascara_na": true,
+        "pasa": true
+      },
+      "probabilidad_cruda": {
+        "maximo": 7.771561172376096e-16,
+        "tolerancia": 1e-09,
+        "misma_mascara_na": true,
+        "pasa": true
+      },
+      "platt_por_semilla": {
+        "17": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 1.2212453270876722e-15,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        },
+        "29": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 1.6653345369377348e-15,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        },
+        "41": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 1.887379141862766e-15,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        },
+        "53": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 1.3322676295501878e-15,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        },
+        "67": {
+          "conteos_exactos": true,
+          "probabilidad": {
+            "maximo": 1.4432899320127035e-15,
+            "tolerancia": 1e-06,
+            "misma_mascara_na": true,
+            "pasa": true
+          }
+        }
+      }
+    }
+  }
+}
