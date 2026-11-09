@@ -16,7 +16,7 @@ Usage (from the repository root)::
 
     python -m denguekay.data.ingestion.release_bundles                    # v3 (default)
     python -m denguekay.data.ingestion.release_bundles --version v2
-    python -m denguekay.data.ingestion.release_bundles --estudio 05_fe_hyperparameters --raiz ..\wt-05
+    python -m denguekay.data.ingestion.release_bundles --estudio 05_fe_hyperparameters --raiz ../wt-05
     python -m denguekay.data.ingestion.release_bundles --solo predicciones_v3.zip
 """
 

@@ -192,8 +192,11 @@ REFERENCE_FINGERPRINTS = {
 }
 
 
-# V3 behavioural fingerprint (seed 17, the study 06 blocks 2008–2026). Recorded only where it was computed.
-V3_FINGERPRINTS = {"device=cuda": "99a0b26dc4a453feea5ddc71d3438b7006e64d2ba5e12caa646f8035040494de"}
+# V3 behavioural fingerprint (seed 17, the study 06 blocks 2008–2026). The GPU one is the official reference (the
+# served model); the CPU one (2 threads) was recorded twice with the same result (2026-11-09). CPU and GPU sample
+# differently with subsample/colsample < 1, so they are different, equally valid realisations of the V3.
+V3_FINGERPRINTS = {"device=cuda": "99a0b26dc4a453feea5ddc71d3438b7006e64d2ba5e12caa646f8035040494de",
+                   "device=cpu,n_jobs=2": "7a46f4f2d8441486edee999c13dc9acf2e6d047f38cc39920d0f907911db72b6"}
 
 
 def setup_key(setup: dict) -> str:

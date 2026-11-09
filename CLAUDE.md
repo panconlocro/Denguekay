@@ -3,7 +3,7 @@
 ## Qué es este proyecto
 Tesis de la UPC (Rosa y Nicolás): aplicación web de Machine Learning para **predecir brotes de dengue en Piura, Perú, con al menos 4 semanas de anticipación**. Metodología CRISP-DM. La etapa actual es **OE3** (desarrollo completo); el EDA (Hito 2, Data Understanding) y OE2 están cerrados. Stack: Python, pandas, scikit-learn, XGBoost, Great Expectations, Open-Meteo, Supabase; todo corre local en VS Code (ya no Colab). **MLflow** (seguimiento de experimentos) y **Great Expectations** (calidad de datos) están integrados en el modelado; ver `docs/modeling/mlflow_great_expectations.md`. DVC sigue descartado: no lo agregues.
 
-Datos: panel **distrito × semana epidemiológica**, 65 distritos de Piura, 2017-2025. Fuentes: clima (Open-Meteo), sociodemografía (censo) y casos de dengue (Excel epidemiológico hasta 2024 + Sala Situacional MINSA para 2025).
+Datos: panel **distrito × semana epidemiológica**, 65 distritos de Piura, 2017-2025 (la v3 usa además la historia de casos desde 2000 y la Sala de 2026). Fuentes: clima (Open-Meteo; ERA5-Land para la v3), lluvia CHIRPS v3, Niño 1+2 (NOAA), sociodemografía (censo) y casos de dengue (Excel epidemiológico hasta 2024 + Sala Situacional MINSA desde 2025). **Reproducibilidad:** `docs/reproducibilidad.md` es la entrada única (datos exactos de cada versión en los Releases de su tag, pipeline desde las fuentes con `python -m denguekay.pipelines.run_all`).
 
 ## Estado del esquema medallion (no lo rompas)
 ```
@@ -36,7 +36,7 @@ Gold ya existe (alineación h=2; las demás candidatas y horizontes se calculan 
   - **Código en inglés:** identificadores (snake_case), comentarios y docstrings. El producto ya está traducido (fase 3 de la reestructuración); por la decisión D2, los handlers de la API, sus parámetros y los esquemas Pydantic conservan sus nombres en español porque forman el contrato OpenAPI.
   - **Sin cambios hasta nuevo aviso:** el esquema de BD sigue el documento OE2 (nombres en español de `docs/backend/ddl_oe2.sql`) y las columnas de los datos conservan sus nombres actuales.
   - **Documentación en español:** `docs/`, markdown de notebooks, informes, títulos y etiquetas de gráficos (con unidades: °C, mm, casos por 100 000 hab.).
-- `pipelines/notebooks/` contiene solo el pipeline (01–09 y `10_silver_to_gold`, que regenera gold), numerado según el paso. La investigación (EDA, feature engineering y estudios de modelado: los antiguos notebooks 10–21 y 23–35, su código, tests, informes, métricas y figuras) está congelada en `research/<estudio>/`, con un README por estudio que dice cómo reproducirlo desde su tag. No se vuelve a correr en `develop` ni en `main`, no corre en el CI y el producto nunca la importa. Un estudio nuevo va en `research/06_<nombre>/`.
+- `pipelines/notebooks/` contiene solo el pipeline (01–09 y `10_silver_to_gold`, que regenera gold), numerado según el paso. La investigación (EDA, feature engineering y estudios de modelado: los antiguos notebooks 10–21 y 23–35, su código, tests, informes, métricas y figuras) está congelada en `research/<estudio>/`, con un README por estudio que dice cómo reproducirlo desde su tag. No se vuelve a correr en `develop` ni en `main`, no corre en el CI y el producto nunca la importa. Un estudio nuevo va en `research/08_<nombre>/` (el `07` es del compañero de Rosa: análisis de sensibilidad de la etiqueta).
 - Salidas del EDA (cerrado): figuras en `research/01_eda/docs/figuras/<fase>/`, cifras clave en `research/01_eda/docs/metricas/<fase>.json`, conclusiones en `research/01_eda/docs/hallazgos.md`.
 
 ## Control de versiones (detalle en `CONTRIBUTING.md`)
@@ -55,7 +55,7 @@ Gold ya existe (alineación h=2; las demás candidatas y horizontes se calculan 
 - Skill `eda-dengue` y subagente `revisor-eda`: método del EDA y auditor que recalcula cada cifra citada. Están versionados en `_claude_setup/` (no instalados en `.claude/`; se instalan con `scripts/install_claude_setup.ps1`) y apuntan al EDA congelado en `research/01_eda/`. Úsalos para cualquier análisis exploratorio nuevo.
 - Subagentes versionados en `.claude/agents/`: `revisor-backend` y `revisor-modelado`.
 - Decisiones de arquitectura del repo: `docs/decisions/` (ADR 0001: reestructuración en monorepo, con las decisiones D1–D6; ADR 0002: ramas `develop` y `main`).
-- Registro de modelos: `models/registry/` (ficha de v0, v1 y v2 y `CHANGELOG.md`). La v2 es la configuración vigente y la que se sirve, como selección experimental; la v0 queda registrada (predictor `v0_compact_xgb`); las configuraciones se cargan desde el paquete con `denguekay.model.registry`. Una versión nueva lleva su ficha y su entrada en el CHANGELOG.
+- Registro de modelos: `models/registry/` (fichas de v0, v1, v2 y v3, su `manifiesto_datos.json` y `CHANGELOG.md`). **La v3 es la configuración vigente** (tag `model/v3`, `CONFIG_V3`, protocolo vigente `docs/modeling/protocolo_v3.md`); se sirve con el predictor `v3_l5a_d3` (rama `feat/serve-v3`; hasta su merge se sirve la v2). v0, v1 y v2 quedan registradas; las configuraciones se cargan con `denguekay.model.registry` y cada versión se reentrena y verifica con `python -m denguekay.model.reproduce <versión>`. Una versión nueva lleva su ficha, su Release de datos con manifiesto y su entrada en el CHANGELOG.
 
 
 <!-- inicio: backend OE2 -->
