@@ -6,16 +6,21 @@ CHIRPS v3 preliminary from the CHC and the weekly silver (study 06, step b-V).
     python -u -m denguekay.pipelines.chirps_prelim silver --solo-final   # only the final version
 
     python -u -m denguekay.pipelines.chirps_prelim ftp --version prelim --desde 2026-09-27 [--hasta AAAA-MM-DD]
+    python -u -m denguekay.pipelines.chirps_prelim ftp --version final --desde 2000-01-01   # history, no account
     python -u -m denguekay.pipelines.chirps_prelim silver-ftp --salida precip_chirps_v3_semanal_desde_2000_AAAAMMDD.csv
+    python -u -m denguekay.pipelines.chirps_prelim silver-ftp --con-earth-engine --salida ...   # the frozen v3 silver
 
 ``download`` starts on the day after the last final month (``chirps_ee.LAST_MONTH``) and ends on the last day
 listed in ``prelim/sat/AAAA/``. Global files go to a temporary folder outside data/ and are deleted once cut.
 
 ``ftp`` (2026-11-08) fetches the preliminary or the final by the CHC's FTP, from ``--desde`` to ``--hasta`` (by default
 the last listed day); a day already in bronze is compared and, if revised, saved apart. ``silver-ftp`` writes the
-weekly silver to a NEW file in data/silver/ (never over the one in use): the final is Earth Engine plus the FTP final
-of the days Earth Engine does not have, the preliminary covers the weeks without a complete final, and each week has
-one version (``combine_daily_by_week``).
+weekly silver to a NEW file in data/silver/ (never over the one in use). By default the final is the FTP final only
+(anonymous, no account: Rosa, 2026-11-09); ``--con-earth-engine`` takes the final from the Earth Engine snapshot
+(``ee_final``, Release of study/model-improvement and datos_v3.zip) plus the FTP final of the days it lacks, as the
+silver the v3 was trained with. Measured on the 240 overlapping days of 2025-2026: daily polygon means differ by at
+most 0.15 mm (mean 0.003 mm), weekly sums by at most 0.34 mm. The preliminary covers the weeks without a complete
+final, and each week has one version (``combine_daily_by_week``).
 """
 
 from __future__ import annotations
@@ -111,8 +116,9 @@ def ftp(version: str, first: date, last: date | None = None, log=print) -> int:
     return 0 if summary["estado"] == "completa" else 2
 
 
-def silver_ftp(output_name: str, log=print) -> int:
-    """Weekly silver from Earth Engine + FTP final + preliminary, one version per week, to a new file."""
+def silver_ftp(output_name: str, log=print, earth_engine: bool = False) -> int:
+    """Weekly silver from the FTP final (or the Earth Engine snapshot + FTP final) and the preliminary, one version
+    per week, to a new file."""
     import pandas as pd
 
     from denguekay.config.paths import BRONZE_CHIRPS_FINAL_FTP, SILVER
@@ -122,11 +128,14 @@ def silver_ftp(output_name: str, log=print) -> int:
     if target.resolve() == SILVER_CHIRPS_PRECIP.resolve():
         raise ValueError("silver-ftp no escribe sobre el silver vigente")
     districts = ce.load_districts()
-    ee = cp.daily_final_from_ee(BRONZE_CHIRPS_EE_FINAL)
     ftp_final = cp.daily_from_windows(BRONZE_CHIRPS_FINAL_FTP, districts, "final", "chirps-v3.0.sat.*.tif")
-    ee_days = set(ee["fecha"])
-    extra_final = ftp_final[~ftp_final["fecha"].isin(ee_days)] if len(ftp_final) else ftp_final
-    final = pd.concat([ee, extra_final], ignore_index=True) if len(extra_final) else ee
+    if earth_engine:
+        ee = cp.daily_final_from_ee(BRONZE_CHIRPS_EE_FINAL)
+        ee_days = set(ee["fecha"])
+        extra_final = ftp_final[~ftp_final["fecha"].isin(ee_days)] if len(ftp_final) else ftp_final
+        final = pd.concat([ee, extra_final], ignore_index=True) if len(extra_final) else ee
+    else:
+        extra_final, final = ftp_final, ftp_final
     prelim = cp.daily_from_windows(BRONZE_CHIRPS_PRELIM, districts, "prelim", "chirps-v3.0.prelim.*.tif")
     daily = cp.combine_daily_by_week(final, prelim)
     weekly, left_out = cp.weekly_by_version(daily)
@@ -145,6 +154,8 @@ def main(argv=None) -> int:
     parser.add_argument("--desde", type=date.fromisoformat)
     parser.add_argument("--hasta", type=date.fromisoformat)
     parser.add_argument("--salida", help="nombre del silver nuevo en data/silver/")
+    parser.add_argument("--con-earth-engine", action="store_true",
+                        help="silver-ftp con el final del snapshot de Earth Engine (el silver de la v3)")
     args = parser.parse_args(argv)
     if args.accion == "download":
         return download()
@@ -156,7 +167,7 @@ def main(argv=None) -> int:
         return ftp(args.version, args.desde, args.hasta)
     if not args.salida:
         parser.error("silver-ftp necesita --salida")
-    return silver_ftp(args.salida)
+    return silver_ftp(args.salida, earth_engine=args.con_earth_engine)
 
 
 if __name__ == "__main__":
