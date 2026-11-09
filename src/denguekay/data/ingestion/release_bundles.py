@@ -1,4 +1,4 @@
-"""Data bundles of a frozen model version, published as assets of its GitHub Release.
+"""Data bundles of a frozen model version or a closed study, published as assets of the GitHub Release of its tag.
 
 ``data/`` is not versioned, so a clone cannot retrain a model by itself. For a frozen version the needed files
 are packed in zips (``datos_v3.zip`` with the inputs under ``data/``, ``predicciones_v3.zip`` with the reference
@@ -8,9 +8,15 @@ SHA-256. This module downloads the zips, checks every hash against the manifest 
 repository root. It refuses entries outside their declared folder and never overwrites a different file unless
 asked to.
 
+Each version has ``models/registry/<version>/manifiesto_datos.json`` and each study that needs files of its own has
+``research/<study>/manifiesto_datos.json``; the manifest names its tag, so the zips are downloaded from that tag's
+Release. ``--raiz`` extracts into another checkout (e.g. a worktree of a study tag).
+
 Usage (from the repository root)::
 
-    python -m denguekay.data.ingestion.release_bundles            # V3 manifest
+    python -m denguekay.data.ingestion.release_bundles                    # v3 (default)
+    python -m denguekay.data.ingestion.release_bundles --version v2
+    python -m denguekay.data.ingestion.release_bundles --estudio 05_fe_hyperparameters --raiz ..\wt-05
     python -m denguekay.data.ingestion.release_bundles --solo predicciones_v3.zip
 """
 
@@ -26,7 +32,7 @@ import urllib.request
 import zipfile
 from pathlib import Path, PurePosixPath
 
-from denguekay.config.paths import ROOT, V3_DATA_MANIFEST
+from denguekay.config.paths import MODEL_REGISTRY, RESEARCH, ROOT, V3_DATA_MANIFEST
 
 CHUNK = 1 << 20
 
@@ -145,6 +151,22 @@ def download(url: str, destination: Path) -> Path:
     return destination
 
 
+MANIFEST_NAME = "manifiesto_datos.json"
+
+
+def manifest_path(version: str | None = None, study: str | None = None) -> Path:
+    """Manifest of a model version (``models/registry/<version>/``) or of a study (``research/<study>/``)."""
+    if version and study:
+        raise ValueError("Indique una versión o un estudio, no ambos")
+    if study:
+        path = RESEARCH / study / MANIFEST_NAME
+    else:
+        path = MODEL_REGISTRY / (version or "v3") / MANIFEST_NAME
+    if not path.exists():
+        raise FileNotFoundError(f"No hay manifiesto de datos en {path.relative_to(ROOT).as_posix()}")
+    return path
+
+
 def load_manifest(path: Path = V3_DATA_MANIFEST) -> dict:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
@@ -171,13 +193,17 @@ def fetch(manifest_path: Path = V3_DATA_MANIFEST, root: Path = ROOT, only: list[
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Descarga y verifica los paquetes de datos de una versión congelada.")
-    parser.add_argument("--manifiesto", type=Path, default=V3_DATA_MANIFEST)
+    parser = argparse.ArgumentParser(description="Descarga y verifica los paquetes de datos de una versión o un estudio.")
+    parser.add_argument("--version", help="versión del modelo (v0, v1, v2, v3); por defecto v3")
+    parser.add_argument("--estudio", help="carpeta del estudio en research/ (p. ej. 05_fe_hyperparameters)")
+    parser.add_argument("--manifiesto", type=Path, help="ruta de un manifiesto (en lugar de --version o --estudio)")
+    parser.add_argument("--raiz", type=Path, default=ROOT, help="carpeta donde extraer (por defecto, este repo)")
     parser.add_argument("--solo", nargs="*", help="nombres de los zips a descargar (por defecto, todos)")
     parser.add_argument("--carpeta", type=Path, help="carpeta donde guardar los zips descargados")
     parser.add_argument("--sobrescribir", action="store_true", help="reemplaza archivos existentes distintos")
     args = parser.parse_args(argv)
-    reports = fetch(args.manifiesto, only=args.solo, overwrite=args.sobrescribir, folder=args.carpeta)
+    path = args.manifiesto or manifest_path(args.version, args.estudio)
+    reports = fetch(path, root=args.raiz, only=args.solo, overwrite=args.sobrescribir, folder=args.carpeta)
     for name, report in reports.items():
         print(f"{name}: verificado; {report}")
 
