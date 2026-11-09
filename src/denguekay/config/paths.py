@@ -34,6 +34,10 @@ CACHE_METEO_ERA5_2017_2025 = BRONZE_METEO / "cache_meteo_era5_2017_2025"
 CACHE_METEO_ERA5_LAND_2017_2025 = BRONZE_METEO / "cache_meteo_era5_land_2017_2025"   # study 06, 1b: ERA5-Land check
 CACHE_METEO_2000_2016 = BRONZE_METEO / "cache_meteo_2000_2016"
 CACHE_METEO_ERA5_LAND_2000_2016 = BRONZE_METEO / "cache_meteo_era5_land_2000_2016"   # study 06, 1b'
+# ERA5-Land of 2026 up to 2026-10-31 (study 06) and the later downloads, one snapshot per end date
+# (cache_meteo_era5_land_reciente/<YYYY-MM-DD>/, notebook 02, cell C).
+CACHE_METEO_ERA5_LAND_2026 = BRONZE_METEO / "cache_meteo_era5_land_2026"
+CACHE_METEO_ERA5_LAND_RECENT = BRONZE_METEO / "cache_meteo_era5_land_reciente"
 BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
 BRONZE_SALA = BRONZE_EPI / "sala"
@@ -51,8 +55,10 @@ SILVER_SALA = SILVER / "epi_sala_semanal.csv"
 SILVER_METEO_2000_2016 = SILVER / "meteo_semanal_distrital_2000_2016.csv"   # study 06, phase 1b
 # Study 06, 1b': humidity and temperature from ERA5-Land 2000-2025 (no precipitation), apart from the silver in use.
 SILVER_METEO_ERA5_LAND_2000_2025 = SILVER / "meteo_humedad_era5_land_2000_2025.csv"
-# Study 06, season 2026 (2026-11-08): the same ERA5-Land with 2026 (new cache and new silver; the 2000-2025 one stays)
-CACHE_METEO_ERA5_LAND_2026 = BRONZE_METEO / "cache_meteo_era5_land_2026"
+# ERA5-Land weekly temperature and humidity from 2000 to the latest download (notebook 03): input of the v3 (d3).
+SILVER_METEO_ERA5_LAND = SILVER / "meteo_humedad_era5_land_desde_2000.csv"
+# The frozen input of the v3 (2000 to the week of 2026-10-25), in datos_v3.zip of the model/v3 Release; used when
+# SILVER_METEO_ERA5_LAND does not exist yet (features.climate.era5_land_silver).
 SILVER_METEO_ERA5_LAND_2000_2026 = SILVER / "meteo_humedad_era5_land_2000_2026.csv"
 # Weekly precipitation per district from CHIRPS v3 sat (polygon mean; final from Earth Engine, preliminary from
 # the CHC for the weeks without final), with version and fecha_disponible; apart from the V2 silver
@@ -83,6 +89,9 @@ STORAGE = MODELS / "storage"
 MODEL_REGISTRY = MODELS / "registry"
 # Data bundles of the frozen V3 (zips attached to the GitHub Release of model/v3): files, rows and SHA-256.
 V3_DATA_MANIFEST = MODEL_REGISTRY / "v3" / "manifiesto_datos.json"
+# Frozen out-of-sample predictions of the v3 (5 seeds, every block; predicciones_v3.zip of the Release): the v3
+# package fits Platt and the 5a mixture with them and publishes their 2022-2025 blocks as its OOS.
+V3_REFERENCE_PREDICTIONS = MODELS / "experimentos" / "mejora_modelo" / "v3" / "predicciones_v3.csv.gz"
 ENV_FILE = ROOT / ".env"
 ALEMBIC_CONFIG = ROOT / "alembic.ini"
 DB_MIGRATIONS = ROOT / "src" / "denguekay" / "db" / "migrations"

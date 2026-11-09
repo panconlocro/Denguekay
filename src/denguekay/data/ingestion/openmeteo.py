@@ -27,6 +27,10 @@ ERA5_LAND_DAILY_VARS = [
     "temperature_2m_mean", "temperature_2m_max", "temperature_2m_min", "relative_humidity_2m_mean",
 ]
 START, END = "2017-01-01", "2025-12-31"
+# ERA5-Land on Open-Meteo is updated daily with about 5 days of delay (Open-Meteo historical weather API docs, as
+# recorded by study 06). The cache of 2026 ends on 2026-10-31; later days go to dated snapshots.
+ERA5_LAND_DELAY_DAYS = 5
+ERA5_LAND_RECENT_START = "2026-11-01"
 GRID_COLUMNS = {"lat_celda": "latitude", "lon_celda": "longitude", "elevacion_celda": "elevation"}
 BATCH_SIZE = 20  # if the limit hits before the batch ends, lower it to 15
 HOURLY_WAIT_SECONDS = 61 * 60   # download_all: wait after the hourly limit (one hour plus a margin)
@@ -184,3 +188,11 @@ def download_all(
             resume = datetime.now() + timedelta(seconds=hourly_wait)
             print(f"\nLímite por hora ({remaining} pendientes). Espera {waits}: reanuda a las {resume:%H:%M}.")
             sleep(hourly_wait)
+
+
+def era5_land_end_date(today=None) -> str:
+    """Last day ERA5-Land can be asked for: today minus ``ERA5_LAND_DELAY_DAYS`` (ISO date)."""
+    import datetime as _dt
+
+    today = _dt.date.today() if today is None else today
+    return (today - _dt.timedelta(days=ERA5_LAND_DELAY_DAYS)).isoformat()

@@ -331,3 +331,10 @@ La tabla siguiente es la propuesta original:
 | Importancia de variables (HU0008-4) | `importancia_variable` por `id_version`: SHAP medio por horizonte de la salida correspondiente. | Conforme a la extensión (d) |
 
 **Justificación.** La opción mantiene intacto el DDL del Anexo B: tablas, ENUM, CHECK e índice de versión activa. La única diferencia es de uso: varias filas comparten un artefacto y la activación se coordina por horizonte. Las alternativas (una sola fila con horizonte nulo o una tarea combinada) obligarían a cambiar `tarea_t`, el CHECK de `horizonte` y la semántica de las dos FK de `prediccion`, es decir, a corregir el documento OE2. El modelo elegido no cumple todavía los umbrales de la HU0007-4, así que se seguiría sirviendo como experimental según la decisión (a).
+
+## 9. Temperatura de ERA5-Land para servir la v3 (aprobada por Rosa el 2026-11-09)
+
+| Tema | Decisión | Tipo |
+|---|---|---|
+| Columna nueva `observacion_semanal.temp_media_era5_land_c` | La v3 usa la temperatura media semanal de ERA5-Land (d3: semana del origen y medias de o−1..o−4, o−5..o−8 y o−9..o−12). La de `temp_media_c` es la de Open-Meteo sin modelo fijado y la siguen usando la v0 y la v2: no se toca. La columna nueva es anulable, `double precision` (reproduce el silver sin redondear) y tiene un CHECK de rango físico (−20 a 50 °C). Migración `0007_v3`; la llena `load_data` desde `data/silver/meteo_humedad_era5_land_desde_2000.csv` (o el silver congelado de la v3). | Extensión (columna) |
+| Entrenamiento de la v3 fuera de la BD | La v3 entrena con la historia desde 2000 (`features.long_history`) y la BD empieza en 2017 (decisión M4). El paquete se ajusta con los silver y la BD solo da los insumos de inferencia (casos desde 2017, temperatura de las 13 semanas hasta el origen y la regla de brote). Comprobado: el umbral necesita los 5 años previos al año objetivo, la temporada anterior unas 104 semanas y las semanas desde el último caso 52, todo cubierto para objetivos desde 2022. | Uso (sin cambio de esquema) |

@@ -255,7 +255,8 @@ features/
 ├── gold.py                  # integración y validación de gold; persiste solo h=2/4, construye h=1..6 en memoria
 ├── model_input_contract.py  # candidatos, exclusiones y auditoría de traspaso (fase 7)
 ├── variant_registry.py      # lista cerrada de variantes A/B del estudio de FE
-└── onset_features.py        # variables B1–B5 en memoria desde el estado de la semana de origen
+├── onset_features.py        # variables B1–B5 en memoria desde el estado de la semana de origen
+└── long_history.py          # serie larga de la v3 (casos desde 2000 + Sala), etiquetas, matrices y orígenes con d3
 ```
 **Va acá:** el feature engineering. Las variables nuevas se calculan en memoria con un test de no fuga; si una entra a la configuración final se propone el cambio en `gold.py` y el equipo regenera gold con el notebook 10.
 
@@ -263,6 +264,7 @@ features/
 ```
 model/
 ├── train.py                 # cortes temporales y XGBoost de ambos objetivos
+├── v3_training.py           # ajuste de la v3 en la serie larga y mezcla 5a del conteo con la persistencia
 ├── device.py                # elige GPU NVIDIA (CUDA) o CPU para XGBoost según config.yaml
 ├── tracking.py              # registra cada reporte de experimento en MLflow (runs anidados)
 ├── horizon_strategies.py    # matrices h=1..6 en memoria y estrategias E1/E2/E3
@@ -296,7 +298,7 @@ src/denguekay/db/
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos
+└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
 ├── settings.py               # paquete a publicar, CORS, selección experimental y almacenamiento (config.yaml; el entorno los reemplaza)
@@ -308,7 +310,8 @@ src/denguekay/serving/
 ├── predictors/               # motor enchufable (decisión M1): puerto Predictor y registro de tipos
 │   ├── base.py               #   puerto, columnas de salida, BuiltPackage y validación de la salida
 │   ├── v0_compact_xgb.py     #   predictor y constructor del paquete de la v0 (4 boosters XGBoost; registrada)
-│   └── v2_e3_s4.py           #   predictor y constructor del paquete de la v2 (E3 multisalida, NB2 + Platt; servida)
+│   ├── v2_e3_s4.py           #   predictor y constructor del paquete de la v2 (E3 multisalida, NB2 + Platt; registrada)
+│   └── v3_l5a_d3.py          #   predictor de la v3 (d3 de la BD, conteo 5a) y paquete entrenado fuera de la BD (servida)
 ├── models.py                 # registro genérico de las versiones de un paquete (una por tarea y horizonte)
 ├── artifacts.py              # hashes y error de artefacto inválido
 ├── risk.py                   # nivel de riesgo y cambio de alerta

@@ -105,9 +105,9 @@ HISTORY = {
            "estado": "reemplazada por la V2 (complemento de clima, comparación 20)",
            "ficha": "models/registry/v1/ficha.md"},
     "V2": {"constante": "CONFIGURACION_2026", "commit": "el que introduce esta constante", "fecha": FREEZE_DATE,
-           "estado": "servida; reemplazada por la V3 como configuración vigente", "ficha": "models/registry/v2/ficha.md"},
+           "estado": "reemplazada por la V3 (sigue registrada como predictor v2_e3_s4)", "ficha": "models/registry/v2/ficha.md"},
     "V3": {"constante": "CONFIG_V3", "commit": "el que introduce esta constante", "fecha": FREEZE_DATE_V3,
-           "estado": "vigente (no servida todavía)", "ficha": "models/registry/v3/ficha.md"},
+           "estado": "vigente y servida (predictor v3_l5a_d3)", "ficha": "models/registry/v3/ficha.md"},
 }
 
 # 2026 prospective evaluation (fixed before seeing data; not applied to anything yet).

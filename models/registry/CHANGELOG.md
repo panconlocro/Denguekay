@@ -7,10 +7,27 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 
 | Versión | Estado | Tag | Ficha |
 |---|---|---|---|
-| v3 | vigente (no servida todavía) | `model/v3` | [v3/ficha.md](v3/ficha.md) |
-| v2 | servida (experimental); reemplazada por la v3 como configuración vigente | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
+| v3 | vigente y servida (experimental) | `model/v3` | [v3/ficha.md](v3/ficha.md) |
+| v2 | reemplazada por la v3 (sigue registrada como `v2_e3_s4`) | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
+
+## 2026-11-09 · v3 servida (feat/serve-v3)
+
+- La v3 se sirve con el predictor `v3_l5a_d3` como selección experimental (no se evaluó la HU0007-4).
+- **Ajuste fuera de la BD:** con la serie desde 2000. El comando sin BD es
+  `python -m denguekay.serving.predictors.v3_l5a_d3 --salida <carpeta>`; la publicación es
+  `python -m denguekay.serving.publish --seleccionar-experimental`.
+- **Paquete:** booster, α, Platt y la `w` de la mezcla 5a, por horizonte.
+- **Paridad:** el bloque `temporada_2026` reajustado reproduce las predicciones congeladas (diferencia 0,0 en GPU).
+- **Esquema:** migración `0007_v3` con `observacion_semanal.temp_media_era5_land_c` (desviación OE2 9).
+- **Gold** suma las 4 columnas de d3; hay que regenerarlo con el notebook 10. La v0 sigue leyendo
+  `gold/respaldo_pre_b3`.
+- La v2 queda reemplazada y registrada (`v2_e3_s4`); sus OOS dejan la serie y entran las de la v3.
+- Con d3, el SHA-256 del archivo gold h2 cambia, pero las 20 columnas de la v2 quedan iguales bit a bit. La ficha de
+  la v2 suma `sha256_columnas_v2` (digest de contenido de esas columnas), con el que `v2_e3_s4.prepare` sigue
+  reconociendo su gold y comparando su huella. Sin esto, la guarda `test_v2_parity` fallaba con el gold
+  regenerado. No se regeneró ninguna línea base.
 
 ## 2026-11-09 · v3 vigente
 

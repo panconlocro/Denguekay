@@ -125,6 +125,30 @@ class TestCargaOE2(unittest.TestCase):
             with self.subTest(clave=clave, mensaje=mensaje), self.assertRaisesRegex(ValueError, mensaje):
                 carga.prepare_observations(entradas["silver"], entradas["cobertura"], entradas["gold"], entradas["sala"])
 
+    def test_temperatura_era5_land_se_carga_completa_y_nula_si_falta(self):
+        """temp_media_era5_land_c (0007_v3) toma el valor completo del silver de ERA5-Land; sin dato queda NULL."""
+        import pandas as pd
+
+        muestra = leer_muestra()
+        silver = muestra["silver"]
+        era5 = silver[["ubigeo", "semana_inicio"]].copy()
+        era5["temp_media"] = 24.0 + 1.0 / 7.0  # media de 7 valores diarios: no cabe en 2 decimales
+        era5 = era5.iloc[1:]  # a la primera semana le falta el dato
+        filas, _ = carga.prepare_observations(silver, muestra["cobertura"], muestra["gold"], muestra["sala"], era5)
+        valores = [f[carga.ERA5_LAND_COLUMN] for f in filas]
+        self.assertIsNone(valores[0])
+        self.assertTrue(all(v == 24.0 + 1.0 / 7.0 for v in valores[1:]))
+        sin_era5, _ = carga.prepare_observations(silver, muestra["cobertura"], muestra["gold"], muestra["sala"])
+        self.assertTrue(all(f[carga.ERA5_LAND_COLUMN] is None for f in sin_era5))
+        datos = replace(self.data, observaciones=[{**o, carga.ERA5_LAND_COLUMN: 25.5} for o in self.data.observaciones])
+        self.cargar(datos)
+        with transaction(self.motor) as s:
+            self.assertEqual(s.scalar(select(func.min(WeeklyObservation.temp_media_era5_land_c))), 25.5)
+        malo = replace(self.data, observaciones=[{**o, carga.ERA5_LAND_COLUMN: 60.0} for o in self.data.observaciones[:1]],
+                       hashes={**self.data.hashes, "prueba": "otra huella"})  # otra carga, no la reutilizada
+        with self.assertRaises(Exception):  # el CHECK de rango físico rechaza 60 °C
+            self.cargar(malo)
+
     def test_exige_esquema_y_registra_fallos(self):
         from sqlalchemy.engine import URL
         from denguekay.db.session import make_engine

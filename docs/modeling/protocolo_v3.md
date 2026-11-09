@@ -234,6 +234,76 @@ siempre 2004-12-25 (cierre de la semana de origen que empieza el 2004-12-19).
     ponderado por área.
   - Open-Meteo devuelve la celda de la grilla más cercana; sus coordenadas y su elevación quedan en el caché
     bronze (`lat_celda`, `lon_celda`, `elevacion_celda`).
+- **Celda de cada distrito** (leída de los cachés bronze; la misma en los tres cachés):
+
+| Ubigeo | Provincia | Distrito | Centroide (lat, lon) | Celda ERA5-Land (lat, lon) | Elevación de la celda (m) |
+|---|---|---|---|---|---|
+| 200101 | Piura | Piura | -5,0830; -80,6681 | -5,1000; -80,7000 | 50 |
+| 200104 | Piura | Castilla | -5,1296; -80,5140 | -5,1000; -80,5000 | 144 |
+| 200105 | Piura | Catacaos | -5,4907; -80,3340 | -5,5000; -80,3000 | 202 |
+| 200107 | Piura | Cura Mori | -5,3560; -80,5925 | -5,4000; -80,6000 | 40 |
+| 200108 | Piura | El Tallán | -5,4388; -80,6124 | -5,4000; -80,6000 | 14 |
+| 200109 | Piura | La Arena | -5,3109; -80,7628 | -5,3000; -80,8000 | 16 |
+| 200110 | Piura | La Unión | -5,3321; -80,8437 | -5,3000; -80,8000 | 26 |
+| 200111 | Piura | Las Lomas | -4,6893; -80,2143 | -4,7000; -80,2000 | 323 |
+| 200114 | Piura | Tambo Grande | -4,9184; -80,3325 | -4,9000; -80,3000 | 66 |
+| 200115 | Piura | Veintiséis de Octubre | -5,1750; -80,6600 | -5,2000; -80,7000 | 39 |
+| 200201 | Ayabaca | Ayabaca | -4,6825; -79,6075 | -4,7000; -79,6000 | 2066 |
+| 200202 | Ayabaca | Frias | -4,9269; -79,9717 | -4,9000; -80,0000 | 1354 |
+| 200203 | Ayabaca | Jilili | -4,5325; -79,8309 | -4,5000; -79,8000 | 1364 |
+| 200204 | Ayabaca | Lagunas | -4,7814; -79,8543 | -4,8000; -79,9000 | 2051 |
+| 200205 | Ayabaca | Montero | -4,6385; -79,8455 | -4,6000; -79,8000 | 1327 |
+| 200206 | Ayabaca | Pacaipampa | -4,9465; -79,6490 | -4,9000; -79,6000 | 1792 |
+| 200207 | Ayabaca | Paimas | -4,6371; -80,0048 | -4,6000; -80,0000 | 523 |
+| 200208 | Ayabaca | Sapillica | -4,7833; -79,9908 | -4,8000; -80,0000 | 1528 |
+| 200209 | Ayabaca | Sicchez | -4,5716; -79,7769 | -4,6000; -79,8000 | 1451 |
+| 200210 | Ayabaca | Suyo | -4,4610; -80,0627 | -4,5000; -80,1000 | 565 |
+| 200301 | Huancabamba | Huancabamba | -5,1965; -79,4970 | -5,2000; -79,5000 | 2904 |
+| 200302 | Huancabamba | Canchaque | -5,3119; -79,6258 | -5,3000; -79,7000 | 1043 |
+| 200303 | Huancabamba | El Carmendela Frontera | -5,0229; -79,3710 | -5,0000; -79,4000 | 3420 |
+| 200304 | Huancabamba | Huarmaca | -5,6951; -79,5611 | -5,7000; -79,6000 | 2078 |
+| 200305 | Huancabamba | Lalaquiz | -5,1718; -79,6648 | -5,2000; -79,7000 | 1550 |
+| 200306 | Huancabamba | San Miguelde El Faique | -5,4246; -79,6043 | -5,4000; -79,6000 | 1202 |
+| 200307 | Huancabamba | Sondor | -5,4045; -79,3617 | -5,4000; -79,4000 | 2064 |
+| 200308 | Huancabamba | Sondorillo | -5,3982; -79,4597 | -5,4000; -79,5000 | 2075 |
+| 200401 | Morropón | Chulucanas | -5,1162; -80,1940 | -5,1000; -80,2000 | 84 |
+| 200402 | Morropón | Buenos Aires | -5,2646; -79,9249 | -5,3000; -79,9000 | 182 |
+| 200403 | Morropón | Chalaco | -5,0665; -79,7929 | -5,1000; -79,8000 | 1750 |
+| 200404 | Morropón | La Matanza | -5,3681; -80,0826 | -5,4000; -80,1000 | 159 |
+| 200405 | Morropón | Morropon | -5,1529; -79,9978 | -5,2000; -80,0000 | 183 |
+| 200406 | Morropón | Salitral | -5,4371; -79,8276 | -5,4000; -79,8000 | 1292 |
+| 200407 | Morropón | San Juande Bigote | -5,2954; -79,7412 | -5,3000; -79,8000 | 231 |
+| 200408 | Morropón | Santa Catalinade Mossa | -5,1262; -79,8757 | -5,1000; -79,8000 | 1627 |
+| 200409 | Morropón | Santo Domingo | -5,0531; -79,9107 | -5,0000; -79,9000 | 1780 |
+| 200410 | Morropón | Yamango | -5,1563; -79,7697 | -5,2000; -79,7000 | 1290 |
+| 200501 | Paita | Paita | -5,1722; -81,0532 | -5,2000; -81,1000 | 79 |
+| 200502 | Paita | Amotape | -4,8363; -81,0069 | -4,8000; -81,0000 | 109 |
+| 200503 | Paita | Arenal | -4,8997; -81,0289 | -4,9000; -81,0000 | 93 |
+| 200504 | Paita | Colan | -4,9307; -81,0697 | -4,9000; -81,1000 | 4 |
+| 200505 | Paita | La Huaca | -5,0641; -80,9107 | -5,1000; -80,9000 | 75 |
+| 200506 | Paita | Tamarindo | -4,8384; -80,9623 | -4,8000; -81,0000 | 57 |
+| 200507 | Paita | Vichayal | -4,8387; -81,1074 | -4,8000; -81,1000 | 12 |
+| 200601 | Sullana | Sullana | -4,8070; -80,5299 | -4,8000; -80,5000 | 119 |
+| 200602 | Sullana | Bellavista | -4,8914; -80,6741 | -4,9000; -80,7000 | 62 |
+| 200603 | Sullana | Ignacio Escudero | -4,8273; -80,8849 | -4,8000; -80,9000 | 54 |
+| 200604 | Sullana | Lancones | -4,4238; -80,5004 | -4,4000; -80,5000 | 205 |
+| 200605 | Sullana | Marcavelica | -4,5375; -80,7846 | -4,5000; -80,8000 | 363 |
+| 200606 | Sullana | Miguel Checa | -5,0502; -80,7860 | -5,1000; -80,8000 | 76 |
+| 200607 | Sullana | Querecotillo | -4,7243; -80,6032 | -4,7000; -80,6000 | 93 |
+| 200608 | Sullana | Salitral | -4,8384; -80,6829 | -4,8000; -80,7000 | 64 |
+| 200701 | Talara | Pariñas | -4,4986; -81,0437 | -4,5000; -81,0000 | 259 |
+| 200702 | Talara | El Alto | -4,2915; -81,0806 | -4,3000; -81,1000 | 255 |
+| 200703 | Talara | La Brea | -4,7042; -81,1081 | -4,7000; -81,1000 | 137 |
+| 200704 | Talara | Lobitos | -4,4028; -81,2030 | -4,4000; -81,2000 | 168 |
+| 200705 | Talara | Los Organos | -4,1946; -81,0650 | -4,2000; -81,1000 | 295 |
+| 200706 | Talara | Mancora | -4,1485; -81,0084 | -4,1000; -81,0000 | 165 |
+| 200801 | Sechura | Sechura | -5,9221; -80,6629 | -5,9000; -80,7000 | 1 |
+| 200802 | Sechura | Bellavistadela Union | -5,4256; -80,7411 | -5,4000; -80,7000 | 11 |
+| 200803 | Sechura | Bernal | -5,4610; -80,6998 | -5,5000; -80,7000 | 10 |
+| 200804 | Sechura | Cristo Nos Valga | -5,5350; -80,6405 | -5,5000; -80,6000 | 8 |
+| 200805 | Sechura | Vice | -5,4223; -80,8766 | -5,4000; -80,9000 | 42 |
+| 200806 | Sechura | Rinconada Llicuar | -5,4820; -80,7743 | -5,5000; -80,8000 | 7 |
+
 - **Agregación semanal:** media de los 7 días de la semana MMWR (domingo a sábado). Las semanas incompletas de
   los bordes se descartan (`weekly_aggregation.aggregate_to_weekly`).
 - **Descargas (cachés bronze):**
@@ -242,7 +312,7 @@ siempre 2004-12-25 (cierre de la semana de origen que empieza el 2004-12-19).
 - **Silver usado:** `data/silver/meteo_humedad_era5_land_2000_2026.csv`, con 91 000 filas hasta la semana del
   2026-10-25.
   - SHA-256 `3e91e57f31fa47af3f01515caa42ec1cf758ecfbe0320cbea50d23fb73d03879`.
-  - Está en `datos_v3.zip`. Las cachés bronze no están en el Release.
+  - Está en `datos_v3.zip`. Las cachés bronze están en `bronze_estudio06.zip` (Release de `study/model-improvement`).
 - **Disponibilidad:** el código del estudio asume que ERA5-Land se publica unos días después de cada sábado
   (`ERA5_LAND_DELAY_DAYS` en `phase1b_prime.py` y `phase_b3_full_climate.py`). La retrospectiva usa los valores
   del archivo descargado, no los publicados en cada origen.

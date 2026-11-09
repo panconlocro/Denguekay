@@ -75,5 +75,20 @@ class TestLoadDailyFromCaches(unittest.TestCase):
                 wa.load_daily_from_caches([a, c], expected_districts=2)
 
 
+class TestLatestSnapshot(unittest.TestCase):
+    def test_most_recent_dated_folder(self):
+        import tempfile
+        from pathlib import Path
+
+        from denguekay.data.processing.weekly_aggregation import latest_snapshot
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.assertIsNone(latest_snapshot(root / "no_existe"))
+            for name in ("2026-11-04", "2026-12-01", "notas"):
+                (root / name).mkdir()
+            self.assertEqual(latest_snapshot(root).name, "2026-12-01")
+
+
 if __name__ == "__main__":
     unittest.main()

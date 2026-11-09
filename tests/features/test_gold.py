@@ -111,7 +111,14 @@ class GoldTests(unittest.TestCase):
                 {"ubigeo": f"20010{d + 1}", "anio": y, "semana": 1, "casos_Dengue": 0}
                 for d in range(6) for y in range(2012, 2017)
             ]).to_csv(historia, index=False)
-            regla = {"outbreak": SeasonalOutbreakConfig(2.0, minimo_casos=2), "history_path": historia}
+            era5 = raiz / "era5_land.csv"  # weekly ERA5-Land silver from 2017-06 (13 weeks before the first origin)
+            semanas = pd.date_range("2017-06-04", "2018-03-04", freq="W-SUN")
+            distritos = self.panel[["distrito", "lat", "lon"]].drop_duplicates()
+            pd.DataFrame([{"distrito": r.distrito, "lat": r.lat, "lon": r.lon, "semana_inicio": w,
+                           "temp_media": 24.0 + k * 0.1 + i * 0.01}
+                          for k, r in enumerate(distritos.itertuples()) for i, w in enumerate(semanas)]).to_csv(era5, index=False)
+            regla = {"outbreak": SeasonalOutbreakConfig(2.0, minimo_casos=2), "history_path": historia,
+                     "era5_land_path": era5}
             primer = generate_gold(fuente, salida, catalogo, **regla)
             hashes = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in salida.iterdir()}
             segundo = generate_gold(fuente, salida, catalogo, **regla)
@@ -122,7 +129,10 @@ class GoldTests(unittest.TestCase):
             g = pd.read_csv(salida / "integrado_h2_gold.csv", dtype={"ubigeo": "string"},
                             parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"])
             self.assertEqual(list(g.columns), persisted_columns(2))
-            self.assertEqual(len(g.columns), 20)
+            self.assertEqual(len(g.columns), 24)  # 20 of the v2 + the 4 d3 columns of the v3
+            with_origin = g.origen_cierre.notna()
+            self.assertFalse(g.loc[with_origin, ["temp_media_s0", "temp_media_media_s9_12"]].isna().any().any())
+            self.assertTrue(g.loc[~with_origin, "temp_media_s0"].isna().all())  # no origin, no d3
             self.assertEqual(g.ubigeo.nunique(), 6)
             comprobar = {"with_outbreak": True, "min_outbreak_cases": 2, "persisted": True}
             validate_gold(g, self.panel, 2, **comprobar)

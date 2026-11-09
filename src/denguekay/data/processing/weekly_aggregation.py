@@ -157,3 +157,10 @@ def aggregate_available_to_weekly(daily: pd.DataFrame, districts: pd.DataFrame, 
     columns = ["id_distrito", "provincia", "distrito", "lat", "lon", "anio", "semana", "semana_inicio",
                *(WEEKLY_RENAME[v] for v in variables)]
     return final[columns].sort_values(["distrito", "semana_inicio"]).reset_index(drop=True)
+
+
+def latest_snapshot(folder: Path) -> Path | None:
+    """The most recent dated subfolder (``YYYY-MM-DD``) of a snapshot cache, or ``None`` if there is none."""
+    folder = Path(folder)
+    dated = sorted(p for p in folder.glob("????-??-??") if p.is_dir()) if folder.exists() else []
+    return dated[-1] if dated else None

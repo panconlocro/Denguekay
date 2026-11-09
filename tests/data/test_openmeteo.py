@@ -135,5 +135,14 @@ class TestDownloadAll(unittest.TestCase):
         self.assertEqual(left, 2)
 
 
+class TestEra5LandEndDate(unittest.TestCase):
+    def test_five_days_before_today(self):
+        import datetime as dt
+
+        from denguekay.data.ingestion.openmeteo import era5_land_end_date
+
+        self.assertEqual(era5_land_end_date(dt.date(2026, 11, 9)), "2026-11-04")
+
+
 if __name__ == "__main__":
     unittest.main()
