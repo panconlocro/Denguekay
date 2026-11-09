@@ -1,0 +1,71 @@
+{
+ "tag": "archive/EDA",
+ "repositorio": "panconlocro/Denguekay",
+ "fecha": "2026-11-09",
+ "descripcion": "Paquetes del Release de archive/EDA. Se descargan y verifican con python -m denguekay.data.ingestion.release_bundles",
+ "paquetes": [
+  {
+   "nombre": "datos_estudio01.zip",
+   "bytes": 4044809,
+   "sha256": "ff25d8f7fe2e00d306e0ae8380cb19ed47f9b2c9207a7b395fe1469671b1007f",
+   "destino": "data",
+   "archivos": [
+    {
+     "ruta": "data/bronze/socio/data_socio_2017_2025.xlsx",
+     "filas": null,
+     "bytes": 97641,
+     "sha256": "07fa942afa4f0e16dfce3eb27bae567b42dcd3185c63d0d45de5a77dfa0c256a"
+    },
+    {
+     "ruta": "data/silver/epi_piura_semanal.csv",
+     "filas": 81196,
+     "bytes": 1466523,
+     "sha256": "c4b67ce03d6915d4fcdd98cba7f525daecad34cddeb98cc1816b2d8750c8eda9"
+    },
+    {
+     "ruta": "data/silver/epi_sala_semanal.csv",
+     "filas": 6240,
+     "bytes": 240897,
+     "sha256": "5369088f3d3b3b5223691bb2e1f3a068aabf47662d835d99ef08fe25903d2d2b"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_epi_base_piura_2017_2025.csv",
+     "filas": 30485,
+     "bytes": 9492458,
+     "sha256": "14e189aba1f465e8db9b0160aa65fdb34acc13a478d1f192ff56914a12cd109d"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_epi_piura_2017_2025.coverage.csv",
+     "filas": 30485,
+     "bytes": 820424,
+     "sha256": "e85f7e68b1b78ef97bb31aef56247d22b7eebac3cd0e28ba82e980641cacfb67"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv",
+     "filas": 30485,
+     "bytes": 9495856,
+     "sha256": "b04dc8c31793a08b417e5bafd9db101f4a18c9299686cb2dd4bfe2e5049b6c88"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_piura_2017_2025.csv",
+     "filas": 30485,
+     "bytes": 9432936,
+     "sha256": "6fa2145e6545c34b1adf50499839d2f9507f389da2ebaf860fdeb90f557fe75b"
+    },
+    {
+     "ruta": "data/silver/meteo_semanal_distrital.csv",
+     "filas": 30485,
+     "bytes": 4951957,
+     "sha256": "eebbbbb1431bcc14a1e3e3ab0c8293c8534d9155281590462fd7acf3de3d5df6"
+    },
+    {
+     "ruta": "data/silver/socio_anual.csv",
+     "filas": 585,
+     "bytes": 120729,
+     "sha256": "c772941ccd6fe5166265fc21b2d3700b726a38744a88656413276915ca5f651e"
+    }
+   ],
+   "segundos_armado": 0.9
+  }
+ ]
+}

@@ -18,9 +18,10 @@
       "semilla": 17,
       "bloques": "temporada_2008 … temporada_2024, calendario_2025, temporada_2026 y posterior_2026 (predicciones crudas del protocolo del estudio 06)",
       "por_entorno": {
-        "device=cuda": "99a0b26dc4a453feea5ddc71d3438b7006e64d2ba5e12caa646f8035040494de"
+        "device=cuda": "99a0b26dc4a453feea5ddc71d3438b7006e64d2ba5e12caa646f8035040494de",
+        "device=cpu,n_jobs=2": "7a46f4f2d8441486edee999c13dc9acf2e6d047f38cc39920d0f907911db72b6"
       },
-      "nota": "Solo se grabó en GPU (RTX 5060, driver 621.01, XGBoost 3.4.1 con CUDA 13.3). En CPU las predicciones no son bit a bit iguales a las de GPU, así que esa huella no aplica allí."
+      "nota": "GPU (RTX 5060, driver 621.01, XGBoost 3.4.1 con CUDA 13.3) es la referencia oficial y la servida. CPU con 2 hilos es determinista (misma huella en dos corridas) pero distinta de GPU: con subsample/colsample < 1 cada dispositivo muestrea distinto. Sus predicciones de 5 semillas están en predicciones_v3_cpu.zip; las conclusiones de la comparación V3 frente a L + 5a no cambian (docs/modeling/reproducir_v3.md)."
     }
   },
   "datos": {

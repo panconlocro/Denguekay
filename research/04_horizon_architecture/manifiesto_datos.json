@@ -1,0 +1,191 @@
+{
+ "tag": "study/horizon-architecture",
+ "repositorio": "panconlocro/Denguekay",
+ "fecha": "2026-11-09",
+ "descripcion": "Paquetes del Release de study/horizon-architecture. Se descargan y verifican con python -m denguekay.data.ingestion.release_bundles",
+ "paquetes": [
+  {
+   "nombre": "artefactos_estudio04.zip",
+   "bytes": 99255792,
+   "sha256": "0bce1fc6bfa715e159e236d6d1c48b0344caa03001f17f1ce9182bb3c10a80f3",
+   "destino": "models/experimentos",
+   "archivos": [
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_17/metricas.json",
+     "filas": null,
+     "bytes": 73709,
+     "sha256": "08b80565e14f308fc113b67a5f4dfb2a4ccee6e10a5083dacccc09828b57495d"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_17/predicciones_por_bloque.csv",
+     "filas": 101790,
+     "bytes": 11713044,
+     "sha256": "01e5008f28788d7fa03830dd4e91d0572505bf3fbaed9fcb2aeeb4aefc240e0e"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_29/metricas.json",
+     "filas": null,
+     "bytes": 73696,
+     "sha256": "561ab9a73c9321bc432ec57a4281b1ea92b974c2915f30680b79c495c0f289d4"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_29/predicciones_por_bloque.csv",
+     "filas": 101790,
+     "bytes": 11716161,
+     "sha256": "68c50c475df14f1984f2440481e90fc81e5e028c4ee42f73f2d90b9a1983cd6f"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_41/metricas.json",
+     "filas": null,
+     "bytes": 73690,
+     "sha256": "ee546eb911d83e42c5add7ad3e554af7d71915e04cad87af4eb8aed6c58b9433"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_41/predicciones_por_bloque.csv",
+     "filas": 101790,
+     "bytes": 11705421,
+     "sha256": "7aab99e687f01551fbbf8c40597e37d297b82a70de8c9c9927abc9e56e8aa94b"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_53/metricas.json",
+     "filas": null,
+     "bytes": 73679,
+     "sha256": "42e58667ec92f17775067d2d057e06e81ea294ec40e11486069f2120224ade13"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_53/predicciones_por_bloque.csv",
+     "filas": 101790,
+     "bytes": 11713628,
+     "sha256": "74572fd7019d9ff33dbda780ff69cdf0064c106e607f3549bf05974d72c101b9"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_67/metricas.json",
+     "filas": null,
+     "bytes": 73676,
+     "sha256": "37eda65a00e218d9135d8aba0f5ce5c72f5011c5f05866f872ea8db1898dbacb"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase0_semillas/semilla_67/predicciones_por_bloque.csv",
+     "filas": 101790,
+     "bytes": 11712661,
+     "sha256": "c583415874137a07ddba5c8cb7d0c9dcd5418a74b9e9612eb16551cf777c6e94"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase3/predicciones_E1.csv.gz",
+     "filas": 508950,
+     "bytes": 9552685,
+     "sha256": "44804ceec05e3c49d9bb65eb17853b936aa6e46d89afb87a965aefc91963399a"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase3/predicciones_E2.csv.gz",
+     "filas": 254475,
+     "bytes": 4624936,
+     "sha256": "e5321dcddfa4e44e9e9c3888ee52a5783dc2226fb970125743ec569db83ad123"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase3/predicciones_E3.csv.gz",
+     "filas": 254475,
+     "bytes": 4745600,
+     "sha256": "15b343fc8c4f0fa5c80f5e27271862959f0c0389237e261be9eee2d9e7b04942"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E1_S1.csv.gz",
+     "filas": 254475,
+     "bytes": 4781228,
+     "sha256": "bd4f4ba51f13323e232085751efdad24a804e5af0f489755fa1d554fbcbd5c70"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E1_S2_pois.csv.gz",
+     "filas": 254475,
+     "bytes": 4650193,
+     "sha256": "04563e37773fb6b4e21c395de9043e7a58c37efa444e6f2c8a3a509f0be86eb6"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E1_S2_twd.csv.gz",
+     "filas": 254475,
+     "bytes": 4847463,
+     "sha256": "23b2a24ad20ff1bdf42efb509f0e7c71061457b1d03a93339543704dee74fcd2"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E1_S3.csv.gz",
+     "filas": 254475,
+     "bytes": 4732980,
+     "sha256": "7fc064cb1a1fc5480c2e0be8332636fd7a37100b3b71d7a978578c83fe25b1f3"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E1_S4_s2.csv.gz",
+     "filas": 254475,
+     "bytes": 3995869,
+     "sha256": "f5a8e5671e4e2a1a1a66489f5db2d4b364583734da0d82c1d6883a612ad2ef56"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E1_S4_s3.csv.gz",
+     "filas": 254475,
+     "bytes": 4252748,
+     "sha256": "a665ae1ae2c65452d15053a248870f3eff31d0798b44369941107ef03398b310"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E1_S5_iso.csv.gz",
+     "filas": 254475,
+     "bytes": 4790557,
+     "sha256": "15724d214923e576253fdb0777a3209ae8add040efcce600aaf37760a0d7a510"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E1_S5_spw.csv.gz",
+     "filas": 254475,
+     "bytes": 4920135,
+     "sha256": "c301e7263aa3a56342231b6e6ee10a650349da0efb2734e0b7e1312fbdaae640"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E3_S1.csv.gz",
+     "filas": 254475,
+     "bytes": 4766556,
+     "sha256": "0b8f6067bbd066690717d9d42a667fb7c70c6edd8763e165cccf89d5bfef2829"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E3_S2_pois.csv.gz",
+     "filas": 254475,
+     "bytes": 4653917,
+     "sha256": "141499450c3ed42680d3f27a31b0bc8914bc62fcb8a89d5875b7112cf242e1a9"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E3_S2_twd.csv.gz",
+     "filas": 254475,
+     "bytes": 4828765,
+     "sha256": "209fa7e19e6a677dcc06403303e857e7d7a12ff2cf88e6270371b549aee2efdf"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E3_S3.csv.gz",
+     "filas": 254475,
+     "bytes": 4690713,
+     "sha256": "fc15a2e831784a46df32543a2ac4706c8110409dece8dda28dc187a36e91dac9"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E3_S4_s2.csv.gz",
+     "filas": 254475,
+     "bytes": 4041801,
+     "sha256": "37330f0238409b6e01584f088bd1049a86f3e71faed4e0ce12450e5cf2a9bfd1"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E3_S4_s3.csv.gz",
+     "filas": 254475,
+     "bytes": 4227499,
+     "sha256": "47bd4b22188053b8039f4ae9e7af3a4aeccb118ef89aff752576e0baf50f5566"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E3_S5_iso.csv.gz",
+     "filas": 254475,
+     "bytes": 4775900,
+     "sha256": "cc86ff8a92e946208f63967b411b31c568ffa1faa5e905688fc819b59c61d362"
+    },
+    {
+     "ruta": "models/experimentos/arquitectura_horizontes/fase4/predicciones_E3_S5_spw.csv.gz",
+     "filas": 254475,
+     "bytes": 4906856,
+     "sha256": "c70dc36726591a1a70f059cb3ee7132afdd4ab40dd24da95a913a05dcf8d74a2"
+    }
+   ],
+   "segundos_armado": 6.6
+  }
+ ]
+}
