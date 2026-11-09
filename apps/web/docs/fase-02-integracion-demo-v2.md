@@ -84,7 +84,7 @@ responden 503 por escritura no configurada.
 Desde `apps/web/`, en otra terminal:
 
 ```bash
-npm run dev:demo
+npm run dev:demo:v2
 ```
 
 Abrir [la vista previa](http://127.0.0.1:5173). Para fixtures, iniciar `e2e/serve_api.py` en 18000 y usar

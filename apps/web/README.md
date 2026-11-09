@@ -45,13 +45,20 @@ La API debe iniciarse aparte con la BD migrada y cargada. Un fallo de conexión 
 no hay datos de ejemplo como reemplazo en ejecución.
 
 Para otra URL, copiar .env.example a .env.local y ajustar API_PROXY_TARGET (proxy de desarrollo).
-VITE_DATA_SOURCE identifica el entorno: `api`, `demo-v2` o `fixtures`; si falta, se muestra una advertencia.
+Usa `VITE_DATA_SOURCE=api` para identificar la conexión a la API. La interfaz muestra las versiones
+publicadas por el servicio, incluida V3 cuando está seleccionada. Si falta la etiqueta de fuente,
+se muestra una advertencia.
 En producción, VITE_API_BASE_URL es la URL pública completa terminada en /api/v1. Las variables VITE_*
 son públicas y se incorporan al build: nunca colocar API_KEY ni credenciales de BD o Supabase.
 Configurar CORS en la API para el origen del frontend y el hosting de la SPA para devolver index.html
 al abrir rutas internas.
 
-### Demo local v2
+### Demo local V3
+
+La [guía de V3](../../docs/modeling/reproducir_v3.md#8-ruta-del-producto-de-un-clon-de-develop-a-la-api-con-la-v3)
+detalla los insumos, la generación de gold y la publicación. Con los insumos preparados, el
+comando `.venv/bin/python -m denguekay.serving.demo_database` construye la demo local con el
+modelo configurado en el repo.
 
 Con la demo ya preparada, desde la raíz:
 
@@ -66,9 +73,9 @@ npm run dev:demo
 ```
 
 La API escucha en 18001 y abre solo `models/serving/demo/denguekay_demo.sqlite` en modo de lectura;
-no migra la base antigua ni entrena al arrancar. Vite usa ese proxy y la etiqueta `demo-v2`.
-Los comandos para preparar una demo que aún no existe están en el informe de fase 2; regenerarla
-es una operación explícita, independiente de iniciar el frontend.
+no migra la base antigua ni entrena al arrancar. Vite usa ese proxy y verifica los seis modelos
+experimentales V3 para los horizontes 2, 3 y 4. Para abrir una demo histórica V2 que ya esté
+preparada en esa ruta, usa `npm run dev:demo:v2`.
 
 ## Qué incluye
 

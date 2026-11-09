@@ -1,4 +1,4 @@
-"""Serve the existing local v2 demo read-only, without using DATABASE_URL or fitting models."""
+"""Serve the existing local demo read-only, without using DATABASE_URL or fitting models."""
 
 from dataclasses import replace
 from pathlib import Path

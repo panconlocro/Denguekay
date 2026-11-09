@@ -427,14 +427,14 @@ apps/web/
 ├── public/assets/                       # SVG locales de Figma; README.md con procedencia
 ├── public/manual-usuario.pdf            # manual descargable desde Ayuda
 ├── tools/build_manual.py                # autoría del PDF; requiere reportlab y pypdf, revisión visual
-├── tools/serve_demo.py                  # demo v2 ya preparada, lectura en 127.0.0.1:18001
+├── tools/serve_demo.py                  # demo ya preparada, lectura en 127.0.0.1:18001
 ├── e2e/serve_api.py                      # API real sobre fixtures en 127.0.0.1:18000
 └── playwright.config.ts                 # escritorio/móvil, Vite 5174, trazas en fallos
 ```
 
 El navegador solo recibe respuestas de la API y recursos públicos: no importa Python, fixtures,
 `data/`, `research/`, modelos ni acceso a la BD. No invoca rutas administrativas ni lleva `API_KEY`.
-`VITE_API_BASE_URL` configura la URL pública y `VITE_DATA_SOURCE` identifica `api`, `demo-v2` o
+`VITE_API_BASE_URL` configura la URL pública y `VITE_DATA_SOURCE` identifica `api`, `demo-v3`, `demo-v2` o
 `fixtures`; `API_PROXY_TARGET` configura el proxy de desarrollo. Las variables `VITE_*` son públicas.
 Los tipos se generan desde `docs/backend/openapi_v1.json` mediante `npm run api:generate`.
 
@@ -442,7 +442,7 @@ El perfil E2E de CI usa `TestAPIReal`: SQLite y storage temporales, validación 
 ajuste pequeño de XGBoost v0 para h=2 y h=4 (h=3 sin modelo). Incluye valores alterados para probar
 avisos; no mide la calidad predictiva de v2. Requiere `requirements.txt` completo para GX y los
 módulos de prueba, además del paquete editable. No ejecuta investigación ni entrenamiento productivo,
-no regenera gold/silver y no usa la BD local. La demo v2 es otro perfil local: abre la BD y los
+no regenera gold/silver y no usa la BD local. La demo es otro perfil local: abre la BD y los
 artefactos previamente preparados en `models/serving/demo/`, sin prepararlos en este CI.
 
 `.github/workflows/frontend.yml` corre en PR, push a `main`/`develop` y ejecución manual. Detecta

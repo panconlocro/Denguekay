@@ -1,4 +1,4 @@
-import { dataSource } from '../lib/dataSource';
+import { dataSource, demoVersion } from '../lib/dataSource';
 import { date } from '../lib/format';
 
 export function SourceNotice({
@@ -10,16 +10,14 @@ export function SourceNotice({
   verified: boolean;
   cutoff?: string | null;
 }) {
+  const demo = demoVersion(source);
   const [title, description] =
     source === 'fixtures'
-      ? [
-          'Entorno de pruebas · muestra v0',
-          'Incluye valores alterados para probar la interfaz. No representa resultados de v2.',
-        ]
-      : source === 'demo-v2'
+      ? ['Entorno de pruebas · muestra v0', 'Incluye valores alterados para probar la interfaz.']
+      : demo
         ? verified
           ? [
-              'Demo local v2 · experimental',
+              `Demo local ${demo} · experimental`,
               'Datos agregados de Piura y predicciones del ajuste local. Consulta el corte y la semana objetivo; no son alertas operativas.',
             ]
           : ['Demo local · conexión pendiente de verificar', 'Comprobando las versiones de la API.']
@@ -33,7 +31,7 @@ export function SourceNotice({
     <aside className="source-notice" aria-label="Procedencia de los datos" role="note">
       <strong>{title}</strong>
       <p>{description}</p>
-      {source === 'demo-v2' && verified && <p>Corte de datos: {date(cutoff)}.</p>}
+      {demo && verified && <p>Corte de datos: {date(cutoff)}.</p>}
     </aside>
   );
 }

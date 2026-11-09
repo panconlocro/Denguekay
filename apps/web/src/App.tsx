@@ -16,7 +16,7 @@ import type { Configuration, District } from './api/types';
 import { Filters } from './components/Filters';
 import { SourceNotice } from './components/SourceNotice';
 import { Card, Failure, Icon, Loading } from './components/ui';
-import { dataSource, verifyDemoV2 } from './lib/dataSource';
+import { dataSource, demoVersion, verifyDemo } from './lib/dataSource';
 import { date, targetStarted, weekLabel } from './lib/format';
 import { DashboardPage } from './pages/DashboardPage';
 import { MapPage } from './pages/MapPage';
@@ -93,16 +93,17 @@ function Layout() {
   const match = useMatch('/distritos/:ubigeo');
   const alertMatch = useMatch('/alertas/:id');
   const source = dataSource(import.meta.env.VITE_DATA_SOURCE);
+  const demo = demoVersion(source);
   const identity = useQuery({
-    queryKey: ['demo-v2-identity'],
-    enabled: source === 'demo-v2',
+    queryKey: ['demo-identity', demo],
+    enabled: demo !== null,
     queryFn: async ({ signal }) => {
       const models = await get('/api/v1/modelos/activo', {}, signal);
-      verifyDemoV2(models.elementos);
+      if (demo) verifyDemo(models.elementos, demo);
       return models;
     },
   });
-  const sourceReady = source !== 'demo-v2' || (identity.isSuccess && !identity.isError);
+  const sourceReady = demo === null || (identity.isSuccess && !identity.isError);
   const config = useQuery({
     queryKey: ['configuration'],
     queryFn: ({ signal }) => get('/api/v1/configuracion', {}, signal),
@@ -221,7 +222,7 @@ function Layout() {
           verified={sourceReady}
           cutoff={identity.data?.fecha_corte_datos}
         />
-        {source === 'demo-v2' && identity.isError ? (
+        {demo && identity.isError ? (
           <Card>
             <Failure error={identity.error} retry={() => void identity.refetch()} />
           </Card>
