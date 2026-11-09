@@ -1,5 +1,31 @@
 # Encargo: estudio 06 · mejorar el modelo sobre la V2
 
+> **CERRADO (Rosa, 2026-11-09).**
+>
+> - **Resultado: la V3** = L + 5a + d3 con los hiperparámetros del trial 191 (`CONFIG_V3`, ficha
+>   `models/registry/v3/`, tags `model/v3` y `study/model-improvement`). b3 queda como retadora.
+> - **Cierre sin la fase 7:** se hizo la corrida de cierre, la congelación, la auditoría y la reproducibilidad
+>   (Release de `model/v3`); lo demás pasa a «Pendientes fuera del estudio», abajo.
+> - **Informe:** [mejora_modelo.md](mejora_modelo.md), «Estado actual».
+
+## Pendientes fuera del estudio (2026-11-09)
+
+- **Intervalo del conteo** con la μ mezclada de 5a: cobertura y nitidez fuera de muestra (R17).
+- **Paquete del short paper** (R10, R13, R17–R20, R22, R23, R25, R28, R32–R34, R36, R38; ver plan.md):
+  - se hace en `research/07_<nombre>/` (estudio del compañero de Rosa), desde el Release de `model/v3`, sin
+    reentrenar;
+  - el diccionario (R13), los cortes (R20) y la especificación (R16, R30) ya están en
+    `docs/modeling/protocolo_v3.md`.
+- **Evaluación prospectiva 2026–27** de la V3 y de b3, la retadora, con lo publicado después del 2026-11-09
+  (`EVALUATION_2026` aplicada a la V3).
+- **Módulo de actualización semanal:** traer cada semana los casos de la Sala, la temperatura de ERA5-Land y la
+  serie desde 2000 que usa la V3. La V3 se sirve en la rama `feat/serve-v3`.
+- **Lo que la fase 7 pedía y no se hizo** (Rosa cerró el estudio sin la fase 7):
+  - la síntesis frente a la V2 con la HU0007-4 por celda;
+  - las pruebas de robustez (sin las 8 primeras semanas de 2017 y sin la temporada de más peso);
+  - la comparación con la persistencia con IC sobre los inicios limpios.
+- **La 6′** (otra familia con clima, lectura): no se hizo.
+
 ## Paso previo
 
 - Crea la rama `exp/model-improvement` desde `develop` actualizado (`git switch develop`, `git pull`,

@@ -7,9 +7,23 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 
 | Versión | Estado | Tag | Ficha |
 |---|---|---|---|
-| v2 | vigente y servida (experimental) | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
+| v3 | vigente (no servida todavía) | `model/v3` | [v3/ficha.md](v3/ficha.md) |
+| v2 | servida (experimental); reemplazada por la v3 como configuración vigente | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
+
+## 2026-11-09 · v3 vigente
+
+- v3 = L + 5a + d3 con los hiperparámetros del trial 191 (estudio 06, `research/06_model_improvement`):
+  - L: la V1 entrenada desde 2005;
+  - 5a: el conteo publicado se mezcla con la persistencia;
+  - d3: 4 ventanas de temperatura media de ERA5-Land.
+- Configuración `CONFIG_V3`; huella de comportamiento en GPU `99a0b26d…494de`.
+- Protocolo propio: `docs/modeling/protocolo_v3.md`, que no es el de la v2.
+- b3 queda congelada como retadora para la evaluación prospectiva 2026–27.
+- La v2 sigue siendo la servida hasta que la v3 entre a serving.
+- Los datos y las predicciones de referencia van en el Release de `model/v3`, con su manifiesto en
+  `v3/manifiesto_datos.json`.
 
 ## 2026-11-02 · Gold limpio con B3
 

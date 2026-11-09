@@ -8,6 +8,10 @@ with its own preregistration. Versions:
 - ``CONFIG_2026`` (current, V2): V1 + gold climate (A3), adopted by the climate
   complement (comparison 20, ``complemento_clima``). Frozen in commit ``424a148``
   as ``CONFIGURACION_2026``.
+- ``CONFIG_V3`` (V3, frozen on 2026-11-09): result of study 06 (``research/06_model_improvement``): V1 trained
+  from 2005 (L), published count mixed with the persistence (5a), four ERA5-Land temperature windows (d3) and the
+  hyperparameters of trial 191 of the tuning. Its training and evaluation code is the study's (tag ``model/v3``);
+  the product does not serve it yet. Protocol: ``docs/modeling/protocolo_v3.md``.
 """
 
 import hashlib
@@ -60,6 +64,40 @@ CONFIG_2026 = {
                    "complemento_clima": "F+A3 mejora el conteo en h=2, 3 y 4 y la alerta no pierde en ninguno"},
 }
 
+FREEZE_DATE_V3 = "2026-11-09"
+V3_D3_COLUMNS = ["temp_media_s0", "temp_media_media_s1_4", "temp_media_media_s5_8", "temp_media_media_s9_12"]
+# Trial 191 of the study 06 tuning (HP_TUNING), exact values as Optuna stored them; it sets all ten.
+V3_HYPERPARAMETERS = {"n_estimators": 1055, "max_depth": 8, "learning_rate": 0.012202198485831055,
+                      "min_child_weight": 1.3472042263917448, "subsample": 0.6374222616667551,
+                      "colsample_bytree": 0.5231175260584356, "reg_lambda": 27.462610520474446,
+                      "reg_alpha": 0.8263569818396628, "gamma": 0.010338285504760625,
+                      "max_delta_step": 1.5830208659380955}
+
+CONFIG_V3 = {
+    **CONFIG_2026_V1,
+    "version": 3,
+    "fecha_congelamiento": FREEZE_DATE_V3,
+    "matriz": "L + 5a + d3 = base_6 + B3 (orígenes desde 2005) + 4 ventanas de temperatura media de ERA5-Land",
+    "columnas": [*CONFIG_2026_V1["columnas"], *V3_D3_COLUMNS],
+    "historia": "orígenes de entrenamiento desde 2005 (L); casos 2000–2004 solo para el umbral y la historia propia",
+    "clima": "ERA5-Land, temperatura media diaria del polígono distrital: semana del origen o (temp_media_s0) y "
+             "medias de o−1..o−4, o−5..o−8 y o−9..o−12 (d3)",
+    "conteo_publicado": "5a: w·μ + (1 − w)·persistencia, w por horizonte y bloque con las OOS de los bloques "
+                        "anteriores cuya etiqueta cerró al primer origen del bloque",
+    "etiqueta": {"funcion": "denguekay.features.outbreak_label.future_outbreak_threshold",
+                 "regla": "brote = casos > media + 1,5·DE (misma semana de los 5 años previos) y casos >= 2",
+                 "multiplicador": 1.5, "anios_previos": 5, "minimo_casos": 2},
+    "hiperparametros": dict(V3_HYPERPARAMETERS),
+    "semillas_evaluacion": [17, 29, 41, 53, 67],
+    "protocolo": "docs/modeling/protocolo_v3.md",
+    "codigo": "research/06_model_improvement/code/phase_v3_close.py (tag model/v3)",
+    "retadora": "b3 (clima completo: humedad, lluvia, temperatura y Niño 1+2), congelada como retadora para la "
+                "evaluación prospectiva 2026–27",
+    "decisiones": {"base": "d3 elegida por Rosa con contexto (2026-11-08); por la regla SEASON_2026 solo se adoptaba b3",
+                   "hiperparametros": "trial 191 adoptado por la regla SEASON_2026 + filtro fuera de temporada "
+                                      "(24 de 24) y confirmado por Rosa (2026-11-09)"},
+}
+
 # Status of each version (outside the constants so their fingerprints do not change). ``ficha`` is the
 # version card in the model registry (models/registry/, read with denguekay.model.registry).
 HISTORY = {
@@ -67,7 +105,9 @@ HISTORY = {
            "estado": "reemplazada por la V2 (complemento de clima, comparación 20)",
            "ficha": "models/registry/v1/ficha.md"},
     "V2": {"constante": "CONFIGURACION_2026", "commit": "el que introduce esta constante", "fecha": FREEZE_DATE,
-           "estado": "vigente", "ficha": "models/registry/v2/ficha.md"},
+           "estado": "servida; reemplazada por la V3 como configuración vigente", "ficha": "models/registry/v2/ficha.md"},
+    "V3": {"constante": "CONFIG_V3", "commit": "el que introduce esta constante", "fecha": FREEZE_DATE_V3,
+           "estado": "vigente (no servida todavía)", "ficha": "models/registry/v3/ficha.md"},
 }
 
 # 2026 prospective evaluation (fixed before seeing data; not applied to anything yet).
@@ -150,6 +190,10 @@ REFERENCE_FINGERPRINTS = {
     "device=cuda": {"V1": "1534b535bd19d6945c852c10f64294c1d2b16cd9e4359d074fcac11a9ed3806e",
                     "V2": "b302d838aa402017dbcf70320cd8c061ef854e0eda50460b801d557cd709a936"},
 }
+
+
+# V3 behavioural fingerprint (seed 17, the study 06 blocks 2008–2026). Recorded only where it was computed.
+V3_FINGERPRINTS = {"device=cuda": "99a0b26dc4a453feea5ddc71d3438b7006e64d2ba5e12caa646f8035040494de"}
 
 
 def setup_key(setup: dict) -> str:

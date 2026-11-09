@@ -3,11 +3,27 @@
 - **Pregunta:** ¿hay una V3 que supere a la V2 (`CONFIG_2026`) con una regla preregistrada y una evaluación
   menos optimista? Hipótesis de trabajo: el cuello de botella es la poca historia, no la arquitectura.
 - **Plan:** [docs/plan.md](docs/plan.md) (fases 0 a 7; cada una se cierra con el visto bueno de Rosa).
-- **Estado:** en curso, rama `exp/model-improvement`. Fases 0, 1a y 2 cerradas; fase 3 cerrada (ninguna variante se adopta); fase 5: se adopta la mezcla del conteo con la persistencia (5a); fase 6 (lectura) cerrada: LightGBM empata con L + 5a y el GLM Poisson de la enmienda 6a′ empata o mejora (nada se adopta) (se entrena desde 2005; la calibración
+- **Decisión:** **V3** = L + 5a + d3 con los hiperparámetros del trial 191, congelada el 2026-11-09
+  (`CONFIG_V3`, ficha [`models/registry/v3/ficha.md`](../../models/registry/v3/ficha.md), tag `model/v3`). b3
+  queda como retadora para la evaluación prospectiva 2026–27. Protocolo en
+  [`docs/modeling/protocolo_v3.md`](../../docs/modeling/protocolo_v3.md).
+- **Estado:** **cerrado** (2026-11-09). Antes del cierre, rama `exp/model-improvement`. Fases 0, 1a y 2 cerradas; fase 3 cerrada (ninguna variante se adopta); fase 5: se adopta la mezcla del conteo con la persistencia (5a); fase 6 (lectura) cerrada: LightGBM empata con L + 5a y el GLM Poisson de la enmienda 6a′ empata o mejora (nada se adopta) (se entrena desde 2005; la calibración
   se queda en Platt por horizonte con 1e-6). 1b (clima 2000–2016) espera la descarga del equipo.
-- **Tag:** `study/model-improvement` al cerrar.
+- **Tag:** `study/model-improvement` (el mismo commit que `model/v3`).
 
 ## Contenido
+
+Después de la fase 1b′ se agregaron:
+
+- **Notebooks:** 12 (lluvia CHIRPS), 13 (b3), 14 (ventanas d), 15 (temporada 2026), 16 (matriz de clima),
+  17 (diagnóstico frente a la persistencia), 18 (alerta combinada) y 19 (ajuste de hiperparámetros).
+- **Código:** `phase_b_rain.py`, `phase_b3_full_climate.py`, `phase_d_weather_windows.py`, `phase_2026.py`,
+  `phase_climate_matrix.py`, `diagnosis_persistence.py`, `phase_combined_alert.py`, `phase_hp_tuning.py` y
+  `phase_v3_close.py` (corrida de cierre de la V3 y paquetes del Release).
+- **Métricas:** `paso_b`, `paso_b3`, `paso_d`, `datos_2026`, `temporada_2026`, `matriz_clima`,
+  `diagnostico_persistencia`, `alerta_combinada`, `ajuste_hp` y `v3`.
+
+La tabla de abajo es la de las primeras fases.
 
 | Carpeta | Qué hay |
 |---|---|
@@ -29,6 +45,27 @@ La fase 6 usa LightGBM, que el producto no necesita: se instala solo en el `.ven
 ```
 
 ## Cómo reproducir
+
+**La V3 desde un clon limpio** (sin `data/` local): sigue
+[`docs/modeling/reproducir_v3.md`](../../docs/modeling/reproducir_v3.md).
+
+- Crea el entorno con `constraints.txt` y descarga los datos del Release con
+  `python -m denguekay.data.ingestion.release_bundles`.
+- Reentrena con `python research/06_model_improvement/code/phase_v3_close.py` y comprueba la huella.
+
+Desde el tag:
+
+```powershell
+git switch --detach study/model-improvement
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -r requirements.txt -c constraints.txt
+.\.venv\Scripts\python -m pip install -e . -c constraints.txt
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles
+.\.venv\Scripts\python research/06_model_improvement/code/phase_v3_close.py
+```
+
+Los notebooks 01–19 son la historia del estudio. Necesitan además los insumos de cada fase que no están en el
+Release (predicciones de fases anteriores, cachés bronze, LightGBM). La lista de antes sigue valiendo para ellos:
 
 Desde la raíz del repositorio, con `data/` completo y las predicciones de la V2 del estudio 05 en
 `models/experimentos/fe_hiperparametros/complemento_clima/` (no versionadas):

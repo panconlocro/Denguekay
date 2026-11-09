@@ -1,0 +1,72 @@
+{
+  "version": "v3",
+  "estado": "vigente",
+  "estado_detalle": "Configuración congelada vigente desde el 2026-11-09 (estudio 06). No se sirve todavía: la API sigue sirviendo la v2 hasta que se integre la v3 en serving. Su evaluación independiente es la prospectiva 2026–27, frente a b3 (retadora).",
+  "tag": "model/v3",
+  "commit": "el que lleva el tag model/v3",
+  "fecha_congelamiento": "2026-11-09",
+  "modelo": "L + 5a + d3 · E3 · S4_s3: la V1 entrenada desde 2005 (L), conteo publicado mezclado con la persistencia (5a), 4 ventanas de temperatura media de ERA5-Land (d3) e hiperparámetros del trial 191",
+  "configuracion": {
+    "modulo": "denguekay.model.frozen_configs",
+    "constante": "CONFIG_V3"
+  },
+  "protocolo": "docs/modeling/protocolo_v3.md (no es el protocolo de la v2)",
+  "reproduccion": "docs/modeling/reproducir_v3.md",
+  "huellas": {
+    "comportamiento": {
+      "definicion": "SHA-256(SHA-256(configuration JSON) + ':' + predictions_digest(reference predictions))",
+      "semilla": 17,
+      "bloques": "temporada_2008 … temporada_2024, calendario_2025, temporada_2026 y posterior_2026 (predicciones crudas del protocolo del estudio 06)",
+      "por_entorno": {
+        "device=cuda": "99a0b26dc4a453feea5ddc71d3438b7006e64d2ba5e12caa646f8035040494de"
+      },
+      "nota": "Solo se grabó en GPU (RTX 5060, driver 621.01, XGBoost 3.4.1 con CUDA 13.3). En CPU las predicciones no son bit a bit iguales a las de GPU, así que esa huella no aplica allí."
+    }
+  },
+  "datos": {
+    "manifiesto": "models/registry/v3/manifiesto_datos.json",
+    "release": "GitHub Release del tag model/v3: datos_v3.zip, predicciones_v3.zip y comparadores_v3.zip",
+    "modulo": "python -m denguekay.data.ingestion.release_bundles"
+  },
+  "predicciones_referencia": {
+    "carpeta": "models/experimentos/mejora_modelo/v3/",
+    "archivos": {
+      "V3": "predicciones_v3.csv.gz",
+      "L + 5a (comparador sin clima, mismos hiperparámetros)": "predicciones_l5a_sin_clima.csv.gz"
+    },
+    "semillas": [
+      17,
+      29,
+      41,
+      53,
+      67
+    ],
+    "guarda_G41": "la corrida de cierre reproduce ajuste_hp/predicciones_candidata.csv.gz con diferencia máxima 0,0 (975 000 filas)"
+  },
+  "estudio": {
+    "carpeta": "research/06_model_improvement",
+    "informe": "research/06_model_improvement/docs/mejora_modelo.md",
+    "plan": "research/06_model_improvement/docs/plan.md",
+    "tag": "study/model-improvement"
+  },
+  "metricas_seleccion": {
+    "archivo": "research/06_model_improvement/docs/metricas/ajuste_hp.json",
+    "criterio": "regla SEASON_2026 (Brier sobre 2010, 2015, 2016, 2022, 2023 y 2026) + filtro fuera de temporada >= 16 de 24 celdas frente a L + 5a + d3 con hiperparámetros heredados: gana el Brier en h2 y h3, empata en h4, en la alerta y en el conteo; 24 de 24 celdas",
+    "base_d3": "elegida por Rosa con contexto (2026-11-08); por la regla SEASON_2026 solo se adoptaba b3",
+    "metricas_v3": "research/06_model_improvement/docs/metricas/v3.json (Brier y AUPRC por variante, semilla, bloque y horizonte; cortes por bloque)"
+  },
+  "limitaciones": [
+    "la antelación queda en contra en 2, 1 y 3 de 6 temporadas (h2, h3, h4) frente a los hiperparámetros heredados y a favor en ninguna",
+    "2022 · h4: Brier +2,65 % frente a los hiperparámetros heredados",
+    "2026 se usó para elegir (d3 y la regla): la prueba independiente es solo lo publicado después del 2026-11-09",
+    "diagnóstico frente a la persistencia (hecho con L + 5a + d3 y los hiperparámetros heredados, no recalculado con el trial 191): el conteo se queda corto en los picos y la probabilidad se subestima en posterior_2026",
+    "no se ha evaluado la HU0007-4 ni el intervalo del conteo"
+  ],
+  "retadora": "b3 (clima completo), congelada para la evaluación prospectiva 2026–27",
+  "hu0007_4": {
+    "cumple": null,
+    "detalle": "no evaluada (pendiente fuera del estudio)"
+  },
+  "reemplaza_a": "v2",
+  "reemplazada_por": null
+}

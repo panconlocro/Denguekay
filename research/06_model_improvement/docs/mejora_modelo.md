@@ -3,10 +3,65 @@
 Informe del estudio 06. Plan y decisiones de Rosa en [plan.md](plan.md); preregistros en
 `code/preregistration.py`.
 
-## Estado actual (2026-11-09)
+## Estado actual (2026-11-09): CERRADO
 
-Rama `exp/model-improvement`. Para retomar: leer `CLAUDE.md`, [plan.md](plan.md) y este informe, y seguir desde
-aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (paso b de clima) el 2026-11-06.
+**El estudio 06 está cerrado (Rosa, 2026-11-09).**
+
+- **Resultado: la V3** = L + 5a + d3 con los hiperparámetros del trial 191, congelada como
+  `denguekay.model.frozen_configs.CONFIG_V3`.
+  - Ficha: [`models/registry/v3/ficha.md`](../../../models/registry/v3/ficha.md).
+  - Tags `model/v3` y `study/model-improvement`.
+  - Retadora: b3, congelada para la evaluación prospectiva.
+- **Protocolo:** [`docs/modeling/protocolo_v3.md`](../../../docs/modeling/protocolo_v3.md), que no es el de la
+  V2.
+- **Reproducción desde un clon:** [`docs/modeling/reproducir_v3.md`](../../../docs/modeling/reproducir_v3.md).
+  Los datos, las predicciones y los comparadores están en el Release de `model/v3`.
+- **Corrida de cierre** (`code/phase_v3_close.py`):
+  - 5 semillas y todos los bloques de la V3 y de L + 5a sin clima, con los mismos hiperparámetros, en
+    `models/experimentos/mejora_modelo/v3/`;
+  - G41 contra `ajuste_hp/predicciones_candidata.csv.gz`: diferencia 0,0 en 975 000 filas;
+  - cifras en `docs/metricas/v3.json`.
+
+**Pendientes fuera del estudio** (no se hacen en el estudio 06):
+
+- **Intervalo del conteo** con la μ mezclada de 5a: cobertura y nitidez fuera de muestra (R17).
+- **Paquete del short paper** (R10, R13, R17–R20, R22, R23, R25, R28, R32–R34, R36, R38; ver plan.md):
+  - se hace en `research/07_<nombre>/` (estudio del compañero de Rosa), desde el Release de `model/v3`, sin
+    reentrenar;
+  - el diccionario (R13), los cortes (R20) y la especificación (R16, R30) ya están en
+    `docs/modeling/protocolo_v3.md`.
+- **Evaluación prospectiva 2026–27** de la V3 y de b3, la retadora, con lo publicado después del 2026-11-09
+  (`EVALUATION_2026` aplicada a la V3).
+- **Módulo de actualización semanal:** traer cada semana los casos de la Sala, la temperatura de ERA5-Land y la
+  serie desde 2000 que usa la V3. La V3 se sirve en la rama `feat/serve-v3`.
+- **Lo que la fase 7 pedía y no se hizo** (Rosa cerró el estudio sin la fase 7):
+  - la síntesis frente a la V2 con la HU0007-4 por celda;
+  - las pruebas de robustez (sin las 8 primeras semanas de 2017 y sin la temporada de más peso);
+  - la comparación con la persistencia con IC sobre los inicios limpios.
+- **La 6′** (otra familia con clima, lectura): no se hizo.
+
+**Auditoría de `revisor-modelado` (2026-11-09).** Recalculó desde los archivos guardados, sin reentrenar.
+
+- **Coinciden todas las cifras que pudo recalcular:**
+  - filas, llaves y semillas;
+  - Platt y la mezcla, reconstruidas desde los parámetros guardados (≤ 8e-15);
+  - G41 (0,0);
+  - Brier y AUPRC de las 570 celdas;
+  - la tabla de cortes (60 de 60);
+  - los números del ajuste: trials, medianas, candidata y la tabla de Brier en %;
+  - `CONFIG_V3` = trial 191;
+  - los SHA-256 de los 3 zips y de sus 368 archivos.
+- **No verificable sin datos de entrada o sin reentrenar:** las filas de entrenamiento, la huella, las α y la
+  probabilidad cruda.
+- **No recalculado:** los veredictos de alerta, conteo y antelación ni el LOSO 24 de 24.
+- **Corregido después, solo en la documentación (protocolo, sección 2):**
+  - el corte de la calibración es por horizonte;
+  - hay un hueco sin predicciones del 2024-08-25 al 2024-12-22;
+  - `posterior_2026` calibra con 1 235 semanas de 2025 contadas dos veces (`calendario_2025` y
+    `temporada_2026`).
+  - Nada de esto cambia cifras ni decisiones.
+
+Historia del estudio (lo que sigue es el estado previo al cierre):
 
 **Fases cerradas (todas confirmadas por Rosa):**
 
@@ -178,13 +233,15 @@ h) **Alerta combinada (p >= 0,50 o la persistencia): preregistrada (`COMBINED_AL
 i) **Ajuste de hiperparámetros sobre L + 5a + d3** (`HP_TUNING`, preregistro `b408371`, aprobado por Rosa con el
    agregado `02d7275`; corrido el 2026-11-08/09). **Por la regla, la candidata (trial 191) se adopta:** gana el Brier
    en h2 y h3 (6 y 5 de 6 temporadas a favor, 0 en contra), empata en h4, en la alerta y en el conteo, y es mejor en
-   24 de 24 celdas fuera de temporada. Pendiente de la confirmación de Rosa. Ver «Ajuste de hiperparámetros:
-   resultados».
+   24 de 24 celdas fuera de temporada. **Rosa (2026-11-09): adopta la candidata (trial 191).** Base de la V3 =
+   L + 5a + d3 con los hiperparámetros del trial 191. **Limitaciones registradas:**
+   - la antelación queda en contra en 2, 1 y 3 de 6 temporadas (h2, h3 y h4) y a favor en ninguna: la regla no lo
+     castiga (no activa «empeora_antelacion»), pero la V3 avisa más tarde que con los heredados en esas temporadas;
+   - 2022 · h4 empeora el Brier un +2,65 % (la única celda decisiva con un empeoramiento visible).
+   Ver «Ajuste de hiperparámetros: resultados».
 
-**Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
-**fase 7** (síntesis frente a la
-V2 con la HU0007-4 por celda, pruebas obligatorias, auditoría con `revisor-modelado`, intervalo del conteo con la μ
-mezclada y congelamiento). No se ha empezado.
+**Cierre (2026-11-09):** Rosa cerró el estudio sin la fase 7. La V3 se congeló con la corrida de cierre y la
+auditoría de `revisor-modelado`; los pendientes están arriba, en «Pendientes fuera del estudio».
 
 **Ramas abiertas sin PR:** `feat/chirps-precipitation` (ingesta de CHIRPS v3) y `fix/notebook-02-era5-land-imports`
 (imports de las celdas de ERA5-Land del notebook 02). Los PR y los merges los decide Rosa.
@@ -677,7 +734,7 @@ Notebook `notebooks/19_ajuste_hiperparametros.ipynb`; cifras en `docs/metricas/a
   - 137 trials quedan por debajo de 0,97 y 36 por encima de 1.
 - **Importancia (fANOVA):** n_estimators 0,48; learning_rate 0,15; reg_alpha 0,14; min_child_weight 0,06;
   colsample_bytree 0,05; max_depth 0,04; max_delta_step 0,04; subsample 0,04; gamma 0,01; reg_lambda 0,003.
-- **Las 5 mejores con 5 semillas (mediana del objetivo):** 191 0,9617; 234 0,9619; 244 0,9619; 231 0,9621;
+- **Las 5 mejores con 5 semillas (mediana del objetivo):** 191 0,9617; 244 0,9619; 234 0,9619; 231 0,9621;
   232 0,9625. Rango entre semillas: 0,9595–0,9633. **Candidata: trial 191.** Las cinco son casi la misma
   configuración.
 - **Hiperparámetros de la candidata (heredados entre paréntesis):** max_depth 8 (3); min_child_weight 1,35 (5);
@@ -692,6 +749,8 @@ Notebook `notebooks/19_ajuste_hiperparametros.ipynb`; cifras en `docs/metricas/a
   - **Por la regla, se adopta la candidata.**
 - **Observación:** la antelación está en contra en 2, 1 y 3 de 6 temporadas (h2, h3, h4) y a favor en ninguna. No
   activa «empeora_antelacion» de la regla, pero la candidata avisa más tarde en algunas temporadas.
+- **Decisión de Rosa (2026-11-09): se adopta la candidata (trial 191).** Limitaciones de la V3 registradas: la
+  antelación en contra (2, 1 y 3 de 6 temporadas en h2, h3 y h4) y 2022 · h4 (+2,65 % de Brier).
 
 Diferencia de Brier de la candidata frente a los heredados (%, negativo = mejor):
 
