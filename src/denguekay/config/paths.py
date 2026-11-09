@@ -64,6 +64,8 @@ SERVING_MODELS = MODELS / "serving"
 STORAGE = MODELS / "storage"
 # Model registry: one card per version (v0, v1, v2) and CHANGELOG.md; versioned in git, artifacts are not.
 MODEL_REGISTRY = MODELS / "registry"
+# Data bundles of the frozen V3 (zips attached to the GitHub Release of model/v3): files, rows and SHA-256.
+V3_DATA_MANIFEST = MODEL_REGISTRY / "v3" / "manifiesto_datos.json"
 ENV_FILE = ROOT / ".env"
 ALEMBIC_CONFIG = ROOT / "alembic.ini"
 DB_MIGRATIONS = ROOT / "src" / "denguekay" / "db" / "migrations"

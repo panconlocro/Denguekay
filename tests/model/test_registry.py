@@ -20,15 +20,18 @@ class TestRegistry(unittest.TestCase):
 
     def test_states(self):
         states = {v: registry.card(v)["estado"] for v in registry.VERSIONS}
-        self.assertEqual(states, {"v0": "registrada", "v1": "reemplazada", "v2": "servida"})
-        self.assertEqual(registry.CURRENT, "v2")
+        self.assertEqual(states, {"v0": "registrada", "v1": "reemplazada", "v2": "servida", "v3": "vigente"})
+        self.assertEqual(registry.CURRENT, "v3")
         self.assertEqual(registry.SERVED, "v2")
         self.assertEqual(registry.card("v1")["reemplazada_por"], "v2")
         self.assertEqual(registry.card("v2")["reemplaza_a"], "v1")
+        self.assertEqual(registry.card("v2")["reemplazada_por"], "v3")
+        self.assertEqual(registry.card("v3")["reemplaza_a"], "v2")
 
     def test_frozen_configurations_load_from_the_package(self):
         self.assertIs(registry.configuration("v1"), fc.CONFIG_2026_V1)
         self.assertIs(registry.configuration("v2"), fc.CONFIG_2026)
+        self.assertIs(registry.configuration("v3"), fc.CONFIG_V3)
         with self.assertRaises(ValueError):
             registry.configuration("v0")
         with self.assertRaises(ValueError):
@@ -51,6 +54,13 @@ class TestRegistry(unittest.TestCase):
                 self.assertEqual(fingerprints["comportamiento"]["semilla"], fc.DEPLOYMENT_SEED)
                 self.assertEqual(fingerprints["comportamiento"]["por_entorno"],
                                  {setup: values[name] for setup, values in fc.REFERENCE_FINGERPRINTS.items()})
+
+    def test_v3_card_matches_the_package(self):
+        card = registry.card("v3")
+        self.assertEqual(card["huellas"]["comportamiento"]["por_entorno"], fc.V3_FINGERPRINTS)
+        self.assertEqual(card["huellas"]["comportamiento"]["definicion"], fc.FINGERPRINT_DEFINITION)
+        self.assertEqual(fc.HISTORY["V3"]["ficha"], "models/registry/v3/ficha.md")
+        self.assertTrue((ROOT / card["datos"]["manifiesto"]).exists())
 
     def test_v2_is_the_configured_package(self):
         card = registry.card("v2")
