@@ -332,6 +332,11 @@ def verify_metrics(tol: float = 1e-12) -> dict:
             "tolerancia": tol, "pasa": bool(m._merge.eq("both").all() and all(v <= tol for v in diff.values()))}
 
 
+def cpu_seeds(path) -> list[str]:
+    """Seeds in the name of a CPU reference file: ``predicciones_v3_cpu_29_41_53_67.csv.gz`` -> ``['29', ...]``."""
+    return path.name.removesuffix(".csv.gz").split("_cpu_")[1].split("_")
+
+
 def verify_retrain(seed: int = 17) -> dict:
     """Retrain V3 with one seed on every block; G41 against the saved predictions of that seed and, for seed 17,
     the behavioural fingerprint against ``frozen_configs.V3_FINGERPRINTS`` for this device."""
@@ -349,7 +354,7 @@ def verify_retrain(seed: int = 17) -> dict:
     if setup.startswith("device=cpu"):
         # CPU reference (n_jobs=2, predicciones_v3_cpu.zip of the model/v3 Release), when it is downloaded
         cpu = sorted((OUT.parent / "v3_cpu").glob("predicciones_v3_cpu_*.csv.gz"))
-        matching = [p for p in cpu if str(seed) in p.stem.split("_cpu_")[1].split("_")]
+        matching = [p for p in cpu if str(seed) in cpu_seeds(p)]
         if setup == "device=cpu,n_jobs=2" and matching:
             reference = matching[0]
     saved = raw_predictions(read_table(reference), seed)

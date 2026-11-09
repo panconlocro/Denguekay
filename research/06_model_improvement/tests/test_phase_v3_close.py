@@ -49,5 +49,12 @@ class TestPlatt(unittest.TestCase):
         self.assertEqual(v3.variant_columns()["V3"], fc.CONFIG_V3["columnas"])
 
 
+
+class TestCpuReference(unittest.TestCase):
+    def test_seeds_from_the_file_name(self):
+        self.assertEqual(v3.cpu_seeds(Path("predicciones_v3_cpu_17.csv.gz")), ["17"])
+        self.assertEqual(v3.cpu_seeds(Path("predicciones_v3_cpu_29_41_53_67.csv.gz")), ["29", "41", "53", "67"])
+
+
 if __name__ == "__main__":
     unittest.main()
