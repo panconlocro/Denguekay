@@ -3,7 +3,7 @@
 Informe del estudio 06. Plan y decisiones de Rosa en [plan.md](plan.md); preregistros en
 `code/preregistration.py`.
 
-## Estado actual (2026-11-08)
+## Estado actual (2026-11-09)
 
 Rama `exp/model-improvement`. Para retomar: leer `CLAUDE.md`, [plan.md](plan.md) y este informe, y seguir desde
 aquí. El estudio estuvo en pausa desde el 2026-11-04; Rosa retomó la lluvia (paso b de clima) el 2026-11-06.
@@ -175,8 +175,11 @@ h) **Alerta combinada (p >= 0,50 o la persistencia): preregistrada (`COMBINED_AL
    - **Idea para el dashboard (no es parte del modelo):** mostrar la señal de la persistencia por separado, como dato
      observado (casos de la última semana frente al umbral de la semana objetivo), al lado de la probabilidad del
      modelo.
-i) **Ajuste de hiperparámetros sobre L + 5a + d3: preregistro pedido por Rosa el 2026-11-08** (`HP_TUNING` en
-   `code/preregistration.py`; sin correr). Ver «Ajuste de hiperparámetros: preregistro».
+i) **Ajuste de hiperparámetros sobre L + 5a + d3** (`HP_TUNING`, preregistro `b408371`, aprobado por Rosa con el
+   agregado `02d7275`; corrido el 2026-11-08/09). **Por la regla, la candidata (trial 191) se adopta:** gana el Brier
+   en h2 y h3 (6 y 5 de 6 temporadas a favor, 0 en contra), empata en h4, en la alerta y en el conteo, y es mejor en
+   24 de 24 celdas fuera de temporada. Pendiente de la confirmación de Rosa. Ver «Ajuste de hiperparámetros:
+   resultados».
 
 **Por hacer:** la 6′ (otra familia con clima, lectura), si Rosa la retoma ahora que hay lluvia 2000–2026; y la
 **fase 7** (síntesis frente a la
@@ -659,10 +662,63 @@ Notebook `10_fase4_nino.ipynb`; cifras en `metricas/fase4.json`; predicciones en
   lluvia) ya esté publicado. Eso cubre los atrasos raros del preliminar de CHIRPS (hasta unos 18 días después de la
   péntada en 2025).
 
-## Ajuste de hiperparámetros: preregistro (2026-11-08, sin correr)
+## Ajuste de hiperparámetros: resultados (2026-11-09)
+
+Notebook `notebooks/19_ajuste_hiperparametros.ipynb`; cifras en `docs/metricas/ajuste_hp.json`; figuras
+`docs/figuras/ajuste_hp_curva.png` y `docs/figuras/ajuste_hp_importancia.png`. El estudio de Optuna está guardado en
+`models/experimentos/mejora_modelo/ajuste_hp/optuna.db` (reanudable).
+
+- **Búsqueda:** **se alcanzó el tope de 10 h**. Hubo 255 trials completos de 300 y 0 fallidos, en 36 067 s de pared
+  (mediana de 148 s por trial; los trials largos, de 800–1000 árboles con profundidad 8, dominan).
+  - El trial 0 (los heredados con reg_alpha = 1e-3) da 1,000001.
+  - El mejor de la búsqueda es el trial 231, con 0,9610.
+  - El mejor acumulado baja de 0,974 (trial 20) a 0,968 (50), 0,966 (100), 0,962 (150), 0,961 (200) y 0,961 (254):
+    la curva está casi plana desde el trial ~150.
+  - 137 trials quedan por debajo de 0,97 y 36 por encima de 1.
+- **Importancia (fANOVA):** n_estimators 0,48; learning_rate 0,15; reg_alpha 0,14; min_child_weight 0,06;
+  colsample_bytree 0,05; max_depth 0,04; max_delta_step 0,04; subsample 0,04; gamma 0,01; reg_lambda 0,003.
+- **Las 5 mejores con 5 semillas (mediana del objetivo):** 191 0,9617; 234 0,9619; 244 0,9619; 231 0,9621;
+  232 0,9625. Rango entre semillas: 0,9595–0,9633. **Candidata: trial 191.** Las cinco son casi la misma
+  configuración.
+- **Hiperparámetros de la candidata (heredados entre paréntesis):** max_depth 8 (3); min_child_weight 1,35 (5);
+  learning_rate 0,0122 (0,05); n_estimators 1055 (160); subsample 0,64 (0,8); colsample_bytree 0,52 (0,9);
+  reg_lambda 27,5 (5); reg_alpha 0,83 (0); gamma 0,010 (0); max_delta_step 1,58 (0,7). Es un modelo mucho más grande:
+  ~6,6 veces más árboles y más profundos, con más regularización L1/L2 y más submuestreo.
+- **Comparación final frente a L + 5a + d3 heredado (5 semillas, regla `SEASON_2026`):**
+  - **Brier:** gana en h2 (6 de 6 a favor, 0 en contra) y en h3 (5 a favor, 0 en contra). Empata en h4 (5 a favor,
+    1 en contra: 2022).
+  - **Alerta y conteo:** empate en los tres horizontes, sin «pierde» ni «compensa».
+  - **Fuera de temporada:** mejor en 24 de 24 celdas (filtro >= 16).
+  - **Por la regla, se adopta la candidata.**
+- **Observación:** la antelación está en contra en 2, 1 y 3 de 6 temporadas (h2, h3, h4) y a favor en ninguna. No
+  activa «empeora_antelacion» de la regla, pero la candidata avisa más tarde en algunas temporadas.
+
+Diferencia de Brier de la candidata frente a los heredados (%, negativo = mejor):
+
+| Bloque | h2 | h3 | h4 |
+|---|---|---|---|
+| 2010 | −5,01 | −4,37 | −4,05 |
+| 2015 | −0,52 | −1,30 | −2,48 |
+| 2016 | −5,53 | −4,19 | −1,54 |
+| 2017 | −3,91 | −1,69 | −1,55 |
+| 2022 | −1,13 | +0,33 | +2,65 |
+| 2023 | −3,38 | −2,34 | −1,38 |
+| 2024 | −6,47 | −5,56 | −4,83 |
+| 2026 | −8,69 | −5,50 | −5,32 |
+| `posterior_2026` | −2,06 | +0,21 | −0,46 |
+
+| Promedio de celdas | Celdas | Candidata vs heredados |
+|---|---|---|
+| Decisivas (2010, 2015, 2016, 2022, 2023, 2026) | 18 | −2,99 % |
+| Años de Niño (2017, 2026, `posterior_2026`) | 9 | −3,22 % |
+| Normales | 18 | −2,84 % |
+| Todas | 27 | −2,97 % |
+
+## Ajuste de hiperparámetros: preregistro (2026-11-08)
 
 `HP_TUNING` en `code/preregistration.py`; código en `code/phase_hp_tuning.py` (tests en `tests/test_hp_tuning.py`).
-Pendiente de la revisión de Rosa.
+Aprobado por Rosa tal cual, con el agregado del tope de 10 h y la declaración de que las temporadas de ajuste no
+incluyen ningún Niño fuerte (commit `02d7275`, antes de correr).
 
 - **Base:** L + 5a + d3. **Heredados:** los de `CONFIG_2026_V1` (160 árboles, profundidad 3, learning_rate 0,05,
   min_child_weight 5, subsample 0,8, colsample 0,9, reg_lambda 5, reg_alpha 0, gamma 0, max_delta_step 0,7).
