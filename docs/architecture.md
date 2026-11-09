@@ -53,6 +53,7 @@ Denguekay/
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
 ├── .github/workflows/         # tests (SQLite y PostgreSQL), cobertura y humo de la API liviana; sin despliegue
 ├── requirements.txt
+├── constraints.txt            # versiones exactas del entorno de la V3 (pip install -r requirements.txt -c constraints.txt)
 ├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
 ├── render.yaml                # Blueprint de Render para la API (docs/backend/despliegue.md); no despliega por sí solo
 ├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan) e install_claude_setup.ps1
@@ -86,17 +87,17 @@ Denguekay/
 │   └── web/                   # frontend (React + Vite): por ahora solo README.md con el plan
 │
 ├── pipelines/notebooks/       # pipeline: 01–09 (bronze/silver) y 10_silver_to_gold
-├── research/                  # estudios congelados: 01_eda … 05_fe_hyperparameters (README por estudio)
+├── research/                  # estudios congelados: 01_eda … 06_model_improvement (README por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
-│   └── registry/              # fichas de v0, v1 y v2 y CHANGELOG.md (versionado; los artefactos no)
+│   └── registry/              # fichas de v0 … v3, CHANGELOG.md y v3/manifiesto_datos.json (versionado; los artefactos no)
 ├── tests/                     # misma estructura que el paquete: tests/<subpaquete>/ y tests/api/
 │   ├── fixtures/backend/      # muestra agregada real, pequeña y versionada
 │   └── fixtures/equivalence/  # línea base de las guardas de la reestructuración (no se regenera)
 ├── mlflow.db                  # tracking de MLflow (generado, no se versiona)
 ├── mlartifacts/               # artefactos de MLflow (generado, no se versiona)
 └── docs/
-    ├── modeling/              # guía de MLflow/GX, diccionario de variables y métricas que lee serving (V0)
+    ├── modeling/              # guía de MLflow/GX, diccionario de variables, métricas que lee serving (V0), protocolo_v3.md y reproducir_v3.md
     ├── decisions/             # ADR numerados (0001: monorepo; 0002: ramas develop y main)
     └── backend/               # operación y evidencia del backend por fase
 ```
@@ -222,6 +223,7 @@ data/
 │   ├── chirps_ee.py            # CHIRPS v3 final desde Earth Engine: media por polígono, guarda de método y descarga mensual
 │   ├── chirps_prelim.py        # CHIRPS v3 preliminar (y final) del CHC por HTTPS o FTP: TIF global a carpeta temporal, verificación de tamaño, sha256 y grilla, y recorte de Piura
 │   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
+│   ├── release_bundles.py      # paquetes de datos del Release de una versión congelada (descarga, SHA-256 y extracción)
 │   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE
 ├── processing/
 │   ├── weekly_aggregation.py   # diario -> semanal por distrito

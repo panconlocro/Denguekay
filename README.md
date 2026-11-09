@@ -126,8 +126,13 @@ CPU, y distinto número de hilos en CPU, dan decimales distintos; por eso las hu
 congeladas se guardan por entorno. Los experimentos se registran en MLflow (`mlflow.db` y `mlartifacts/`,
 locales): `.venv\Scripts\mlflow ui --backend-store-uri sqlite:///mlflow.db --workers 1`.
 
-Los estudios (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, y
-feature engineering e hiperparámetros) están congelados en `research/<estudio>/`; cada uno tiene un README
+**Reproducir la V3 (la configuración vigente) desde un clon, sin `data/` local:**
+[docs/modeling/reproducir_v3.md](docs/modeling/reproducir_v3.md). Instala con versiones exactas
+(`constraints.txt`), descarga los datos del Release de `model/v3` y reentrena. Su protocolo está en
+[docs/modeling/protocolo_v3.md](docs/modeling/protocolo_v3.md).
+
+Los estudios (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, feature
+engineering e hiperparámetros, y mejora del modelo) están congelados en `research/<estudio>/`; cada uno tiene un README
 con su pregunta, su decisión y el tag desde el que se reproduce. Índice: [research/README.md](research/README.md).
 Las instrucciones de Codex están en `AGENTS.md` y `.codex/skills/`; las de Claude Code, en `CLAUDE.md`.
 

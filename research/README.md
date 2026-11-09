@@ -20,7 +20,8 @@ Para reproducir un estudio se parte de su tag (ver el README de cada uno). `pre-
 | [02_feature_engineering](02_feature_engineering/README.md) | ¿Qué variables sin fuga y qué etiqueta de brote van a gold? | Gold h=2 y h=4 (`manifest_fase6.json`) | `archive/feature-engineering` |
 | [03_first_models_and_ablations](03_first_models_and_ablations/README.md) | ¿Regresión o clasificación, y qué bloques de variables aportan? | **V0** (servida hoy) | `archive/training` |
 | [04_horizon_architecture](04_horizon_architecture/README.md) | ¿Qué arquitectura para h=2, 3 y 4? | E3·S4_s2, base del estudio 05 | `study/horizon-architecture` |
-| [05_fe_hyperparameters](05_fe_hyperparameters/README.md) | ¿Qué variables e hiperparámetros sobre E3·S4_s2? | **V1** (reemplazada) y **V2** (vigente) | `study/fe-hyperparameters` |
+| [05_fe_hyperparameters](05_fe_hyperparameters/README.md) | ¿Qué variables e hiperparámetros sobre E3·S4_s2? | **V1** (reemplazada) y **V2** (servida) | `study/fe-hyperparameters` |
+| [06_model_improvement](06_model_improvement/README.md) | ¿Hay una V3 que supere a la V2 con una regla preregistrada? | **V3** (vigente, no servida todavía); b3 retadora | `study/model-improvement` |
 
 ## Qué no está aquí
 
@@ -35,6 +36,6 @@ Para reproducir un estudio se parte de su tag (ver el README de cada uno). `pre-
 
 ## Estudios nuevos
 
-Un estudio nuevo va en `research/06_<nombre>/` con la misma forma (`README.md`, `notebooks/`,
+Un estudio nuevo va en `research/07_<nombre>/` con la misma forma (`README.md`, `notebooks/`,
 `code/`, `tests/`, `docs/`), importa el paquete `denguekay` y nunca al revés: el producto no
 importa `research/`. Al cerrarlo se crea el tag `study/<nombre>`.

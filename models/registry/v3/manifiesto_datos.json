@@ -1,0 +1,2247 @@
+{
+ "version": "v3",
+ "tag": "model/v3",
+ "repositorio": "panconlocro/Denguekay",
+ "fecha": "2026-11-09",
+ "descripcion": "Paquetes del Release de model/v3: entradas de datos para reentrenar la V3, sus predicciones de referencia y las de los comparadores. Se descargan y verifican con python -m denguekay.data.ingestion.release_bundles",
+ "paquetes": [
+  {
+   "nombre": "datos_v3.zip",
+   "bytes": 7775909,
+   "sha256": "e305981e50ff026c1cbb143cd8a96332777f934a0434cfcac16347362f97582e",
+   "destino": [
+    "data",
+    "models/experimentos"
+   ],
+   "archivos": [
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-01.json",
+     "filas": null,
+     "bytes": 61900,
+     "sha256": "924e936986d525d98d0b1276d9167bc7164666a0df19c29198440f23bbd9d34e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-02.json",
+     "filas": null,
+     "bytes": 58257,
+     "sha256": "5b42ef7c5cd30767c7fece825e8249e74a80b2d65ce6782d42c872079506fb7d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-03.json",
+     "filas": null,
+     "bytes": 59911,
+     "sha256": "2813a83c1cf4c3d52bfb5566c43cd942612aa6e23b957b627446bed1c5a20599"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-04.json",
+     "filas": null,
+     "bytes": 62710,
+     "sha256": "117cadbb0a3eb30f2924a96f2e6bbaba03525b55b010d099113dcbb88a69f100"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-05.json",
+     "filas": null,
+     "bytes": 61308,
+     "sha256": "3d636f318761e06273987e70701a0d9314d8a6d622dded1ce82b0e11b36a2697"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-06.json",
+     "filas": null,
+     "bytes": 54395,
+     "sha256": "60097e15cb91712ce6936825786633ac74a72a6ce5f6c8747a1d7b6bd6df580c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-07.json",
+     "filas": null,
+     "bytes": 54879,
+     "sha256": "987d9acd79faa0b2993149b4aea0160c13d482bf14d4b13081a419dcb7ce4c4b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-08.json",
+     "filas": null,
+     "bytes": 58502,
+     "sha256": "0bb9dbb474a46409428d49c022e5382e32a5e2ad140854c7ab3c7b86b621475a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-09.json",
+     "filas": null,
+     "bytes": 55835,
+     "sha256": "3c6075981878d28f0eed301d4a81275de12830b01a551aac0f7ae6a2b6d1219b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-10.json",
+     "filas": null,
+     "bytes": 38687,
+     "sha256": "4354fcbf517e5274a504e59240204b87012eed758e1ebe6886f2927722a1c05f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-11.json",
+     "filas": null,
+     "bytes": 40533,
+     "sha256": "ef01bb07a0c99a5071ceb14c01ae206915942c1bf52124a1acd4b299cf26d807"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2000/2000-12.json",
+     "filas": null,
+     "bytes": 49227,
+     "sha256": "7ecdcc719d401a238e108c3a36caee2c08b9ee95f8fa3f5be292a0318ce93924"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-01.json",
+     "filas": null,
+     "bytes": 63342,
+     "sha256": "ed9910bc2fa41c1896ff40d34f395584d8acb61753422185b736000ad56380e6"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-02.json",
+     "filas": null,
+     "bytes": 52639,
+     "sha256": "cccb6d61d1f7f23c719187f114a4657290fb225a038409d08e456179ca78b01a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-03.json",
+     "filas": null,
+     "bytes": 65797,
+     "sha256": "c3ddf0fe9771f92566cb5c22e57cccacef018006a72207c3d295b04608f9ac83"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-04.json",
+     "filas": null,
+     "bytes": 56406,
+     "sha256": "34405f30fedd4dafd5e65ff8d26f1b0621dad091dc057c45e6b1c90789ab805b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-05.json",
+     "filas": null,
+     "bytes": 59748,
+     "sha256": "a0597a13ef9d79bd943a1708d9dfcd13e44bd029db32aeec0a98cbff2eecf8a5"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-06.json",
+     "filas": null,
+     "bytes": 52612,
+     "sha256": "5d4f8ca966a84f01d821298a92f84f3a364ec91f553e38bb03390fc8b5b7ba74"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-07.json",
+     "filas": null,
+     "bytes": 55522,
+     "sha256": "7510923c6053bfb919b972c8f8080635eb79d1130c601fca03e30c929b5a4e9f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-08.json",
+     "filas": null,
+     "bytes": 63608,
+     "sha256": "39e7d4e0a94ad197859bae1210379f0b6284692c59a1cd7a40db95db3f566056"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-09.json",
+     "filas": null,
+     "bytes": 50634,
+     "sha256": "d65705e93ef0dd0fcbec3a77b4479ac932b5cd653d2c8913e58aa49333d98c3c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-10.json",
+     "filas": null,
+     "bytes": 41412,
+     "sha256": "fc4fe9579b2806929dba4ea91bde1c146d2e59066602e31989401792911c18df"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-11.json",
+     "filas": null,
+     "bytes": 49725,
+     "sha256": "3ffe7618a93edc7d15ef808105acc84e65461e01c586072af00a562a5fce97ce"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2001/2001-12.json",
+     "filas": null,
+     "bytes": 46459,
+     "sha256": "62cb8b71a3439665baf4eba7de6e67150e9641322dde250fa8956818726496f6"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-01.json",
+     "filas": null,
+     "bytes": 62081,
+     "sha256": "760bb7ccb01cf51985e56973484606aa79dc7f5888e3527bccff0b9c057e6600"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-02.json",
+     "filas": null,
+     "bytes": 52292,
+     "sha256": "b4b2f4520404ee61bbe07a668d256d9adac66614f2f88ec3851ec6d6ae8213b0"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-03.json",
+     "filas": null,
+     "bytes": 67097,
+     "sha256": "76cb12de006f3ee702507b3960714373fb8c64e11c303c3d2434a849e45d4325"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-04.json",
+     "filas": null,
+     "bytes": 60718,
+     "sha256": "c7e4ae369de31650ddf3ef615b167221d24e41c359499919b65c650f826ba9e9"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-05.json",
+     "filas": null,
+     "bytes": 60836,
+     "sha256": "213370131ffc09612bc08a2c49ffd7c208088408b7513ab3dd836f7140f297b3"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-06.json",
+     "filas": null,
+     "bytes": 53892,
+     "sha256": "88edf0e7d0aa6eddf70917dac381edc03da42c714d688ca6d14fc9d3ef0261ac"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-07.json",
+     "filas": null,
+     "bytes": 55095,
+     "sha256": "c80d4af9f21d87587cb1c1cad25733c2dbefcfd6ec2d08f369aced1debdbebad"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-08.json",
+     "filas": null,
+     "bytes": 63413,
+     "sha256": "179ec301435542d944a46a2de52de3cf8c1e6b735ee91c2ae430ca3946241883"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-09.json",
+     "filas": null,
+     "bytes": 41109,
+     "sha256": "816c10a19ac220a7a698e30c7f73af7d9cf69142221148d0547f4a53c286ad77"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-10.json",
+     "filas": null,
+     "bytes": 49075,
+     "sha256": "b9f1c24c93a6e646b4a5ebb67e0a448630267ff1da17d2a32c4e5c3bf9e3aeba"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-11.json",
+     "filas": null,
+     "bytes": 48666,
+     "sha256": "979212a456a350f173477bd19ccdab8b765a1dd417f978fccca400253b593285"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2002/2002-12.json",
+     "filas": null,
+     "bytes": 50148,
+     "sha256": "a0384250177ae3f47eae327e96d02deda4675ae112e51ca635a1d77664ff2d40"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-01.json",
+     "filas": null,
+     "bytes": 64310,
+     "sha256": "cdc0e1b4f397895e6267c8f90bc666d175723fb81426eb07f7d10a7f6884bf99"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-02.json",
+     "filas": null,
+     "bytes": 53127,
+     "sha256": "17405cf62990adc810513b9f46e8f2bd862c258975e378be8a56ec58dbe0ff7b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-03.json",
+     "filas": null,
+     "bytes": 55404,
+     "sha256": "90856ec6b5d475b38e7006537cfb507cc1929fd6af913556eadbd9921070104c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-04.json",
+     "filas": null,
+     "bytes": 52594,
+     "sha256": "7e72deca159c0bd897c2523cdc429c34afd7ae0590e8924c89bfcc59d6f4327c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-05.json",
+     "filas": null,
+     "bytes": 61401,
+     "sha256": "5fae309b17d7c68dabae74260652f01bdfb9b47f9aa8573a4d3978812d9d8ef4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-06.json",
+     "filas": null,
+     "bytes": 54635,
+     "sha256": "e1cab59dc07a59350c6af7e2ff8e47cb4af56edc8505fbf5cf4dab642c06e547"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-07.json",
+     "filas": null,
+     "bytes": 56422,
+     "sha256": "4a22ae8ab381603646a181574021945f6c3e0435640ed051d724250b5cc64e2d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-08.json",
+     "filas": null,
+     "bytes": 62014,
+     "sha256": "39c7dc620fd0be4ce7e1ddfc54f61b43eeff909b421c1aaf9cd045ca3791b4cb"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-09.json",
+     "filas": null,
+     "bytes": 44836,
+     "sha256": "245a17f0551312fc82d8ea37196cbf6ba7577065bf83bced664413012d89c2eb"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-10.json",
+     "filas": null,
+     "bytes": 45940,
+     "sha256": "e0ecf2528a5df059584b939cc60684541cd89e7481c57c502c404072fd757655"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-11.json",
+     "filas": null,
+     "bytes": 40883,
+     "sha256": "c8639b92f6a012b4d625ba60a7a692917fa26dcca362249af3bfef2bf0ef6b0b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2003/2003-12.json",
+     "filas": null,
+     "bytes": 52827,
+     "sha256": "b29f4c1a6c5b4ab2060ec86f99562292b50d0ecc19b84192bea0bfad40352bb6"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-01.json",
+     "filas": null,
+     "bytes": 62594,
+     "sha256": "91da1dc4780955e65aa82d18d5d64bbe011b569e6908dccb3e56eb98b8135b35"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-02.json",
+     "filas": null,
+     "bytes": 56095,
+     "sha256": "7004051aef405098a05f1080b59823581064d211e956162b41d2e66700dbfe71"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-03.json",
+     "filas": null,
+     "bytes": 55157,
+     "sha256": "0af5095e2a0917e0aabd7ebb9db934c4a60d93f00a6699237f5f9a2c69a6f45d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-04.json",
+     "filas": null,
+     "bytes": 52228,
+     "sha256": "0e57e9d75c74dcfaf5ec2e4576ebafa956537efb891c429738b33bfce37954f8"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-05.json",
+     "filas": null,
+     "bytes": 61388,
+     "sha256": "4fd587390132b7500ca2b2c6ba1706a8c3515194cd0f25b3a7d6d21c253f16e6"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-06.json",
+     "filas": null,
+     "bytes": 52739,
+     "sha256": "5d2758dedd182484597120542753f486eb25169fda94f36e95edcbae0a32d0b9"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-07.json",
+     "filas": null,
+     "bytes": 53353,
+     "sha256": "2c9a5b87db6fc0434dbd126f846a1a5d9fcf4bda5408d4721d5836ce6f5fe718"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-08.json",
+     "filas": null,
+     "bytes": 61325,
+     "sha256": "fd68541508370c1866b0fdf23800506caeaa2ec3be731cf0ac201f9b005eb335"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-09.json",
+     "filas": null,
+     "bytes": 49385,
+     "sha256": "5078266bf5df0dea6beea6aeb3819b61b440ab958b9421c5c95569b51b9fce2b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-10.json",
+     "filas": null,
+     "bytes": 50708,
+     "sha256": "46ac089b6c2f0c76b5a46b4c9846334a3636942317aff9a185fad67c382ba3a4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-11.json",
+     "filas": null,
+     "bytes": 44633,
+     "sha256": "e9f7106c90392bda71df72eab5dc510f4c7f71470b17e54969e302a3a4f98926"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2004/2004-12.json",
+     "filas": null,
+     "bytes": 53027,
+     "sha256": "089cc1383e69901b92d1b43fd2655f50c8866f400e6804a2ea307080968a2cce"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-01.json",
+     "filas": null,
+     "bytes": 60966,
+     "sha256": "59dbe2ee1aa47301dfb7581e67b3bc40cc3dd506a799f6dabaf522141a3e0abe"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-02.json",
+     "filas": null,
+     "bytes": 52970,
+     "sha256": "3bdd8faec90c2ccb6ef7c8914ccc87fa1c5209770396e8623b69193f43492027"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-03.json",
+     "filas": null,
+     "bytes": 60556,
+     "sha256": "06f36dc0118dc282e115d45b3f4749e469c7e13eeabf6607308c192ef38d070e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-04.json",
+     "filas": null,
+     "bytes": 53739,
+     "sha256": "3e736b5dbab9f5e8d67e74779de3a049fb17ca40a1685e2cb805ace24e9b2f9f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-05.json",
+     "filas": null,
+     "bytes": 61450,
+     "sha256": "04072b6e208d5d8ee0e0df3b5caa40eb87c72f18ccb2d926ce2eb26ba5475c27"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-06.json",
+     "filas": null,
+     "bytes": 50574,
+     "sha256": "5fd22034a3402631c23625173349ded973a3200b126a704117b74d7a7f9b11bc"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-07.json",
+     "filas": null,
+     "bytes": 57680,
+     "sha256": "7934d091fe6f1ce33e8b4ff3009cf22e1d5f3ef2cbd1eae5b63ad9f7efb92f68"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-08.json",
+     "filas": null,
+     "bytes": 63447,
+     "sha256": "b367217087ee3d029323d487bab5d4ae1a372c6d3af2ca41b59458ef26f20646"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-09.json",
+     "filas": null,
+     "bytes": 47020,
+     "sha256": "e45952fc5b188f5ef94d945f75e80e20f4e9bd35b51436a761ca3122e195bf3a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-10.json",
+     "filas": null,
+     "bytes": 50134,
+     "sha256": "ed42a65ebf20f3e50d333c4bd528431becf3a12689317a0930b5e179c9c0e56a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-11.json",
+     "filas": null,
+     "bytes": 45785,
+     "sha256": "6e7ac9e9f8a8074a75b6dd3084f4a4dc1913a6ac0ba67c3ef5c70b10b4c474c8"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2005/2005-12.json",
+     "filas": null,
+     "bytes": 51784,
+     "sha256": "bde1680b36aef9f9ec6350d68927ed325506bfa0cabddc6eb80a514282a10707"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-01.json",
+     "filas": null,
+     "bytes": 63108,
+     "sha256": "b4f7c8a3629caf5097fdf3de787ef23020c5d3dbe24646df669a813cc2f6ce9a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-02.json",
+     "filas": null,
+     "bytes": 59472,
+     "sha256": "9821250801005ae275fd0d912145cbdceca33b3a0171e7df95f2c21e5b393e3b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-03.json",
+     "filas": null,
+     "bytes": 59110,
+     "sha256": "cb0ffa9eb352d961cd1b46e19c8ca6df25349720e64007be24158571049faec1"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-04.json",
+     "filas": null,
+     "bytes": 54176,
+     "sha256": "da6668a35d756f1ea498f672c3f81dee7acf10658d7de8842d142ceeb2a75626"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-05.json",
+     "filas": null,
+     "bytes": 61635,
+     "sha256": "d6db1500dcdf95a2028fab663ffa1eecac56fd9a97f6023069b9a14a9c882512"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-06.json",
+     "filas": null,
+     "bytes": 54708,
+     "sha256": "5c5c02da5c956c92b46199f023326effe86aa4b76d398f660623e8e61f7fc397"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-07.json",
+     "filas": null,
+     "bytes": 57489,
+     "sha256": "40057407f5b66bd53d7eef0107e0ce04820fa6ec6edd3af530692c079e8d819d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-08.json",
+     "filas": null,
+     "bytes": 62652,
+     "sha256": "34d054227fc1555093333fadb5a542ab5ad6db62b935db00296bf5a71e19f1ed"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-09.json",
+     "filas": null,
+     "bytes": 41114,
+     "sha256": "709ccba1f11fe3a14b62617201a96d936ec5c881977e42c1d3a0b715c37a5577"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-10.json",
+     "filas": null,
+     "bytes": 47750,
+     "sha256": "8780f1971689a2518a256e38a8ba36f2913141c98e85386c6d743818884e0a3a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-11.json",
+     "filas": null,
+     "bytes": 45691,
+     "sha256": "856d682833aba35c202b000ddd6befb7d087b2666f3b41c835a9dedd777028eb"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2006/2006-12.json",
+     "filas": null,
+     "bytes": 55847,
+     "sha256": "2f9d0329bf707013b1630c132f1b7afde255adca3b036932dab95517431481a3"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-01.json",
+     "filas": null,
+     "bytes": 63205,
+     "sha256": "8ce96d58a866df2c6a825c9181fd00104c2a4fb75f722c6666986b1df17c7bf2"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-02.json",
+     "filas": null,
+     "bytes": 57692,
+     "sha256": "722fbe8e0e2f261c89750d6070073f3d113763bbc17cdedb2a0cedd93d39eb3e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-03.json",
+     "filas": null,
+     "bytes": 57266,
+     "sha256": "755d0cc57238bfc033c3ff2e5504184a9a47ce6c4ce3b173b629505ef7ae1212"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-04.json",
+     "filas": null,
+     "bytes": 57586,
+     "sha256": "672cebf0da83b8f1ab22795783cf68e6f5656205bfc89050e823269ca8a1a8c6"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-05.json",
+     "filas": null,
+     "bytes": 60916,
+     "sha256": "412ef8d261cf473bc51f8a08bae3c231c8c0b552f01c1f501eff7777d3baabda"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-06.json",
+     "filas": null,
+     "bytes": 52924,
+     "sha256": "d306ae2e7f26499d39c69afe0dec86a3ac81a16f1f6548df1d52d290fac29b7d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-07.json",
+     "filas": null,
+     "bytes": 55015,
+     "sha256": "d673d6207f7653faf28aef7941397b0d4dbfe00baac39c343d4e47a05b46a4b4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-08.json",
+     "filas": null,
+     "bytes": 64859,
+     "sha256": "f35cf1933974ab9213db2be4730c0773770af13ee29900ff9ffb6599cb5f3724"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-09.json",
+     "filas": null,
+     "bytes": 47670,
+     "sha256": "41cd0915a8d0158acf3692525d0c1df6ea287f4a22905dfe7d7be481c09aa641"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-10.json",
+     "filas": null,
+     "bytes": 52484,
+     "sha256": "78db36b5d207d7ce1df214a28890ab6710507820c733da93a5c94a98ef5f0136"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-11.json",
+     "filas": null,
+     "bytes": 42651,
+     "sha256": "81aaffb16d2bac96f31d2b025e4b121f022970edde123c5a7a09b13225b37f60"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2007/2007-12.json",
+     "filas": null,
+     "bytes": 55072,
+     "sha256": "3f8f26a78cfef6a5c87d3ad97e809d05f77be8b9b0ef62a480ea50668b5ae93e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-01.json",
+     "filas": null,
+     "bytes": 62477,
+     "sha256": "8640f7f223ba9322c7e74a55a32e0ca65746c5bc42b22965537d26de546519e5"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-02.json",
+     "filas": null,
+     "bytes": 60591,
+     "sha256": "64dbbba23d16bf9c9ae776230b0ec8daf167ccb0b81f844bb945a0daa97d8df2"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-03.json",
+     "filas": null,
+     "bytes": 66276,
+     "sha256": "f91718810ea6d11ed2fd24a1a43c47743cc7566dc6b9d531e2c2a764b5379792"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-04.json",
+     "filas": null,
+     "bytes": 58358,
+     "sha256": "66a9d7c1d68d91bb5c3331b8eedb414d1ac685209fee266333c9dd17ca385b1b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-05.json",
+     "filas": null,
+     "bytes": 61026,
+     "sha256": "6e34d25915344ee4a43ee8135bcbac6639f548ba87ce8608b4a5b5cb02ec5ebe"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-06.json",
+     "filas": null,
+     "bytes": 56264,
+     "sha256": "59237b2b0e4c09aa32b4bf7c963223658057ac39c8dba40d9a81ecb2db798c29"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-07.json",
+     "filas": null,
+     "bytes": 55041,
+     "sha256": "23a136fd13399e48b61cbd8c5678ff58f1a4bd719fc189094ca1ab1d1a6c57b2"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-08.json",
+     "filas": null,
+     "bytes": 66786,
+     "sha256": "96b62bc9e7c423e073189c829aafe12c3faa93b7eeff87ab3e501db40fb80c6e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-09.json",
+     "filas": null,
+     "bytes": 48436,
+     "sha256": "a6b6dde9eff436e883f744a9e479599e90cf4a394d7445e921407b38d0d66fa3"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-10.json",
+     "filas": null,
+     "bytes": 52808,
+     "sha256": "28c3dd2a9202eae4e4a22b4f1e1512bb6a7c94d441b0617465ee9cb14c5b971a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-11.json",
+     "filas": null,
+     "bytes": 46193,
+     "sha256": "a421903b89836bb5121b7398322269fb4a4b24fc31a08e906aaa965c08d363d8"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2008/2008-12.json",
+     "filas": null,
+     "bytes": 48669,
+     "sha256": "5790e4462b2ad7890a12c71e45a688c16da81ecebff3476bfde3612a89819e60"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-01.json",
+     "filas": null,
+     "bytes": 65245,
+     "sha256": "9f85dca34cea5e489b3c529dac3469c810950aef65d84a167edb7b87a4958da3"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-02.json",
+     "filas": null,
+     "bytes": 58700,
+     "sha256": "2a233f95e2c4c3e679647ed5d53cdb29f036fb2f7f7ec51415a29b287f17290c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-03.json",
+     "filas": null,
+     "bytes": 60702,
+     "sha256": "c43cfd15b3806a01099426631e293bd4884479c335012da0ce47c99125226b54"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-04.json",
+     "filas": null,
+     "bytes": 54377,
+     "sha256": "4395c51421e640dcd007d44dc94cfd48f7176cfed64030b24c636ad288838d73"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-05.json",
+     "filas": null,
+     "bytes": 61782,
+     "sha256": "9bc685fd0496fd8cb32ecf469926ed1a1232790e3016f1f9544a6701aa529a25"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-06.json",
+     "filas": null,
+     "bytes": 53941,
+     "sha256": "e2e7152c9aa43684333070242b550a6c347da076dedf9bd74b8e5c9b3207b64e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-07.json",
+     "filas": null,
+     "bytes": 54517,
+     "sha256": "5ca6cb601af491a6351691f90131bc5a2721f31a1a03ba61b14d39947fbdb770"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-08.json",
+     "filas": null,
+     "bytes": 64436,
+     "sha256": "a73aa49f12a6962f4d82ad7fb07a270a0e57d965e4febbbe772edaf06f3d16ed"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-09.json",
+     "filas": null,
+     "bytes": 40413,
+     "sha256": "2fca48fb12940275a2a151a648baf19d9245fe0c98d5bd08f692924f02b46f9b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-10.json",
+     "filas": null,
+     "bytes": 45816,
+     "sha256": "c636a3a9d453f1a4424e8383d122088502acd0f101a1d74baa57fb39daffea15"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-11.json",
+     "filas": null,
+     "bytes": 43902,
+     "sha256": "e16bc901528f0d34e70cbc21ce7dca11cf84e0e92d26cecc8749687f64d0f4a4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2009/2009-12.json",
+     "filas": null,
+     "bytes": 48254,
+     "sha256": "ad7e0a296146fb70237aa1f00e7ea9257ef41bcc160e581db074ff5ac140e709"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-01.json",
+     "filas": null,
+     "bytes": 61908,
+     "sha256": "2706301a7040fe82ee162dfb772f437bd1be33e039e7b034917834cc44570e83"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-02.json",
+     "filas": null,
+     "bytes": 52855,
+     "sha256": "c6b5b49f125943fb42364a5b9548e50b6faa39e962b664335b7ae5b0c1332b4e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-03.json",
+     "filas": null,
+     "bytes": 59910,
+     "sha256": "654bba2ba0fd54b89555f66aed3149157fa1983fca4885aa43a26f8a12d88efe"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-04.json",
+     "filas": null,
+     "bytes": 57337,
+     "sha256": "4157a4ec040bc9661b7fe7262e4b417109ff1a7bbcc624e49eb390951e96928e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-05.json",
+     "filas": null,
+     "bytes": 61376,
+     "sha256": "78022726f8ff1f35bbb7820ae3304e8f9dc6be694838f0f816ae0f339a131e76"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-06.json",
+     "filas": null,
+     "bytes": 54259,
+     "sha256": "232ca3a7ed2341a60af8bb0302215bd937253b88350894b04167a33df3715beb"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-07.json",
+     "filas": null,
+     "bytes": 58720,
+     "sha256": "140aade290a964d053e1ea78f9a5ea69832d033ccf645e3af0533cbb5c0b6480"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-08.json",
+     "filas": null,
+     "bytes": 63052,
+     "sha256": "c972986bf2672cc0e33b3a6fd882e8e5a0c9baddb37b163ca8c9ff171ff4f936"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-09.json",
+     "filas": null,
+     "bytes": 58372,
+     "sha256": "547bf5a6ba1c12b24ddc08eb4bab188227d0e3b0d358156b35a1572c9144c4ac"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-10.json",
+     "filas": null,
+     "bytes": 52998,
+     "sha256": "bf2d9ecf3b2d9a8e3b671bad8a027a1373ed870dead126e6d9edff32229a1ad5"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-11.json",
+     "filas": null,
+     "bytes": 53877,
+     "sha256": "16cfc573bae1734777ae2ce9a51939586ef157280a61e5f66877706bbc815bcb"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2010/2010-12.json",
+     "filas": null,
+     "bytes": 60005,
+     "sha256": "b77cb4e27a0dc65e7d8c30184d40a610fcfb07a645cf9ba85b902b363604f942"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-01.json",
+     "filas": null,
+     "bytes": 67820,
+     "sha256": "4b125e55ef9b89f8c0401150d61949d622e067cb25a3a0d636263885ba3c5190"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-02.json",
+     "filas": null,
+     "bytes": 61002,
+     "sha256": "d0540eecfe96c959bae0df17020f9df7de0295281f6cc22e2cc63bcceb2a7d16"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-03.json",
+     "filas": null,
+     "bytes": 56978,
+     "sha256": "8ee144069003df0572a57898fef06888a61b6bebf8e37748ec3bb460e74b2b8e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-04.json",
+     "filas": null,
+     "bytes": 61414,
+     "sha256": "b4b4c1fabf52d5a332b870a9ee28ca7749b26409a67a66e1d0ca74eb5e1edccb"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-05.json",
+     "filas": null,
+     "bytes": 60507,
+     "sha256": "cc79e3e925eaec83dfc790a16b55900b102a39cdbefe8b5076df27c393f5e738"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-06.json",
+     "filas": null,
+     "bytes": 52105,
+     "sha256": "6f5ea59621c3cf083d861f6005529fa565c9908b2536002da79aa63af842d915"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-07.json",
+     "filas": null,
+     "bytes": 53486,
+     "sha256": "c86d8cda7977d21d6faf6d0a04dd0d0762abf04e2d13933b25b62b1c26a88e1e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-08.json",
+     "filas": null,
+     "bytes": 64314,
+     "sha256": "3b67883cd37a4db8fbb4904a7c332541e290ed45461dedc8b6451a2ef3f4f5ca"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-09.json",
+     "filas": null,
+     "bytes": 48680,
+     "sha256": "a4e8839b6c1c53cbda58f8b154dc6e901cba08d008327c09d6fb584edf52d001"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-10.json",
+     "filas": null,
+     "bytes": 52098,
+     "sha256": "da66c7a4b001466cb541121d29af388878e4b5ffc718a02014b0e9dbd64b5161"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-11.json",
+     "filas": null,
+     "bytes": 57788,
+     "sha256": "ef3365662a8b350a0f2e289de5522364da48fe9666b9a9046d75ecb3f2b576ce"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2011/2011-12.json",
+     "filas": null,
+     "bytes": 50652,
+     "sha256": "2c67cd2e0963fa8aae6b06b0f3670a00b10955ea4f26e0ecfaa078994a963026"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-01.json",
+     "filas": null,
+     "bytes": 63281,
+     "sha256": "33149bac3f81a6539daca2c1ce46bd1ba6486c1fbcf500a29703eaac7c862fe7"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-02.json",
+     "filas": null,
+     "bytes": 62311,
+     "sha256": "e506c42fe8012c6dde18c3e13c35184b6383ac91644ed69d84f3813db4ea238c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-03.json",
+     "filas": null,
+     "bytes": 61130,
+     "sha256": "8c92ebb7af8ae1cfd20dc76d78b635ff68e027025d88b514ffa7aa7a6d9774e0"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-04.json",
+     "filas": null,
+     "bytes": 60671,
+     "sha256": "9e8b1c010a18f1743d7fabe6bd5741493b53dec9d26977e68b97e293fa19d3d7"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-05.json",
+     "filas": null,
+     "bytes": 60173,
+     "sha256": "b4678a063fee2742dda29dd9e88efbcd5feba83a072df50b61621b8b60aa2ecb"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-06.json",
+     "filas": null,
+     "bytes": 53969,
+     "sha256": "2ab71bc0c0c48504e2fcf09fcce5ebe69048ca0a3193d856557e9953769a4633"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-07.json",
+     "filas": null,
+     "bytes": 54595,
+     "sha256": "ef6d4019118cf58d8d6b797a43b4e00fdc87933532f7d951a6241568461992a6"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-08.json",
+     "filas": null,
+     "bytes": 62813,
+     "sha256": "9426f08e6f2c3010d69b29377fd8430abe6c9158933b84445df5fc4253470053"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-09.json",
+     "filas": null,
+     "bytes": 40205,
+     "sha256": "e409306958f76d7e0d9eb2859ce127f94118bc61badd0364979cd70038de1090"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-10.json",
+     "filas": null,
+     "bytes": 56604,
+     "sha256": "a74fc1b043a97ee7aed16c7d35bfdf2af9f4183626e65d0452677301108dcd9c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-11.json",
+     "filas": null,
+     "bytes": 45649,
+     "sha256": "df4d29df03f288d6503690befbe54247fdec6d8f4155d429478857a89788bd87"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2012/2012-12.json",
+     "filas": null,
+     "bytes": 53060,
+     "sha256": "f8cb285b874bf5f3f616af606ac40bb155c147113b230430a3a882cbf6f94087"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-01.json",
+     "filas": null,
+     "bytes": 62745,
+     "sha256": "deb889c3f3091a42a7db28baa2036d0f1e1ee5cef8b6cf18ce3a2ca8c5d69b03"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-02.json",
+     "filas": null,
+     "bytes": 56654,
+     "sha256": "26338f9fa190a3fa2ba327e908cd8de63290d33f1a4d15e6244879b286c26a2b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-03.json",
+     "filas": null,
+     "bytes": 60500,
+     "sha256": "f26bb16e6f761948c77f7f5a3d1e7f8062665eaba4415862291830a8e35e84f3"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-04.json",
+     "filas": null,
+     "bytes": 52701,
+     "sha256": "feeddabdb87d52fd9e6fc226fc24ae7245420b1365cdc0aa3f14985338790813"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-05.json",
+     "filas": null,
+     "bytes": 62077,
+     "sha256": "31b560f837eeecf42498e5bf6be25e4677131667660a08d187daae26ef639511"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-06.json",
+     "filas": null,
+     "bytes": 52879,
+     "sha256": "45b5e764d85ea9d97d002bd2a8bc9c322afe7c1c63f18c13f579e92e741bb3cd"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-07.json",
+     "filas": null,
+     "bytes": 57414,
+     "sha256": "8e858bb9a6d8acb91b84f6e9faeb7e6e611e29242aa9d596885f0b3f2c93f625"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-08.json",
+     "filas": null,
+     "bytes": 63391,
+     "sha256": "cf0083b5d45aa3e850c5abef8fc503ba36f0f9794e6e8f496fce609d9fa0f174"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-09.json",
+     "filas": null,
+     "bytes": 46572,
+     "sha256": "d2d8ad1f08732e3580f7fc46fbe1305c5690802f7540262ba7c71e1682c1f1df"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-10.json",
+     "filas": null,
+     "bytes": 50745,
+     "sha256": "f5d62d8817bf45b9eda3b86c85f4f8ff074cbfb26d507a73e19045f65e5206a4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-11.json",
+     "filas": null,
+     "bytes": 47986,
+     "sha256": "1f0628ebd58097ace1c83ce7351fc43adb6ace3bba60c4afc6e0938cd7c804fb"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2013/2013-12.json",
+     "filas": null,
+     "bytes": 47193,
+     "sha256": "f6cc28e588a6ad135e6258b277597926ba0202d2044be17d4d04616f41836d59"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-01.json",
+     "filas": null,
+     "bytes": 62340,
+     "sha256": "d8138eeb71bb90067f278fc7b9fa58991a89db01e9ab62e234359ee2f6fefca7"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-02.json",
+     "filas": null,
+     "bytes": 55715,
+     "sha256": "7186d7aaec40b3a93f5e2e37126dd04338bdeaccd01dbcf0104ae76c4a264913"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-03.json",
+     "filas": null,
+     "bytes": 62029,
+     "sha256": "634573d19669259e041b082305881966cfe90d79109aee72fd2964f9224dd30b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-04.json",
+     "filas": null,
+     "bytes": 52856,
+     "sha256": "398e3958eeb74b09a5e5c503a5534aff383dc0cbe831f597fc9d170c94fee581"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-05.json",
+     "filas": null,
+     "bytes": 61354,
+     "sha256": "ede7bcd11c5ebaa1c44d53d47e2b2bdafd5a0d6dbeff41b6470c1f1911228b36"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-06.json",
+     "filas": null,
+     "bytes": 52024,
+     "sha256": "a83a669ce4b8b1b2e6d4a2d5f9d6f04f431cb6fe30dba71b604c368f3ae77411"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-07.json",
+     "filas": null,
+     "bytes": 56730,
+     "sha256": "49054dd1f2fa1f16007cb7a799652c282435049f80b089784aeb92b6c08a0b4a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-08.json",
+     "filas": null,
+     "bytes": 62737,
+     "sha256": "834b9cc996c15c550f15e37f1ad25623a124f1bed5638322e3756db6ad2f158a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-09.json",
+     "filas": null,
+     "bytes": 42807,
+     "sha256": "9d9d307ec126587b4afa6d6ac76b31ce84b212807bf48f9c91b650dc65ab7af5"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-10.json",
+     "filas": null,
+     "bytes": 43959,
+     "sha256": "9d6845852c446ae92d8768721f6ca7fe42408395818ed15bdfb22b20a06e6045"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-11.json",
+     "filas": null,
+     "bytes": 44135,
+     "sha256": "c2af37fb9937854ff79a9dea604ea6a02cab3c7f23725986ca5d707b9f4ccf89"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2014/2014-12.json",
+     "filas": null,
+     "bytes": 52435,
+     "sha256": "d4ce97831bcecc50d0485f9f81384ed9eb499774bc2fc24ee4e74e7589039740"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-01.json",
+     "filas": null,
+     "bytes": 62790,
+     "sha256": "4ab4fad83236b41775b6c7621d164691899ab5d860763881291b0e9c4ff821d4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-02.json",
+     "filas": null,
+     "bytes": 53901,
+     "sha256": "aec173eecd5afa0fd696026e002f4ea8066a435f00548a34eb4e61dcd37888f7"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-03.json",
+     "filas": null,
+     "bytes": 59131,
+     "sha256": "637a15a57eab348eb0cd3dde2b98372bbe802bd34e6e43f0463751456bc32c6a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-04.json",
+     "filas": null,
+     "bytes": 55724,
+     "sha256": "d37ba6307f6f32bc9d13571b5e350884436a13a38e83bd774fbb11e46fae6219"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-05.json",
+     "filas": null,
+     "bytes": 62906,
+     "sha256": "766a77187ba910a5ae0bc828f2ed36b4d9cc3d59519d0cda23bf6a69959ad97d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-06.json",
+     "filas": null,
+     "bytes": 51191,
+     "sha256": "a3f8fd3874fdfd5f9e063bc8038adce89fcc7a7aba1f20c41d84450350101ce8"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-07.json",
+     "filas": null,
+     "bytes": 53569,
+     "sha256": "6a3f33891fd2a5bba8af56a6103d99632812fca83b22a7313eb635ea61ee6edb"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-08.json",
+     "filas": null,
+     "bytes": 63703,
+     "sha256": "5deb23f759cf54668b66006ca10b3004c0878718179186eb28f0b6997dd36913"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-09.json",
+     "filas": null,
+     "bytes": 40577,
+     "sha256": "9dea16dc54efa8035de7a55fb2f2ac271ceacc03c2f686d86455d0dd0b528cf8"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-10.json",
+     "filas": null,
+     "bytes": 41187,
+     "sha256": "a8cf0c4f94847f5c7f5366c253896b224c71c4866ac75180920e743314b86d28"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-11.json",
+     "filas": null,
+     "bytes": 44628,
+     "sha256": "9d6dc9acc547c2b10ac01858e0e09c98f84bff3aff2a212b0b89f9e7bb18f76b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2015/2015-12.json",
+     "filas": null,
+     "bytes": 46298,
+     "sha256": "3fa19e4c59519729bfd4426dd1949f205ca2588ab77d32b5e7d56b1a1ea7193f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-01.json",
+     "filas": null,
+     "bytes": 62700,
+     "sha256": "5003901c3e67454d072a621ebe11d5f61bd21d5b9b44ad3ec1076d5c0da382ad"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-02.json",
+     "filas": null,
+     "bytes": 56549,
+     "sha256": "cf83e2005adbd7c1dbbdbb85cd21d7aac7817b46d5fccaf3bf3a08417cc82721"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-03.json",
+     "filas": null,
+     "bytes": 60860,
+     "sha256": "7551aba53d27f1eff4c2dc2f6dcf158b79715d5d7e12eed7924c95abab76a007"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-04.json",
+     "filas": null,
+     "bytes": 55248,
+     "sha256": "912971377b1ddfc30cdd6f9f73ba15be794cb5ca5cc6fb57801959138ecbf3b0"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-05.json",
+     "filas": null,
+     "bytes": 60419,
+     "sha256": "40f14fc18884844265efba9c3f4766fcfd4055f1e230b67f2b3695e8e5052925"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-06.json",
+     "filas": null,
+     "bytes": 52978,
+     "sha256": "d64b2022b61af419e7343bcff62defcf6b9891bd2b2e85ec14a0cb002369afda"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-07.json",
+     "filas": null,
+     "bytes": 56868,
+     "sha256": "ae95e539d3c05b5aecc2a0ac99f778b90ae157fe98c8ae4192020166fec39883"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-08.json",
+     "filas": null,
+     "bytes": 63385,
+     "sha256": "2ca59a7704c2e82aefa56587d6e5385f53a6f2836484383679a572b705f25f0b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-09.json",
+     "filas": null,
+     "bytes": 44063,
+     "sha256": "0934619f0edce0cdbdfbea37042983846189a49aca6260f9c10fa2e01be4dc83"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-10.json",
+     "filas": null,
+     "bytes": 43039,
+     "sha256": "63254c135c7dcc6e7fc33454f5683efa305417dd0de575fad8ad02462ecb2bc1"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-11.json",
+     "filas": null,
+     "bytes": 39211,
+     "sha256": "4ee4625a54cf471137c2915dab1cbee27bbc01a07f323ea97b0b11a380b3da21"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2016/2016-12.json",
+     "filas": null,
+     "bytes": 48946,
+     "sha256": "2ae4396ad7bffaabcab22c3a434f1b0724ed998ab3cbf8d965b4bdb8286a542c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-01.json",
+     "filas": null,
+     "bytes": 65664,
+     "sha256": "cbfff6b13d37160181082a37aed06882e97d2d2833c5beedb75ec41a1dbb77d9"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-02.json",
+     "filas": null,
+     "bytes": 62611,
+     "sha256": "7595f1b16b34f2715b18bd55479f56638c8b8932cdf8bf97e6eede0817c4e0c5"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-03.json",
+     "filas": null,
+     "bytes": 70313,
+     "sha256": "b32f2c6247e83408accd960115f75d591ad28488b9d2b2e233676fc0eef745b1"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-04.json",
+     "filas": null,
+     "bytes": 56174,
+     "sha256": "71d650e364fc7dea3bdd36f8de47958c3550b37c987374094464b8da5d4d194b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-05.json",
+     "filas": null,
+     "bytes": 63276,
+     "sha256": "0a4eebda330b363c1118701bf260bf71ce0c6d9a77e6e149aa433b1511bdcb52"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-06.json",
+     "filas": null,
+     "bytes": 56219,
+     "sha256": "b23ed409e701355d5ab0dc69be3d0237076dba5abf2fb6212e3ff53cb847729e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-07.json",
+     "filas": null,
+     "bytes": 55491,
+     "sha256": "f992a91c03284c6b19aa438a8e49c60fe18234e0a6b2e378d66235699cb60404"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-08.json",
+     "filas": null,
+     "bytes": 64845,
+     "sha256": "b11d7f1288505137c1eed07d44fe40fd3d3ce24e1a10775f7e3c51d26e41d1f1"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-09.json",
+     "filas": null,
+     "bytes": 46747,
+     "sha256": "569b8eb48a67a9d8e1dd9afb5ff8445de6b3f05e70a789dcc47c2b3fd7b2d028"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-10.json",
+     "filas": null,
+     "bytes": 44961,
+     "sha256": "7c4ba0007ecba57732512966d95134312f20c46f3c22e6f555220bec021467b3"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-11.json",
+     "filas": null,
+     "bytes": 46250,
+     "sha256": "c79a706a12f1ff1420306a5d23974d0755c58fc273f1f1ff83df2de2756b7c61"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2017/2017-12.json",
+     "filas": null,
+     "bytes": 49666,
+     "sha256": "4f30ec9d499f9812fcfa33216aa9043ce2b27013ff53f661c73a9b10c710de77"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-01.json",
+     "filas": null,
+     "bytes": 66204,
+     "sha256": "72fe6c8bf2a8dc78c1b44baa0013f424506bd9c2fa6c93b15febe5704e2a75f2"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-02.json",
+     "filas": null,
+     "bytes": 52999,
+     "sha256": "1d72f0cf7f4023b1de8863efa2093f26ba7029b80909c9cf0f0908c58cc8c92d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-03.json",
+     "filas": null,
+     "bytes": 56692,
+     "sha256": "487e7e137c3901ee0afeca9eb1d2916d9587b63bb8ad8d0caa81ac2ac5229944"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-04.json",
+     "filas": null,
+     "bytes": 56842,
+     "sha256": "0a2df735344f97f130a6775a2944edd51420e7c328da69b6de21f21e990abf8e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-05.json",
+     "filas": null,
+     "bytes": 60415,
+     "sha256": "8fa73abfca63d18e460a68109003c3ee58a486c86dac18d2dccada1f05df460e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-06.json",
+     "filas": null,
+     "bytes": 52644,
+     "sha256": "181f23951a080d0629fda048718b8f7f7d986cdffc488949792ad310a3c7ce41"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-07.json",
+     "filas": null,
+     "bytes": 54645,
+     "sha256": "3a0fc556827ee4c3536f8afbe3df1f2f2abbd7ad599e0c539214eb22f541b456"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-08.json",
+     "filas": null,
+     "bytes": 61693,
+     "sha256": "0429e65f4b16e7ba86a642a0008dfce2817f9769a6b7cac7a7f4beb4e36d0a60"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-09.json",
+     "filas": null,
+     "bytes": 42696,
+     "sha256": "f7faac98a45733b4c623fce4c98d2a0bfedb90fe03faf5db2630bc7235379d37"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-10.json",
+     "filas": null,
+     "bytes": 49368,
+     "sha256": "0aecb6a7895abbb74a99c3ec2f2730d3b56fa349a2bc0856a5a6fe650ff68cce"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-11.json",
+     "filas": null,
+     "bytes": 48992,
+     "sha256": "19e0bd6ba384f00711f4e3562a4fa915969cd018a0397c10561d8f8a72f53f74"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2018/2018-12.json",
+     "filas": null,
+     "bytes": 50726,
+     "sha256": "012ca911369d67adc351be0e6e2483ca0db28bbb5bfde3d1724e2cb5547b4817"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-01.json",
+     "filas": null,
+     "bytes": 63684,
+     "sha256": "52e496e8f27aa82a557c1f1d6350497c08542c5dd538d118784f609e25a60272"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-02.json",
+     "filas": null,
+     "bytes": 56594,
+     "sha256": "367074bd2b1f24ff9c6744313eb2f20184d383d5e0732f3e854eb5e06ef9822c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-03.json",
+     "filas": null,
+     "bytes": 60827,
+     "sha256": "ab89469c663a35ec7db642389f8c8be7e2c7701107f3ba3ad919503b78c79e28"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-04.json",
+     "filas": null,
+     "bytes": 53758,
+     "sha256": "ec933654b90ee36d43b1b6193376295cb2a3440b0ba6f6924a2ce127025a0ff3"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-05.json",
+     "filas": null,
+     "bytes": 62038,
+     "sha256": "17abbca6a3343a19a5e88fb71428407d543fc4d20931b272dcef369566de322b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-06.json",
+     "filas": null,
+     "bytes": 50755,
+     "sha256": "0e571845deee07c8044a5800177162cd0859f43758ed5f1c9ccdd009048ca636"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-07.json",
+     "filas": null,
+     "bytes": 52904,
+     "sha256": "5b9be104aa3f3f8ffd817aeead415c7ca1b10badd55c1c9422f323def3c265a0"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-08.json",
+     "filas": null,
+     "bytes": 61572,
+     "sha256": "01e6eaed045e9c69d403f6fa3ead4ff8e6745567ecc72388e00022bcbbd436e4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-09.json",
+     "filas": null,
+     "bytes": 49923,
+     "sha256": "876140676b3b5a3a5c1058cc4bdf90072c8130f28692ceeb1f49e92b89b99506"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-10.json",
+     "filas": null,
+     "bytes": 52562,
+     "sha256": "39a60715abbc64d75aea95d471560a72284726cc3ad5643f01288949df135871"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-11.json",
+     "filas": null,
+     "bytes": 47947,
+     "sha256": "ec8a25d8f37b3a8a243a32742649e9107f8d2227a23c4c5977e9a7a07b688a86"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2019/2019-12.json",
+     "filas": null,
+     "bytes": 53943,
+     "sha256": "4fe074753b944c16e131097fd055cc4126cb3a42a7f3f636c1bdb4f68d79c2ac"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-01.json",
+     "filas": null,
+     "bytes": 62394,
+     "sha256": "ebfdf3d7c3d54df34b38739804b34006a217556e636ca76bed3ff42e275ba5a5"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-02.json",
+     "filas": null,
+     "bytes": 56719,
+     "sha256": "833e73c7bc47b7e1d399e1cffe43cf61e90b369f80b8723689c5789e326d5f44"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-03.json",
+     "filas": null,
+     "bytes": 55212,
+     "sha256": "11009cb4c9227e2626c49f94220127a2cba3c52a63d7cadaf8462666f3e8875d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-04.json",
+     "filas": null,
+     "bytes": 55985,
+     "sha256": "8ebeed20b799edf9348ad37a5d52af69f8e797d16d0201eb10a8a0ad030be5e1"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-05.json",
+     "filas": null,
+     "bytes": 60591,
+     "sha256": "8794710b7da581eccdfd69468e64a5ba8e4dcfe9cf7a9effcf3e46b12f0cb2cd"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-06.json",
+     "filas": null,
+     "bytes": 51043,
+     "sha256": "40f4622811d12f7296ba65998cdfdb4f17906cd2b9f590ca4998050154e37e0c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-07.json",
+     "filas": null,
+     "bytes": 57451,
+     "sha256": "5809eaeca5b912e7629a8b34e55e0ff97b2e2cd11480fe12ad6b52f588904e99"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-08.json",
+     "filas": null,
+     "bytes": 66385,
+     "sha256": "3d15d16260bc65f17d3753068cad0de19123ee5461d1c49d8c0d353f823a51ce"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-09.json",
+     "filas": null,
+     "bytes": 45524,
+     "sha256": "553dc11e61a6ceb00f60077f3ab3a81efce67668eb94ac991f21f56e0498680e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-10.json",
+     "filas": null,
+     "bytes": 42585,
+     "sha256": "d9efd69ebac771a85c79d3b86f1304d7979c2658c40272f85f0ebefa2d200410"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-11.json",
+     "filas": null,
+     "bytes": 47557,
+     "sha256": "e2019d18c799b3334b520460be5b153e2331a39558e21c12b06defd40cf7fb87"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2020/2020-12.json",
+     "filas": null,
+     "bytes": 67033,
+     "sha256": "6ce464a77bf7aeb1bc79b463ffebd5287744e899727f5809a25cffd2cd155684"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-01.json",
+     "filas": null,
+     "bytes": 65225,
+     "sha256": "f539cab4d9bffb9dd619778a15b60fa57fc31899d542c8431ad0c2314e17d932"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-02.json",
+     "filas": null,
+     "bytes": 52735,
+     "sha256": "3b6f8c644cf5da7861915e1e3af74f6a27dc1aa206f06f2daa1a28b9201502b6"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-03.json",
+     "filas": null,
+     "bytes": 61071,
+     "sha256": "dc3032877cee2993244ac48d4cfc131f58896cf03dff858cff275dafc15c6b62"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-04.json",
+     "filas": null,
+     "bytes": 54418,
+     "sha256": "e31c1f49935fed7586c48f9ff04551f9740e3fbb60c96067064f6cb21da51269"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-05.json",
+     "filas": null,
+     "bytes": 59134,
+     "sha256": "7908cbcb2ca0a0efdda1e5c8c91b7fb2c667489a33a9e8d0c589bc9dbaa04e5f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-06.json",
+     "filas": null,
+     "bytes": 56024,
+     "sha256": "f409d74a472950f3b0d40fef65245573c5ddc4bc15affdc5de9b8b0210d7be19"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-07.json",
+     "filas": null,
+     "bytes": 54994,
+     "sha256": "c7597591651b32e9e7611676cee53bf6353556f78aa083073878b90acc8be81d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-08.json",
+     "filas": null,
+     "bytes": 66266,
+     "sha256": "93e8aa540a988c735fe4cfe1442beecf71e36f1eaaf49c7037c87740bec5c979"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-09.json",
+     "filas": null,
+     "bytes": 51721,
+     "sha256": "a31f6701129924f60a440742584fc9dd61c6b9d73568c592d561fbb20c671d7c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-10.json",
+     "filas": null,
+     "bytes": 55546,
+     "sha256": "efada5698ac4ba18b9c4b7aa8fdeea13fb8a5e66aea5f27cc80f6aa357fff50c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-11.json",
+     "filas": null,
+     "bytes": 49480,
+     "sha256": "5233c4d63aec0c7d0385d951a5b13fb0affe5a2b191ec4c7aa00531748e0ce0f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2021/2021-12.json",
+     "filas": null,
+     "bytes": 52007,
+     "sha256": "4bba7e3fc6621a9022a2fb05bd12f0722ed8b3b2256a5cd8f2f413162ee93ad2"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-01.json",
+     "filas": null,
+     "bytes": 64923,
+     "sha256": "82afefc5f64dfada0162e4f8d44ea0522f27229145debb4bddb9e3702caad97c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-02.json",
+     "filas": null,
+     "bytes": 54813,
+     "sha256": "d7815b5c5e2aa0c32b02876e9d6296e0ca680b8ab526ca13b19c39df43773cb4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-03.json",
+     "filas": null,
+     "bytes": 62062,
+     "sha256": "d13e5b25375a4be1bcd86faf1f77d41b7d3a5bbd0930d00a4cc3e9afd795a352"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-04.json",
+     "filas": null,
+     "bytes": 56377,
+     "sha256": "15f443e1ad200244dd0e94b95bacf9300f5f64599277ef028cf7dc82e12ef252"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-05.json",
+     "filas": null,
+     "bytes": 60987,
+     "sha256": "6932398c7661817e7d884d3ecd6189873fca119744fb14f1ac7654e0598ad333"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-06.json",
+     "filas": null,
+     "bytes": 53442,
+     "sha256": "4ce905e4168d58700175dc76fd3363faf0e72964789124073e8484ccb50fa2d5"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-07.json",
+     "filas": null,
+     "bytes": 57839,
+     "sha256": "03071243980cc9bcf94fa0e8a1dba57504498bc73529a86be99bfca2409a92fa"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-08.json",
+     "filas": null,
+     "bytes": 63214,
+     "sha256": "28c8c4de99d53b58ca6b901d04eb373cde52fe1ac82a42d9174b51caf9a2b37b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-09.json",
+     "filas": null,
+     "bytes": 51751,
+     "sha256": "68f5e81d03a524544d542724a8a5713994b991c01581d497d4cc89511d65f16e"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-10.json",
+     "filas": null,
+     "bytes": 46430,
+     "sha256": "984ca9d7ae69fee6d9c7cc649a070921ec9337b5cfbb143bc07431e718d62325"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-11.json",
+     "filas": null,
+     "bytes": 42430,
+     "sha256": "e452387ef45641e737e0d1cf6ae3559dc3ad0884a940115650bf1b275e4e0983"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2022/2022-12.json",
+     "filas": null,
+     "bytes": 53023,
+     "sha256": "26156db832928a28a58eb77e97de249f1b8c5808281c73aa87b5abf9e9cdea32"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-01.json",
+     "filas": null,
+     "bytes": 65973,
+     "sha256": "6dcdf4861cb6e369ac3a51c32e0c774641262a0f32f51817d28cae90682014c3"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-02.json",
+     "filas": null,
+     "bytes": 56788,
+     "sha256": "ea56b809eb3b8174496ec35ebdea681fcc54e0ea99f1495c6bd2615756dab856"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-03.json",
+     "filas": null,
+     "bytes": 65603,
+     "sha256": "caaf3988a38642a7c012a22e53fe216e060be694cee1ea87b4504a1ca2c52271"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-04.json",
+     "filas": null,
+     "bytes": 68422,
+     "sha256": "34214f09b7a82cd6edacce323efd51a1f6ea1d15f9f6e444afc9b7caabe16d1b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-05.json",
+     "filas": null,
+     "bytes": 61534,
+     "sha256": "883c3fce7d37d4a20c7cffb33625d7debbd3e6f7b05640b024413ad695301a89"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-06.json",
+     "filas": null,
+     "bytes": 54083,
+     "sha256": "88084cf341abfccce1cb9960739b4d0a1404cc6d612c432737366a36ad1b2fc7"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-07.json",
+     "filas": null,
+     "bytes": 56402,
+     "sha256": "40b9ebbfef50fa58c898fce1f88bb45286c53de0740d03fbd3810273994d00b4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-08.json",
+     "filas": null,
+     "bytes": 64809,
+     "sha256": "169fd5d847bfca009d084a5d2fc73d96de07d0d35e5e9bfa65a84a651ac8f52a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-09.json",
+     "filas": null,
+     "bytes": 41223,
+     "sha256": "0fadc789121d29356deb281db1cb256df65383b7e35729d3deecfce9038077e1"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-10.json",
+     "filas": null,
+     "bytes": 55534,
+     "sha256": "3f5ebff02c4e666125a6d2c58e932c3527105b265b124e62f337cea012207025"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-11.json",
+     "filas": null,
+     "bytes": 55972,
+     "sha256": "cbfb92f233e341b3e3fa8a2d22e069f341b6924def9838874d1f99ac2fcaf999"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2023/2023-12.json",
+     "filas": null,
+     "bytes": 50382,
+     "sha256": "3e4c8ff0382fe7252129eb398bf0186abc79e017ce5f3652695fb648a550aca5"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-01.json",
+     "filas": null,
+     "bytes": 63931,
+     "sha256": "9f0b287c6c9bc9b372124b994529532522dc73fecf462b23eb7181d1a2f56b20"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-02.json",
+     "filas": null,
+     "bytes": 58564,
+     "sha256": "3939ea08e589a24ca06630145941b4305427a825d34a855453ba88a80ba50897"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-03.json",
+     "filas": null,
+     "bytes": 56902,
+     "sha256": "e9fc5edda65803db72d257a4da7d379c69e08160aaf1b94ca7e6a079c8a9c8b6"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-04.json",
+     "filas": null,
+     "bytes": 54775,
+     "sha256": "713c44690bb74b831267bfa8fa43bb7f1c90ac9229191fb6465119e40d119237"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-05.json",
+     "filas": null,
+     "bytes": 60676,
+     "sha256": "d7747f69a2f857a8ffcddfaaa2009ca0d83feec26bda393677b8aeba9f5ea85a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-06.json",
+     "filas": null,
+     "bytes": 53108,
+     "sha256": "37da8074a772bd50a0a8ab4bbd48a91e3ca3d40baecfbac9d5160c8c09ad90c1"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-07.json",
+     "filas": null,
+     "bytes": 55129,
+     "sha256": "7ebc731f1372e2fa44453c717f7650e7c7d9f95dd1b5d4116ad078866b9769e5"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-08.json",
+     "filas": null,
+     "bytes": 65571,
+     "sha256": "458edd27a06ef91ca87907e6d8909497efb98922dacabf5c6cf21d743292c9a1"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-09.json",
+     "filas": null,
+     "bytes": 43404,
+     "sha256": "39768a4201ced565f556267b683acf354dfb1d3010d450efcfe7c923daa433d4"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-10.json",
+     "filas": null,
+     "bytes": 47786,
+     "sha256": "bca96a51583e904d7a576c11c53c4583aaea0670aee4f2dabb5cf8b4b774fa29"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-11.json",
+     "filas": null,
+     "bytes": 54648,
+     "sha256": "b423a46f532e21d460cb622c5f2e9c9ab9e30c161019be13f8b6cd53581d4b54"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2024/2024-12.json",
+     "filas": null,
+     "bytes": 51652,
+     "sha256": "0ba47f1d4f47c26225fd5cc61aba4709fbffcbea8f2cae23ef2bff13656d0dc7"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-01.json",
+     "filas": null,
+     "bytes": 64171,
+     "sha256": "1fa5d222d4d405552b7a3271837e7117f830162f2c283ccbcaa90d4190051e91"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-02.json",
+     "filas": null,
+     "bytes": 58389,
+     "sha256": "f6542fe5ff258849217690b38bd97ea3f2a31e0ea18c293bc01beb16f1aeadfd"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-03.json",
+     "filas": null,
+     "bytes": 65421,
+     "sha256": "5e1fb1342f3f21a0de9b9afe36450ac34eb7917898b1870e9c9555dcc0621a25"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-04.json",
+     "filas": null,
+     "bytes": 59777,
+     "sha256": "7a84e9ca56bfa605e1e63ae86081e370fc379061c6e7c2c0b957e584774bdb3f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-05.json",
+     "filas": null,
+     "bytes": 59820,
+     "sha256": "cbd45b00a5c386c20a34c9839524e2403cf53046eef5c0643504c777a8481f79"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-06.json",
+     "filas": null,
+     "bytes": 52762,
+     "sha256": "0fdd0ee6e1aa1c96b3ab67228b07365f463e331f5c43a7a91cf65ae2c747677f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-07.json",
+     "filas": null,
+     "bytes": 53568,
+     "sha256": "4ec7a05140c688803f45e81c57c99cdd2c74525dcff7582288ab177e798d6e5c"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-08.json",
+     "filas": null,
+     "bytes": 60367,
+     "sha256": "4aec0b9b90835210c427127c717caf817454cafe33774ea038451de15041adc8"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-09.json",
+     "filas": null,
+     "bytes": 45254,
+     "sha256": "0a8c9f396f5d92432b3a803efd529258971769ee0534c01b1c615a4794dba7ea"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-10.json",
+     "filas": null,
+     "bytes": 57514,
+     "sha256": "5af35222b84ffee5af40517c9135407ae0b58b374f916cdcf89a042f184fb335"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-11.json",
+     "filas": null,
+     "bytes": 40524,
+     "sha256": "659f0c4d1d2c7b29a89adfd783d2f2f020107854720f3eac333a15cef5a070d1"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2025/2025-12.json",
+     "filas": null,
+     "bytes": 46037,
+     "sha256": "0f08e6c60a0293afadf7fc5b807f3d368f0dc9ca64add1ec4f9bbe9ede53c93d"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2026/2026-01.json",
+     "filas": null,
+     "bytes": 61628,
+     "sha256": "950bb0d591c7b534a8ac5090e284456960cbc51d3c6c8b9604e16914c9865a1f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2026/2026-02.json",
+     "filas": null,
+     "bytes": 60420,
+     "sha256": "e48186e5020a511bc94f3d85acc07d7b12256b33277b7df8d48bfef895429f15"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2026/2026-03.json",
+     "filas": null,
+     "bytes": 58702,
+     "sha256": "5e8e0d6e16b5294c15260e98481a8124bc267c11ec0a0e4b9040a0b1db68e4c6"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2026/2026-04.json",
+     "filas": null,
+     "bytes": 54149,
+     "sha256": "76697bc7814143d2999f8c14bf632d67142c0d5b2c6cf8374109ab266e9c2acd"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2026/2026-05.json",
+     "filas": null,
+     "bytes": 59265,
+     "sha256": "f0078c79041318aa77e8600296e7c39c024cf6cfd3cff9052a6e20db2c9662fe"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2026/2026-06.json",
+     "filas": null,
+     "bytes": 50686,
+     "sha256": "278ef3e1b0d7bc8de9fa379634c9c71b72effbf246ed28c1262fb9fbfdff295a"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2026/2026-07.json",
+     "filas": null,
+     "bytes": 53039,
+     "sha256": "cb314f0e3dbfbdf38cd5ad3f74d9d8ebffe3edb3515c872539195a0f7ab5731f"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2026/2026-08.json",
+     "filas": null,
+     "bytes": 60453,
+     "sha256": "5fc5525834ac4555bb9b967050ff1a2316e4da0335d1022d6a167234e9194f3b"
+    },
+    {
+     "ruta": "data/bronze/chirps/v3_sat/ee_final/2026/2026-09.json",
+     "filas": null,
+     "bytes": 41551,
+     "sha256": "79b89550c01ff78dc100ea99b1d08224197e804566d29f13d9f1b5d170126394"
+    },
+    {
+     "ruta": "data/reference/catalogo_ubigeos_piura.csv",
+     "filas": 65,
+     "bytes": 1780,
+     "sha256": "5ca987e295ba3b11041c8aea935fa3747e5cb46e28f733ff3986366ed3742841"
+    },
+    {
+     "ruta": "data/silver/enso_nino12_mensual.csv",
+     "filas": 538,
+     "bytes": 16524,
+     "sha256": "3250fdfa62fb930fa51c48ae3f4d599aaa5924a7867cf5c39c428f117d24eb16"
+    },
+    {
+     "ruta": "data/silver/epi_piura_semanal.csv",
+     "filas": 81196,
+     "bytes": 1466523,
+     "sha256": "c4b67ce03d6915d4fcdd98cba7f525daecad34cddeb98cc1816b2d8750c8eda9"
+    },
+    {
+     "ruta": "data/silver/epi_sala_semanal.csv",
+     "filas": 6240,
+     "bytes": 240897,
+     "sha256": "5369088f3d3b3b5223691bb2e1f3a068aabf47662d835d99ef08fe25903d2d2b"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv",
+     "filas": 30485,
+     "bytes": 9495856,
+     "sha256": "b04dc8c31793a08b417e5bafd9db101f4a18c9299686cb2dd4bfe2e5049b6c88"
+    },
+    {
+     "ruta": "data/silver/meteo_humedad_era5_land_2000_2026.csv",
+     "filas": 91000,
+     "bytes": 12138962,
+     "sha256": "3e91e57f31fa47af3f01515caa42ec1cf758ecfbe0320cbea50d23fb73d03879"
+    },
+    {
+     "ruta": "data/silver/precip_chirps_v3_semanal_desde_2000.csv",
+     "filas": 91000,
+     "bytes": 4610004,
+     "sha256": "e4cd57a5927cadc20de78dbdb29065c8a2e87608eb0d9ee43503877ecdf1d6ce"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/temporada_2026/chirps_prelim_diario_poligono.csv",
+     "filas": 2275,
+     "bytes": 81381,
+     "sha256": "2d39dd09e9ecd6d238cfcd39d59d193dde58f9fff78eab863888d8d598ace965"
+    }
+   ],
+   "segundos_armado": 1.6
+  },
+  {
+   "nombre": "predicciones_v3.zip",
+   "bytes": 67634032,
+   "sha256": "23cbcd74dff08b05c958b60df44723e479b0506eee98d0da1fe25ddff48527da",
+   "destino": "models/experimentos",
+   "archivos": [
+    {
+     "ruta": "models/experimentos/mejora_modelo/v3/corrida_v3.json",
+     "filas": null,
+     "bytes": 24115,
+     "sha256": "b0d8df365567b23ed80e17240876e26341c08b9dece5e91ec3cff18e09e5c870"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/v3/predicciones_l5a_sin_clima.csv.gz",
+     "filas": 975000,
+     "bytes": 28797966,
+     "sha256": "245eb116bca24f463ec75d183cd61c94384eb86a154c0322720b4333763942de"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/v3/predicciones_v3.csv.gz",
+     "filas": 975000,
+     "bytes": 38927376,
+     "sha256": "3579fe4c278bcf1a208104e507a0d28d70bf585cc39466736b94148cbd999ce0"
+    }
+   ],
+   "segundos_armado": 3.5
+  },
+  {
+   "nombre": "comparadores_v3.zip",
+   "bytes": 467349113,
+   "sha256": "22b4a8e6e0ab68a3225c63dc452c6c97fc9dbab20c2a0410a020b6b527f56d9a",
+   "destino": "models/experimentos",
+   "archivos": [
+    {
+     "ruta": "models/experimentos/mejora_modelo/fase6/ajustes_6a_nb_glm.csv",
+     "filas": 18,
+     "bytes": 1860,
+     "sha256": "6fe31de0c3fc875635652835ce4f364cab0b7fa66cd18329891c7f7d6f7d306e"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/fase6/ajustes_6a_prima_poisson_glm.csv",
+     "filas": 18,
+     "bytes": 2186,
+     "sha256": "79ad71ffbd9e9edc0c1eb6edf837341a672ff0e167216f39e4afe362dfa8d529"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/fase6/ajustes_6b_lightgbm.csv",
+     "filas": 90,
+     "bytes": 7294,
+     "sha256": "9aa76625ac638b9c1091e9d2295d20e5229b466338fa3dcaa55d1233d9055e0d"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/fase6/predicciones_6a_nb_glm.csv.gz",
+     "filas": 915525,
+     "bytes": 16679858,
+     "sha256": "b5914eb5aa2172f97f2dd280c05c24bce336e0d7086b792c327ae1f5ed282c87"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/fase6/predicciones_6a_prima_poisson_glm.csv.gz",
+     "filas": 915525,
+     "bytes": 16678618,
+     "sha256": "da40f1e0bbb579ea5216412e25515b3bf7e180bfde08e1b8ccd46ced3471fb0e"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/fase6/predicciones_6b_lightgbm.csv.gz",
+     "filas": 915525,
+     "bytes": 14870740,
+     "sha256": "6646da7930770f2196fe5dacac28d9750cbfdfe42440fdac00d52a60dfc093db"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_b1.csv.gz",
+     "filas": 407550,
+     "bytes": 8624627,
+     "sha256": "a37584ac105f3695709d8860ad5e616ede19eecdbc2e30bf94e00009aa29c5e2"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_b2.csv.gz",
+     "filas": 407550,
+     "bytes": 9205661,
+     "sha256": "cb60d9b6bba3da520280c9961b4247cc150f769cfc2da30984359042ea860fec"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_b3.csv.gz",
+     "filas": 407550,
+     "bytes": 9149413,
+     "sha256": "bdaf81ae34c9d46f870deedf0fbbdbed5b2a0d379ab7680fc1e1edcc86e13bf2"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_b4.csv.gz",
+     "filas": 407550,
+     "bytes": 9197717,
+     "sha256": "8d3729e4a86ca8b75a235f44790c251126257c3f66eb69ca45c3c7b2684bc00a"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_d1.csv.gz",
+     "filas": 407550,
+     "bytes": 10013828,
+     "sha256": "f6380339e3d5d630bdf51ab3a3dac86a1898bf384036412ae769e926bd95b709"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_d2.csv.gz",
+     "filas": 407550,
+     "bytes": 10010809,
+     "sha256": "fbde07fb16402026775dc64d620ee577a704af3feb698726233dc8f16378152e"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_d3.csv.gz",
+     "filas": 407550,
+     "bytes": 8773042,
+     "sha256": "192e6d7cc293131e89e55249f5609df5cee002107af7bd3bce3057de2b772188"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_d4.csv.gz",
+     "filas": 407550,
+     "bytes": 9597062,
+     "sha256": "f08d0b49d6f182af29e5002382a9ff8524ede45794af5eab9a86d9879b49e77e"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_d5.csv.gz",
+     "filas": 407550,
+     "bytes": 9694045,
+     "sha256": "066642a308f8d2bf94eb956a57b93f4498e322ac4e7523c572ec4662bbf2d230"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_e1.csv.gz",
+     "filas": 407550,
+     "bytes": 9912361,
+     "sha256": "72c38c3762f59e226ef42a661ea62181525c91ab0e830a7f40054e10b948e310"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_e2.csv.gz",
+     "filas": 407550,
+     "bytes": 9887970,
+     "sha256": "1aa69d6715cdf62da53ca84e3dbc8e17460d270b76cd89217af22529cba4da2e"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_L_5a.csv.gz",
+     "filas": 407550,
+     "bytes": 7902448,
+     "sha256": "b7e34bd49cc7c2f5fce99de3271d7654f7fa46675bbf056d424847274b72e5bc"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/fuera_de_temporada_n1.csv.gz",
+     "filas": 407550,
+     "bytes": 9152153,
+     "sha256": "d26a0a9189ee01332c401184f62d3c658d003f3ae20ce595094349bed53caec0"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/predicciones_b1.csv.gz",
+     "filas": 975000,
+     "bytes": 17950431,
+     "sha256": "a75b94814ae3cb68984f3e25a5e99bcb5e0bac1e8c41885a95ec7b54d465e973"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/predicciones_b2.csv.gz",
+     "filas": 975000,
+     "bytes": 19831424,
+     "sha256": "eff7839a5a6c566bb0375f3639ce64ab87129bd90f5d2d11ecd1523dc0d08e9d"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/predicciones_b4.csv.gz",
+     "filas": 975000,
+     "bytes": 20022203,
+     "sha256": "b6c0cbe47fc58c16e4aeb1ec51197c0569e5d1bfd59703ecab9bbb1658a547fb"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/predicciones_d3.csv.gz",
+     "filas": 975000,
+     "bytes": 19368868,
+     "sha256": "05115dc3ca6b450fc4db3084da4f4cb1417095a5a6ca78604249b59e305f74d8"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/predicciones_d4.csv.gz",
+     "filas": 975000,
+     "bytes": 20642736,
+     "sha256": "79e3daa15462cace000d860c750ffd21796ff9b9efd6e3b036723a4d49f87b1f"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/predicciones_d5.csv.gz",
+     "filas": 975000,
+     "bytes": 20622195,
+     "sha256": "8494de315479403c43be9b7b48bee414c440cce23cbd503533c61060141bd4ca"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/predicciones_e1.csv.gz",
+     "filas": 975000,
+     "bytes": 22050877,
+     "sha256": "ebbe4c691d9a7bfd3f7322d711182254df6e6d79c7792c34bf48bb34f8a8712e"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/predicciones_e2.csv.gz",
+     "filas": 975000,
+     "bytes": 21289749,
+     "sha256": "e24babd11a087fb13f36be8e358e236382bbd2267814ff8c29f47e16dcfb68ee"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/matriz_clima/predicciones_n1.csv.gz",
+     "filas": 975000,
+     "bytes": 19853682,
+     "sha256": "48e8f79d72155e730c0e379ac50376089064fcd3b8746fb87b79ca2a065e5731"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/temporada_2026/fuera_de_temporada_b3.csv.gz",
+     "filas": 407550,
+     "bytes": 9232245,
+     "sha256": "7124b0042ce6cb5ac76ef1ccabeb7666a3173867843400e45114847efb0c901f"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/temporada_2026/fuera_de_temporada_d1.csv.gz",
+     "filas": 407550,
+     "bytes": 10098169,
+     "sha256": "326555d3c026b172a704550696d20583b6effc278552a052e70f664a2025e620"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/temporada_2026/fuera_de_temporada_d2.csv.gz",
+     "filas": 407550,
+     "bytes": 10094327,
+     "sha256": "71eb27a0c17b3908129417ccc4455e86c09ade523a0fbb156a7fd6976eff62c4"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/temporada_2026/fuera_de_temporada_L_5a.csv.gz",
+     "filas": 407550,
+     "bytes": 7983953,
+     "sha256": "c7500825c5d82a2f588a79d1c3ca18bc517f34d15b4418db98da4255bc81983e"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/temporada_2026/predicciones_b3.csv.gz",
+     "filas": 975000,
+     "bytes": 19709026,
+     "sha256": "610e01c1707d5ec0eb8c59f055c4f082a79af7eff21b4f2c3804eb0a77fd8e4a"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/temporada_2026/predicciones_d1.csv.gz",
+     "filas": 975000,
+     "bytes": 22050835,
+     "sha256": "5fb1fbe07d0664c3d9942b2c9e169a9b5a430eb5a5865afde2b79d757d9e9af0"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/temporada_2026/predicciones_d2.csv.gz",
+     "filas": 975000,
+     "bytes": 21858679,
+     "sha256": "a2ceba112841d16f11316364191619779ac69b77eb885fb22a7e152a97f3e01f"
+    },
+    {
+     "ruta": "models/experimentos/mejora_modelo/temporada_2026/predicciones_L_5a.csv.gz",
+     "filas": 975000,
+     "bytes": 16121189,
+     "sha256": "864337cecaf01965e454413320ce2a1bd5acbd9f890e3effdf56631d5cdb5fbf"
+    }
+   ],
+   "segundos_armado": 25.9
+  }
+ ]
+}
