@@ -20,9 +20,9 @@ class TestRegistry(unittest.TestCase):
 
     def test_states(self):
         states = {v: registry.card(v)["estado"] for v in registry.VERSIONS}
-        self.assertEqual(states, {"v0": "registrada", "v1": "reemplazada", "v2": "servida", "v3": "vigente"})
+        self.assertEqual(states, {"v0": "registrada", "v1": "reemplazada", "v2": "reemplazada", "v3": "servida"})
         self.assertEqual(registry.CURRENT, "v3")
-        self.assertEqual(registry.SERVED, "v2")
+        self.assertEqual(registry.SERVED, "v3")
         self.assertEqual(registry.card("v1")["reemplazada_por"], "v2")
         self.assertEqual(registry.card("v2")["reemplaza_a"], "v1")
         self.assertEqual(registry.card("v2")["reemplazada_por"], "v3")
@@ -62,11 +62,12 @@ class TestRegistry(unittest.TestCase):
         self.assertEqual(fc.HISTORY["V3"]["ficha"], "models/registry/v3/ficha.md")
         self.assertTrue((ROOT / card["datos"]["manifiesto"]).exists())
 
-    def test_v2_is_the_configured_package(self):
-        card = registry.card("v2")
+    def test_v3_is_the_configured_package(self):
+        card = registry.card("v3")
         package = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))["serving"]["paquete"]
-        self.assertEqual((card["servicio"]["predictor"], package["tipo"]), ("v2_e3_s4", "v2_e3_s4"))
-        self.assertEqual((package["horizontes"], package["opciones"]["configuracion"]), ([2, 3, 4], "v2"))
+        self.assertEqual((card["servicio"]["predictor"], package["tipo"]), ("v3_l5a_d3", "v3_l5a_d3"))
+        self.assertEqual((package["horizontes"], package["opciones"]["configuracion"]), ([2, 3, 4], "v3"))
+        self.assertEqual(registry.card("v2")["servicio"]["predictor"], "v2_e3_s4")  # still registered
 
     def test_v0_matches_its_package(self):
         """config.yaml publishes v2 since phase 4; the v0 package of the tests keeps the card's variants."""

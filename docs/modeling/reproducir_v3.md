@@ -112,3 +112,50 @@ Las columnas están en la sección 5 de [protocolo_v3.md](protocolo_v3.md).
 Regenerar los datos desde las fuentes puede no dar los mismos bytes: Open-Meteo, CHIRPS, la Sala Situacional del
 MINSA y NOAA revisan y republican sus datos, y los cachés bronze no están en el Release. **La referencia de la V3
 son los archivos del Release**, con los SHA-256 del manifiesto, no una descarga nueva.
+
+## 8. Ruta del producto: de un clon de `develop` a la API con la v3
+
+Lo que necesita **PostgreSQL** está marcado. Lo demás corre con SQLite o sin BD.
+
+1. **Instalar** (sección 2) y **descargar los datos** de la v3:
+   `python -m denguekay.data.ingestion.release_bundles --version v3`.
+2. **Migrar** (crea `temp_media_era5_land_c`, migración `0007_v3`). Con SQLite local alcanza para probar; en
+   PostgreSQL usa `MIGRATION_DATABASE_URL` (ver `docs/backend/despliegue.md`):
+
+   ```powershell
+   .\.venv\Scripts\python -m alembic upgrade head
+   ```
+
+3. **Regenerar gold** con d3. Escribe en `data/gold/`. Necesita el integrado y su cobertura, que bajan con
+   `--version v2`:
+
+   ```powershell
+   .\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace pipelines/notebooks/10_silver_to_gold.ipynb
+   ```
+
+4. **Construir el paquete servido sin BD**: booster, α, Platt y la `w` de 5a. Imprime la paridad con la v3
+   congelada (en GPU debe ser 0,0) y la huella:
+
+   ```powershell
+   .\.venv\Scripts\python -m denguekay.serving.predictors.v3_l5a_d3 --salida models\paquete_v3
+   ```
+
+5. **Cargar la BD y publicar** (en producción, **PostgreSQL**):
+
+   ```powershell
+   .\.venv\Scripts\python -m denguekay.serving.load_data
+   .\.venv\Scripts\python -m denguekay.serving.publish --seleccionar-experimental --inferir
+   ```
+
+6. **Levantar la API y probarla:**
+
+   ```powershell
+   .\.venv\Scripts\python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
+   curl http://127.0.0.1:8000/api/v1/salud
+   ```
+
+   Respuesta esperada: `200`. `GET /api/v1/modelos/activo` lista las versiones `v3-…` y `GET /api/v1/mapa-riesgo?horizonte=4`
+   devuelve los 65 distritos (verificado en una SQLite temporal: publicación de 109 s, 65 de 65 disponibles por horizonte).
+
+Variables de entorno: `.env.example` (`DATABASE_URL`, `API_KEY`, `STORAGE_BACKEND=local`). Los tests usan BD
+temporales, nunca la de producción.

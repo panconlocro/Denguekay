@@ -1,8 +1,8 @@
-# V3 · L + 5a + d3 · E3 · S4_s3 (vigente, no servida todavía)
+# V3 · L + 5a + d3 · E3 · S4_s3 (vigente y servida)
 
 | Campo | Valor |
 |---|---|
-| Estado | **Vigente**: configuración congelada el 2026-11-09 al cerrar el estudio 06. La API sigue sirviendo la [V2](../v2/ficha.md) hasta que se integre la V3 en serving |
+| Estado | **Vigente y servida**: configuración congelada el 2026-11-09 al cerrar el estudio 06. Se sirve como selección experimental con el predictor `v3_l5a_d3` (paquete entrenado fuera de la BD con la serie desde 2000). La [V2](../v2/ficha.md) queda reemplazada y registrada |
 | Tag | `model/v3` |
 | Configuración | `denguekay.model.frozen_configs.CONFIG_V3`; se carga con `denguekay.model.registry.configuration("v3")` |
 | Reemplaza a | [V2](../v2/ficha.md) (como configuración vigente) |
@@ -59,4 +59,17 @@ De comportamiento (semilla 17, bloques 2008–2026 del estudio 06): **`device=cu
 - **2026 se usó para elegir.** La prueba independiente es solo lo que se publique después del 2026-11-09.
 - **Diagnóstico frente a la persistencia** (hecho con los hiperparámetros heredados, no recalculado): el conteo
   se queda corto en los picos y la probabilidad se subestima en `posterior_2026`.
-- **HU0007-4 e intervalo del conteo:** no evaluados (pendientes fuera del estudio).
+- **HU0007-4:** no evaluada por celda. Al publicar (prueba de punta a punta del 2026-11-09 en una SQLite temporal),
+  los umbrales de `parametro_sistema` (bloque `temporada_2024`) se cumplen en clasificación h2, h3 y h4 y no se
+  cumplen en regresión. Como la activación es por pares, se sirve como selección experimental.
+- **Intervalo del conteo:** NB2 central alrededor del conteo publicado, sin calibrar (pendiente R17).
+
+## Servicio
+
+- **Predictor `v3_l5a_d3`:** el vector se arma desde la BD: casos desde 2017 y `temp_media_era5_land_c` de las 13
+  semanas hasta el origen (migración `0007_v3`).
+- **Paquete:** `booster.json`, `dispersion.json`, `platt.json` y `mezcla.json`, ajustado fuera de la BD.
+  - Sin BD: `python -m denguekay.serving.predictors.v3_l5a_d3 --salida <carpeta>`.
+  - Publicación: `python -m denguekay.serving.publish --seleccionar-experimental`.
+- **Paridad:** el bloque `temporada_2026` reajustado reproduce las predicciones congeladas (0,0 en GPU). El vector
+  servido es igual al de la serie larga (`tests/serving/test_v3_parity.py`).

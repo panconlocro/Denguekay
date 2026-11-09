@@ -11,8 +11,8 @@ from denguekay.config.paths import MODEL_REGISTRY
 from denguekay.model import frozen_configs
 
 VERSIONS = ("v0", "v1", "v2", "v3")
-CURRENT = "v3"  # frozen configuration in force since 2026-11-09 (study 06); not served yet
-SERVED = "v2"  # served since phase 4 of the API v1 (predictor v2_e3_s4)
+CURRENT = "v3"  # frozen configuration in force since 2026-11-09 (study 06)
+SERVED = "v3"  # served with the predictor v3_l5a_d3 (feat/serve-v3); v2 and v0 stay registered
 
 
 def card_path(version: str):

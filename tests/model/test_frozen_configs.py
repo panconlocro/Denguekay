@@ -27,7 +27,7 @@ class TestConfiguracion(unittest.TestCase):
                          {k: v for k, v in v1.items() if k not in ("columnas", "matriz", "decisiones",
                                                                    "fecha_congelamiento")})
         self.assertEqual(c["columnas"][:6], eh.GENERIC)
-        self.assertTrue(cf.HISTORY["V2"]["estado"].startswith("servida"))
+        self.assertTrue(cf.HISTORY["V2"]["estado"].startswith("reemplazada"))
         self.assertTrue(cf.HISTORY["V3"]["estado"].startswith("vigente"))
         v3 = cf.CONFIG_V3
         self.assertEqual(v3["columnas"], [*v1["columnas"], *cf.V3_D3_COLUMNS])

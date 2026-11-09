@@ -23,10 +23,11 @@ class ContratoXGBoostTests(unittest.TestCase):
         gold = pd.DataFrame(columns=persisted_columns(2))
         familias = validate_model_columns(gold, {"columnas_no_predictoras": list(PERSISTED_NON_PREDICTORS)}, 2)
         predictoras = [c for cols in familias.values() for c in cols]
-        self.assertEqual((len(predictoras), len(gold.columns)), (11, 20))
+        self.assertEqual((len(predictoras), len(gold.columns)), (15, 24))  # v2 (11) + d3 of the v3 (4)
         self.assertTrue(set(predictoras).isdisjoint(PERSISTED_NON_PREDICTORS))
         self.assertEqual(set(gold), set(predictoras) | set(PERSISTED_NON_PREDICTORS))
         self.assertEqual({*familias["a3"], *familias["b3"]}, set(cf.CONFIG_2026["columnas"]) - set(cf.eh.GENERIC))
+        self.assertEqual({*familias["b3"], *familias["d3"]}, set(cf.CONFIG_V3["columnas"]) - set(cf.eh.GENERIC))
         self.assertEqual(familias["base_6"], predictor_families(2)["historia"] + predictor_families(2)["calendario"])
         self.assertFalse(set(gold) & {"provincia", "distrito", "distrito_key", "log_poblacion_censo_2017"})
 

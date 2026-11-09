@@ -9,6 +9,7 @@ starts after the origin close). The strict structural start-up checks stay in
 
 import great_expectations as gx
 
+from denguekay.features.climate import D3_COLUMNS
 from denguekay.features.gold import ONSET_COLUMNS, gold_columns, persisted_columns
 from denguekay.data.validation.forecast_contract import KEY
 
@@ -76,6 +77,11 @@ def expectations_for_gold(horizon: int, ubigeos: list[str], *, persisted: bool =
         E.ExpectColumnValuesToBeBetween(column="semana_epi_coseno", min_value=-1, max_value=1),
         E.ExpectColumnValuesToBeBetween(column=f"hum_rel_media_media5_h{h}", min_value=0, max_value=100),
     ]
+    # d3 (v3): ERA5-Land weekly mean temperature windows at the origin; the silver starts in 2000, so the only nulls
+    # are the rows without an origin (each district's first weeks), as the lagged predictors above.
+    d3 = [c for c in D3_COLUMNS if c in columns]
+    exp += [E.ExpectColumnValuesToNotBeNull(column=c, mostly=MIN_POPULATED_PREDICTORS) for c in d3]
+    exp += [E.ExpectColumnValuesToBeBetween(column=c, min_value=-20, max_value=50) for c in d3]
     fractions = [c for c in columns if c.startswith("fraccion_") or "_frac_" in c]
     exp += [E.ExpectColumnValuesToBeBetween(column=c, min_value=0, max_value=1) for c in fractions]
     exp += [E.ExpectColumnValuesToBeBetween(column=c, min_value=0, strict_min=True)

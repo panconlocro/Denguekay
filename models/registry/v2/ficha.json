@@ -1,6 +1,6 @@
 {
   "version": "v2",
-  "estado": "servida",
+  "estado": "reemplazada",
   "estado_detalle": "Configuración congelada vigente para la evaluación prospectiva de 2026, servida desde la fase 4 de la API v1 como selección experimental (experimental: true: no cumple la HU0007-4) con h=2, 3 y 4.",
   "servicio": {
     "predictor": "v2_e3_s4",
