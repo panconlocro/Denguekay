@@ -44,6 +44,7 @@ Gold ya existe (alineación h=2; las demás candidatas y horizontes se calculan 
 - Commits con Conventional Commits en inglés (`feat(api): add risk map endpoint`).
 - Merge siempre con «Create a merge commit». **Nunca reescribas historia publicada** (squash, rebase, `--amend`, `push --force`): los informes citan hashes.
 - Tags anotados: `model/vN` al congelar una versión de modelo, `study/<nombre>` al cerrar un estudio, `api/vX.Y.Z` (versión del contrato) en el merge commit de `main` de un release que cambia la API. Las ramas anteriores a la limpieza están en los tags `archive/*`.
+- Nunca agregues linea de atribuvion a Claude (Co-Authored-By, Claude-Session ni «Generated with Claude Code»)
 
 ## Cómo se trabaja con Rosa
 - Rosa trabaja **fase por fase y confirma cada una antes de seguir**. Al terminar una fase presentas el resumen y te detienes.
