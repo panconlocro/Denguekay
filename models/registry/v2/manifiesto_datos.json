@@ -1,0 +1,86 @@
+{
+ "tag": "model/v2",
+ "repositorio": "panconlocro/Denguekay",
+ "fecha": "2026-11-09",
+ "descripcion": "Paquetes del Release de model/v2. Se descargan y verifican con python -m denguekay.data.ingestion.release_bundles",
+ "paquetes": [
+  {
+   "nombre": "datos_v2.zip",
+   "bytes": 3069761,
+   "sha256": "7719a3572771473fa9ddbafbb6b06c556f1551155a4ce298259d69744331f247",
+   "destino": "data",
+   "archivos": [
+    {
+     "ruta": "data/gold/manifest_fase6.json",
+     "filas": null,
+     "bytes": 2655,
+     "sha256": "6306235cf21ef99eb4b2e6f9e5442563d17b4fcd7f49a9d36ade4fda4911b7ef"
+    },
+    {
+     "ruta": "data/gold/meteo_socio_epi_piura_2017_2025_h2_gold.csv",
+     "filas": 30485,
+     "bytes": 5163015,
+     "sha256": "a5d16663d4030b891d0fbbca81b4a0abfe478e11eb3bb85a9f59d49dc4eb27a3"
+    },
+    {
+     "ruta": "data/silver/epi_piura_semanal.csv",
+     "filas": 81196,
+     "bytes": 1466523,
+     "sha256": "c4b67ce03d6915d4fcdd98cba7f525daecad34cddeb98cc1816b2d8750c8eda9"
+    },
+    {
+     "ruta": "data/silver/epi_sala_semanal.csv",
+     "filas": 6240,
+     "bytes": 240897,
+     "sha256": "5369088f3d3b3b5223691bb2e1f3a068aabf47662d835d99ef08fe25903d2d2b"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_epi_base_piura_2017_2025.csv",
+     "filas": 30485,
+     "bytes": 9492458,
+     "sha256": "14e189aba1f465e8db9b0160aa65fdb34acc13a478d1f192ff56914a12cd109d"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_epi_piura_2017_2025.coverage.csv",
+     "filas": 30485,
+     "bytes": 820424,
+     "sha256": "e85f7e68b1b78ef97bb31aef56247d22b7eebac3cd0e28ba82e980641cacfb67"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv",
+     "filas": 30485,
+     "bytes": 9495856,
+     "sha256": "b04dc8c31793a08b417e5bafd9db101f4a18c9299686cb2dd4bfe2e5049b6c88"
+    }
+   ],
+   "segundos_armado": 0.7
+  },
+  {
+   "nombre": "predicciones_v2.zip",
+   "bytes": 16582051,
+   "sha256": "34f53c013af6238e7a92c785e276c38275ba41846f268237716a020c07410d94",
+   "destino": "models/experimentos",
+   "archivos": [
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/complemento_clima/predicciones_F_A3.csv.gz",
+     "filas": 254475,
+     "bytes": 6157021,
+     "sha256": "ad57443018ad943d0e6cf56041dba1065cc4c9b39afcaea8b08facd78d772307"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/complemento_clima/predicciones_F_completa.csv.gz",
+     "filas": 254475,
+     "bytes": 5218695,
+     "sha256": "407482070cc2731d62accdd1e8f15a2737ad0d97f0c55af1e6e0e40ab5d8a215"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/complemento_clima/predicciones_F_interseccion_A3.csv.gz",
+     "filas": 254475,
+     "bytes": 5222135,
+     "sha256": "c926f000ac622acab10688f14287e44e1c1a1ecb4637e3b2ae6bdcbc02176a8d"
+    }
+   ],
+   "segundos_armado": 0.9
+  }
+ ]
+}

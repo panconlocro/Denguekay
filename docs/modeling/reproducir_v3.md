@@ -73,11 +73,30 @@ Después:
 
 Termina con `VERIFICACION: PASA` o `NO PASA`.
 
-- **GPU y CPU:** la huella de referencia se grabó en GPU (`device=cuda`, RTX 5060, driver 621.01, XGBoost 3.4.1).
-  - XGBoost no da los mismos bits en CPU y en GPU, y en CPU tampoco con distinto número de hilos.
-  - Sin GPU NVIDIA, `configs/config.yaml` (`device: auto`) usa la CPU. La huella no se compara (no hay
-    referencia en CPU) y G41 puede fallar por diferencias numéricas pequeñas. **Esto no se ha medido.**
-  - Para forzar un dispositivo: `$env:DENGUEKAY_XGB_DEVICE = "cpu"` (o `"cuda"`).
+- **Dos referencias: GPU (oficial) y CPU (2 hilos).**
+  - **GPU** (`device=cuda`, RTX 5060, driver 621.01, XGBoost 3.4.1): es la oficial y la que se sirve. Huella
+    `99a0b26d…494de`; predicciones en `predicciones_v3.zip`.
+  - **CPU con 2 hilos** (`$env:DENGUEKAY_XGB_DEVICE = "cpu"` y `$env:DENGUEKAY_XGB_NJOBS = "2"`): es determinista.
+    La semilla 17 dio la misma huella en dos corridas, `7a46f4f2…db72b6`, unos 5,3 min por semilla. Las 5 semillas
+    de V3 y de L + 5a están en `predicciones_v3_cpu.zip`, que se baja con `--solo predicciones_v3_cpu.zip` y se
+    extrae en `models/experimentos/mejora_modelo/v3_cpu/`. Con ella descargada, `verificar` compara en CPU con
+    esa referencia.
+  - **CPU y GPU no dan los mismos árboles:** con `subsample` y `colsample` < 1 cada dispositivo muestrea distinto, y
+    la CPU con otro número de hilos también. Contra la referencia GPU, la semilla 17 en CPU difiere hasta 99,8
+    casos en μ y 0,072 en la probabilidad cruda por fila (con 12 hilos; medido el 2026-11-09). Es otra
+    realización del mismo modelo, no ruido numérico.
+  - **Las conclusiones se mantienen.** Medianas de 5 semillas, en las 6 temporadas que deciden:
+
+    | Métrica | V3 en GPU | V3 en CPU | Diferencia máxima por celda |
+    |---|---|---|---|
+    | Brier | 0,0494 | 0,0494 | 0,0002 |
+    | AUPRC | 0,785 | 0,785 | 0,0009 |
+    | F1 a 0,50 | 0,671 | 0,672 | 0,012 |
+    | Razón MAE | 0,898 | 0,897 | 0,008 |
+
+    El veredicto de `SEASON_2026` entre V3 y L + 5a (los dos con el trial 191) es el mismo en los dos dispositivos:
+    empate en Brier, alerta y conteo en h2, h3 y h4. La única diferencia es que en h4 el Brier queda con 2
+    temporadas en contra en CPU y con 1 en GPU. Cifras en `comparacion_cpu_gpu.json` del mismo zip.
 - **Otras semillas:** `--semilla 29`, `41`, `53` o `67` comparan con las suyas (sin huella).
 - **Sin reentrenar:** `phase_v3_close.py metricas` recalcula solo el Brier y el AUPRC.
 - **No uses** `phase_v3_close.py cierre` para verificar: es la corrida de 5 semillas que escribió las

@@ -1,0 +1,86 @@
+{
+ "tag": "model/v1",
+ "repositorio": "panconlocro/Denguekay",
+ "fecha": "2026-11-09",
+ "descripcion": "Paquetes del Release de model/v1. Se descargan y verifican con python -m denguekay.data.ingestion.release_bundles",
+ "paquetes": [
+  {
+   "nombre": "datos_v1.zip",
+   "bytes": 3801795,
+   "sha256": "c6ebf0e21db70271bfceb337df01006fbfea7ce97727b623d269b961766ae3e7",
+   "destino": "data",
+   "archivos": [
+    {
+     "ruta": "data/gold/respaldo_pre_b3/manifest_fase6.json",
+     "filas": null,
+     "bytes": 2859,
+     "sha256": "33bd3d2ee49d5af678a5309c9ff244b126ec10117f953ccc4508e0b4237b5d57"
+    },
+    {
+     "ruta": "data/gold/respaldo_pre_b3/meteo_socio_epi_piura_2017_2025_h2_gold.csv",
+     "filas": 30485,
+     "bytes": 17562009,
+     "sha256": "0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3"
+    },
+    {
+     "ruta": "data/gold/respaldo_pre_b3/meteo_socio_epi_piura_2017_2025_h4_gold.csv",
+     "filas": 30485,
+     "bytes": 17551302,
+     "sha256": "f9fbed66572e8641eee82ce1a148562f5121cf8dbd111498f73a8aa78f5f19c6"
+    },
+    {
+     "ruta": "data/gold/respaldo_pre_b3/SHA256SUMS.txt",
+     "filas": null,
+     "bytes": 309,
+     "sha256": "deedc5bd5bfd99f68eab1be3ae6d3fc274236157b8c33079c4311b9ce93f0fb6"
+    },
+    {
+     "ruta": "data/silver/epi_piura_semanal.csv",
+     "filas": 81196,
+     "bytes": 1466523,
+     "sha256": "c4b67ce03d6915d4fcdd98cba7f525daecad34cddeb98cc1816b2d8750c8eda9"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_epi_piura_2017_2025.coverage.csv",
+     "filas": 30485,
+     "bytes": 820424,
+     "sha256": "e85f7e68b1b78ef97bb31aef56247d22b7eebac3cd0e28ba82e980641cacfb67"
+    },
+    {
+     "ruta": "data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv",
+     "filas": 30485,
+     "bytes": 9495856,
+     "sha256": "b04dc8c31793a08b417e5bafd9db101f4a18c9299686cb2dd4bfe2e5049b6c88"
+    }
+   ],
+   "segundos_armado": 0.9
+  },
+  {
+   "nombre": "predicciones_v1.zip",
+   "bytes": 14214572,
+   "sha256": "98290c7ec0bb369b95c24d3f7b2b4f19ed5efb313700b54ecbae42621ad82d84",
+   "destino": "models/experimentos",
+   "archivos": [
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase4/predicciones_s4s2_dentro.csv.gz",
+     "filas": 254475,
+     "bytes": 4529034,
+     "sha256": "2e2676a30fec54193ee5022edcb4ac7f5346080dda039bec866c9ee1ee451368"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase4/predicciones_s4s2_oos.csv.gz",
+     "filas": 254475,
+     "bytes": 4526851,
+     "sha256": "4a782e6e4250c2214c24cd70c7470a22af56da59535f5b9a206a183ba73ceb7f"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase4/predicciones_s4s3_dentro_muestra.csv.gz",
+     "filas": 254475,
+     "bytes": 5218704,
+     "sha256": "a160c291a143a1920a64e1d332503e5e9a99609047342c764dce6f21ec056e27"
+    }
+   ],
+   "segundos_armado": 0.9
+  }
+ ]
+}

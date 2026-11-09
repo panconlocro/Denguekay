@@ -51,7 +51,8 @@ La fase 6 usa LightGBM, que el producto no necesita: se instala solo en el `.ven
 
 - Crea el entorno con `constraints.txt` y descarga los datos del Release con
   `python -m denguekay.data.ingestion.release_bundles`.
-- Reentrena con `python research/06_model_improvement/code/phase_v3_close.py` y comprueba la huella.
+- Reentrena con `python research/06_model_improvement/code/phase_v3_close.py verificar --semilla 17` y comprueba
+  la huella (sin argumentos corre `cierre`, que sobrescribe las predicciones de referencia: no la uses para verificar).
 
 Desde el tag:
 
@@ -61,14 +62,27 @@ python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt -c constraints.txt
 .\.venv\Scripts\python -m pip install -e . -c constraints.txt
 .\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles
-.\.venv\Scripts\python research/06_model_improvement/code/phase_v3_close.py
+.\.venv\Scripts\python research/06_model_improvement/code/phase_v3_close.py verificar --semilla 17
 ```
 
-Los notebooks 01–19 son la historia del estudio. Necesitan además los insumos de cada fase que no están en el
-Release (predicciones de fases anteriores, cachés bronze, LightGBM). La lista de antes sigue valiendo para ellos:
+Los notebooks 01–19 son la historia del estudio. Sus insumos están en los Releases (no en otra PC):
 
-Desde la raíz del repositorio, con `data/` completo y las predicciones de la V2 del estudio 05 en
-`models/experimentos/fe_hiperparametros/complemento_clima/` (no versionadas):
+```powershell
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v3
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v2
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --estudio 06_model_improvement
+```
+
+- `--version v3`: entradas de datos, predicciones de la V3 y comparadores.
+- `--version v2`: las predicciones de la V2 del estudio 05 (`fe_hiperparametros/complemento_clima/`).
+- `--estudio 06_model_improvement`: el estudio de Optuna del ajuste (`ajuste_hp/optuna.db`), las predicciones por
+  fase y los cachés bronze (ERA5, ERA5-Land, Open-Meteo, CHIRPS por FTP, NOAA y polígonos de HDX).
+
+**No vuelvas a correr las búsquedas largas:** el ajuste de hiperparámetros (`code/phase_hp_tuning.py`, tope de
+10 h) quedó guardado en `optuna.db`, y el notebook 19 lo lee de ahí. Las corridas que reentrenan (matriz de clima,
+temporada 2026, cierre) se reutilizan desde las predicciones guardadas cuando la guarda G41 lo permite.
+
+Después, desde la raíz:
 
 ```powershell
 .\.venv\Scripts\python -m unittest discover -s research/06_model_improvement/tests

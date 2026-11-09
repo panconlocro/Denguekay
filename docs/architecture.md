@@ -86,17 +86,18 @@ Denguekay/
 │   │   └── tools/             # benchmark, export_openapi, smoke_test
 │   └── web/                   # frontend (React + Vite): por ahora solo README.md con el plan
 │
-├── pipelines/notebooks/       # pipeline: 01–09 (bronze/silver) y 10_silver_to_gold
-├── research/                  # estudios congelados: 01_eda … 06_model_improvement (README por estudio)
+├── pipelines/notebooks/       # pipeline: 01–09 (con 03b Niño, 03c CHIRPS y 06b Sala) y 10_silver_to_gold; todo junto: python -m denguekay.pipelines.run_all
+├── research/                  # estudios congelados: 01_eda … 06_model_improvement (README y, si hace falta, manifiesto_datos.json por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
-│   └── registry/              # fichas de v0 … v3, CHANGELOG.md y v3/manifiesto_datos.json (versionado; los artefactos no)
+│   └── registry/              # fichas de v0 … v3, CHANGELOG.md y <versión>/manifiesto_datos.json (datos del Release de cada tag)
 ├── tests/                     # misma estructura que el paquete: tests/<subpaquete>/ y tests/api/
 │   ├── fixtures/backend/      # muestra agregada real, pequeña y versionada
 │   └── fixtures/equivalence/  # línea base de las guardas de la reestructuración (no se regenera)
 ├── mlflow.db                  # tracking de MLflow (generado, no se versiona)
 ├── mlartifacts/               # artefactos de MLflow (generado, no se versiona)
 └── docs/
+    ├── reproducibilidad.md    # entrada única: qué se reproduce, con qué comando, tiempo, GPU y nivel de exactitud
     ├── modeling/              # guía de MLflow/GX, diccionario de variables, métricas que lee serving (V0), protocolo_v3.md y reproducir_v3.md
     ├── decisions/             # ADR numerados (0001: monorepo; 0002: ramas develop y main)
     └── backend/               # operación y evidencia del backend por fase
@@ -251,7 +252,8 @@ model/
 ├── horizon_strategies.py    # matrices h=1..6 en memoria y estrategias E1/E2/E3
 ├── probabilistic_output.py  # formulaciones S1–S5 (conteo, base_margin, binomial negativa, calibración)
 ├── future_rows.py           # filas futuras en memoria, sin fuga ni escritura en data/
-├── frozen_configs.py        # configuraciones congeladas V1/V2 y su fingerprint() de comportamiento (D1)
+├── frozen_configs.py        # configuraciones congeladas V1/V2/V3 y su fingerprint() de comportamiento (D1)
+├── reproduce.py             # CLI: reentrena v0/v1/v2 con los datos de su Release y compara huella o métricas
 └── variable_dictionary.py   # diccionario de las variables finales (genera docs/modeling/diccionario_variables.md)
 ```
 
@@ -298,7 +300,8 @@ src/denguekay/serving/
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
-└── weekly_update.py          # actualización selectiva del integrado (la usa el notebook 09)
+├── weekly_update.py          # actualización selectiva del integrado (notebook 09) y silver de la Sala (notebook 06b)
+└── run_all.py                # CLI: el pipeline completo en orden, desde las fuentes
 ```
 
 ## 3b. `apps/api/` — la API

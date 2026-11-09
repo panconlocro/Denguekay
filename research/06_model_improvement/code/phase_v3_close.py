@@ -344,10 +344,17 @@ def verify_retrain(seed: int = 17) -> dict:
     origins, _ = p26.add_climate(inp)
     pred = p26.run_variant(inp, origins, variant_columns()["V3"], hyperparameters(), seeds=[seed])["predicciones"][seed]
     seconds = time.perf_counter() - start
-    saved = raw_predictions(read_table(OUT / FILES["V3"]), seed)
-    guard = p26.guard_old_blocks({seed: pred}, {seed: saved})
     setup = fc.setup_key(device.xgboost_settings())
-    out = {"semilla": seed, "entorno": setup, "segundos": round(seconds, 1), "G41": guard}
+    reference = OUT / FILES["V3"]
+    if setup.startswith("device=cpu"):
+        # CPU reference (n_jobs=2, predicciones_v3_cpu.zip of the model/v3 Release), when it is downloaded
+        cpu = sorted((OUT.parent / "v3_cpu").glob("predicciones_v3_cpu_*.csv.gz"))
+        matching = [p for p in cpu if str(seed) in p.stem.split("_cpu_")[1].split("_")]
+        if setup == "device=cpu,n_jobs=2" and matching:
+            reference = matching[0]
+    saved = raw_predictions(read_table(reference), seed)
+    guard = p26.guard_old_blocks({seed: pred}, {seed: saved})
+    out = {"semilla": seed, "entorno": setup, "segundos": round(seconds, 1), "referencia": reference.name, "G41": guard}
     if seed == fc.DEPLOYMENT_SEED:
         mine = fc.fingerprint(pred, fc.CONFIG_V3)
         expected = fc.V3_FINGERPRINTS.get(setup)

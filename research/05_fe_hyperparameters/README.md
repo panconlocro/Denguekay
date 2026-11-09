@@ -37,10 +37,16 @@ Experimentos de MLflow: `denguekay/fe_hiperparametros_fase0_referencia_B`, `..._
 
 ## Cómo reproducir
 
+Los datos salen de los Releases (no de otra PC): los comandos de descarga se corren **desde un clon de `develop` con su `.venv`** (ver [docs/reproducibilidad.md](../../docs/reproducibilidad.md)) y extraen en la copia del tag con `--raiz`; cada archivo se verifica contra su SHA-256. `gold_anterior.zip` trae el gold anterior en su ruta original (`data/gold/`), con los mismos bytes que `gold/respaldo_pre_b3/` (Release de `model/v0`). El silver de la Sala del Release es el vigente: sus filas hasta 2025 son las mismas que leyó el estudio, pero trae además las semanas de 2026. Las cifras se verifican con los artefactos guardados del Release de cada estudio cuando existen.
+
 ```powershell
+# Desde un clon de develop, con su .venv: la copia del tag y sus datos
 git worktree add ..\denguekay-fe-hp study/fe-hyperparameters
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --estudio 01_eda --raiz ..\denguekay-fe-hp
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --estudio 03_first_models_and_ablations --solo gold_anterior.zip --raiz ..\denguekay-fe-hp
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --estudio 05_fe_hyperparameters --raiz ..\denguekay-fe-hp
+# En la copia del tag, con su propio entorno
 cd ..\denguekay-fe-hp
-# data/ no está en git: copia (o enlaza) la carpeta data/ del repo principal.
 python -m venv .venv   # entorno propio: las dependencias pueden diferir de las de main
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace notebooks/32_modelado_fe_inicios.ipynb

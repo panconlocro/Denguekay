@@ -36,6 +36,6 @@ Para reproducir un estudio se parte de su tag (ver el README de cada uno). `pre-
 
 ## Estudios nuevos
 
-Un estudio nuevo va en `research/07_<nombre>/` con la misma forma (`README.md`, `notebooks/`,
+Un estudio nuevo va en `research/08_<nombre>/` (el `07` es del compañero de Rosa) con la misma forma (`README.md`, `notebooks/`,
 `code/`, `tests/`, `docs/`), importa el paquete `denguekay` y nunca al revés: el producto no
 importa `research/`. Al cerrarlo se crea el tag `study/<nombre>`.

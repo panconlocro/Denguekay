@@ -1,0 +1,221 @@
+{
+ "tag": "study/fe-hyperparameters",
+ "repositorio": "panconlocro/Denguekay",
+ "fecha": "2026-11-09",
+ "descripcion": "Paquetes del Release de study/fe-hyperparameters. Se descargan y verifican con python -m denguekay.data.ingestion.release_bundles",
+ "paquetes": [
+  {
+   "nombre": "artefactos_estudio05.zip",
+   "bytes": 143638576,
+   "sha256": "b0a3226a99eae8f4d4edaedc94d2bf1bf7504595fa2d21974e6136f3603758c4",
+   "destino": "models/experimentos",
+   "archivos": [
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/complemento_clima/predicciones_F_A3.csv.gz",
+     "filas": 254475,
+     "bytes": 6157021,
+     "sha256": "ad57443018ad943d0e6cf56041dba1065cc4c9b39afcaea8b08facd78d772307"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/complemento_clima/predicciones_F_completa.csv.gz",
+     "filas": 254475,
+     "bytes": 5218695,
+     "sha256": "407482070cc2731d62accdd1e8f15a2737ad0d97f0c55af1e6e0e40ab5d8a215"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/complemento_clima/predicciones_F_interseccion_A3.csv.gz",
+     "filas": 254475,
+     "bytes": 5222135,
+     "sha256": "c926f000ac622acab10688f14287e44e1c1a1ecb4637e3b2ae6bdcbc02176a8d"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase0/predicciones_referencia_B.csv.gz",
+     "filas": 254475,
+     "bytes": 4041805,
+     "sha256": "2cc8a29883ae7956577c79cf3068f8776adcc176ce3e0a8100ceb787e918eb24"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2a/predicciones_A1.csv.gz",
+     "filas": 254475,
+     "bytes": 4545331,
+     "sha256": "33a8219f1338faf3f322f87f5b46485c2a0336843a095502cbe28c20775a72d2"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2a/predicciones_A2.csv.gz",
+     "filas": 254475,
+     "bytes": 4524118,
+     "sha256": "725f118a7a9ddb8a5c1f55b827a76e25c4816752ac33afdac903617a8c5f7155"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2a/predicciones_A3.csv.gz",
+     "filas": 254475,
+     "bytes": 4148173,
+     "sha256": "a29768a2c7f73262e0b68c8644156b9e5356abde7d4060bdf22824ec12e54332"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2a/predicciones_A4.csv.gz",
+     "filas": 254475,
+     "bytes": 4274795,
+     "sha256": "2bc0361499a2120678e7c2dc3906665e5d9537927fd94e44d3c1e12bc13cc491"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2a/predicciones_A5.csv.gz",
+     "filas": 254475,
+     "bytes": 4280778,
+     "sha256": "dc26672320dd70c4b5b7f4df284b8f636dd23ade6d873ed6d2c2caaab437870b"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2a/predicciones_A6.csv.gz",
+     "filas": 254475,
+     "bytes": 4250330,
+     "sha256": "7ffd23191c2fbf82e971ec07132dd57212077fd57f7137cc5b2490ec749c70f7"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2a/predicciones_A7.csv.gz",
+     "filas": 254475,
+     "bytes": 4261833,
+     "sha256": "f6be0dfdc0c5e7b1da22ee9f6bc992fd2692919f6f5adb65cfae0700ccfaacc9"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2a/predicciones_B_interseccion_A3.csv.gz",
+     "filas": 254475,
+     "bytes": 4049574,
+     "sha256": "279e8b21eb032ce4182feb9bd41d36fda8149284e0d059fee2103d3a9531d974"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_A1_mas_A2_interseccion_A1_mas_A2_mas_B1.csv.gz",
+     "filas": 254475,
+     "bytes": 4889288,
+     "sha256": "c8e968491a611a51f8d211c7383af1b2c790b5fe2420f1c964a535b36663977b"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_A1_mas_A2_mas_B1.csv.gz",
+     "filas": 254475,
+     "bytes": 4956314,
+     "sha256": "131b856c8074a9a40e5f8351230c1f3634459866e86d03fc6392c4d729e4a6ca"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_A3_interseccion_A3_mas_B5.csv.gz",
+     "filas": 254475,
+     "bytes": 4176402,
+     "sha256": "6379651a02662c00364907e6f815b34ae08ebdba00a7fba3836030d3ec735b5b"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_A3_mas_B5.csv.gz",
+     "filas": 254475,
+     "bytes": 4319431,
+     "sha256": "19c55a3c3ca258f7a102b3fd0cde97a15ae433bf1138082dd5e45b11d299c50f"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_B1.csv.gz",
+     "filas": 254475,
+     "bytes": 4590620,
+     "sha256": "d718048166cce0b4311f43d63df3e445d67ba259ebbd174fab98b8fa9547ec53"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_B2.csv.gz",
+     "filas": 254475,
+     "bytes": 4121041,
+     "sha256": "00f6d3942884c0008ac2bb714482c9340bf0ba8e02798eec4b510db1b0f6857d"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_B3.csv.gz",
+     "filas": 254475,
+     "bytes": 4529025,
+     "sha256": "2517adbeff30b666664217c0b65d15fcfef6a70749f299d532d16bc369e81206"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_B4.csv.gz",
+     "filas": 254475,
+     "bytes": 4317477,
+     "sha256": "91728b02580764fcb852f65e0d3f9e329aa339ba097439631b637484be95f922"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_B5.csv.gz",
+     "filas": 254475,
+     "bytes": 4277878,
+     "sha256": "e9f06ef714fc13049e5c9069f1b9c68da6fe78228f9ef567079dcf0eda940328"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_B_interseccion_B1.csv.gz",
+     "filas": 254475,
+     "bytes": 4049574,
+     "sha256": "aaa8b091f45bce3a76ee4f9833824d65950ce20e15657b506a55f61da5582369"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_B_interseccion_B2.csv.gz",
+     "filas": 254475,
+     "bytes": 4049574,
+     "sha256": "04d2c55374a9989b4a983c4a33e3116b82395adcfb70cefb6f41b5152d8d2f0f"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2b/predicciones_B_interseccion_B5.csv.gz",
+     "filas": 254475,
+     "bytes": 4029858,
+     "sha256": "1f457c72f907dd2c6ba821079bda1763de54c6db455ce0b8c0072dd8d1745fb4"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2c/predicciones_B_interseccion_C.csv.gz",
+     "filas": 254475,
+     "bytes": 4049573,
+     "sha256": "c211253f6faba98b4475d6e84fc5825af11f4ac9247875e06e5fe978134d3caa"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2c/predicciones_C.csv.gz",
+     "filas": 254475,
+     "bytes": 4968466,
+     "sha256": "750b3212edf673f143501e6422d3792710f9c19a7de5a4d5a21b8cb31d7daaec"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase2c/predicciones_C3_interseccion_C.csv.gz",
+     "filas": 254475,
+     "bytes": 4529090,
+     "sha256": "c3450e772092f90286a941529f5f760b47b812bb0691c5e29a8ee352f3f06ab2"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase3/optuna_fase3.db",
+     "filas": null,
+     "bytes": 458752,
+     "sha256": "91635c4e118c41b7f2c256b9143495d5dfe056d4a1ddc42365a9d00288d9d7f2"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase3/predicciones_base.csv.gz",
+     "filas": 254475,
+     "bytes": 4529027,
+     "sha256": "9b1ef9b58346cf0ee14a4faf03743eb654a318c3214e90cb7d7931afb6640dff"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase3/predicciones_candidata.csv.gz",
+     "filas": 254475,
+     "bytes": 4655304,
+     "sha256": "7f38b5b3e852d7eb9b2cee56572f44ad95dd67993210d254be8d02236196b162"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase3/trials.csv",
+     "filas": 100,
+     "bytes": 67860,
+     "sha256": "2fcc2db4716bdfc05e3b044115ac28557658b495e7896ef962ea81bb9ba0b04e"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase4/predicciones_s4s2_dentro.csv.gz",
+     "filas": 254475,
+     "bytes": 4529034,
+     "sha256": "2e2676a30fec54193ee5022edcb4ac7f5346080dda039bec866c9ee1ee451368"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase4/predicciones_s4s2_oos.csv.gz",
+     "filas": 254475,
+     "bytes": 4526851,
+     "sha256": "4a782e6e4250c2214c24cd70c7470a22af56da59535f5b9a206a183ba73ceb7f"
+    },
+    {
+     "ruta": "models/experimentos/fe_hiperparametros/fase4/predicciones_s4s3_dentro_muestra.csv.gz",
+     "filas": 254475,
+     "bytes": 5218704,
+     "sha256": "a160c291a143a1920a64e1d332503e5e9a99609047342c764dce6f21ec056e27"
+    }
+   ],
+   "segundos_armado": 8.8
+  }
+ ]
+}

@@ -118,6 +118,14 @@ La suite incluye las guardas de la reestructuración:
 El CI (`.github/workflows/backend.yml`) corre la suite en Linux, Windows y macOS sobre SQLite, y en Linux
 contra PostgreSQL 18, con cobertura mínima del 80 % en `apps/api`, `denguekay.serving` y `denguekay.db`.
 
+## Reproducibilidad
+
+**Punto de entrada único: [docs/reproducibilidad.md](docs/reproducibilidad.md).** Explica cómo obtener los datos
+exactos de cada versión (Releases de sus tags, verificados con SHA-256), cómo reentrenar y verificar v0, v1, v2 y
+v3 (`python -m denguekay.model.reproduce <versión>`), cómo reproducir cada estudio desde su tag y cómo regenerar
+`data/` desde las fuentes (`python -m denguekay.pipelines.run_all`), con tiempos, si necesita GPU y el nivel de
+exactitud.
+
 ## Modelado e investigación
 
 XGBoost entrena en una GPU NVIDIA (CUDA) si la encuentra y, si no, en CPU (sección `xgboost` de
