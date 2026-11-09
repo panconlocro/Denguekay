@@ -24,6 +24,10 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 - **Gold** suma las 4 columnas de d3; hay que regenerarlo con el notebook 10. La v0 sigue leyendo
   `gold/respaldo_pre_b3`.
 - La v2 queda reemplazada y registrada (`v2_e3_s4`); sus OOS dejan la serie y entran las de la v3.
+- Con d3, el SHA-256 del archivo gold h2 cambia, pero las 20 columnas de la v2 quedan iguales bit a bit. La ficha de
+  la v2 suma `sha256_columnas_v2` (digest de contenido de esas columnas), con el que `v2_e3_s4.prepare` sigue
+  reconociendo su gold y comparando su huella. Sin esto, la guarda `test_v2_parity` fallaba con el gold
+  regenerado. No se regeneró ninguna línea base.
 
 ## 2026-11-09 · v3 vigente
 

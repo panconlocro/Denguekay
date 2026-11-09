@@ -346,7 +346,9 @@ def prepare(horizons, options):
     files = [SILVER_INTEGRATED, SILVER_EPI_HISTORICAL, GOLD_MANIFEST, gold_h2]
     hashes = {f"v2:{p.name}": hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
     sha256_gold = hashes[f"v2:{gold_h2.name}"]
-    frozen_gold = card("v2")["gold"]["2"]["sha256"] == sha256_gold
+    frozen = card("v2")["gold"]["2"]
+    frozen_gold = (frozen["sha256"] == sha256_gold
+                   or frozen.get("sha256_columnas_v2") == gold_v2_digest(gold_h2))
     fingerprint = cf.fingerprint(raw, config)
     matches = None
     if frozen_gold:
@@ -356,6 +358,24 @@ def prepare(horizons, options):
             raise ValueError("Las predicciones de la v2 no reproducen su huella congelada en este entorno; "
                              "no se publica un modelo distinto del evaluado")
     return Prepared(config, origins, predictions, inputs["serie"], hashes, sha256_gold, fingerprint, matches)
+
+
+def gold_v2_digest(path) -> str:
+    """Content digest of the v2 columns of a gold h=2 file (every persisted column but the d3 of the v3).
+
+    Gold gained the four d3 columns when the v3 started to be served; its file SHA-256 changed while the 20 columns
+    of the v2 stayed bit for bit. This digest identifies the v2 dataset in both files (recorded in its card)."""
+    import hashlib
+
+    from denguekay.features.climate import D3_COLUMNS
+    from denguekay.features.gold import persisted_columns
+
+    gold = pd.read_csv(path, dtype={"ubigeo": "string"}, parse_dates=["semana_inicio", "origen_inicio", "origen_cierre"],
+                       float_precision="round_trip")
+    columns = [c for c in persisted_columns(2) if c not in D3_COLUMNS]
+    digest = hashlib.sha256(",".join(columns).encode("utf-8"))
+    digest.update(pd.util.hash_pandas_object(gold[columns], index=False).to_numpy().tobytes())
+    return digest.hexdigest()
 
 
 def fingerprint_parameters():

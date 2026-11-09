@@ -41,7 +41,7 @@
   },
   "gold": {
     "uso": "matrices en memoria con build_gold h=2 (base_6 y las columnas A3) + B3 desde silver epidemiológico histórico; se excluyen 65 orígenes con nulos de arranque de A3",
-    "2": {"archivo": "meteo_socio_epi_piura_2017_2025_h2_gold.csv", "sha256": "a5d16663d4030b891d0fbbca81b4a0abfe478e11eb3bb85a9f59d49dc4eb27a3"},
+    "2": {"archivo": "meteo_socio_epi_piura_2017_2025_h2_gold.csv", "sha256": "a5d16663d4030b891d0fbbca81b4a0abfe478e11eb3bb85a9f59d49dc4eb27a3", "sha256_columnas_v2": "6332b94300718145c7fe210b3bc18726ca61681bfa8940f698dc9e40c39e6d3a", "nota_columnas_v2": "digest de contenido de las 20 columnas de la v2 (v2_e3_s4.gold_v2_digest): identifica el gold de la v2 también después de que gold sumó las 4 columnas de d3 de la v3"},
     "nota": "Gold limpio (20 columnas, 02/11/2026): solo llaves, objetivo, etiqueta y las variables de la v2. Sus 17 columnas previas son idénticas bit a bit a las del gold anterior (sha256 0ff49650f0fa1043bf2ae562d401c0d84307550108ef71d427ba9a20cbd475e3) y B3 es idéntica a frozen_configs.origins. El modelo no cambió: entrena y sirve igual, con B3 en memoria."
   },
   "estudio": {
