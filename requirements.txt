@@ -10,6 +10,7 @@ matplotlib
 seaborn
 scipy>=1.18,<1.19
 statsmodels
+rasterio>=1.5,<2
 ipykernel
 nbformat
 nbconvert
