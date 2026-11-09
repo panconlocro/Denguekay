@@ -124,10 +124,26 @@ class TestPredictor(unittest.TestCase):
             with self.subTest(bad=bad.manifest["opciones"]):
                 with self.assertRaises(InvalidArtifact):
                     v3.Predictor.from_package(bad)
-        broken = package()
-        broken.files.pop(v3.MIXTURE)
-        with self.assertRaises(InvalidArtifact):
-            v3.Predictor.from_package(broken)
+        for missing in (v3.MIXTURE, v3.BOOSTER):
+            broken = package()
+            broken.files.pop(missing)
+            with self.subTest(missing=missing), self.assertRaises(InvalidArtifact):
+                v3.Predictor.from_package(broken)
+        bad_platt = package()
+        bad_platt.files[v3.PLATT] = json.dumps({"coeficientes": {str(h): [1.0] for h in (2, 3, 4)}}).encode()
+        mixed = package()
+        mixed.manifest["variables"]["4"]["regresion"] = COLUMNS[:-1]
+        wrong_columns = package(columns=[f"x{i}" for i in range(len(COLUMNS))])
+        wrong_columns.manifest["variables"] = {str(h): {t: COLUMNS for t in v3.TASKS} for h in (2, 3, 4)}
+        for bad in (bad_platt, mixed, wrong_columns):
+            with self.assertRaises(InvalidArtifact):
+                v3.Predictor.from_package(bad)
+
+    def test_threshold_without_history_is_unavailable(self):
+        recent = self.cases[self.cases.semana_inicio.ge(pd.Timestamp("2022-01-02"))].reset_index(drop=True)
+        climate = self.climate[self.climate.semana_inicio.ge(pd.Timestamp("2022-01-02"))].reset_index(drop=True)
+        with self.assertRaises(InferenceUnavailable):
+            self.predictor.predict(ServingInputs(recent, climate, None, None, RULE), cutoff("2024-06-29"), (2,))
 
 
 class TestPackageBuilding(unittest.TestCase):

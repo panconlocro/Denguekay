@@ -372,6 +372,18 @@ class TestEsquemaOE2SQLite(EsquemaOE2, unittest.TestCase):
         with transaction(self.motor) as s:
             s.get(SystemParameter, "seleccion_experimental").valor = {}
 
+    def test_migracion_0007_temperatura_era5_land_con_check_y_reversible(self):
+        """0007_v3 agrega temp_media_era5_land_c con su CHECK (−20..50 °C); el downgrade la quita."""
+        columnas = lambda: {c["name"] for c in inspect(self.motor).get_columns("observacion_semanal")}
+        self.assertIn("temp_media_era5_land_c", columnas())
+        with self.motor.connect() as conexion:
+            sql = conexion.execute(text("SELECT sql FROM sqlite_master WHERE name = 'observacion_semanal'")).scalar_one()
+        self.assertIn("temp_media_era5_land_c BETWEEN -20 AND 50", sql)
+        bajar_una_revision(self.motor, "0006_v1")
+        self.assertNotIn("temp_media_era5_land_c", columnas())
+        migrar(self.motor)
+        self.assertIn("temp_media_era5_land_c", columnas())
+
 
 @unittest.skipUnless(url_pg_pruebas(), "Sin DENGUEKAY_PG_PRUEBAS_URL: se omiten las pruebas en PostgreSQL")
 class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
