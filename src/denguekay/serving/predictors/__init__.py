@@ -11,7 +11,8 @@ from importlib import import_module
 from denguekay.serving.artifacts import InvalidArtifact
 
 PREDICTORS = {"v0_compact_xgb": "denguekay.serving.predictors.v0_compact_xgb",
-              "v2_e3_s4": "denguekay.serving.predictors.v2_e3_s4"}
+              "v2_e3_s4": "denguekay.serving.predictors.v2_e3_s4",
+              "v3_l5a_d3": "denguekay.serving.predictors.v3_l5a_d3"}
 _CACHE = OrderedDict()
 _CACHE_SIZE = 8
 

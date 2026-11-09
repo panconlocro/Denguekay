@@ -169,6 +169,7 @@ class WeeklyObservation(WithUbigeo, Base):
         CheckConstraint("hum_rel_media_pct BETWEEN 0 AND 100", name="humedad_valida"),
         CheckConstraint("temp_min_c <= temp_media_c AND temp_media_c <= temp_max_c",
                         name="temperaturas_ordenadas"),
+        CheckConstraint("temp_media_era5_land_c BETWEEN -20 AND 50", name="temperatura_era5_land_valida"),
         Index("ix_obs_semana", "id_semana"),
     )
     ubigeo: Mapped[str] = mapped_column(CHAR(6), ForeignKey("distrito.ubigeo"), primary_key=True)
@@ -183,6 +184,9 @@ class WeeklyObservation(WithUbigeo, Base):
     # double precision since 0005_v1 (decision M5); SQLite keeps its declared NUMERIC, which stores the full REAL.
     hum_rel_media_pct: Mapped[float | None] = mapped_column(
         Double().with_variant(Numeric(5, 2, asdecimal=False), "sqlite"))
+    # ERA5-Land weekly mean temperature (d3 of the v3) since 0007_v3: apart from temp_media_c, full precision.
+    temp_media_era5_land_c: Mapped[float | None] = mapped_column(
+        Double().with_variant(Numeric(asdecimal=False), "sqlite"))
     fuente_casos: Mapped[str] = mapped_column(enum(CASE_SOURCE, "fuente_casos_t"))
     estado_cobertura: Mapped[str] = mapped_column(enum(COVERAGE, "cobertura_t"))
     fecha_extraccion: Mapped[datetime] = mapped_column(DateTime(timezone=True))
