@@ -1,0 +1,198 @@
+{
+  "title": "Ayuda y manual",
+  "intro": "Aprende a consultar los datos y a interpretar cada resultado con sus límites.",
+  "manual": {
+    "title": "Manual de usuario",
+    "description": "Guía de consulta e interpretación · 4 páginas · PDF",
+    "download": "Descargar manual",
+    "href": "/manual-usuario.pdf",
+    "brand": "Denguekay",
+    "scope": "Vigilancia de dengue por distrito · Piura",
+    "edition": "Ayuda y manual · Fase 6",
+    "notice": "Consulta experimental. Los pronósticos y avisos experimentales no constituyen alertas operativas.",
+    "legendNote": "Este manual no fija umbrales de riesgo. Consulta la leyenda vigente en Ayuda > Riesgo y leyenda, en la aplicación conectada al servicio.",
+    "pages": [
+      {
+        "title": "Consultar paso a paso",
+        "subtitle": "Ubica la selección y las fechas antes de leer los resultados."
+      },
+      {
+        "title": "Interpretar los resultados",
+        "subtitle": "Distingue probabilidad, cantidad estimada e incertidumbre."
+      },
+      {
+        "title": "Revisar con criterio",
+        "subtitle": "Lee los avisos y el desempeño dentro de su contexto."
+      },
+      {
+        "title": "Resolver dudas y límites",
+        "subtitle": "Reconoce las ausencias de datos y prepara una consulta útil."
+      }
+    ]
+  },
+  "ui": {
+    "searchLabel": "Buscar en la ayuda",
+    "searchPlaceholder": "Buscar un tema o una palabra…",
+    "searchHint": "Busca con o sin tildes. La búsqueda solo filtra los temas de ayuda.",
+    "clear": "Limpiar búsqueda",
+    "index": "En esta guía",
+    "topic": "GUÍA DE USO",
+    "emptyTitle": "Sin coincidencias",
+    "emptyText": "Prueba con otra palabra, como filtros, riesgo o datos, o limpia la búsqueda para ver todos los temas.",
+    "results": "Temas encontrados",
+    "previous": "Tema anterior",
+    "next": "Tema siguiente",
+    "legendTitle": "Leyenda vigente del servicio",
+    "legendEmpty": "La configuración no incluye una leyenda. No deduzcas el nivel de riesgo; vuelve a consultar cuando esté disponible.",
+    "legendLive": "Los rangos se leen de la configuración actual. La etiqueta acompaña siempre al color."
+  },
+  "topics": [
+    {
+      "id": "navegar",
+      "title": "Navegación y filtros",
+      "summary": "Del panorama regional al detalle de un distrito.",
+      "keywords": ["tablero", "mapa", "provincia", "geografía", "indicadores", "series"],
+      "page": 1,
+      "paragraphs": [
+        "El tablero resume la Región Piura. Sus indicadores superiores mantienen el alcance regional aunque selecciones una provincia o un distrito; los filtros geográficos afectan al mapa y a los listados. Lee siempre el alcance indicado en cada tarjeta.",
+        "El mapa representa centroides distritales, no límites territoriales ni ubicaciones de pacientes. El detalle y las series permiten contrastar lo observado y lo pronosticado para el distrito seleccionado."
+      ],
+      "steps": [
+        "Selecciona provincia, distrito y horizonte en los filtros superiores. Revisa el resumen de filtros aplicados.",
+        "En el mapa o listado, abre el distrito de interés y revisa sus fechas, estimaciones y serie.",
+        "Usa Limpiar filtros para volver al alcance general. Limpiar la búsqueda de ayuda solo restablece este índice."
+      ]
+    },
+    {
+      "id": "tiempo",
+      "title": "Horizonte, corte y emisión",
+      "summary": "La distancia desde el corte no garantiza anticipación real.",
+      "keywords": ["fecha", "vigencia", "histórica", "objetivo", "anticipación", "actualización"],
+      "page": 1,
+      "paragraphs": [
+        "La semana de corte identifica hasta dónde llegan los datos usados. La semana objetivo es aquella para la que se estima el resultado. El horizonte cuenta las semanas entre corte y objetivo; la fecha de emisión indica cuándo se generó el pronóstico. La actualización de la API es otra fecha y no reemplaza la emisión.",
+        "Comprueba la anticipación efectiva desde la emisión hasta el inicio de la semana objetivo. Si se emitió al inicio o después, está sin anticipación. Si el objetivo ya comenzó, se presenta como consulta histórica, aunque sea el último corte publicado. Un horizonte nominal no garantiza semanas útiles desde la emisión.",
+        "El proyecto requiere al menos dos semanas efectivas de anticipación y tiene cuatro como objetivo principal. Revisa por separado disponibilidad, vigencia y validación: alcanzar la anticipación mínima no convierte un modelo experimental en operativo."
+      ],
+      "steps": []
+    },
+    {
+      "id": "resultados",
+      "title": "Probabilidad y casos",
+      "summary": "Son dos preguntas distintas sobre la semana objetivo.",
+      "keywords": ["conteos", "magnitud", "observado", "pronosticado", "brote", "clasificación"],
+      "page": 2,
+      "paragraphs": [
+        "La probabilidad de brote estima la posibilidad de que una semana distrital alcance el criterio de casos elevados definido por el proyecto. La etiqueta busca cada semana elevada, no solo el inicio de un episodio. No es la probabilidad de enfermar de una persona ni una cantidad de casos.",
+        "Los casos pronosticados estiman la magnitud de casos para la semana objetivo. Son estimaciones, no confirmaciones. Los casos observados corresponden a los datos publicados por las fuentes epidemiológicas. Distingue las etiquetas Observado y Pronosticado al comparar la serie."
+      ],
+      "steps": []
+    },
+    {
+      "id": "riesgo",
+      "title": "Riesgo y leyenda",
+      "summary": "Interpreta el nivel con los rangos vigentes del servicio.",
+      "keywords": ["color", "umbral", "bajo", "medio", "alto", "sin datos"],
+      "page": 2,
+      "liveLegend": true,
+      "paragraphs": [
+        "El nivel de riesgo agrupa la probabilidad conforme a la leyenda vigente. Lee la etiqueta junto al color y comprueba sus rangos en la aplicación. Esos límites de probabilidad son distintos del criterio de casos elevados usado para definir la etiqueta de brote.",
+        "Sin datos indica que no hay una predicción válida para interpretar. No equivale a riesgo bajo ni a ausencia de dengue. Este manual remite a la leyenda viva y no reproduce umbrales que podrían cambiar."
+      ],
+      "steps": []
+    },
+    {
+      "id": "intervalos",
+      "title": "Intervalos e incertidumbre",
+      "summary": "Un rango orienta sobre la incertidumbre; no asegura el resultado.",
+      "keywords": ["80", "cobertura", "calibración", "v2", "inferior", "superior"],
+      "page": 2,
+      "paragraphs": [
+        "Cuando se publican, los límites inferior y superior acompañan la estimación de casos. En la versión v2, los intervalos son nominales del 80 % y no están calibrados: no se ha garantizado que contengan los casos observados con esa frecuencia real. Son orientativos.",
+        "Esta advertencia describe la v2 y no establece un contrato para todas las versiones. Revisa la versión, el nivel publicado y el motivo de ausencia del intervalo en cada consulta. Un intervalo no disponible no debe sustituirse por cero ni por la estimación puntual."
+      ],
+      "steps": []
+    },
+    {
+      "id": "experimental",
+      "title": "Uso experimental",
+      "summary": "Disponibilidad y validación son estados diferentes.",
+      "keywords": ["operativo", "validado", "notificación", "decisiones", "límites"],
+      "page": 3,
+      "paragraphs": [
+        "Una predicción disponible puede proceder de un modelo experimental no validado. Lee el estado del horizonte y de la versión. Los resultados y avisos experimentales no constituyen alertas operativas ni generan notificaciones.",
+        "La consulta apoya la revisión de información agregada; no diagnostica personas ni autoriza por sí sola una intervención. La validación del modelo, la vigencia temporal y la decisión institucional requieren revisiones separadas."
+      ],
+      "steps": []
+    },
+    {
+      "id": "avisos",
+      "title": "Avisos y estados registrados",
+      "summary": "Consulta la trazabilidad del aviso sin modificar su estado.",
+      "keywords": ["alertas", "activa", "retirada", "nueva", "cambio", "leído"],
+      "page": 3,
+      "paragraphs": [
+        "En Alertas tempranas puedes filtrar los avisos por estado registrado, nivel y semana objetivo, y abrir su detalle. Activa y retirada son estados del registro; no significan leído o no leído, ni confirman que se ejecutó una acción sanitaria.",
+        "Los cambios Nueva, Se mantiene, Sube de nivel y Baja de nivel describen la evolución registrada. Revisar o abrir un aviso no escribe ni modifica su estado. Comprueba distrito, horizonte, corte, objetivo y emisión antes de interpretarlo; conserva la distinción histórica y experimental."
+      ],
+      "steps": []
+    },
+    {
+      "id": "desempeno",
+      "title": "Desempeño y persistencia",
+      "summary": "Compara resultados del mismo bloque, tarea y horizonte.",
+      "keywords": ["métricas", "modelo", "error", "importancias", "causalidad", "versión"],
+      "page": 3,
+      "paragraphs": [
+        "En Desempeño del modelo identifica primero la versión, tarea, horizonte y bloque temporal de evaluación. Lee las métricas por bloque: un promedio puede ocultar diferencias entre periodos. No mezcles métricas de clasificación con errores de conteos ni valores obtenidos en bloques distintos.",
+        "La persistencia es una referencia que conserva el último conteo disponible al corte. Compara el error del modelo y el de persistencia en el mismo bloque y con la misma métrica: en métricas de error, menor es mejor. Esto no implica que toda métrica se interprete así; revisa su definición.",
+        "Superar la persistencia en un bloque no implica aceptación automática ni uso operativo. Las importancias de variables describen cómo el modelo utiliza información; no demuestran efectos causales. Si faltan métricas o referencias, la comparación queda pendiente, sin cifras sustitutivas."
+      ],
+      "steps": []
+    },
+    {
+      "id": "datos",
+      "title": "Datos ausentes y reintentos",
+      "summary": "Un dato faltante es distinto de un cero epidemiológico.",
+      "keywords": ["error", "fallo", "vacío", "no disponible", "conexión", "reintentar"],
+      "page": 4,
+      "paragraphs": [
+        "No disponible, Sin datos y los huecos en una serie indican ausencia de información utilizable para esa consulta. No se rellenan con ceros. Un cero epidemiológico registrado expresa otra situación y debe conservarse separado del faltante.",
+        "Una lista vacía puede reflejar los filtros seleccionados, un horizonte no disponible o la ausencia de registros publicados; no prueba que no existan casos. Lee el motivo mostrado antes de sacar conclusiones."
+      ],
+      "steps": [
+        "Revisa filtros, alcance y estado del horizonte. Si corresponde, limpia los filtros para ampliar la consulta.",
+        "Si hay un error de carga, usa Reintentar en la tarjeta afectada. No interpretes datos anteriores como vigentes.",
+        "Si persiste, registra la pantalla, los filtros, la fecha y el mensaje mostrado para una futura consulta de soporte."
+      ]
+    }
+  ],
+  "troubleshooting": {
+    "title": "Solucionar problemas",
+    "items": [
+      {
+        "question": "¿No hay datos o falla la carga?",
+        "answer": "Revisa la selección y usa Reintentar si aparece un error.",
+        "topic": "datos"
+      },
+      {
+        "question": "¿El objetivo ya empezó?",
+        "answer": "Revisa emisión y anticipación efectiva; puede ser una consulta histórica.",
+        "topic": "tiempo"
+      },
+      {
+        "question": "¿Qué significa el color?",
+        "answer": "Consulta la etiqueta y la leyenda vigente; Sin datos no es riesgo bajo.",
+        "topic": "riesgo"
+      }
+    ]
+  },
+  "support": {
+    "title": "Soporte y capacitación",
+    "paragraphs": [
+      "El canal de soporte, las personas responsables y el calendario de capacitación están pendientes de definición y publicación. Esta guía no ofrece un canal de atención ni confirma disponibilidad de sesiones.",
+      "Para preparar una consulta, conserva la pantalla, distrito, horizonte, corte, objetivo, emisión y mensaje de error, cuando estén disponibles. Usa solo información agregada, sin datos personales."
+    ],
+    "status": "Canal y capacitación pendientes"
+  }
+}
