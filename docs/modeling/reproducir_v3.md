@@ -18,6 +18,10 @@ git switch --detach model/v3
 
 Para trabajar a partir de ahí, crea tu rama desde el tag: `git switch -c exp/<tu-rama> model/v3`.
 
+**Windows: clona en una ruta corta** (por ejemplo `C:\dk\Denguekay`). Algunas dependencias instalan archivos
+con rutas muy largas dentro de `.venv`, y sin el soporte de rutas largas de Windows `pip` falla con
+`OSError: [Errno 2] No such file or directory` (pasó en la verificación desde una carpeta temporal profunda).
+
 ## 2. Entorno exacto
 
 Python **3.12.10** de 64 bits; con otra versión las ruedas pueden diferir. `constraints.txt` fija las
