@@ -49,7 +49,7 @@ tiene una fila por `ubigeo`, `anio` y `semana`. El
 actualizador inspecciona sus filas, completa únicamente los componentes
 faltantes y conserva los valores históricos ya poblados. Los datos de clima
 proceden de Open-Meteo; los demográficos, del Excel y la tabla anual local;
-y los nuevos casos de dengue, de la Sala Situacional MINSA/DGE.
+y los nuevos casos confirmados de dengue, de la Sala Situacional MINSA/DGE.
 
 Instala las dependencias con `scripts/setup.ps1` (Windows) o `./scripts/setup.sh` (macOS/Linux). Desde la raíz del repositorio:
 
@@ -87,7 +87,13 @@ vive en `data/reference/` y sí se versiona.
 
 ## Alcance y procedencia
 
-El snapshot actual conserva los casos históricos del Excel epidemiológico
+El notebook 06b usa la serie `CONFIRMADO` del gráfico semanal por tipo de diagnóstico y marca
+`tipo_dx=C` en su silver. En la primera actualización completa reemplaza el silver anterior
+de la Sala. El notebook 09 usa el CSV histórico hasta 2024 y la Sala desde 2025, sin sumar
+conteos de ambas fuentes en el año que se solapa. Una semana posterior al corte de la Sala
+queda pendiente. Ejecuta 06, 06b, 07 y 09 para migrar el integrado a confirmados.
+
+El snapshot anterior conserva los casos históricos del Excel epidemiológico
 hasta 2024. Para 2025, las 3 380 filas de semanas 1–52 suman **1 114** casos
 de la Sala. Sus **3** casos de semana 53 se mantienen en el artefacto de
 fuente porque esa semana no corresponde a una fila completa de clima del

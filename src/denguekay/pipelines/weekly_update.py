@@ -61,7 +61,7 @@ def run_epidemiological(frame: pd.DataFrame, keys: set[DistrictWeek]) -> pd.Data
         logging.info("Sala: %s, %s requested districts", year, len(codes))
         records, controls = asyncio.run(scrape_sala(year, labels, artifact_dir))
         normalized = normalize_sala_records(records, controls, catalog)
-        batches.append(normalized)
+        batches.append(normalized.assign(tipo_dx="C"))
     result = pd.concat(batches, ignore_index=True)
     requested = _rows_for_keys(result, keys)
     upsert_sala_silver(SILVER_SALA, result)
@@ -82,9 +82,9 @@ def refresh_sala_silver(years: list[int]) -> pd.DataFrame:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
         logging.info("Sala: %s, %s districts", year, len(labels))
         records, controls = asyncio.run(scrape_sala(year, labels, BRONZE_SALA / f"{year}_{stamp}"))
-        batches.append(normalize_sala_records(records, controls, catalog))
+        batches.append(normalize_sala_records(records, controls, catalog).assign(tipo_dx="C"))
     result = pd.concat(batches, ignore_index=True)
-    upsert_sala_silver(SILVER_SALA, result)
+    upsert_sala_silver(SILVER_SALA, result, replace_legacy=True)
     return result
 
 
