@@ -35,6 +35,13 @@ calculando en memoria con `build_gold`. De ahí salen las matrices de la v2 y lo
 `build_gold` reproduce los valores de h=2 y h=4 (hay un test que lo comprueba), pero la v0 exige los archivos exactos y
 sus hashes.
 
+## Histórico epidemiológico confirmado
+
+El notebook 06 descarga `DatosDengueV2.csv` de Drive y conserva los bytes de la fuente en
+`data/bronze/epi/`. El notebook 07 selecciona las notificaciones de Piura con `tipo_dx = C`
+y las cuenta por UBIGEO, año y semana en `data/silver/epi_piura_semanal.csv`. Las semanas sin
+notificaciones confirmadas no aparecen en este agregado.
+
 ## Actualización selectiva del dataset
 
 El dataset integrado (`data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv`)

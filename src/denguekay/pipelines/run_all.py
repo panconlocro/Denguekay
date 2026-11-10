@@ -4,7 +4,7 @@ Each step is a notebook of ``pipelines/notebooks/`` executed in place with nbcon
 order and the outputs are the same as running them by hand:
 
     01 districts · 02 Open-Meteo and ERA5-Land · 03 meteo silver · 03b Niño 1+2 · 03c CHIRPS (if present) · 04 socio
-    (Drive) · 05 socio silver · 06 epi Excel (Drive) · 06b Sala Situacional · 07 epi silver · 08 and 09 merges · 10 gold
+    (Drive) · 05 socio silver · 06 epi CSV (Drive) · 06b Sala Situacional · 07 epi silver · 08 and 09 merges · 10 gold
 
 The downloads resume from their caches, so a run that stops (API limits, network) is resumed by running the
 command again. Times: Open-Meteo and ERA5-Land are limited per hour and per day (ERA5-Land 2000 onwards takes about
