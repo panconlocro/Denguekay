@@ -55,9 +55,11 @@ def weekly_counts(chart: dict) -> pd.Series:
 def reconcile(aggregate: dict, children: list[dict]) -> None:
     expected = weekly_counts(aggregate)
     child_weeks = [weekly_counts(chart) for chart in children]
-    if not child_weeks or any(not weeks.index.equals(expected.index) for weeks in child_weeks):
+    if not child_weeks or any(not weeks.index.isin(expected.index).all() for weeks in child_weeks):
         raise ValueError(f"Mismatched weekly support for {aggregate['geografia']}")
-    observed = pd.concat(child_weeks, axis=1).sum(axis=1)
+    # The chart drops trailing weeks with no points. Reconcile every implied
+    # zero against the parent series before carrying it to the output.
+    observed = sum(series.reindex(expected.index, fill_value=0) for series in child_weeks)
     if not observed.equals(expected):
         differences = (observed - expected).loc[lambda s: s.ne(0)]
         raise ValueError(f"District totals differ from {aggregate['geografia']}: {differences.to_dict()}")
@@ -87,7 +89,8 @@ async def get_department(client: SalaClient, districts: pd.DataFrame, department
         all_records.extend(records)
         print(department, province, len(records), flush=True)
     reconcile(control, province_controls)
-    return all_records, [control, *province_controls]
+    last_week = int(weekly_counts(control).index.max())
+    return [r | {"ultima_semana_control": last_week} for r in all_records], [control, *province_controls]
 
 
 async def extract(districts: pd.DataFrame, year: int):
@@ -118,10 +121,16 @@ def main() -> None:
     parser.add_argument("--year", type=int, required=True)
     args = parser.parse_args()
     records, controls = asyncio.run(extract(catalog(args.cod_ab), args.year))
-    frame = pd.DataFrame(
-        {"ubigeo": r["ubigeo"], "anio": r["anio"], "semana": week, "casos_Dengue": count, "tipo_dx": "C"}
-        for r in records for week, count in r["puntos"]
-    )
+    rows = []
+    for record in records:
+        points = dict(record["puntos"])
+        for week in range(1, record["ultima_semana_control"] + 1):
+            rows.append({
+                "ubigeo": record["ubigeo"], "anio": record["anio"], "semana": week,
+                "casos_Dengue": points.get(week, 0), "tipo_dx": "C",
+                "semana_observada_en_grafico": int(week in points),
+            })
+    frame = pd.DataFrame(rows)
     if frame.ubigeo.nunique() != 51 or frame.duplicated(["ubigeo", "anio", "semana"]).any():
         raise ValueError("Incomplete or duplicated district series")
     args.output.mkdir(parents=True, exist_ok=True)
