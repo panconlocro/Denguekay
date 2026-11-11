@@ -1,0 +1,14 @@
+# Ajuste simétrico de historia, b3 y d3
+
+Diseño fijado el 10 de noviembre de 2026 antes de puntuar la búsqueda. Se aplica el mismo panel confirmado, calendario, matriz geográfica, corte de disponibilidad, formulación de conteos y calibración que en los brazos observados del control espacial. b3 conserva el rol principal por la regla histórica. d3 conserva su rol de variante operativa.
+
+## Presupuesto y selección
+
+Se ofrecen 17 configuraciones idénticas a los tres brazos, con los hiperparámetros heredados y 16 puntos Sobol con semilla 20261110. Se conservan las dimensiones del espacio de búsqueda histórico, con máximos de 700 árboles y profundidad 6 para el barrido en CPU. En un único corte tardío de desarrollo, 2021, un ajuste d3 tomó 0,81 s con los heredados, 4,58 s con 700 árboles de profundidad 6 y 9,60 s con el trial 191. Los tiempos se midieron mientras corrían los controles en paralelo y se usaron solo para dimensionar el cálculo. El trial 191 queda como referencia histórica porque su selección original usó las temporadas decisivas.
+
+1. **Cribado.** Ajustar las 17 configuraciones por brazo con semilla 17 y los cortes 2008, 2009, 2012 y 2013. Puntuar 2009, 2012 y 2013 con Brier calibrado. El bloque 2008 proporciona las primeras predicciones para calibración.
+2. **Finalistas.** Evaluar en cada brazo los cuatro candidatos Sobol mejor puntuados y la configuración heredada. Ajustar los mismos diez cortes de desarrollo del estudio original y puntuar 2009, 2012, 2013, 2014, 2018 y 2021. Cada brazo hace 68 ajustes de cribado y 50 de finalistas.
+3. **Regla.** Promediar por celda de desarrollo el cociente entre el Brier del candidato y el Brier heredado de su propio brazo. Elegir el menor promedio por brazo. Resolver empates por el orden de identificador, con la configuración heredada primero. La calibración Platt usa únicamente predicciones de los bloques de desarrollo anteriores y etiquetas cerradas al primer origen del bloque.
+4. **Evaluación retrospectiva.** Una vez elegidos los parámetros, entrenar los tres brazos en los 20 cortes comunes con cinco semillas, 300 ajustes en total. Las seis temporadas decisivas (2010, 2015, 2016, 2022, 2023 y 2026) quedan fuera del objetivo de ajuste. Resumir el Brier pareado por horizonte y temporada y volver a resumir sin cada temporada. Separar los resultados de las temporadas usadas en desarrollo.
+
+Este barrido iguala el presupuesto entre brazos. El espacio y número de candidatos son menores que en la búsqueda histórica. La separación entre temporadas de ajuste y decisivas es retrospectiva. Algunas temporadas de desarrollo son posteriores a temporadas decisivas tempranas y estas últimas ya informaron decisiones del estudio previo. El ejercicio mide la comparación retrospectiva y conserva la necesidad de una evaluación prospectiva con la receta congelada.
