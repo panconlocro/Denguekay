@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 from pathlib import Path
@@ -85,7 +86,23 @@ def raw_persistence(data: pd.DataFrame) -> np.ndarray:
     return odds / (1 + odds)
 
 
-def fit_piura(archive, spatial, geography: Path, output: Path) -> None:
+def recalibration_rows(spatial, inputs, origins, history, columns, hp, seed):
+    blocks = [block for block in spatial.BLOCK_LIST if block[0] in set(history.bloque)]
+    raw, fits = spatial.predict(inputs, origins, blocks, columns, hp, seed)
+    raw = raw.loc[(raw.semana_inicio + 6 * DAY).le(CUTOFF)].merge(
+        fits[["bloque", "corte"]], on="bloque", validate="many_to_one"
+    )
+    matched = [*KEY, "bloque", "origen_cierre", "corte", "casos_Dengue", "brote", "persistencia"]
+    order = ["horizonte", "semana_inicio", "ubigeo"]
+    a = raw.sort_values(order).reset_index(drop=True)
+    b = history.sort_values(order).reset_index(drop=True)
+    pd.testing.assert_frame_equal(a[matched], b[matched], check_dtype=False)
+    if a.corte.gt(a.origen_cierre).any():
+        raise ValueError("Recalibration used labels unavailable in Piura")
+    return a.rename(columns={"probabilidad_brote": "probabilidad_cruda", "casos_predichos": "mu_modelo"})
+
+
+def fit_piura(archive, spatial, geography: Path, output: Path, *, without_latitude=False, workers=1) -> None:
     source = archive.OUTPUT / "controles_espaciales"
     report = json.loads((source / "resultados.json").read_text())
     if digest(geography) != report["geografia"]:
@@ -109,7 +126,11 @@ def fit_piura(archive, spatial, geography: Path, output: Path) -> None:
     era = archive.original.era5_2026(panel).assign(fecha_disponible=lambda d: d.semana_inicio + 13 * DAY)
     origins = add_weather(spatial, origins, rain, era)
     train = origins.loc[(origins.semana_inicio_h4 + 6 * DAY).le(CUTOFF)]
-    columns = {arm: report["variantes"][arm] for arm in ARMS}
+    original_columns = {arm: report["variantes"][arm] for arm in ARMS}
+    columns = {
+        arm: [col for col in original_columns[arm] if not (without_latitude and col == "lat")]
+        for arm in ARMS
+    }
     if train.empty or train[columns["b3_obs"]].isna().any().any() or len(origins) != len(inputs["origenes"]):
         raise ValueError("Missing Piura predictors in the frozen training period")
 
@@ -127,39 +148,56 @@ def fit_piura(archive, spatial, geography: Path, output: Path) -> None:
     }
     epi_report = json.loads((archive.OUTPUT / "resultados.json").read_text())
     baseline_paths = dict(zip(pa.SEEDS, spatial.compatible_geo(
-        columns, geography, epi_report, report["hiperparametros"]
+        original_columns, geography, epi_report, report["hiperparametros"]
     ), strict=True))
-    for arm in ARMS:
-        for seed in bundle["semillas"]:
-            name = f"{arm}_s{seed}"
-            calibration_path = baseline_paths[seed] if arm == "historia_geo" else source / name
-            previous = archive_rows(calibration_path)
-            records = {}
-            for h, history in previous.groupby("horizonte"):
-                records[str(h)] = {
-                    "platt": calibrator(history, history.probabilidad_cruda.to_numpy()),
-                    "peso_modelo": archive.closure.p5.fit_w(
-                        history.mu_modelo.to_numpy(), history.persistencia.to_numpy(), history.casos_Dengue.to_numpy()
-                    ),
-                }
-            fit = sp.fit_e3(origins, CUTOFF, seed, spatial.FORM, columns[arm], [], parameters, margin)
-            sample = fit.train.iloc[:7]
-            count_model = sp.FORMULATIONS[spatial.FORM]["conteo"]
-            expected = sp.predict_count(fit.regressor, sample[columns[arm]], count_model, margin[sample.index])
-            path = output / f"{name}.ubj"
-            fit.regressor.save_model(path)
-            restored = XGBRegressor()
-            restored.load_model(path)
-            np.testing.assert_allclose(
-                sp.predict_count(restored, sample[columns[arm]], count_model, margin[sample.index]), expected,
-                rtol=0, atol=0,
-            )
-            bundle["modelos"][name] = {
-                "brazo": arm, "semilla": seed, "sha256": digest(path), "alphas": fit.alphas, "por_horizonte": records,
-                "filas_entrenamiento": len(fit.train), "ultimo_objetivo_h4": str(fit.train.semana_inicio_h4.max().date()),
-                "sha256_calibracion": digest(calibration_path / "predicciones.csv.gz"),
+    if without_latitude:
+        bundle["sensibilidad"] = "sin_latitud"
+        if any(set(original_columns[arm]) - set(columns[arm]) != {"lat"} for arm in ARMS):
+            raise ValueError("Latitude must be the sole predictor removed")
+
+    def fit_variant(job):
+        arm, seed = job
+        name = f"{arm}_s{seed}"
+        calibration_path = baseline_paths[seed] if arm == "historia_geo" else source / name
+        previous = archive_rows(calibration_path)
+        calibration_digest = digest(calibration_path / "predicciones.csv.gz")
+        if without_latitude:
+            previous = recalibration_rows(spatial, inputs, origins, previous, columns[arm], report["hiperparametros"], seed)
+            calibration_file = output / f"{name}_calibracion_piura.csv.gz"
+            previous.to_csv(calibration_file, index=False)
+            calibration_digest = digest(calibration_file)
+        records = {}
+        for h, history in previous.groupby("horizonte"):
+            records[str(h)] = {
+                "platt": calibrator(history, history.probabilidad_cruda.to_numpy()),
+                "peso_modelo": archive.closure.p5.fit_w(
+                    history.mu_modelo.to_numpy(), history.persistencia.to_numpy(), history.casos_Dengue.to_numpy()
+                ),
             }
-            print(name, len(fit.train), flush=True)
+        fit = sp.fit_e3(origins, CUTOFF, seed, spatial.FORM, columns[arm], [], parameters, margin)
+        sample = fit.train.iloc[:7]
+        count_model = sp.FORMULATIONS[spatial.FORM]["conteo"]
+        expected = sp.predict_count(fit.regressor, sample[columns[arm]], count_model, margin[sample.index])
+        path = output / f"{name}.ubj"
+        fit.regressor.save_model(path)
+        restored = XGBRegressor()
+        restored.load_model(path)
+        np.testing.assert_allclose(
+            sp.predict_count(restored, sample[columns[arm]], count_model, margin[sample.index]), expected,
+            rtol=0, atol=0,
+        )
+        model_record = {
+            "brazo": arm, "semilla": seed, "sha256": digest(path), "alphas": fit.alphas, "por_horizonte": records,
+            "filas_entrenamiento": len(fit.train), "ultimo_objetivo_h4": str(fit.train.semana_inicio_h4.max().date()),
+            "sha256_calibracion": calibration_digest,
+        }
+        print(name, len(fit.train), flush=True)
+
+        return name, model_record
+
+    jobs = [(arm, seed) for arm in ARMS for seed in bundle["semillas"]]
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        bundle["modelos"] = dict(pool.map(fit_variant, jobs))
 
     reference = archive_rows(baseline_paths[bundle["semillas"][0]])
     bundle["persistencia_prob"] = {
@@ -168,7 +206,20 @@ def fit_piura(archive, spatial, geography: Path, output: Path) -> None:
     write_json(output / "paquete.json", bundle)
 
 
-def destination_cases(csv: Path, geography: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+def read_sala(path: Path, year: int, districts: set[str], weeks: int) -> pd.DataFrame:
+    records = read(path)
+    valid = records.tipo_dx.eq("C") & records.anio.eq(year) & records.casos_Dengue.ge(0)
+    if not valid.all() or not records.casos_Dengue.mod(1).eq(0).all():
+        raise ValueError("Unexpected diagnosis, date or case count in Sala")
+    if records.duplicated(["ubigeo", "anio", "semana"]).any() or set(records.ubigeo) != districts:
+        raise ValueError("Incomplete or duplicated Sala district series")
+    selected = records.loc[records.semana.between(1, weeks)]
+    if not selected.groupby("ubigeo").size().eq(weeks).all():
+        raise ValueError("Sala lacks district weeks in the required interval")
+    return selected[["ubigeo", "anio", "semana", "casos_Dengue"]]
+
+
+def destination_cases(csv: Path, geography: pd.DataFrame, *, year=YEAR, sala=None, overlap=None) -> tuple[pd.DataFrame, dict]:
     cases = pd.read_csv(csv, usecols=["departamento", "tipo_dx", "ubigeo", "ano", "semana"], dtype="string")
     cases["departamento"] = cases.departamento.str.strip().str.title()
     cases = cases.loc[cases.departamento.isin(DEPT.values())].copy()
@@ -182,7 +233,7 @@ def destination_cases(csv: Path, geography: pd.DataFrame) -> tuple[pd.DataFrame,
     cases["anio"] = cases.ano.astype(int)
     cases["semana"] = cases.semana.astype(int)
     cases["confirmed"] = cases.tipo_dx.str.strip().str.upper().eq("C")
-    grid = lh.week_grid(2000, YEAR)
+    grid = lh.week_grid(2000, year)
     validated = cases.merge(grid, on=["anio", "semana"], how="left", validate="many_to_one")
     valid = validated.loc[validated.semana_inicio.notna()]
     eligible = sorted(valid.loc[valid.anio.between(2020, 2024), "ubigeo"].unique())
@@ -191,7 +242,9 @@ def destination_cases(csv: Path, geography: pd.DataFrame) -> tuple[pd.DataFrame,
         raise ValueError("External department has weeks without any registered notification in the scoring period")
     counts = valid.loc[valid.confirmed].groupby(["ubigeo", "anio", "semana"]).size().rename("casos_Dengue").reset_index()
     panel = pd.DataFrame({"ubigeo": eligible}).merge(grid, how="cross")
-    panel = panel.loc[panel.semana_inicio.le(LAST_TARGET)]
+    first_target = lh.week_grid(year, year).semana_inicio.min()
+    last_target = first_target + (LAST_WEEK - 1) * 7 * DAY
+    panel = panel.loc[panel.semana_inicio.le(last_target)]
     panel = panel.merge(counts, on=["ubigeo", "anio", "semana"], how="left", validate="one_to_one")
     panel["casos_Dengue"] = panel.casos_Dengue.fillna(0).astype(int)
     report = {
@@ -200,7 +253,30 @@ def destination_cases(csv: Path, geography: pd.DataFrame) -> tuple[pd.DataFrame,
         "confirmados_fuera_del_calendario": int((validated.semana_inicio.isna() & validated.confirmed).sum()),
         "distritos_incluidos": {region: sum(u.startswith(code) for u in eligible) for code, region in DEPT.items()},
     }
-    return panel, report
+    if year > YEAR:
+        if sala is None or overlap is None or year != 2026:
+            raise ValueError("2026 requires explicit Sala series and a 2025 overlap archive")
+        districts = set(geography.ubigeo)
+        key = ["ubigeo", "anio", "semana"]
+        history = read_sala(overlap, YEAR, districts, 53)
+        counts_2025 = history[key].merge(counts, on=key, how="left", validate="one_to_one")
+        delta = history.merge(counts_2025.fillna({"casos_Dengue": 0}), on=key, suffixes=("_sala", "_csv"))
+        delta["cambio"] = delta.casos_Dengue_sala - delta.casos_Dengue_csv
+        source = read_sala(sala, year, districts, LAST_WEEK)
+        future = panel.loc[panel.anio.eq(year), [*key, "semana_inicio"]].merge(
+            source, on=key, how="left", validate="one_to_one"
+        )
+        if future.casos_Dengue.isna().any():
+            raise ValueError("The 2026 panel cannot be completed with published observations")
+        panel = pd.concat([panel.loc[panel.anio.lt(year)], future], ignore_index=True)
+        report["sha256_sala_2026"] = digest(sala)
+        report["sha256_sala_2025"] = digest(overlap)
+        report["solape_2025"] = {
+            "semanas_distritales": len(delta), "coincidencias": int(delta.cambio.eq(0).sum()),
+            "casos_csv": int(delta.casos_Dengue_csv.sum()), "casos_sala": int(delta.casos_Dengue_sala.sum()),
+            "coincidencias_se01_38": int((delta.semana.le(LAST_WEEK) & delta.cambio.eq(0)).sum()),
+        }
+    return panel.sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True), report
 
 
 def weekly_inputs(folder: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -224,17 +300,20 @@ def weekly_inputs(folder: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     return rain, era
 
 
-def score_models(archive, spatial, csv: Path, weather: Path, output: Path) -> None:
+def score_models(archive, spatial, csv: Path, weather: Path, output: Path, *, year=YEAR, sala=None, overlap=None) -> None:
     bundle = json.loads((output / "paquete.json").read_text())
     geo = read(weather / "geografia.csv")
-    cases, report = destination_cases(csv, geo)
+    cases, report = destination_cases(csv, geo, year=year, sala=sala, overlap=overlap)
+    first_target = lh.week_grid(year, year).semana_inicio.min()
+    last_target = first_target + (LAST_WEEK - 1) * 7 * DAY
+    cutoff = pd.Timestamp(bundle["corte"])
     labels = lh.long_labels(cases)
     matrices = {h: lh.long_matrix(cases, labels, h) for h in HORIZONS}
     full = origin_table(cases, matrices).merge(geo[["ubigeo", *spatial.GEO]], on="ubigeo", validate="many_to_one")
-    support = {h: matrix.loc[matrix.semana_inicio.between(FIRST_TARGET, LAST_TARGET)].copy() for h, matrix in matrices.items()}
+    support = {h: matrix.loc[matrix.semana_inicio.between(first_target, last_target)].copy() for h, matrix in matrices.items()}
     expected = len(cases.ubigeo.unique()) * LAST_WEEK
     for h, table in support.items():
-        if len(table) != expected or table.origen_cierre.min() < CUTOFF:
+        if len(table) != expected or table.origen_cierre.min() < cutoff:
             raise ValueError(f"Incomplete or premature scoring support at h={h}")
         if not table.origen_cierre.eq(table.semana_inicio - h * 7 * DAY + 6 * DAY).all():
             raise ValueError(f"Invalid origin-target alignment at h={h}")
@@ -299,6 +378,7 @@ def score_models(archive, spatial, csv: Path, weather: Path, output: Path) -> No
         "geografia.csv", "era5_land_diario.csv", "chirps_diario.csv"
     )}
     report["sha256_paquete"] = digest(output / "paquete.json")
+    report["periodo"] = {"anio": year, "semanas": [1, LAST_WEEK], "corte_entrenamiento": bundle["corte"]}
     with TemporaryDirectory(dir=output) as temp:
         staging = Path(temp)
         data[[*KEY, "departamento", "origen_cierre", "brazo", "semilla", "casos_Dengue", "brote", "p", "casos_predichos"]].to_csv(
@@ -320,6 +400,11 @@ def main() -> None:
     parser.add_argument("--geography", type=Path)
     parser.add_argument("--cases", type=Path)
     parser.add_argument("--weather", type=Path)
+    parser.add_argument("--year", type=int, choices=(2025, 2026), default=YEAR)
+    parser.add_argument("--sala", type=Path)
+    parser.add_argument("--overlap", type=Path)
+    parser.add_argument("--without-latitude", action="store_true")
+    parser.add_argument("--workers", type=int, default=1)
     args = parser.parse_args()
     sys.path.insert(0, str(args.piura / "research/08_v3_confirmed_cases/code"))
     import run_experiment as archive
@@ -336,14 +421,16 @@ def main() -> None:
         output.parent.mkdir(parents=True, exist_ok=True)
         with TemporaryDirectory(dir=output.parent) as temp:
             staging = Path(temp) / output.name
-            fit_piura(archive, spatial, args.geography, staging)
+            fit_piura(archive, spatial, args.geography, staging,
+                      without_latitude=args.without_latitude, workers=args.workers)
             staging.rename(output)
     else:
         if args.cases is None or args.weather is None:
             parser.error("score requires --cases and --weather")
         if (args.output / "evaluacion.json").exists():
             parser.error("Preserve the existing evaluation before scoring again")
-        score_models(archive, spatial, args.cases, args.weather, args.output)
+        score_models(archive, spatial, args.cases, args.weather, args.output,
+                     year=args.year, sala=args.sala, overlap=args.overlap)
 
 
 if __name__ == "__main__":

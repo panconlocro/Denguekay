@@ -1,4 +1,4 @@
-"""Prepare destination geography and archived daily weather for the 2025 transfer."""
+"""Prepare destination geography and archived daily weather for the northern transfer."""
 
 from __future__ import annotations
 
@@ -17,11 +17,16 @@ from audit_northern_transfer_inputs import DEPARTMENTS
 from denguekay.data.ingestion import chirps_ee, openmeteo
 from denguekay.data.ingestion.chirps_prelim import FtpSource
 from denguekay.data.ingestion.district_boundaries import ADM3_LAYER, compact_key, pcode_to_ubigeo
+from denguekay.features.long_history import week_grid
 
-START = "2024-10-13"
-END = "2025-09-06"
-CLIMATE_DAYS = pd.date_range(START, END)
 FIELDS = ["temperature_2m_mean", "relative_humidity_2m_mean"]
+
+
+def climate_days(year: int) -> pd.DatetimeIndex:
+    weeks = week_grid(year, year).semana_inicio
+    first = weeks.iloc[0] - pd.Timedelta(weeks=11)
+    last = weeks.iloc[37] - pd.Timedelta(days=8)
+    return pd.date_range(first, last)
 
 
 def districts_and_points(cod_ab: Path, gadm: Path) -> tuple[gpd.GeoDataFrame, pd.DataFrame]:
@@ -49,7 +54,7 @@ def districts_and_points(cod_ab: Path, gadm: Path) -> tuple[gpd.GeoDataFrame, pd
     return districts.sort_values("ubigeo"), joined[["ubigeo", "lat", "lon", "fuente_centroide"]].sort_values("ubigeo")
 
 
-def download_era(points: pd.DataFrame, folder: Path) -> None:
+def download_era(points: pd.DataFrame, folder: Path, days: pd.DatetimeIndex) -> None:
     def coordinates(frame: pd.DataFrame) -> dict:
         return {"latitude": ",".join(map(str, frame.lat)), "longitude": ",".join(map(str, frame.lon))}
 
@@ -64,7 +69,8 @@ def download_era(points: pd.DataFrame, folder: Path) -> None:
     chunks = []
     for start in range(0, len(points), 8):
         batch = points.iloc[start:start + 8]
-        params = {**coordinates(batch), "start_date": START, "end_date": END, "timezone": "America/Lima",
+        params = {**coordinates(batch), "start_date": str(days[0].date()),
+                  "end_date": str(days[-1].date()), "timezone": "America/Lima",
                   "models": "era5_land", "daily": ",".join(FIELDS)}
         response = requests.get(openmeteo.URL, params=params, timeout=90)
         response.raise_for_status()
@@ -75,18 +81,18 @@ def download_era(points: pd.DataFrame, folder: Path) -> None:
             raise ValueError("Incomplete Open-Meteo coordinate batch")
         for district, series in zip(batch.ubigeo, data, strict=True):
             daily = pd.DataFrame(series["daily"]).assign(ubigeo=district)
-            if not pd.DatetimeIndex(daily.time).equals(CLIMATE_DAYS) or daily[FIELDS].isna().any().any():
+            if not pd.DatetimeIndex(daily.time).equals(days) or daily[FIELDS].isna().any().any():
                 raise ValueError(f"Incomplete ERA5-Land coverage for {district}")
             chunks.append(daily)
         print(f"ERA5-Land {min(start + 8, len(points))}/{len(points)}", flush=True)
     pd.concat(chunks, ignore_index=True).to_csv(folder / "era5_land_diario.csv", index=False)
 
 
-def download_rain(districts: gpd.GeoDataFrame, folder: Path) -> None:
+def download_rain(districts: gpd.GeoDataFrame, folder: Path, days: pd.DatetimeIndex) -> None:
     cache = folder / "chirps_diario"
     cache.mkdir(exist_ok=True)
     bounds = tuple(districts.total_bounds + np.array([-.10, -.10, .10, .10]))
-    pending = [day for day in CLIMATE_DAYS if not (cache / f"{day:%Y-%m-%d}.npz").exists()]
+    pending = [day for day in days if not (cache / f"{day:%Y-%m-%d}.npz").exists()]
 
     def fetch_batch(days):
         import rasterio
@@ -111,12 +117,12 @@ def download_rain(districts: gpd.GeoDataFrame, folder: Path) -> None:
         batch = pending[start:start + 36]
         with ThreadPoolExecutor(max_workers=3) as pool:
             list(pool.map(fetch_batch, (batch[i::3] for i in range(min(3, len(batch))))))
-        print(f"CHIRPS {len(CLIMATE_DAYS) - len(pending) + start + len(batch)}/{len(CLIMATE_DAYS)}", flush=True)
+        print(f"CHIRPS {len(days) - len(pending) + start + len(batch)}/{len(days)}", flush=True)
     from affine import Affine
 
     windows = {}
     transform = None
-    for day in CLIMATE_DAYS:
+    for day in days:
         with np.load(cache / f"{day:%Y-%m-%d}.npz") as raster:
             current_transform = Affine(*raster["transform"])
             if transform is not None and transform != current_transform:
@@ -135,13 +141,15 @@ def main() -> None:
     parser.add_argument("--gadm", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source", choices=("era5", "chirps"), required=True)
+    parser.add_argument("--year", type=int, choices=(2025, 2026), default=2025)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     districts, points = districts_and_points(args.cod_ab, args.gadm)
+    days = climate_days(args.year)
     if args.source == "era5":
-        download_era(points, args.output)
+        download_era(points, args.output, days)
     else:
-        download_rain(districts, args.output)
+        download_rain(districts, args.output, days)
 
 
 if __name__ == "__main__":

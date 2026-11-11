@@ -73,3 +73,11 @@ python -B research/08_v3_confirmed_cases/code/run_northern_transfer.py score \
   --piura /ruta/checkout-piura --cases /ruta/DatosDengueV2.csv \
   --weather /ruta/insumos --output /ruta/paquete
 ```
+
+## Extensión retrospectiva de 2026 y sensibilidad a la latitud
+
+Se conserva la comparación de 2025 y se añade 2026 en las SE 01–38, con los mismos 50 distritos y horizontes. La versión con latitud reutiliza los diez archivos XGBoost y parámetros calibrados del paquete de 2025, ajustado en Piura al 7 de diciembre de 2024. Para el tramo de 2026 se usan confirmados semanales de la Sala, con reconciliación de los distritos contra los totales provinciales y departamentales. Se cuantifica el acuerdo con el CSV en el solape de 2025. Las series de clima y casos se alinean por fecha de origen con las reglas de la primera transferencia.
+
+Para medir la contribución predictiva de la latitud se ejecutan dos configuraciones de cada brazo. La sensibilidad retira `lat` y conserva `lon`, elevación, las demás variables, semillas, hiperparámetros y el corte de Piura. Cada configuración sin latitud se reentrena y recalibra en los mismos cortes de Piura. Los desenlaces externos se reservan para puntuar. En cada departamento, año, brazo y horizonte se calcula por semilla el Brier sin latitud menos el Brier con latitud y se resume con la mediana. Un cambio negativo indica menor error al retirarla. Se calcula también el contraste climático pareado en ambas configuraciones. La comparación estima la contribución predictiva de esa variable con el resto de la receta fijo.
+
+La descarga de clima se ejecuta con `--year 2026`. Para el solape epidemiológico se corre `prepare_northern_surveillance.py` con `--year 2025` y `--year 2026`, el mismo archivo COD-AB y un directorio de salida para la Sala. La etapa `fit --without-latitude` crea el segundo paquete. La etapa `score --year 2026 --sala /ruta/sala_2026.csv --overlap /ruta/sala_2025.csv` se ejecuta sobre copias de los dos paquetes y el clima de 2026.
