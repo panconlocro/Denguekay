@@ -37,3 +37,39 @@ python -B research/08_v3_confirmed_cases/code/audit_northern_transfer_inputs.py 
 2. Verificar cobertura del origen epidemiológico y continuidad de UBIGEO. Cuando se extienda la serie con la Sala, extraer solo confirmados y comprobar el tramo de solape por departamento.
 3. Calcular la exposición con las fuentes, la resolución y las reglas del brazo que se congele. Preparar lluvia CHIRPS por intersección de celdas y polígonos, temperatura ERA5-Land con la regla del brazo y las covariables estáticas. Auditar fechas de disponibilidad, cobertura espacial y valores fuera del rango de entrenamiento de Piura.
 4. Construir la historia local y el umbral de evento con la misma receta en cada distrito. Aplicar los modelos y calibradores de Piura sin reentrenar con datos de los destinos. Verificar llaves idénticas entre los brazos y reportar Brier pareado, AP, recall y costo de alertas con cortes fijados en Piura.
+
+## Transferencia retrospectiva de 2025
+
+Especificación fijada antes de puntuar los destinos.
+
+- **Periodo.** SE 01–38 de 2025, con semanas objetivo que empiezan del 29 de diciembre de 2024 al 14 de septiembre de 2025. Es el primer tramo continuo del año con alguna notificación en ambos departamentos. Desde la SE 39 aparecen semanas sin ninguna notificación en Lambayeque. La prueba usa los casos históricos revisados como aproximación a los que se habrían observado en cada origen.
+- **Corte común.** 7 de diciembre de 2024, primer cierre de origen de h4. Los tres objetivos de cada fila multisalida de entrenamiento deben haber cerrado a esa fecha. Los calibradores Platt y los pesos de la mezcla se ajustan con pronósticos fuera de muestra de Piura cuyas etiquetas ya cerraron para ese mismo corte.
+- **Brazos.** `b3_obs` y `historia_geo` con los parámetros fijos del análisis principal, cinco semillas, persistencia determinista y persistencia probabilística calibrada en Piura. El corte de alerta es 0,50. Se reportan Brier, AP, MAE, detecciones y falsas alertas por departamento, horizonte y semilla. La variación entre semillas es descriptiva.
+- **Soporte.** 37 distritos en Lambayeque y 13 en Tumbes. El distrito 140203 se excluye del soporte principal porque el CSV no contiene notificaciones de ningún diagnóstico en 2020–2024. Se excluyen cinco confirmados de Lambayeque con fechas fuera del calendario MMWR. En los distritos incluidos, una ausencia de filas se codifica como cero *confirmados registrados*. La continuidad departamental no certifica cobertura distrital semanal.
+- **Exposición.** CHIRPS v3.0 diario final, desagregación sat, ponderado por intersección con los polígonos COD-AB. ERA5-Land de Open-Meteo en centroides de GADM 4.1, con la misma proyección que Piura. Se usan centroides COD-AB en los seis distritos ausentes de GADM. La elevación se consulta en DEM90 y Niño 1+2 usa la serie común del paper. Se reproducen las reglas de disponibilidad de la retrospectiva de Piura, con sus aproximaciones para los archivos finales.
+- **Alcance.** El modelo seleccionado y las fuentes revisadas se reconstruyen retrospectivamente. El resultado mide transferencia a los distritos y semanas evaluados. El paquete de 2025 se guarda como artefacto del experimento.
+
+### Reproducción
+
+En la rama de transferencia, usar el entorno y el código versionado de la revisión de Piura en `paper_pendings`. Los datos, los modelos y los pronósticos se guardan en un directorio local del experimento.
+
+```bash
+export PYTHONPATH="/ruta/checkout-piura/src"
+export DENGUEKAY_XGB_DEVICE=cpu DENGUEKAY_XGB_NJOBS=2
+
+python -B research/08_v3_confirmed_cases/code/prepare_northern_weather.py \
+  --cod-ab /ruta/per_admin_boundaries.geojson.zip --gadm /ruta/gadm41_PER_3.json.zip \
+  --output /ruta/insumos --source era5
+
+python -B research/08_v3_confirmed_cases/code/prepare_northern_weather.py \
+  --cod-ab /ruta/per_admin_boundaries.geojson.zip --gadm /ruta/gadm41_PER_3.json.zip \
+  --output /ruta/insumos --source chirps
+
+python -B research/08_v3_confirmed_cases/code/run_northern_transfer.py fit \
+  --piura /ruta/checkout-piura --geography /ruta/geografia_distritos_piura.csv \
+  --output /ruta/paquete
+
+python -B research/08_v3_confirmed_cases/code/run_northern_transfer.py score \
+  --piura /ruta/checkout-piura --cases /ruta/DatosDengueV2.csv \
+  --weather /ruta/insumos --output /ruta/paquete
+```
