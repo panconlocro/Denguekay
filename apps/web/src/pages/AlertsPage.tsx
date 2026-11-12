@@ -39,6 +39,7 @@ export function AlertsPage() {
     cataloguePending,
   } = context;
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
   const filters = alertFilters(params);
   const validGeography =
     (!province || districts.some((d) => d.ubigeo_provincia === province)) &&
@@ -85,20 +86,21 @@ export function AlertsPage() {
   const pages = Math.max(1, Math.ceil((rows?.length || 0) / pageSize));
   const page = Math.min(filters.page, pages);
   const visible = rows?.slice((page - 1) * pageSize, page * pageSize) || [];
+  const latestParams = () => new URLSearchParams(location.search);
   const change = (key: string, value: string) => {
-    const next = new URLSearchParams(params);
+    const next = latestParams();
     if (value) next.set(key, value);
     else next.delete(key);
     next.delete('aviso_pagina');
     setParams(next);
   };
   const reset = () => {
-    const next = new URLSearchParams(params);
+    const next = latestParams();
     for (const key of [...next.keys()]) if (key.startsWith('aviso_')) next.delete(key);
     setParams(next);
   };
   const goPage = (value: number) => {
-    const next = new URLSearchParams(params);
+    const next = latestParams();
     next.set('aviso_pagina', String(value));
     setParams(next);
   };
