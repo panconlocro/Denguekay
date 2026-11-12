@@ -25,14 +25,16 @@ from denguekay.model import horizon_strategies as eh, probabilistic_output as sp
 YEAR = 2025
 LAST_WEEK = 38
 DAY = pd.Timedelta(days=1)
-FIRST_TARGET = lh.week_grid(YEAR, YEAR).semana_inicio.min()
-LAST_TARGET = FIRST_TARGET + (LAST_WEEK - 1) * 7 * DAY
-CUTOFF = FIRST_TARGET - 4 * 7 * DAY + 6 * DAY
 HORIZONS = eh.STRATEGY_HORIZONS
 ARMS = ("historia_geo", "b3_obs")
 BLOCK = "externa_2025_se01_38"
 DEPT = {"14": "Lambayeque", "24": "Tumbes"}
 KEY = ["ubigeo", "semana_inicio", "horizonte"]
+
+
+def target_weeks(year: int) -> tuple[pd.Timestamp, pd.Timestamp]:
+    weeks = lh.week_grid(year, year).semana_inicio
+    return weeks.iloc[0], weeks.iloc[LAST_WEEK - 1]
 
 
 def digest(path: Path) -> str:
@@ -69,10 +71,10 @@ def calibrator(train: pd.DataFrame, probability: np.ndarray) -> dict:
     }
 
 
-def archive_rows(folder: Path) -> pd.DataFrame:
+def archive_rows(folder: Path, cutoff: pd.Timestamp) -> pd.DataFrame:
     table = read(folder / "predicciones.csv.gz", ("semana_inicio", "origen_cierre"))
     fits = read(folder / "ajustes.csv", ("corte",))
-    table = table.loc[(table.semana_inicio + 6 * DAY).le(CUTOFF)].merge(
+    table = table.loc[(table.semana_inicio + 6 * DAY).le(cutoff)].merge(
         fits[["bloque", "corte"]], on="bloque", validate="many_to_one"
     )
     if table.empty or table.corte.gt(table.origen_cierre).any() or table.duplicated(KEY).any():
@@ -86,10 +88,10 @@ def raw_persistence(data: pd.DataFrame) -> np.ndarray:
     return odds / (1 + odds)
 
 
-def recalibration_rows(spatial, inputs, origins, history, columns, hp, seed):
+def recalibration_rows(spatial, inputs, origins, history, columns, hp, seed, cutoff):
     blocks = [block for block in spatial.BLOCK_LIST if block[0] in set(history.bloque)]
     raw, fits = spatial.predict(inputs, origins, blocks, columns, hp, seed)
-    raw = raw.loc[(raw.semana_inicio + 6 * DAY).le(CUTOFF)].merge(
+    raw = raw.loc[(raw.semana_inicio + 6 * DAY).le(cutoff)].merge(
         fits[["bloque", "corte"]], on="bloque", validate="many_to_one"
     )
     matched = [*KEY, "bloque", "origen_cierre", "corte", "casos_Dengue", "brote", "persistencia"]
@@ -102,7 +104,9 @@ def recalibration_rows(spatial, inputs, origins, history, columns, hp, seed):
     return a.rename(columns={"probabilidad_brote": "probabilidad_cruda", "casos_predichos": "mu_modelo"})
 
 
-def fit_piura(archive, spatial, geography: Path, output: Path, *, without_latitude=False, workers=1) -> None:
+def fit_piura(archive, spatial, geography: Path, output: Path, *, year=YEAR, without_latitude=False, workers=1) -> None:
+    first_target, last_target = target_weeks(year)
+    cutoff = first_target - (7 * max(HORIZONS) - 6) * DAY
     source = archive.OUTPUT / "controles_espaciales"
     report = json.loads((source / "resultados.json").read_text())
     if digest(geography) != report["geografia"]:
@@ -125,7 +129,7 @@ def fit_piura(archive, spatial, geography: Path, output: Path, *, without_latitu
     rain = read(SILVER_CHIRPS_PRECIP, ("semana_inicio", "fecha_disponible"))
     era = archive.original.era5_2026(panel).assign(fecha_disponible=lambda d: d.semana_inicio + 13 * DAY)
     origins = add_weather(spatial, origins, rain, era)
-    train = origins.loc[(origins.semana_inicio_h4 + 6 * DAY).le(CUTOFF)]
+    train = origins.loc[(origins.semana_inicio_h4 + 6 * DAY).le(cutoff)]
     original_columns = {arm: report["variantes"][arm] for arm in ARMS}
     columns = {
         arm: [col for col in original_columns[arm] if not (without_latitude and col == "lat")]
@@ -138,8 +142,8 @@ def fit_piura(archive, spatial, geography: Path, output: Path, *, without_latitu
     parameters = sp.e3_parameters(report["hiperparametros"])
     margin = sp.e3_margin(origins, spatial.FORM)
     bundle = {
-        "corte": str(CUTOFF.date()), "primera_semana_objetivo": str(FIRST_TARGET.date()),
-        "ultima_semana_objetivo": str(LAST_TARGET.date()), "formulacion": spatial.FORM,
+        "corte": str(cutoff.date()), "primera_semana_objetivo": str(first_target.date()),
+        "ultima_semana_objetivo": str(last_target.date()), "formulacion": spatial.FORM,
         "parametros": report["hiperparametros"], "columnas": columns,
         "semillas": report["semillas"], "corte_alerta": 0.5, "modelos": {},
         "validacion_piura": {key: quality["suites"][key]["evaluadas"] for key in quality["suites"]},
@@ -159,10 +163,10 @@ def fit_piura(archive, spatial, geography: Path, output: Path, *, without_latitu
         arm, seed = job
         name = f"{arm}_s{seed}"
         calibration_path = baseline_paths[seed] if arm == "historia_geo" else source / name
-        previous = archive_rows(calibration_path)
+        previous = archive_rows(calibration_path, cutoff)
         calibration_digest = digest(calibration_path / "predicciones.csv.gz")
         if without_latitude:
-            previous = recalibration_rows(spatial, inputs, origins, previous, columns[arm], report["hiperparametros"], seed)
+            previous = recalibration_rows(spatial, inputs, origins, previous, columns[arm], report["hiperparametros"], seed, cutoff)
             calibration_file = output / f"{name}_calibracion_piura.csv.gz"
             previous.to_csv(calibration_file, index=False)
             calibration_digest = digest(calibration_file)
@@ -174,7 +178,7 @@ def fit_piura(archive, spatial, geography: Path, output: Path, *, without_latitu
                     history.mu_modelo.to_numpy(), history.persistencia.to_numpy(), history.casos_Dengue.to_numpy()
                 ),
             }
-        fit = sp.fit_e3(origins, CUTOFF, seed, spatial.FORM, columns[arm], [], parameters, margin)
+        fit = sp.fit_e3(origins, cutoff, seed, spatial.FORM, columns[arm], [], parameters, margin)
         sample = fit.train.iloc[:7]
         count_model = sp.FORMULATIONS[spatial.FORM]["conteo"]
         expected = sp.predict_count(fit.regressor, sample[columns[arm]], count_model, margin[sample.index])
@@ -199,7 +203,7 @@ def fit_piura(archive, spatial, geography: Path, output: Path, *, without_latitu
     with ThreadPoolExecutor(max_workers=workers) as pool:
         bundle["modelos"] = dict(pool.map(fit_variant, jobs))
 
-    reference = archive_rows(baseline_paths[bundle["semillas"][0]])
+    reference = archive_rows(baseline_paths[bundle["semillas"][0]], cutoff)
     bundle["persistencia_prob"] = {
         str(h): calibrator(history, raw_persistence(history)) for h, history in reference.groupby("horizonte")
     }
@@ -242,8 +246,7 @@ def destination_cases(csv: Path, geography: pd.DataFrame, *, year=YEAR, sala=Non
         raise ValueError("External department has weeks without any registered notification in the scoring period")
     counts = valid.loc[valid.confirmed].groupby(["ubigeo", "anio", "semana"]).size().rename("casos_Dengue").reset_index()
     panel = pd.DataFrame({"ubigeo": eligible}).merge(grid, how="cross")
-    first_target = lh.week_grid(year, year).semana_inicio.min()
-    last_target = first_target + (LAST_WEEK - 1) * 7 * DAY
+    _, last_target = target_weeks(year)
     panel = panel.loc[panel.semana_inicio.le(last_target)]
     panel = panel.merge(counts, on=["ubigeo", "anio", "semana"], how="left", validate="one_to_one")
     panel["casos_Dengue"] = panel.casos_Dengue.fillna(0).astype(int)
@@ -304,8 +307,7 @@ def score_models(archive, spatial, csv: Path, weather: Path, output: Path, *, ye
     bundle = json.loads((output / "paquete.json").read_text())
     geo = read(weather / "geografia.csv")
     cases, report = destination_cases(csv, geo, year=year, sala=sala, overlap=overlap)
-    first_target = lh.week_grid(year, year).semana_inicio.min()
-    last_target = first_target + (LAST_WEEK - 1) * 7 * DAY
+    first_target, last_target = target_weeks(year)
     cutoff = pd.Timestamp(bundle["corte"])
     labels = lh.long_labels(cases)
     matrices = {h: lh.long_matrix(cases, labels, h) for h in HORIZONS}
@@ -422,7 +424,7 @@ def main() -> None:
         with TemporaryDirectory(dir=output.parent) as temp:
             staging = Path(temp) / output.name
             fit_piura(archive, spatial, args.geography, staging,
-                      without_latitude=args.without_latitude, workers=args.workers)
+                      year=args.year, without_latitude=args.without_latitude, workers=args.workers)
             staging.rename(output)
     else:
         if args.cases is None or args.weather is None:
