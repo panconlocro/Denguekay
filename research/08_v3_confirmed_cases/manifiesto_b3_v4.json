@@ -1,0 +1,545 @@
+{
+  "version": "v4-b3",
+  "corte": "2026-10-17",
+  "congelado_utc": "2026-11-12T17:55:10+00:00",
+  "formulacion": "S4_s3",
+  "columnas": {
+    "b3_obs": [
+      "hist_lag_a",
+      "hist_lag_b",
+      "hist_media_4",
+      "hist_semanas_pos_4",
+      "semana_epi_seno",
+      "semana_epi_coseno",
+      "propia_semanas_desde_ultimo_caso",
+      "propia_pendiente_4",
+      "propia_log_casos_temporada_anterior",
+      "lat",
+      "lon",
+      "elevacion_dem90",
+      "hum_rel_media_media5_h2_obs",
+      "precip_total_mm_media5_h2_obs",
+      "temp_media_media5_h2_obs",
+      "nino12_anom_media3_obs"
+    ],
+    "historia_geo": [
+      "hist_lag_a",
+      "hist_lag_b",
+      "hist_media_4",
+      "hist_semanas_pos_4",
+      "semana_epi_seno",
+      "semana_epi_coseno",
+      "propia_semanas_desde_ultimo_caso",
+      "propia_pendiente_4",
+      "propia_log_casos_temporada_anterior",
+      "lat",
+      "lon",
+      "elevacion_dem90"
+    ]
+  },
+  "hiperparametros": {
+    "n_estimators": 160,
+    "max_depth": 3,
+    "learning_rate": 0.05,
+    "min_child_weight": 5,
+    "subsample": 0.8,
+    "colsample_bytree": 0.9,
+    "reg_lambda": 5.0,
+    "reg_alpha": 0.0,
+    "gamma": 0.0,
+    "max_delta_step": 0.7
+  },
+  "semillas": [
+    17,
+    29,
+    41,
+    53,
+    67
+  ],
+  "semilla_demo": 17,
+  "corte_alerta": 0.5,
+  "regla_brote": {
+    "minimo_casos": 2,
+    "anios_previos": 5,
+    "k_desviaciones": 1.5
+  },
+  "horizontes": [
+    2,
+    3,
+    4
+  ],
+  "modelos": {
+    "b3_obs_s17": {
+      "brazo": "b3_obs",
+      "semilla": 17,
+      "sha256": "495189729e3b27c0f8bf89f0a51b5ad1e84a791e56ecc4ef58f947a5f9d9a317",
+      "alphas": [
+        0.9667958030129001,
+        1.545338053866709,
+        2.153158592895327
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "928e1d09955f13efa7da035d08fa2c31d5f7c82fc788c11266d91f914fd4f4b9",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.2144185066942017,
+            "b": 0.5636537436647966,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.77
+        },
+        "3": {
+          "platt": {
+            "a": 1.2702919565624322,
+            "b": 0.7488433006191634,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.84
+        },
+        "4": {
+          "platt": {
+            "a": 1.3089197571348214,
+            "b": 0.8883699448240172,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.89
+        }
+      }
+    },
+    "b3_obs_s29": {
+      "brazo": "b3_obs",
+      "semilla": 29,
+      "sha256": "95fb2365c85f19b86eed379324492b244b3f0452111a9ee1325baadb3da9d2c6",
+      "alphas": [
+        0.9712317180993039,
+        1.5536538130266275,
+        2.1664777800014816
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "04e95f0f0757e11035228e243c2a45eb099b50dabba2f334883ef19b9a91f0e2",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.2086186341358494,
+            "b": 0.5646136649131673,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.76
+        },
+        "3": {
+          "platt": {
+            "a": 1.2663699082088724,
+            "b": 0.7532174090000091,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.83
+        },
+        "4": {
+          "platt": {
+            "a": 1.3069738163191604,
+            "b": 0.8970997378328083,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.87
+        }
+      }
+    },
+    "b3_obs_s41": {
+      "brazo": "b3_obs",
+      "semilla": 41,
+      "sha256": "3ce686ad1de298ea45e24c8b393873c08c0cd0ca152813a402218e0f9f6661bd",
+      "alphas": [
+        0.9604933515198544,
+        1.535816816067719,
+        2.138796120013639
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "953b8592de2be06243951b42ddfa66d7087c93a9c7acb599331fe8a92d805e52",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.2103126400294753,
+            "b": 0.5683511470224436,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.74
+        },
+        "3": {
+          "platt": {
+            "a": 1.2653321496026868,
+            "b": 0.7525419076901707,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.82
+        },
+        "4": {
+          "platt": {
+            "a": 1.3080809924885322,
+            "b": 0.8981656994436713,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.87
+        }
+      }
+    },
+    "b3_obs_s53": {
+      "brazo": "b3_obs",
+      "semilla": 53,
+      "sha256": "ebc5088c85182686f648a3b9862716aa68391aee9e26e512430b4f215ae3a017",
+      "alphas": [
+        0.9632741589377453,
+        1.5384052151769128,
+        2.1453513677605796
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "0ff8b2fdd5027b0d96b41af31370c30920d950e62a88dba715cf39dc1e5f8f5c",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.2099014706250335,
+            "b": 0.5635392511654553,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.73
+        },
+        "3": {
+          "platt": {
+            "a": 1.269401216963284,
+            "b": 0.7532584128398351,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.81
+        },
+        "4": {
+          "platt": {
+            "a": 1.3101949059616302,
+            "b": 0.8965211321945217,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.87
+        }
+      }
+    },
+    "b3_obs_s67": {
+      "brazo": "b3_obs",
+      "semilla": 67,
+      "sha256": "1e6bc7ac2069606623568b362d499f0ef6be2d4f6b962e2698d125abdd874667",
+      "alphas": [
+        0.9614218629594804,
+        1.5383354174500299,
+        2.1472427308735953
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "babc78553c773dd720d9e833fe0f90e64e6145af169e488cfadb2bc40cad9417",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.2059218838539751,
+            "b": 0.5658735556793268,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.74
+        },
+        "3": {
+          "platt": {
+            "a": 1.2634528318697882,
+            "b": 0.7547075817612856,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.82
+        },
+        "4": {
+          "platt": {
+            "a": 1.3024735030030734,
+            "b": 0.8969103866472592,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.88
+        }
+      }
+    },
+    "historia_geo_s17": {
+      "brazo": "historia_geo",
+      "semilla": 17,
+      "sha256": "9853f110b2a2e9c04478d7bcac938012c0142bc74e1d1c8110b26cea93eefaaa",
+      "alphas": [
+        1.0017384803096687,
+        1.624996915202666,
+        2.2965220951577736
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "0d18e1a6ce9af9ef47b0ce1af749d71642186f351c4022f21b5aba995bade326",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.2125080880175676,
+            "b": 0.5690869707016722,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.59
+        },
+        "3": {
+          "platt": {
+            "a": 1.2989350484538882,
+            "b": 0.8195587734650364,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.61
+        },
+        "4": {
+          "platt": {
+            "a": 1.3653947381280989,
+            "b": 1.015927946445281,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.63
+        }
+      }
+    },
+    "historia_geo_s29": {
+      "brazo": "historia_geo",
+      "semilla": 29,
+      "sha256": "fc472d13c13f8a0c3e8f27a56e4a04b2bd9ad564d9afe777d697cd2183ec4bd4",
+      "alphas": [
+        1.0074057269920402,
+        1.6376056874790468,
+        2.317803686376197
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "ac226ffe95bc8a61e42373a283623cf92263f91158b7d54c74f75d26284fd537",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.2091235547285804,
+            "b": 0.5649550303911017,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.59
+        },
+        "3": {
+          "platt": {
+            "a": 1.2945711047707307,
+            "b": 0.8126257434623639,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.6
+        },
+        "4": {
+          "platt": {
+            "a": 1.362951199114366,
+            "b": 1.0082064691132824,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.61
+        }
+      }
+    },
+    "historia_geo_s41": {
+      "brazo": "historia_geo",
+      "semilla": 41,
+      "sha256": "94b4aa7f78655d82aa4116e269998bcdac40b43d55e38d89f8870ee8e80bc229",
+      "alphas": [
+        1.0043126758483534,
+        1.632016521047929,
+        2.308336642432951
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "89bec453306a3accb55005e5a37b61845c16764e6a82c060f3399f0835d1ea1d",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.209465122501707,
+            "b": 0.5678497308525441,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.59
+        },
+        "3": {
+          "platt": {
+            "a": 1.2929472170221645,
+            "b": 0.8134574182184714,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.6
+        },
+        "4": {
+          "platt": {
+            "a": 1.361189883295319,
+            "b": 1.0098958705205938,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.62
+        }
+      }
+    },
+    "historia_geo_s53": {
+      "brazo": "historia_geo",
+      "semilla": 53,
+      "sha256": "d722c5c66e694bc9cfb7ab374e65bc9b0050a44ba62fc36f99d66b78d29d30b6",
+      "alphas": [
+        1.0006730334489562,
+        1.6257717273927486,
+        2.2984569040463683
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "018a16100cc64608aea329a717a327ed0a507fafd90833124ae10f4e87eed223",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.2103551572434696,
+            "b": 0.5678089831263932,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.58
+        },
+        "3": {
+          "platt": {
+            "a": 1.2965203804135645,
+            "b": 0.8206176456216405,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.61
+        },
+        "4": {
+          "platt": {
+            "a": 1.36463880667163,
+            "b": 1.0198631190884995,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.65
+        }
+      }
+    },
+    "historia_geo_s67": {
+      "brazo": "historia_geo",
+      "semilla": 67,
+      "sha256": "b19f447b1e7cef14ec4002297fe230f462964038d4ae1cfba646834e5e4ab5db",
+      "alphas": [
+        0.9969464588132159,
+        1.6201234403516493,
+        2.292523611764014
+      ],
+      "filas_entrenamiento": 73775,
+      "ultimo_cierre_h4": "2026-10-17",
+      "archivo_calibracion_sha256": "749ff7b1f1338646f99ccb444af770a757856690e0ab59c77a5c6189dbb52382",
+      "por_horizonte": {
+        "2": {
+          "platt": {
+            "a": 1.2120934884056536,
+            "b": 0.5723632346359487,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.61
+        },
+        "3": {
+          "platt": {
+            "a": 1.2950751524669937,
+            "b": 0.8172592118037731,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.6
+        },
+        "4": {
+          "platt": {
+            "a": 1.357637006185696,
+            "b": 1.0072119496633614,
+            "filas": 64935,
+            "ultimo_cierre": "2026-10-17"
+          },
+          "peso_modelo": 0.62
+        }
+      }
+    }
+  },
+  "validaciones": {
+    "silver_integrado": 107,
+    "gold_h2": 50
+  },
+  "fuentes": {
+    "data/silver/confirmados/meteo_socio_epi_piura_2017_2025.csv": "ad0a9917d1542dd7fa8b70fccc03230b83734b47ba99e5c5c42805f29cdb2307",
+    "data/silver/confirmados/epi_piura_semanal.csv": "6b5b62e8fbc4a395adae4dfda24f534c272a7b18cbc53477c9e5ff88709d776c",
+    "data/silver/confirmados/epi_sala_semanal.csv": "ff3354ca19cf9ab996b348cb9cfd1b587267290ae821a666d70a2ae8db0b42a2",
+    "data/silver/confirmados/meteo_socio_epi_piura_2017_2025.coverage.csv": "865f1338d5758a17f1c5af27f049d749a36d10d89e94d2018daf6a4f3198c24a",
+    "data/silver/meteo_humedad_era5_land_2000_2026.csv": "3e91e57f31fa47af3f01515caa42ec1cf758ecfbe0320cbea50d23fb73d03879",
+    "data/gold/manifest_fase6.json": "024c654f9b5a5cf38ac5e1e38d15e4e4c857154ee97da8b96930ade901ac1a24",
+    "data/reference/catalogo_ubigeos_piura.csv": "5ca987e295ba3b11041c8aea935fa3747e5cb46e28f733ff3986366ed3742841",
+    "precip_chirps_v3_semanal_desde_2000.csv": "e4cd57a5927cadc20de78dbdb29065c8a2e87608eb0d9ee43503877ecdf1d6ce",
+    "enso_nino12_mensual.csv": "3250fdfa62fb930fa51c48ae3f4d599aaa5924a7867cf5c39c428f117d24eb16",
+    "geografia": "b56bacee763b9c7abaaa9f1a8200ed713b5021515335ab70001c07ab40c56b6f"
+  },
+  "commit_piura": "c3644050ac2e98f653f0b0f23b07c56af0b392cc",
+  "persistencia_prob": {
+    "2": {
+      "a": 2.3508822981485404,
+      "b": -0.41614601128008377,
+      "filas": 64935,
+      "ultimo_cierre": "2026-10-17"
+    },
+    "3": {
+      "a": 2.081747843987509,
+      "b": -0.5797252592013263,
+      "filas": 64935,
+      "ultimo_cierre": "2026-10-17"
+    },
+    "4": {
+      "a": 1.8643790280648636,
+      "b": -0.7256942405253249,
+      "filas": 64935,
+      "ultimo_cierre": "2026-10-17"
+    }
+  },
+  "archivos": {
+    "b3_obs_s17.ubj": "495189729e3b27c0f8bf89f0a51b5ad1e84a791e56ecc4ef58f947a5f9d9a317",
+    "b3_obs_s29.ubj": "95fb2365c85f19b86eed379324492b244b3f0452111a9ee1325baadb3da9d2c6",
+    "b3_obs_s41.ubj": "3ce686ad1de298ea45e24c8b393873c08c0cd0ca152813a402218e0f9f6661bd",
+    "b3_obs_s53.ubj": "ebc5088c85182686f648a3b9862716aa68391aee9e26e512430b4f215ae3a017",
+    "b3_obs_s67.ubj": "1e6bc7ac2069606623568b362d499f0ef6be2d4f6b962e2698d125abdd874667",
+    "historia_geo_s17.ubj": "9853f110b2a2e9c04478d7bcac938012c0142bc74e1d1c8110b26cea93eefaaa",
+    "historia_geo_s29.ubj": "fc472d13c13f8a0c3e8f27a56e4a04b2bd9ad564d9afe777d697cd2183ec4bd4",
+    "historia_geo_s41.ubj": "94b4aa7f78655d82aa4116e269998bcdac40b43d55e38d89f8870ee8e80bc229",
+    "historia_geo_s53.ubj": "d722c5c66e694bc9cfb7ab374e65bc9b0050a44ba62fc36f99d66b78d29d30b6",
+    "historia_geo_s67.ubj": "b19f447b1e7cef14ec4002297fe230f462964038d4ae1cfba646834e5e4ab5db",
+    "observaciones.csv.gz": "962667803c9ae40fd6ea7b7e88d4490c01ad0ce499245adb0d3e0bff03a8c9ea",
+    "oos_b3_s17.csv.gz": "3328e206952187eb91b39d5a0717b2788f74d024d371e1abf52ba530485dbdb3",
+    "origen.csv": "877672ec410b5c88abb1496f9891a5696bdd653bbaae892014c49bb4ba13b7f2"
+  }
+}
