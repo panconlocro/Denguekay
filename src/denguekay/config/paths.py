@@ -40,6 +40,7 @@ CACHE_METEO_ERA5_LAND_2026 = BRONZE_METEO / "cache_meteo_era5_land_2026"
 CACHE_METEO_ERA5_LAND_RECENT = BRONZE_METEO / "cache_meteo_era5_land_reciente"
 BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
+BRONZE_EPI_CSV = BRONZE_EPI / "DatosDengueV2.csv"
 BRONZE_SALA = BRONZE_EPI / "sala"
 BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per download date
 # CHIRPS v3 daily, sat disaggregation: one GeoTIFF per day with the Piura window, plus the run manifests

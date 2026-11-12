@@ -7,6 +7,7 @@ data/silver/integrado/ and not in gold.
 import pandas as pd
 
 from denguekay.data.keys import normalize
+from denguekay.data.processing.epi_sala import SALA_FIRST_YEAR
 
 
 def diagnose_unmatched_districts(meteo: pd.DataFrame, annual_socio: pd.DataFrame) -> None:
@@ -30,8 +31,11 @@ def merge_meteo_socio(meteo: pd.DataFrame, annual_socio: pd.DataFrame) -> pd.Dat
     return final
 
 
-def merge_with_epi(final_dataset: pd.DataFrame, df_cases: pd.DataFrame) -> pd.DataFrame:
-    """Join historical cases; years not yet covered by the source stay null."""
+def merge_with_epi(
+    final_dataset: pd.DataFrame, df_cases: pd.DataFrame, *, sala_cases: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Join the historical source and, when supplied, the confirmed Sala from 2025."""
+    keys = ["ubigeo", "anio", "semana"]
     final_dataset = final_dataset.copy()
     df_cases = df_cases.copy()
 
@@ -53,8 +57,15 @@ def merge_with_epi(final_dataset: pd.DataFrame, df_cases: pd.DataFrame) -> pd.Da
             f"para ver a qué se debe el desfase de nombres y corrígelo antes de este merge."
         )
 
-    model_dataset = final_dataset.merge(df_cases, on=["ubigeo", "anio", "semana"], how="left")
+    if sala_cases is not None:
+        if "tipo_dx" not in sala_cases or not sala_cases["tipo_dx"].isin(["C"]).all():
+            raise ValueError("Run notebook 06b to build the confirmed Sala silver before integrating")
+        df_cases = df_cases.loc[df_cases["anio"].lt(SALA_FIRST_YEAR)]
     covered_years = set(pd.to_numeric(df_cases["anio"], errors="raise").astype(int))
+    if sala_cases is not None:
+        recent = sala_cases.loc[sala_cases["anio"].ge(SALA_FIRST_YEAR), keys + ["casos_Dengue"]]
+        df_cases = pd.concat([df_cases, recent], ignore_index=True)
+    model_dataset = final_dataset.merge(df_cases, on=keys, how="left", validate="one_to_one")
     covered = model_dataset["anio"].isin(covered_years)
     model_dataset.loc[covered, "casos_Dengue"] = model_dataset.loc[covered, "casos_Dengue"].fillna(0)
     model_dataset["casos_Dengue"] = model_dataset["casos_Dengue"].astype("Int64")

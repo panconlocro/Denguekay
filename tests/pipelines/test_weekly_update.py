@@ -8,8 +8,9 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from denguekay.data.ingestion.minsa_sala_scraper import observed_weekly_points
-from denguekay.data.processing.epi_sala import normalize_sala_records
+from denguekay.data.ingestion.minsa_sala_scraper import confirmed_weekly_points, observed_weekly_points
+from denguekay.data.processing.epi_sala import normalize_sala_records, upsert_sala_silver
+from denguekay.data.processing.merge import merge_with_epi
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS, socio_for_keys
 from denguekay.pipelines.weekly_update import run_weather, update_dataset
 from denguekay.data.validation.integrated_expectations import WEATHER_COLUMNS, coverage_path, prepare_dataset
@@ -246,6 +247,57 @@ class UpdateDatasetTests(unittest.TestCase):
         self.assertEqual(observed_weekly_points(raw, 2026), [[1, 2], [2, 0]])
         with self.assertRaisesRegex(RuntimeError, "internal missing week"):
             observed_weekly_points(raw + [{"value": [4, 1]}], 2026)
+
+
+    def test_diagnosis_chart_selects_confirmed_and_validates_coverage(self):
+        weeks = ["2025-53", "2026-01", "2026-02"]
+        chart = {
+            "title": [{"text": "Tendencia semanal de casos según tipo de diagnóstico, 2021 - 2026*"}],
+            "xAxis": [{"data": weeks}],
+            "series": [
+                {"name": "PROBABLE", "data": [{"value": [week, "999"]} for week in weeks]},
+                {"name": "CONFIRMADO", "data": [
+                    {"value": ["2025-53", " 3"]},
+                    {"value": ["2026-01", " 153"]},
+                    {"value": ["2026-02", "0"]},
+                ]},
+            ],
+        }
+        self.assertEqual(confirmed_weekly_points(chart, 2026), [[1, 153], [2, 0]])
+        chart["series"][1]["data"].pop()
+        with self.assertRaisesRegex(RuntimeError, "weekly axis"):
+            confirmed_weekly_points(chart, 2026)
+        chart["series"].pop()
+        with self.assertRaisesRegex(RuntimeError, "unique CONFIRMADO"):
+            confirmed_weekly_points(chart, 2026)
+
+    def test_sala_cache_never_carries_forward_legacy_or_withdrawn_weeks(self):
+        path = Path(self.temp.name) / "sala.csv"
+        row = {"ubigeo": CODE, "anio": 2026, "semana": 1, "casos_Dengue": 1}
+        pd.DataFrame([row]).to_csv(path, index=False)
+        fresh = pd.DataFrame([{**row, "tipo_dx": "C"}])
+        with self.assertRaisesRegex(ValueError, "run notebook 06b"):
+            upsert_sala_silver(path, fresh)
+        with self.assertLogs(level="WARNING"):
+            upsert_sala_silver(path, fresh, replace_legacy=True)
+        longer = pd.concat([fresh, fresh.assign(semana=2), fresh.assign(ubigeo="200503")])
+        upsert_sala_silver(path, longer)
+        upsert_sala_silver(path, fresh.assign(casos_Dengue=2))
+        actual = pd.read_csv(path, dtype={"ubigeo": "string"})
+        self.assertEqual(actual.to_dict("records"), [
+            {**row, "casos_Dengue": 2, "tipo_dx": "C"},
+            {**row, "ubigeo": "200503", "tipo_dx": "C"},
+        ])
+
+    def test_sala_has_precedence_and_unpublished_weeks_remain_missing(self):
+        target = pd.DataFrame({"ubigeo": [CODE] * 3, "anio": [2024, 2025, 2025], "semana": [1, 1, 2]})
+        historical = target.assign(casos_Dengue=[8, 7, 6])
+        sala = target.iloc[[1]].assign(casos_Dengue=3, tipo_dx="C")
+        result = merge_with_epi(target, historical, sala_cases=sala)
+        self.assertEqual(result.casos_Dengue.iloc[:2].tolist(), [8, 3])
+        self.assertTrue(pd.isna(result.casos_Dengue.iloc[2]))
+        with self.assertRaisesRegex(ValueError, "notebook 06b"):
+            merge_with_epi(target, historical, sala_cases=sala.drop(columns="tipo_dx"))
 
 
 if __name__ == "__main__":

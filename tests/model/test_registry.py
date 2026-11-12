@@ -20,7 +20,10 @@ class TestRegistry(unittest.TestCase):
 
     def test_states(self):
         states = {v: registry.card(v)["estado"] for v in registry.VERSIONS}
-        self.assertEqual(states, {"v0": "registrada", "v1": "reemplazada", "v2": "reemplazada", "v3": "servida"})
+        self.assertEqual(states, {
+            "v0": "registrada", "v1": "reemplazada", "v2": "reemplazada", "v3": "servida", "v4": "congelada",
+        })
+        self.assertTrue((ROOT / registry.card("v4")["configuracion"]["manifiesto"]).exists())
         self.assertEqual(registry.CURRENT, "v3")
         self.assertEqual(registry.SERVED, "v3")
         self.assertEqual(registry.card("v1")["reemplazada_por"], "v2")

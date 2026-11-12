@@ -1,7 +1,7 @@
 """
 Replaces the Google Drive mount (drive.mount) we used on Colab.
 
-Running locally, the raw epi and socio Excel files are downloaded straight
+Running locally, the raw epidemiological CSV and sociodemographic Excel are downloaded straight
 from Google Drive with `gdown`, using the file ID (not the folder ID).
 The IDs live in configs/config.yaml, never hardcoded here.
 
@@ -13,10 +13,11 @@ Install: pip install gdown
 """
 
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import gdown
 
-from denguekay.config.paths import BRONZE_EPI, BRONZE_SOCIO
+from denguekay.config.paths import BRONZE_EPI, BRONZE_EPI_CSV, BRONZE_SOCIO
 
 
 def download_from_drive(file_id: str, destination: Path, force: bool = False) -> Path:
@@ -32,12 +33,16 @@ def download_from_drive(file_id: str, destination: Path, force: bool = False) ->
         return destination
 
     url = f"https://drive.google.com/uc?id={file_id}"
-    gdown.download(url, str(destination), quiet=False)
+    with TemporaryDirectory(dir=destination.parent) as directory:
+        temporary = Path(directory) / destination.name
+        if gdown.download(url, str(temporary), quiet=False) is None or not temporary.stat().st_size:
+            raise OSError(f"Drive download failed: {destination.name}")
+        temporary.replace(destination)
     return destination
 
 
-def download_epi(file_id: str, file_name: str = "PiuraDengue.xlsx", force: bool = False) -> Path:
-    """Download the raw epidemiological Excel into data/bronze/epi/."""
+def download_epi(file_id: str, file_name: str = BRONZE_EPI_CSV.name, force: bool = False) -> Path:
+    """Download the raw epidemiological CSV into data/bronze/epi/."""
     return download_from_drive(file_id, BRONZE_EPI / file_name, force=force)
 
 

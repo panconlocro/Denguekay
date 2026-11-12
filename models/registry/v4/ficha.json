@@ -1,0 +1,26 @@
+{
+  "version": "v4",
+  "estado": "congelada",
+  "estado_detalle": "Paquete principal del paper de casos confirmados en Piura y comparador sin clima.",
+  "fecha_congelamiento": "2026-11-12",
+  "corte_etiquetas": "2026-10-17",
+  "modelo": "b3_obs",
+  "comparador": "historia_geo",
+  "horizontes": [
+    2,
+    3,
+    4
+  ],
+  "semillas": [
+    17,
+    29,
+    41,
+    53,
+    67
+  ],
+  "configuracion": {
+    "constante": null,
+    "manifiesto": "research/08_v3_confirmed_cases/manifiesto_b3_v4.json"
+  },
+  "reproduccion": "research/08_v3_confirmed_cases/congelamiento_b3_v4.md"
+}

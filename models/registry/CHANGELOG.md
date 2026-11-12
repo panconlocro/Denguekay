@@ -7,10 +7,16 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 
 | Versión | Estado | Tag | Ficha |
 |---|---|---|---|
+| v4 | congelada para el paper | — | [v4/ficha.md](v4/ficha.md) |
 | v3 | vigente y servida (experimental) | `model/v3` | [v3/ficha.md](v3/ficha.md) |
 | v2 | reemplazada por la v3 (sigue registrada como `v2_e3_s4`) | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
+
+## 2026-11-12 · v4 congelada para el paper
+
+- `b3_obs` y el comparador `historia_geo` se ajustaron sobre casos confirmados de Piura hasta la SE 41 de 2026.
+- La ficha enlaza el manifiesto con las huellas de los diez boosters y los insumos.
 
 ## 2026-11-09 · v3 servida (feat/serve-v3)
 

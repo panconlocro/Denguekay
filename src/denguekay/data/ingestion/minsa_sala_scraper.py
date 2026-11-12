@@ -1,4 +1,4 @@
-"""Read district-year dengue series from the public MINSA/DGE Sala chart.
+"""Read confirmed district-year dengue series from the public MINSA/DGE Sala chart.
 
 The Shiny chart exposes a full annual series per district. Callers select the
 weeks they need after extraction. Raw responses are optional runtime artifacts.
@@ -16,7 +16,7 @@ from urllib.request import urlopen
 from denguekay.data.keys import normalize_sala
 
 URL = "https://app7.dge.gob.pe/maps2/shiny_metaxenicas_web/"
-CHART = "ten-fig02b-echart"
+CHART = "ten-fig02a-echart"
 
 
 def observed_weekly_points(raw_points: list, year: int) -> list[list[int]]:
@@ -34,6 +34,35 @@ def observed_weekly_points(raw_points: list, year: int) -> list[list[int]]:
     return observed
 
 
+def confirmed_weekly_points(chart: dict, year: int) -> list[list[int]]:
+    """Read the CONFIRMADO series and check it against the chart's weekly axis."""
+    title = normalize_sala(chart["title"][0]["text"])
+    if "SEMANAL DE CASOS SEGUN TIPO DE DIAGNOSTICO" not in title:
+        raise RuntimeError("Sala returned a chart other than weekly cases by diagnosis")
+    confirmed = [series for series in chart["series"] if normalize_sala(series["name"]) == "CONFIRMADO"]
+    if len(confirmed) != 1:
+        raise RuntimeError(f"Sala has no unique CONFIRMADO series for {year}")
+    prefix = f"{year}-"
+    weeks = [label for label in chart["xAxis"][0]["data"] if label.startswith(prefix)]
+    points = [point["value"] for point in confirmed[0]["data"] if point["value"][0].startswith(prefix)]
+    if (
+        not weeks or len(weeks) > 53
+        or weeks != [f"{year}-{week:02d}" for week in range(1, len(weeks) + 1)]
+        or [label for label, _ in points] != weeks
+    ):
+        raise RuntimeError(f"Sala CONFIRMADO does not match the weekly axis for {year}")
+
+    converted = []
+    for label, count in points:
+        if isinstance(count, str):
+            count = count.strip()
+            if not re.fullmatch(r"[0-9]+", count):
+                raise RuntimeError(f"Sala CONFIRMADO count is invalid for {label}")
+            count = int(count)
+        converted.append({"value": [int(label[-2:]), count]})
+    return observed_weekly_points(converted, year)
+
+
 def initial_inputs(page: str) -> dict:
     """Build the initial Shiny inputs from the site's HTML."""
     values = {}
@@ -47,6 +76,7 @@ def initial_inputs(page: str) -> dict:
         values[input_id + ":shiny.action"] = 0
     values.update({
         "ten-pn01": "Tendencias", "dir-pn01": "Tendencias",
+        "ten-tog02a": "1", "ten-tog02b": "1",  # Cases by type of diagnosis.
         ".clientdata_pixelratio": 1, ".clientdata_url_protocol": "https:",
         ".clientdata_url_hostname": "app7.dge.gob.pe", ".clientdata_url_port": "",
         ".clientdata_url_pathname": "/maps2/shiny_metaxenicas_web/",
@@ -119,15 +149,14 @@ class SalaClient:
         if CHART not in response:
             raise RuntimeError("Sala did not return a fresh weekly chart")
         chart = response[CHART]["x"]["opts"]
-        if "semanal" not in chart["title"][0]["text"].lower():
-            raise RuntimeError("Sala returned a chart with unexpected time granularity")
-        series = [item for item in chart["series"] if str(item["name"]) == str(year)]
-        if len(series) != 1:
-            raise RuntimeError(f"Sala has no unique weekly series for {year}")
-        points = observed_weekly_points(series[0]["data"], year)
+        geography = ["PIURA", *(name for name in (province, district) if name != "0")]
+        expected = "DENGUE - " + ", ".join(geography)
+        if normalize_sala(chart["title"][0].get("subtext", "")) != normalize_sala(expected):
+            raise RuntimeError(f"Sala returned a chart for the wrong geography: expected {expected}")
+        points = confirmed_weekly_points(chart, year)
         record = {
             "departamento": "PIURA", "provincia": province, "distrito": district,
-            "nivel": level, "anio": year,
+            "nivel": level, "anio": year, "tipo_dx": "C",
             "consulta_utc": datetime.now(timezone.utc).isoformat(),
             "fuente": URL, "titulo": chart["title"][0], "points": points,
             "kpi": {key: value for key, value in response.items() if "kpi" in key},
@@ -164,7 +193,7 @@ async def scrape_sala(
             try:
                 await client.send("0|o|")
                 await client.call(initial_inputs(page), method="init")
-                await client.call({"ten-fyear": str(year), "ten-fdepa-filter": "PIURA", "ten-tog02c": "2"})
+                await client.call({"ten-fyear": str(year), "ten-fdepa-filter": "PIURA"})
                 controls = [await client.extract(year, level="departamento")]
                 records = []
                 found = set()
