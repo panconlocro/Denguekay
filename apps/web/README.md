@@ -53,6 +53,27 @@ son públicas y se incorporan al build: nunca colocar API_KEY ni credenciales de
 Configurar CORS en la API para el origen del frontend y el hosting de la SPA para devolver index.html
 al abrir rutas internas.
 
+### Demo local V4 con b3
+
+La demo V4 publica la semilla 17 del paquete congelado del paper, con origen en la SE 41 de 2026.
+En la raíz del repositorio, indicar la carpeta que contiene el manifiesto y los boosters:
+
+```bash
+.venv/bin/python -m denguekay.serving.demo_database --paquete-v4 /ruta/v4_b3_confirmados
+.venv/bin/python apps/web/tools/serve_demo.py --v4
+```
+
+En otra terminal, desde `apps/web`:
+
+```bash
+npm run dev:demo
+```
+
+La API abre `models/serving/demo_v4/denguekay_demo.sqlite` en modo lectura. El frontend verifica
+la identidad de las seis versiones experimentales V4. La demo muestra casos confirmados de la Sala
+desde la SE 01 de 2025, las predicciones archivadas y las del corte congelado. Las salidas vigentes
+son probabilidad de brote y conteo puntual. El corte de 2026 se muestra como retrospectiva.
+
 ### Demo local V3
 
 La [guía de V3](../../docs/modeling/reproducir_v3.md#8-ruta-del-producto-de-un-clon-de-develop-a-la-api-con-la-v3)
@@ -69,7 +90,7 @@ Con la demo ya preparada, desde la raíz:
 Desde esta carpeta, en otra terminal:
 
 ```bash
-npm run dev:demo
+npm run dev:demo:v3
 ```
 
 La API escucha en 18001 y abre solo `models/serving/demo/denguekay_demo.sqlite` en modo de lectura;

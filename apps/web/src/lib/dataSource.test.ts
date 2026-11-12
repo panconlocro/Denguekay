@@ -18,17 +18,21 @@ describe('local demo identity', () => {
     expect(dataSource('fixtures')).toBe('fixtures');
     expect(dataSource('demo-v2')).toBe('demo-v2');
     expect(dataSource('api')).toBe('api');
+    expect(demoVersion(dataSource('demo-v4'))).toBe('v4');
     expect(demoVersion(dataSource('demo-v3'))).toBe('v3');
     expect(demoVersion(dataSource('demo-v2'))).toBe('v2');
     expect(demoVersion(dataSource('api'))).toBeNull();
   });
-  it.each(['v2', 'v3'] as const)('accepts the six selected %s versions in any order', (version) => {
-    const versions = models.map((model) => ({
-      ...model,
-      codigo: model.codigo.replace(/^v2/, version),
-    }));
-    expect(() => verifyDemo(versions.reverse(), version)).not.toThrow();
-  });
+  it.each(['v2', 'v3', 'v4'] as const)(
+    'accepts the six selected %s versions in any order',
+    (version) => {
+      const versions = models.map((model) => ({
+        ...model,
+        codigo: model.codigo.replace(/^v2/, version),
+      }));
+      expect(() => verifyDemo(versions.reverse(), version)).not.toThrow();
+    },
+  );
   it('rejects a v2 database in the v3 demo', () => {
     expect(() => verifyDemo(models, 'v3')).toThrow('demo experimental v3 esperada');
   });
