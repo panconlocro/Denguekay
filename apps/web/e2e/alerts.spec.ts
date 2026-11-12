@@ -197,6 +197,27 @@ test('all backend pages are sorted before UI paging and filters survive detail n
   await expect(page.getByLabel('Distrito', { exact: true })).toHaveValue('');
 });
 
+test('two filter changes before the next render both reach the URL', async ({ page }) => {
+  await alertScenario(page);
+  await page.goto('/alertas?horizonte=2&aviso_nivel=muy_alto');
+  const level = page.getByLabel('Nivel de los avisos');
+  await expect(level).toHaveValue('muy_alto');
+  await level.evaluate((select: HTMLSelectElement) => {
+    const state = document.querySelector<HTMLSelectElement>(
+      'select[aria-label="Estado de los avisos"]',
+    )!;
+    select.value = '';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    state.value = 'retirada';
+    state.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect(page).toHaveURL(/aviso_estado=retirada/);
+  await expect(page).not.toHaveURL(/aviso_nivel=/);
+  await expect(page.getByRole('navigation', { name: 'Páginas de avisos' })).toContainText(
+    '12 registros',
+  );
+});
+
 test('a failed later page never becomes a partial total and detail errors recover', async ({
   page,
 }) => {
