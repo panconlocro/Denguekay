@@ -111,6 +111,7 @@ OPENAPI_JSON = BACKEND_DOCS / "openapi.json"
 OPENAPI_V1_JSON = BACKEND_DOCS / "openapi_v1.json"
 # Demo database for the frontend (decision D1); not versioned.
 DEMO_DIR = SERVING_MODELS / "demo"
+DEMO_V4_DIR = SERVING_MODELS / "demo_v4"
 # Versioned evidence of the OE2 refactor (no credentials).
 BACKEND_EVIDENCE = BACKEND_DOCS / "evidencia"
 OE2_MIGRATION_SQL = BACKEND_EVIDENCE / "migracion_0003_oe2_postgresql.sql"
