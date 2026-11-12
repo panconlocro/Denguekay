@@ -174,11 +174,14 @@ class Predictor:
             raise ValueError("El modelo de conteo produjo valores inválidos")
         return output
 
+    def vectors(self, inputs, cutoff):
+        return origin_vectors(inputs, cutoff, self.columns)
+
     def predict(self, inputs, cutoff, horizons):
         for h in horizons:
             if h not in self.horizons:
                 raise InferenceUnavailable(f"sin modelo para h={h}")
-        vectors, reasons = origin_vectors(inputs, cutoff, self.columns)
+        vectors, reasons = self.vectors(inputs, cutoff)
         counts = self.counts(vectors) if len(vectors) else np.empty((0, len(HORIZONS)))
         persistence = vectors["hist_lag_a"].to_numpy(float) if len(vectors) else np.empty(0)
         parts = []
@@ -188,10 +191,11 @@ class Predictor:
             if len(vectors):
                 raw = sp.negative_binomial_probability(mu, alpha, vectors[h].to_numpy(float))
                 published = vt.published_count(mu, persistence, self.weights[h])
-                low, high = v2.interval(published, alpha, self.interval_level)
                 frame["probabilidad_brote"] = v2.platt(raw, *self.coefficients[h])
                 frame["casos_estimados"] = published
-                frame["casos_intervalo_inferior"], frame["casos_intervalo_superior"] = low, high
+                if self.interval_level is not None:
+                    low, high = v2.interval(published, alpha, self.interval_level)
+                    frame["casos_intervalo_inferior"], frame["casos_intervalo_superior"] = low, high
             missing = pd.DataFrame({"ubigeo": list(reasons), "horizonte": h, "motivo_no_disponible": list(reasons.values())})
             parts += [frame, missing]
         output = pd.concat(parts, ignore_index=True).reindex(columns=OUTPUT_COLUMNS)

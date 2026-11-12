@@ -27,11 +27,11 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy.engine import URL
 
-from denguekay.config.paths import ALEMBIC_CONFIG, DATA, DEMO_DIR
+from denguekay.config.paths import ALEMBIC_CONFIG, DATA, DEMO_DIR, DEMO_V4_DIR
 from denguekay.db.session import make_engine
 
 DEMO_DB_NAME = "denguekay_demo.sqlite"
-GENERATED = (DEMO_DB_NAME, "storage", "mlflow.db", "mlartifacts")
+GENERATED = (DEMO_DB_NAME, "storage", "mlflow.db", "mlartifacts", "reporte_v4.json")
 
 
 @contextmanager
@@ -48,7 +48,7 @@ def tracking_store(folder):
             os.environ["MLFLOW_TRACKING_URI"] = previous
 
 
-def build(destination=DEMO_DIR, replace=False):
+def build(destination=DEMO_DIR, replace=False, *, package_v4=None):
     """Migrate an empty SQLite to head and publish the configured package on it; return a summary without secrets."""
     from denguekay.serving.publish import publish
     from denguekay.serving.storage import LocalStorage
@@ -56,6 +56,9 @@ def build(destination=DEMO_DIR, replace=False):
     folder = Path(destination).resolve()
     if folder.is_relative_to(DATA.resolve()):
         raise ValueError("La BD de demostración nunca se escribe en data/")
+    frozen = Path(package_v4).resolve(strict=True) if package_v4 is not None else None
+    if frozen is not None and (frozen.is_relative_to(folder) or folder.is_relative_to(frozen)):
+        raise ValueError("La demo y el paquete congelado requieren carpetas separadas")
     existing = [name for name in GENERATED if (folder / name).exists()]
     if existing and not replace:
         raise FileExistsError(f"Ya existe una demo en {folder} ({', '.join(existing)}); use --reemplazar")
@@ -70,8 +73,13 @@ def build(destination=DEMO_DIR, replace=False):
         config.attributes["motor"] = engine
         command.upgrade(config, "head")
         with tracking_store(folder):
-            summary = publish(engine, storage=LocalStorage(folder / "storage"), run_inference=True,
-                              select_experimental=True)
+            storage = LocalStorage(folder / "storage")
+            if frozen is None:
+                summary = publish(engine, storage=storage, run_inference=True, select_experimental=True)
+            else:
+                from denguekay.serving.demo_b3_v4 import publish_frozen_demo
+
+                summary = publish_frozen_demo(engine, frozen, storage, folder)
     finally:
         engine.dispose()
     return {"bd": str(database), "storage": str(folder / "storage"),
@@ -83,11 +91,13 @@ def build(destination=DEMO_DIR, replace=False):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--salida", type=Path, default=DEMO_DIR, help="Carpeta de la demo (por defecto models/serving/demo)")
+    parser.add_argument("--salida", type=Path, help="Carpeta de la demo")
     parser.add_argument("--reemplazar", action="store_true", help="Borra la demo anterior de esa carpeta")
+    parser.add_argument("--paquete-v4", type=Path, help="Directorio del paquete b3 congelado")
     options = parser.parse_args(argv)
+    destination = options.salida or (DEMO_V4_DIR if options.paquete_v4 is not None else DEMO_DIR)
     try:
-        print(json.dumps(build(options.salida, options.reemplazar), ensure_ascii=False, default=str))
+        print(json.dumps(build(destination, options.reemplazar, package_v4=options.paquete_v4), ensure_ascii=False, default=str))
         return 0
     except (FileExistsError, ValueError) as error:
         print(f"No se generó la demo: {error}", file=sys.stderr)
