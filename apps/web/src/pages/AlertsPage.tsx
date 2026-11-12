@@ -85,20 +85,21 @@ export function AlertsPage() {
   const pages = Math.max(1, Math.ceil((rows?.length || 0) / pageSize));
   const page = Math.min(filters.page, pages);
   const visible = rows?.slice((page - 1) * pageSize, page * pageSize) || [];
+  // BrowserRouter updates the URL before React renders the new search params.
   const change = (key: string, value: string) => {
-    const next = new URLSearchParams(params);
+    const next = new URLSearchParams(window.location.search);
     if (value) next.set(key, value);
     else next.delete(key);
     next.delete('aviso_pagina');
     setParams(next);
   };
   const reset = () => {
-    const next = new URLSearchParams(params);
+    const next = new URLSearchParams(window.location.search);
     for (const key of [...next.keys()]) if (key.startsWith('aviso_')) next.delete(key);
     setParams(next);
   };
   const goPage = (value: number) => {
-    const next = new URLSearchParams(params);
+    const next = new URLSearchParams(window.location.search);
     next.set('aviso_pagina', String(value));
     setParams(next);
   };
