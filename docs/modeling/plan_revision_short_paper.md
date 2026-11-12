@@ -106,7 +106,7 @@ Los números son los identificadores de los comentarios anclados en el Word. La 
 
 El suplemento `Denguekay_paper_IEEE_v4_Piura_Supplement.docx` acompaña la V4 con nueve tablas y dos figuras. Sus datos, figuras, código y manifiesto se conservan en `models/experimentos/mejora_modelo/v3_confirmados/manuscrito_piura/suplemento/`.
 
-La copia `Denguekay_paper_IEEE_v4_Piura_con_suplemento.docx` añade las cinco referencias a las tablas S1–S9 y las figuras S1–S2 en Resultados. El suplemento se adjunta como archivo separado. El [borrador de respuesta al asesor](respuesta_asesor_short_paper_v4.md) sigue los comentarios 0–32.
+La copia `Denguekay_paper_IEEE_v4_Piura_con_suplemento.docx` añade las cinco referencias a las tablas S1–S9 y las figuras S1–S2 en Resultados. El suplemento se adjunta como archivo separado.
 
 La revisión técnica y editorial quedó en `Denguekay_paper_IEEE_v4_Piura_revision_autores.docx` y `Denguekay_paper_IEEE_v4_Piura_Supplement_revision_autores.docx`. El resumen distingue el contraste principal a parámetros fijos del análisis con ajuste simétrico. El suplemento incorpora las tablas S10–S11 con los cambios de calibración por temporada y la descomposición de Brier por modelo y horizonte. Las tablas se reconstruyeron de los resultados archivados de historia y calibración y del diagnóstico de probabilidades.
 
