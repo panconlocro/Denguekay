@@ -1,6 +1,6 @@
 # Regeneración de gold desde el notebook 10
 
-El 04/11/2026 el usuario solicitó ejecutar `pipelines/notebooks/10_silver_to_gold.ipynb` para preparar
+El 04/11/2026 se ejecutó `pipelines/notebooks/10_silver_to_gold.ipynb` para preparar
 los datos de v2. Se ejecutó ese notebook con el Python de `.venv`, sin alterar su código ni las fuentes
 de silver. Es una actualización del esquema y las variables desde el panel local existente, no una
 descarga de semanas nuevas ni un entrenamiento/publicación del modelo.

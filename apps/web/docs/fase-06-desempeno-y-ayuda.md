@@ -1,6 +1,6 @@
 # Fase 6 — Desempeño y ayuda
 
-El usuario autorizó esta fase con «go fase 6», tras revisar la fase 5. El alcance sigue limitado a
+Fase posterior a la revisión de la fase 5. El alcance sigue limitado a
 `apps/web/`, en `feat/web-dashboard`: consultas de lectura sobre la misma demo v2 de fase 2.
 No se ejecutó entrenamiento, inferencia, migración, publicación ni registro de modelos.
 

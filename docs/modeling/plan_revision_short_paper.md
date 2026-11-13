@@ -1,94 +1,217 @@
-# Plan de revisión del short paper Denguekay
+# Revisión del short paper Denguekay: diseño y estado
 
-La pregunta central se mantiene. **¿Cuánto aporta la información climática al pronóstico semanal de dengue por distrito en Piura cuando el modelo ya conoce la historia local de casos?** El análisis conserva h2, h3 y h4 en los términos del plan de dirección. El comentario 10 sobre horizonte real queda fuera del alcance acordado. La comparación con otros departamentos se ejecuta después de cerrar y congelar el método en Piura.
+Este documento describe cómo se organizó la revisión metodológica del short paper tras las observaciones del asesor, qué
+análisis cubre cada fase, su estado y qué comentario atiende cada uno. Las cifras y los resultados están en los
+informes de [research/08_v3_confirmed_cases](../../research/08_v3_confirmed_cases/README.md) enlazados en cada sección.
 
-El plan cubre los comentarios anclados 1–32 del Word revisado. El comentario 0 resume la evaluación general. Para responder al asesor, cada observación tendrá una evidencia verificable, una referencia a la sección o figura corregida y un estado. El inventario se distingue de los análisis que todavía deben ejecutarse.
+La pregunta central se mantiene: **¿cuánto aporta la información climática al pronóstico semanal de dengue por distrito
+en Piura cuando el modelo ya conoce la historia local de casos?** El análisis conserva h2, h3 y h4 en los términos del
+plan de dirección. El comentario 10 (horizonte real) queda fuera del alcance acordado. La comparación con otros
+departamentos se hace después de cerrar y congelar el método en Piura.
+
+La revisión cubre los comentarios anclados 1–32 del Word revisado; el comentario 0 resume la evaluación general. Cada
+observación se responde con una evidencia verificable, una referencia a la sección o figura corregida y un estado. El
+inventario de lo ya disponible se distingue de los análisis nuevos.
 
 ## Punto de partida verificado
 
-- El cierre con confirmados ya tiene `d3`/V3 y `L + 5a` sin clima, ambos con trial 191, cinco semillas y el calendario anterior. Sirve como referencia de la revisión y como insumo para probar el código de evaluación. La tabla final usará un calendario común para todas las variantes. [Corrida con confirmados](../../research/08_v3_confirmed_cases/README.md)
-- El GeoJSON versionado contiene **65 polígonos distritales de Piura**, con 65 UBIGEO únicos. Se derivaron de los límites nacionales COD-AB. La extracción actual filtra Piura, de modo que los polígonos de los otros departamentos se obtendrán de la misma fuente en la última fase. [GeoJSON de Piura](../../data/reference/distritos_piura_limites.geojson) · [Ingesta y validación de límites](../../src/denguekay/data/ingestion/district_boundaries.py)
-- El silver local de **CHIRPS v3 sat** tiene **91 000 filas**, 65 distritos y semanas del 2 de enero de 2000 al 25 de octubre de 2026. Hay 90 675 filas finales y 325 preliminares, sin nulos ni llaves repetidas en el archivo inspeccionado. La lluvia ya se agrega por polígono y el notebook 03c conserva versión y fecha de disponibilidad. La fecha del silver se auditará contra los metadatos del producto antes de usarla como evidencia de disponibilidad histórica. [Notebook 03c](../../pipelines/notebooks/03c_ingesta_chirps.ipynb) · [Agregación y versionado](../../src/denguekay/data/processing/chirps_precipitation.py) · [CHIRPS v3](https://chc.ucsb.edu/data/chirps3)
-- La temperatura y humedad de ERA5-Land del estudio se extrajeron **en un punto por distrito**. Hay una contradicción en el protocolo, que también llama a la temperatura promedio del polígono. La versión final describirá la extracción que se use en cada experimento. [Producto climático de V3](protocolo_v3.md#8-producto-climático-de-d3-r14)
-- El diagnóstico con confirmados separó las ventanas de entrenamiento y calibración y añadió persistencia probabilística. El beneficio de la historia larga dependió de la ventana de calibración. Los resultados de alertas dependieron de la temporada y del presupuesto alcanzado. Se usarán para orientar el manuscrito y se volverán a evaluar con el calendario común y `b3`. [Resultados del diagnóstico](../../research/08_v3_confirmed_cases/README.md#calibración-y-alertas-para-la-revisión-del-paper)
+- El cierre con confirmados ya tenía `d3`/V3 y `L + 5a` sin clima, ambos con trial 191, cinco semillas y el calendario
+  anterior. Sirve como referencia de la revisión y como insumo para probar el código de evaluación; la tabla final usa un
+  calendario común para todas las variantes. [Corrida con confirmados](../../research/08_v3_confirmed_cases/README.md)
+- El GeoJSON versionado contiene **65 polígonos distritales de Piura**, con 65 UBIGEO únicos, derivados de los límites
+  nacionales COD-AB. La extracción filtra Piura; los polígonos de otros departamentos salen de la misma fuente en la
+  última fase. [GeoJSON de Piura](../../data/reference/distritos_piura_limites.geojson) ·
+  [Ingesta y validación de límites](../../src/denguekay/data/ingestion/district_boundaries.py)
+- El silver local de **CHIRPS v3 sat** tenía **91 000 filas**, 65 distritos y semanas del 2 de enero de 2000 al 25 de
+  octubre de 2026: 90 675 filas finales y 325 preliminares, sin nulos ni llaves repetidas en el archivo inspeccionado.
+  La lluvia se agrega por polígono y el notebook 03c conserva versión y fecha de disponibilidad. La fecha del silver se
+  audita contra los metadatos del producto antes de usarla como evidencia de disponibilidad histórica.
+  [Notebook 03c](../../pipelines/notebooks/03c_ingesta_chirps.ipynb) ·
+  [Agregación y versionado](../../src/denguekay/data/processing/chirps_precipitation.py) ·
+  [CHIRPS v3](https://chc.ucsb.edu/data/chirps3)
+- La temperatura y la humedad de ERA5-Land del estudio se extrajeron **en un punto por distrito**, mientras el protocolo
+  también hablaba de temperatura promedio del polígono. La versión final describe la extracción usada en cada
+  experimento. [Producto climático de V3](protocolo_v3.md#8-producto-climático-de-d3-r14)
+- El diagnóstico con confirmados separó las ventanas de entrenamiento y calibración y añadió persistencia
+  probabilística. El beneficio de la historia larga dependió de la ventana de calibración, y los resultados de alertas,
+  de la temporada y del presupuesto alcanzado. Orientan el manuscrito y se vuelven a evaluar con el calendario común y
+  `b3`. [Resultados del diagnóstico](../../research/08_v3_confirmed_cases/README.md#calibración-y-alertas-para-la-revisión-del-paper)
 
-## Fase 0. Cerrar el protocolo de la revisión
+## Fase 0. Protocolo de la revisión
 
-1. Fijar los insumos confirmados, el rango de observación, la definición de semana y la política de faltantes. Archivar los hashes del CSV, la Sala, el panel, la cobertura, la geometría y cada insumo climático. Conservar por separado los datos y resultados originales de V3.
-2. Construir temporadas uniformes y disjuntas desde la SE 35, incluida `temporada_2025`. Recuperar agosto–diciembre de 2024 y contar cada semana objetivo una sola vez. Mantener 2024 como contraste retrospectivo y documentar cuándo fue inspeccionada. Separar `posterior_2026` de las temporadas decisivas y excluir el primer bloque de las comparaciones calibradas sin historia suficiente. Guardar una tabla de cortes y filas por bloque y horizonte.
-3. Fijar **Brier pareado por temporada** como evaluación principal del aporte climático. Reportar las seis temporadas originales con su justificación y fechas de selección, sus resultados individuales y la lectura sin 2026. Aplicar la regla histórica `SEASON_2026` con su rol documentado. El promedio agrupado y los guardarraíles de alertas y conteos se presentan por separado. Preespecificar el tratamiento de comparaciones múltiples y las sensibilidades.
-4. Registrar qué se decidió antes de cada etapa y qué cambió después. Incluir F1 → Brier, incorporación de 2026 y elección operativa de `d3`. Reconstruir cuántas configuraciones se evaluaron realmente contra las temporadas de decisión. Fijar las métricas, versiones, cortes, semillas, definiciones alternativas y presupuesto de tuning antes de las nuevas comparaciones. El manuscrito usará «prespecified» para la planificación interna y reservará «preregistered» para un protocolo registrado externamente antes de su evaluación.
+1. **Insumos:** insumos confirmados, rango de observación, definición de semana y política de faltantes fijados, con los
+   hashes del CSV, la Sala, el panel, la cobertura, la geometría y cada insumo climático. Los datos y resultados
+   originales de V3 se conservan por separado.
+2. **Temporadas:** uniformes y disjuntas desde la SE 35, incluida `temporada_2025`, con agosto–diciembre de 2024
+   recuperado y cada semana objetivo contada una sola vez. 2024 es contraste retrospectivo, con la fecha en que se
+   inspeccionó; `posterior_2026` queda separada de las temporadas decisivas, y el primer bloque, sin historia suficiente,
+   fuera de las comparaciones calibradas. Una tabla registra cortes y filas por bloque y horizonte.
+3. **Evaluación principal del aporte climático: Brier pareado por temporada.** Se reportan las seis temporadas originales
+   con su justificación y fechas de selección, sus resultados individuales y la lectura sin 2026. La regla histórica
+   `SEASON_2026` se aplica con su rol documentado. El promedio agrupado y los guardarraíles de alertas y conteos se
+   presentan por separado, y el tratamiento de comparaciones múltiples y las sensibilidades se fijan de antemano.
+4. **Cronología de decisiones:** qué se decidió antes de cada etapa y qué cambió después, incluidos el paso de F1 a
+   Brier, la incorporación de 2026 y la elección operativa de `d3`, y cuántas configuraciones se evaluaron realmente
+   contra las temporadas de decisión. Métricas, versiones, cortes, semillas, definiciones alternativas y presupuesto de
+   tuning se fijan antes de las comparaciones nuevas. El manuscrito usa «prespecified» para la planificación interna y
+   reserva «preregistered» para un protocolo registrado externamente antes de su evaluación.
 
-**Estado de fase 0.** Protocolo fechado y calendario común auditado, con 60 cortes, inventario de insumos actuales y solape de fuentes reproducible. Queda la revisión de Rosa antes de usar estos cortes en las corridas principales. La fase climática completará el inventario con las exposiciones nuevas. [Protocolo y auditoría](../../research/08_v3_confirmed_cases/protocolo_revision.md)
+**Estado.** Protocolo fechado y calendario común auditado, con 60 cortes, inventario de insumos y solape de fuentes
+reproducible. La fase climática completa el inventario con las exposiciones nuevas.
+[Protocolo y auditoría](../../research/08_v3_confirmed_cases/protocolo_revision.md)
 
-## Fase 1. Corregir la exposición climática
+## Fase 1. Exposición climática
 
-**CHIRPS aporta lluvia en una grilla de 0,05°. ERA5-Land aporta temperatura y humedad en su propia grilla, distribuida a 0,1°.** Reutilizar los polígonos de CHIRPS permite mejorar la forma de resumir ERA5-Land dentro de un distrito. Un distrito contenido en una sola celda puede conservar la misma temperatura tras ponderar. El resultado seguirá teniendo la resolución de ERA5-Land. [CHIRPS v3](https://chc.ucsb.edu/data/chirps3) · [ERA5-Land en Copernicus](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land?tab=overview)
+**CHIRPS aporta lluvia en una grilla de 0,05°; ERA5-Land, temperatura y humedad en su propia grilla, distribuida a
+0,1°.** Reutilizar los polígonos de CHIRPS mejora la forma de resumir ERA5-Land dentro de un distrito, pero un distrito
+contenido en una sola celda puede conservar la misma temperatura tras ponderar: el resultado sigue teniendo la resolución
+de ERA5-Land. [CHIRPS v3](https://chc.ucsb.edu/data/chirps3) ·
+[ERA5-Land en Copernicus](https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land?tab=overview)
 
-1. **Lluvia.** Reusar CHIRPS v3 sat y el cálculo por intersección de celda y polígono. Auditar completitud semanal, versión, fuente y disponibilidad. Para los orígenes de la retrospectiva, usar el producto o versión que podía estar disponible cuando haya evidencia. Cuando el histórico solo tenga datos revisados, documentar ese supuesto y mantener separados los diagnósticos retrospectivos y prospectivos. Guardar preliminar y final como versiones auditables.
-2. **Temperatura y humedad.** Obtener las celdas ERA5-Land que intersectan los 65 polígonos. Pilotear costa y sierra con el mismo intervalo, zona horaria, unidades y definición de semana. Comparar tres exposiciones sobre las mismas filas: **celda de centroide**, **media por área de intersección** y **media ponderada por población o asentamientos**. Para humedad, verificar que la variable de origen o la fórmula con temperatura y punto de rocío sea comparable con el silver actual. Calcular las ventanas de `d3` y las medias de `b3` después de agregar espacialmente.
-3. **Pesos y denominadores.** Fijar antes de evaluar una capa poblacional histórica, su año de referencia y el tratamiento de distritos con datos insuficientes. Documentar cómo se reconstruyen los pesos y qué información estaba disponible para cada periodo. Usar denominadores distritales anuales para las tasas por 100 000, con fuente y cobertura explícitas. Los pesos dentro de las celdas y el denominador del distrito cumplen funciones distintas. [WorldPop, grillas históricas](https://hub.worldpop.org/Global1_2000-2020)
-4. **Verificación.** Publicar diferencias centroide–área–población por distrito y semana, estratificadas por costa y sierra. Revisar geometrías, pesos, celdas válidas y UBIGEO. Validar con estaciones SENAMHI donde haya series comparables y reportar su cobertura. Añadir mínima y rango diurno como sensibilidades fijadas de antemano. Verificar disponibilidad de todas las variables en los orígenes usados, por separado de la observación excluida sobre horizonte efectivo.
+1. **Lluvia.** CHIRPS v3 sat con el cálculo por intersección de celda y polígono, y auditoría de completitud semanal,
+   versión, fuente y disponibilidad. En los orígenes de la retrospectiva se usa el producto o versión que podía estar
+   disponible cuando hay evidencia; cuando el histórico solo tiene datos revisados, el supuesto se documenta y los
+   diagnósticos retrospectivos y prospectivos se mantienen separados. Preliminar y final se guardan como versiones
+   auditables.
+2. **Temperatura y humedad.** Celdas ERA5-Land que intersectan los 65 polígonos, con un piloto en costa y sierra con el
+   mismo intervalo, zona horaria, unidades y definición de semana. Se comparan tres exposiciones sobre las mismas filas:
+   **celda de centroide**, **media por área de intersección** y **media ponderada por población o asentamientos**. Para
+   la humedad se verifica que la variable de origen, o la fórmula con temperatura y punto de rocío, sea comparable con el
+   silver. Las ventanas de `d3` y las medias de `b3` se calculan después de agregar espacialmente.
+3. **Pesos y denominadores.** La capa poblacional histórica, su año de referencia y el tratamiento de distritos con
+   datos insuficientes se fijan antes de evaluar, documentando cómo se reconstruyen los pesos y qué información estaba
+   disponible en cada periodo. Las tasas por 100 000 usan denominadores distritales anuales con fuente y cobertura
+   explícitas; los pesos dentro de las celdas y el denominador del distrito cumplen funciones distintas.
+   [WorldPop, grillas históricas](https://hub.worldpop.org/Global1_2000-2020)
+4. **Verificación.** Diferencias centroide–área–población por distrito y semana, estratificadas por costa y sierra;
+   revisión de geometrías, pesos, celdas válidas y UBIGEO; validación con estaciones SENAMHI donde hay series comparables,
+   con su cobertura. La mínima y el rango diurno entran como sensibilidades fijadas de antemano. La disponibilidad de
+   todas las variables se verifica en los orígenes usados, por separado de la observación excluida sobre horizonte
+   efectivo.
+5. **Piloto de temperatura CHIRTS-ERA5.** Comparación de las medias semanales de Tmax y Tmin diarias de CHIRTS-ERA5
+   (0,05°) y ERA5-Land sobre las mismas semanas, polígonos y regla de ponderación, primero en distritos costeros y
+   serranos y, cuando hay series comparables, en estaciones. La media de Tmax y Tmin es un estimador distinto de la media
+   de 24 horas. El catálogo contiene archivos históricos desde 1980 y archivos de 2026; antes de descargar la serie se
+   verifican los días y celdas válidos en Piura, la fecha de publicación de ambas variables y la extracción por ventanas
+   espaciales. El proveedor indica un desfase nominal de cinco días para Tmax y Tmin. Si el piloto pasa, se corre una sola
+   sensibilidad de fuente con el diseño de `b3` y las mismas filas evaluables, con la lluvia, la humedad y las demás
+   entradas fijas. El uso prospectivo exige comprobar la disponibilidad en cada fecha de emisión.
+   [Ficha de CHIRTS-ERA5](https://www.chc.ucsb.edu/data/chirts-era5) ·
+   [Catálogo diario de Tmax](https://data.chc.ucsb.edu/experimental/CHIRTS-ERA5/tmax/tifs/daily/) ·
+   [Catálogo diario de Tmin](https://data.chc.ucsb.edu/experimental/CHIRTS-ERA5/tmin/tifs/daily/)
+6. **Humedad.** La humedad relativa de ERA5-Land es la referencia. El proveedor documenta humedad calculada a partir de
+   la temperatura CHIRTS-ERA5 y el punto de rocío de ERA5 para otros productos, pero el catálogo revisado no la lista como
+   serie descargable. Una reconstrucción sería una serie híbrida y exigiría verificar que su estadístico diario sea
+   comparable con la humedad del panel.
+   [Documentación de las variables derivadas](https://data.chc.ucsb.edu/experimental/CHIRTS-ERA5/aaa.readme.txt)
 
-5. **Piloto de temperatura CHIRTS-ERA5.** Comparar las medias semanales de Tmax y Tmin diarias de CHIRTS-ERA5 (0,05°) y ERA5-Land sobre las mismas semanas, los mismos polígonos y la misma regla de ponderación. Usar primero distritos costeros y serranos y, cuando haya series comparables, estaciones. La media de Tmax y Tmin es un estimador distinto de la media de 24 horas. El catálogo contiene archivos históricos desde 1980 y archivos de 2026. Verificar los días y celdas válidos en Piura, la fecha de publicación de ambas variables y la viabilidad de extraer por ventanas espaciales antes de descargar toda la serie. El proveedor indica un desfase nominal de cinco días para Tmax y Tmin. Si el piloto pasa, correr una sola sensibilidad de fuente con el diseño de `b3` y las mismas filas evaluables, manteniendo fijas la lluvia, la humedad y las demás entradas. Las pruebas de uso prospectivo requieren comprobar la disponibilidad en cada fecha de emisión. [Ficha de CHIRTS-ERA5](https://www.chc.ucsb.edu/data/chirts-era5) · [Catálogo diario de Tmax](https://data.chc.ucsb.edu/experimental/CHIRTS-ERA5/tmax/tifs/daily/) · [Catálogo diario de Tmin](https://data.chc.ucsb.edu/experimental/CHIRTS-ERA5/tmin/tifs/daily/)
-6. **Humedad.** Mantener la humedad relativa de ERA5-Land como referencia. El proveedor documenta humedad calculada a partir de temperatura CHIRTS-ERA5 y punto de rocío de ERA5 para generar otros productos. El catálogo revisado no lista la humedad relativa como serie descargable. Una reconstrucción sería una serie híbrida y requeriría verificar que su estadístico diario sea comparable con la humedad usada en el panel. [Documentación de las variables derivadas](https://data.chc.ucsb.edu/experimental/CHIRTS-ERA5/aaa.readme.txt)
+**Estado.** Candidato principal construido y validado para los 65 distritos y 1 400 semanas: CHIRPS para lluvia y ERA5
+global por población para temperatura y humedad. Los resultados de ERA5-Land, CHIRTS, PISCOt y el relleno exploratorio
+se conservan como contrastes separados. [Comparación de fuentes y candidato](../../research/08_v3_confirmed_cases/comparacion_fuentes_clima.md)
 
-**Estado de fase 1.** Candidato principal construido y validado para los 65 distritos y 1 400 semanas. Usa CHIRPS para lluvia y ERA5 global por población para temperatura y humedad. Se conservaron los resultados de ERA5-Land, CHIRTS, PISCOt y el relleno exploratorio como contrastes separados. Quedan la revisión de la fase y las pruebas predictivas con el soporte común y los controles espaciales. [Comparación de fuentes y candidato](../../research/08_v3_confirmed_cases/comparacion_fuentes_clima.md)
+**Salidas de la fase.** Silver semanal con fuentes y versiones, pesos reproducibles, informe de cobertura y comparación
+de las tres exposiciones. El modelo principal usa la definición fijada por el protocolo y el centroide queda como
+contraste con el estudio original.
 
-**Cierre de fase.** Silver semanal con fuentes y versiones, pesos reproducibles, informe de cobertura y comparación de las tres exposiciones. El modelo principal usará la definición fijada por el protocolo. El centroide quedará como contraste con el estudio original.
+## Fase 2. Reexperimentación en Piura y pregunta climática
 
-## Fase 2. Reexperimentar en Piura y cerrar la pregunta climática
-
-| Comparación | Qué permite responder |
+| Comparación | Qué responde |
 |---|---|
-| `b3` original frente a `L + 5a`, con los hiperparámetros heredados compartidos | Si se sostiene la elección histórica de `b3` con confirmados. Mostrar `d3`/V3 como variante operativa en la misma evaluación. |
-| Historia y covariables estáticas frente a la misma base con `d3` o con `b3` | Si el clima agrega información después de controlar por diferencias entre distritos. Fijar coordenadas, elevación y cualquier otra covariable portable antes de la corrida. |
-| Temperatura observada frente a placebo y anomalías, sobre la misma base distrital | Si la mejora supera la señal que se obtiene conservando la geografía y la época del año. El placebo usa otra fecha del mismo distrito y semana, seleccionada con una regla reproducible entre años previos disponibles. Mantener juntas las ventanas de una misma serie y documentar la SE 53. Para `b3`, añadir un placebo del bloque climático si se atribuye la mejora al conjunto. |
-| Exposición por centroide, área y población dentro de la misma variante | Cuánto cambia el resultado por la representación espacial. Incluir un gráfico ALE o SHAP y tratarlo como diagnóstico del modelo. |
-| CHIRTS nativo a 0,05° frente al mismo CHIRTS agregado a 0,25° | Cuánto aporta el detalle espacial por sí mismo. Mantener las mismas máximas y mínimas, fechas, soporte válido, pesos y demás variables. Comparar también el aporte de la diferencia entre ambas escalas sobre el modelo que ya conoce la señal gruesa. |
-| Calendario y geografía, con y sin clima y con y sin historia | Si el clima aporta información cuando faltan los casos recientes y cuánto de esa información sigue aportando al agregarlos. Las variantes sin historia también prescinden del anclaje y la mezcla con persistencia. |
-| Historia corta frente a larga sobre las mismas filas evaluables | Cuánto aporta la historia adicional al entrenamiento y cuánto aporta al calibrador. Usar confirmados y una especificación fija, primero en el comparador sin clima. El contraste original cambió a la vez entrenamiento y calibración. |
+| `b3` original frente a `L + 5a`, con los hiperparámetros heredados compartidos | Si se sostiene la elección histórica de `b3` con confirmados; `d3`/V3 se muestra como variante operativa en la misma evaluación. |
+| Historia y covariables estáticas frente a la misma base con `d3` o con `b3` | Si el clima agrega información después de controlar por diferencias entre distritos. Coordenadas, elevación y cualquier otra covariable portable se fijan antes de la corrida. |
+| Temperatura observada frente a placebo y anomalías, sobre la misma base distrital | Si la mejora supera la señal que se obtiene conservando la geografía y la época del año. El placebo usa otra fecha del mismo distrito y semana, elegida con una regla reproducible entre años previos disponibles; las ventanas de una misma serie se mantienen juntas y la SE 53 se documenta. Para `b3` hay además un placebo del bloque climático. |
+| Exposición por centroide, área y población dentro de la misma variante | Cuánto cambia el resultado por la representación espacial, con un gráfico ALE o SHAP como diagnóstico del modelo. |
+| CHIRTS nativo a 0,05° frente al mismo CHIRTS agregado a 0,25° | Cuánto aporta el detalle espacial por sí mismo, con las mismas máximas y mínimas, fechas, soporte válido, pesos y demás variables, y el aporte de la diferencia entre ambas escalas sobre el modelo que ya conoce la señal gruesa. |
+| Calendario y geografía, con y sin clima y con y sin historia | Si el clima aporta cuando faltan los casos recientes y cuánto sigue aportando al agregarlos. Las variantes sin historia prescinden también del anclaje y de la mezcla con persistencia. |
+| Historia corta frente a larga sobre las mismas filas evaluables | Cuánto aporta la historia adicional al entrenamiento y cuánto al calibrador, con confirmados y una especificación fija, primero en el comparador sin clima. El contraste original cambió a la vez entrenamiento y calibración. |
 
-- **Ablación principal.** Mantener el mismo diseño y los hiperparámetros compartidos dentro de cada contraste de variables. Correr los modelos con los mismos orígenes, etiquetas y cinco semillas. En todos los casos guardar conteo bruto y publicado, dispersión, probabilidad cruda y calibrada, filas de calibración y predicciones por episodio.
-- **Tuning simétrico.** Ajustar por separado `b3`, `d3` y el modelo sin clima con el mismo espacio, presupuesto de trials y temporadas de ajuste. Mantener las temporadas de decisión fuera de la búsqueda. Medir primero el costo de un bloque y fijar el presupuesto común antes de comparar. El estudio original consumió hasta diez horas para la búsqueda de una sola variante, así que este bloque se agenda aparte. Usar el contraste con parámetros compartidos para atribución y el contraste con tuning simétrico para rendimiento.
-- **Baselines en la tabla principal.** Mantener persistencia determinista, ingenuo estacional y climatología. Añadir persistencia probabilística, ajustada cronológicamente sobre el último conteo relativo al umbral. Evaluar un GLM autorregresivo NB o, si el ajuste falla bajo un criterio fijado de convergencia, el modelo estadístico alternativo predefinido. Correr Poisson y LightGBM sobre el mismo soporte. Replicar el contraste con y sin clima en la familia estadística para responder la observación sobre XGBoost.
+- **Ablación principal.** Dentro de cada contraste de variables, mismo diseño e hiperparámetros compartidos, mismos
+  orígenes, etiquetas y cinco semillas. Se guardan el conteo bruto y publicado, la dispersión, la probabilidad cruda y
+  calibrada, las filas de calibración y las predicciones por episodio.
+- **Tuning simétrico.** `b3`, `d3` y el modelo sin clima se ajustan por separado con el mismo espacio, presupuesto de
+  trials y temporadas de ajuste, con las temporadas de decisión fuera de la búsqueda. El presupuesto común se fija tras
+  medir el costo de un bloque (el estudio original consumió hasta diez horas para la búsqueda de una sola variante). El
+  contraste con parámetros compartidos sirve para atribución y el de tuning simétrico, para rendimiento.
+- **Baselines en la tabla principal.** Persistencia determinista, ingenuo estacional y climatología, más persistencia
+  probabilística ajustada cronológicamente sobre el último conteo relativo al umbral. Un GLM autorregresivo NB (o, si el
+  ajuste falla bajo un criterio fijado de convergencia, el modelo estadístico alternativo predefinido), y Poisson y
+  LightGBM sobre el mismo soporte. El contraste con y sin clima se replica en la familia estadística para responder la
+  observación sobre XGBoost.
+- **Entrenamiento separado de calibración.** Dos ventanas de entrenamiento con los mismos predictores e hiperparámetros,
+  e idénticas etiqueta, regla de predictores y filas de evaluación. Las predicciones crudas fuera de muestra se comparan
+  primero con una ventana de calibración común y, para cada modelo, calibración corta frente a larga cuando hay
+  predicciones previas suficientes para las dos; los cortes documentan qué temporadas permiten cada contraste. Se
+  reportan Brier y su descomposición, curvas de confiabilidad y precisión promedio (AP) por bloque, y un AP similar se
+  interpreta según la variación entre temporadas y el margen fijado antes del análisis. Se reutilizan predicciones
+  compatibles y solo se reentrenan los ajustes que faltan.
+  [Contraste histórico](../../research/06_model_improvement/docs/mejora_modelo.md)
 
-- **Separar entrenamiento de calibración.** Comparar dos ventanas de entrenamiento con los mismos predictores e hiperparámetros. Mantener idénticas la etiqueta, la regla para construir predictores y las filas de evaluación. Generar predicciones crudas fuera de muestra y comparar ambos modelos primero con una ventana de calibración común. Para cada modelo, contrastar calibración corta y larga cuando existan predicciones fuera de muestra previas y suficientes para las dos. Al fijar los cortes, documentar qué temporadas permiten cada contraste. Reportar Brier y su descomposición, curvas de confiabilidad y precisión promedio (AP) por bloque. Interpretar un AP similar según la variación entre temporadas y el margen fijado antes del análisis. Reusar predicciones compatibles y reentrenar solo los ajustes que falten. [Contraste histórico](../../research/06_model_improvement/docs/mejora_modelo.md)
+**Contraste de resolución.** Histórico CHIRTS y evaluación pareada con confirmados, covariables geográficas y cortes
+comunes completos. La grilla fina mejoró modestamente el Brier frente a su versión gruesa; frente al comparador de
+historia y geografía, h4 quedó muy cerca. [Resultados de resolución](../../research/08_v3_confirmed_cases/resultado_resolucion_chirts.md)
 
-**Avance del contraste de resolución.** Se completó el histórico CHIRTS y la evaluación pareada con confirmados, covariables geográficas y cortes comunes. La grilla fina mejoró modestamente el Brier frente a su versión gruesa. Frente al comparador de historia y geografía, h4 quedó muy cerca. Se conserva la prueba de resolución junto con los controles espaciales y la réplica histórica. [Resultados de resolución](../../research/08_v3_confirmed_cases/resultado_resolucion_chirts.md)
+**Controles espaciales y ajuste.** Réplica de b3 y d3 con confirmados, geografía, placebos, anomalía y ALE completos. El
+contraste cruzado atribuye el cambio en la comparación principalmente al criterio de disponibilidad meteorológica. Con
+ajuste simétrico, b3 empata a h2 y empeora a h3 y h4 frente al comparador sin clima con geografía.
+[Resultados y sensibilidades](../../research/08_v3_confirmed_cases/resultados_controles_espaciales.md)
 
-**Avance de controles espaciales y ajuste.** Se completaron la réplica de b3 y d3 con confirmados, la geografía, los placebos, la anomalía y el ALE. El contraste cruzado atribuye el cambio en la comparación principalmente al criterio de disponibilidad meteorológica. Con ajuste simétrico, b3 empata a h2 y empeora a h3 y h4 frente al comparador sin clima con geografía. [Resultados y sensibilidades](../../research/08_v3_confirmed_cases/resultados_controles_espaciales.md)
+**Salidas de la fase.** Predicciones auditadas, tablas con las mismas llaves y cortes, trazabilidad del tuning, evidencia
+del placebo y resultados por temporada. Si la mejora no sobrevive al control espacial o si `b3` empata, la interpretación
+del paper se actualiza con ese resultado.
 
-**Cierre de fase.** Predicciones auditadas, tablas con las mismas llaves y cortes, trazabilidad del tuning, evidencia del placebo y resultados por temporada. Si la mejora no sobrevive al control espacial o si `b3` empata, actualizar la interpretación del paper con ese resultado.
+## Fase 3. Evidencia del paper
 
-## Fase 3. Convertir las predicciones en evidencia del paper
-
-| Entregable | Criterio de cierre |
+| Bloque | Contenido |
 |---|---|
-| **Probabilidades** | Brier y habilidad relativa a climatología y persistencia probabilística, AP, log score, descomposición de Brier y diagnóstico de calibración. Mostrar el rango operativo de probabilidades, endemicidad definida en entrenamiento, e inicios y continuaciones con denominadores explícitos. |
-| **Alertas** | Curvas precisión–recall por horizonte y agrupadas con el punto de persistencia. Comparación a la misma precisión y análisis de falsos avisos frente a inicios detectados. Beneficio neto o valor esperado para un rango explícito de costos. Si se elige un corte nuevo, se selecciona en desarrollo y se evalúa aparte. |
-| **Conteos** | MAE y RMSE agrupados y por temporada, error en escala logarítmica, sesgo del conteo bruto y mezclado y resultados por estrato de incidencia. Reportar WIS con cuantiles comunes, cobertura y ancho de intervalos y un diagnóstico de calibración de la distribución. Ajustar cualquier recalibración solo con bloques anteriores y verificarla fuera de muestra. Explicar qué media y dispersión usan la probabilidad y el intervalo. [Evaluación de pronósticos por intervalos](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618) |
-| **Etiqueta** | Mantener la definición primaria. Repetir A/B con confirmados, añadir mínimos 1 y 5, una referencia robusta como Farrington y un umbral fijo de incidencia con denominador documentado. Informar cuántos positivos quedan determinados por el mínimo de casos. Reusar pronósticos de conteo cuando su entrenamiento sea independiente de la etiqueta y recalcular el corte de conteos, las probabilidades y Platt para cada alternativa. [Farrington mejorado](https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.5595) |
-| **Fuente e incertidumbre** | Incorporar las 3 445 coincidencias CSV–Sala de 2025. Hacer la comparación sin 2026 y al retirar una temporada a la vez, incluida 2023. Reportar la variación por semilla y la incertidumbre con temporadas como bloques. Añadir como sensibilidad una estimación pareada con efectos de temporada y distrito, con cautela por el número de temporadas. Los distritos y las semillas se analizan como observaciones dependientes dentro de las temporadas. Medir revisiones con snapshots comparables si existen y declarar qué queda sin medir. |
-| **Inicios** | Vincular Brier frente a persistencia probabilística con la proporción de episodios detectados con al menos dos semanas de anticipación nominal. Comparar a igual presupuesto de falsas alertas por distrito y temporada, fijando cortes en desarrollo y verificando el costo alcanzado en evaluación. Mostrar también el punto operativo de la persistencia determinista y la variación entre temporadas. Añadir los resultados de las estrategias de inicios ya probadas e identificar qué cifras son del estudio original. |
+| **Probabilidades** | Brier y habilidad relativa a climatología y persistencia probabilística, AP, log score, descomposición de Brier y diagnóstico de calibración. Rango operativo de probabilidades, endemicidad definida en entrenamiento, e inicios y continuaciones con denominadores explícitos. |
+| **Alertas** | Curvas precisión–recall por horizonte y agrupadas con el punto de persistencia, comparación a la misma precisión y análisis de falsos avisos frente a inicios detectados. Beneficio neto o valor esperado para un rango explícito de costos. Un corte nuevo se seleccionaría en desarrollo y se evaluaría aparte. |
+| **Conteos** | MAE y RMSE agrupados y por temporada, error en escala logarítmica, sesgo del conteo bruto y mezclado y resultados por estrato de incidencia. WIS con cuantiles comunes, cobertura y ancho de intervalos y diagnóstico de calibración de la distribución; cualquier recalibración se ajusta solo con bloques anteriores y se verifica fuera de muestra. Se explica qué media y dispersión usan la probabilidad y el intervalo. [Evaluación de pronósticos por intervalos](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008618) |
+| **Etiqueta** | La definición primaria se mantiene. A/B con confirmados, mínimos 1 y 5, una referencia robusta como Farrington y un umbral fijo de incidencia con denominador documentado, y cuántos positivos quedan determinados por el mínimo de casos. Los pronósticos de conteo se reutilizan cuando su entrenamiento es independiente de la etiqueta; el corte de conteos, las probabilidades y Platt se recalculan para cada alternativa. [Farrington mejorado](https://onlinelibrary.wiley.com/doi/abs/10.1002/sim.5595) |
+| **Fuente e incertidumbre** | Las 3 445 coincidencias CSV–Sala de 2025, la comparación sin 2026 y retirando una temporada a la vez (incluida 2023), la variación por semilla y la incertidumbre con temporadas como bloques. Como sensibilidad, una estimación pareada con efectos de temporada y distrito, con cautela por el número de temporadas. Distritos y semillas son observaciones dependientes dentro de las temporadas. Las revisiones se miden con snapshots comparables si existen, y se declara qué queda sin medir. |
+| **Inicios** | Brier frente a persistencia probabilística vinculado con la proporción de episodios detectados con al menos dos semanas de anticipación nominal, comparado a igual presupuesto de falsas alertas por distrito y temporada (cortes fijados en desarrollo, costo verificado en evaluación). También el punto operativo de la persistencia determinista, la variación entre temporadas y las estrategias de inicios ya probadas, identificando qué cifras son del estudio original. |
 
 ## Fase 4. Manuscrito de Piura y congelamiento
 
-1. Actualizar Métodos y Resultados con confirmados, nuevas exposiciones, cronología de selección, comparadores y veredictos. Agregar la tabla de criterios internos de aceptación y explicar el rol experimental de la aplicación. Revisar las referencias originales y el vacío de literatura, ampliar a 30 referencias pertinentes según el comentario 4 y revisar todas las ecuaciones en el formato de entrega.
-2. Retirar la afirmación de mayor beneficio durante El Niño del abstract, aportes y conclusión. Mantenerla como hipótesis. Para sostenerla como resultado haría falta clasificar periodos sin solape con un índice oficial y evaluar formalmente la interacción. Alinear el abstract y la conclusión con las tablas definitivas y con la pregunta climática original. Si los análisis pareados lo respaldan, destacar como contribución metodológica la distinción entre calibrar probabilidades, ordenar el riesgo y anticipar el inicio de episodios. Presentar cada hallazgo con su comparador y su alcance temporal.
-3. Congelar la versión que se llevará a validación externa **junto con su par sin clima y sus baselines**. Guardar predictores, pesos de exposición, parámetros de los modelos, calibradores, dispersión, mezcla, corte, periodo de entrenamiento, semillas, archivos y hashes. Mantener las fichas y salidas congeladas originales como referencia histórica. Registrar externamente el protocolo prospectivo antes de ver los desenlaces si se va a ejecutar esa evaluación. El registro y los resultados prospectivos son entregables distintos.
+1. **Métodos y Resultados** con confirmados, exposiciones nuevas, cronología de selección, comparadores y veredictos; la
+   tabla de criterios internos de aceptación y el rol experimental de la aplicación; referencias originales y vacío de
+   literatura revisados, ampliados a unas 30 referencias pertinentes según el comentario 4; ecuaciones revisadas en el
+   formato de entrega.
+2. **Alcance de las conclusiones.** La afirmación de mayor beneficio durante El Niño sale del abstract, los aportes y la
+   conclusión y queda como hipótesis: sostenerla como resultado exigiría clasificar periodos sin solape con un índice
+   oficial y evaluar formalmente la interacción. El abstract y la conclusión se alinean con las tablas definitivas y con la
+   pregunta climática original. Si los análisis pareados lo respaldan, la contribución metodológica es la distinción entre
+   calibrar probabilidades, ordenar el riesgo y anticipar el inicio de episodios. Cada hallazgo se presenta con su
+   comparador y su alcance temporal.
+3. **Congelamiento** de la versión que va a validación externa **junto con su par sin clima y sus baselines**:
+   predictores, pesos de exposición, parámetros de los modelos, calibradores, dispersión, mezcla, corte, periodo de
+   entrenamiento, semillas, archivos y hashes. Las fichas y salidas congeladas originales se mantienen como referencia
+   histórica. Una evaluación prospectiva requiere registrar externamente su protocolo antes de ver los desenlaces; el
+   registro y los resultados prospectivos son entregables distintos.
 
-**Cierre de fase.** Paquete reproducible, tablas definitivas de Piura, revisión del equipo y especificación congelada antes de evaluar otros departamentos.
+**Salidas de la fase.** Paquete reproducible, tablas definitivas de Piura, revisión del equipo y especificación congelada
+antes de evaluar otros departamentos. El paquete congelado es la [V4](../../models/registry/v4/ficha.md).
 
-## Fase 5. Comparación externa al final
+## Fase 5. Comparación externa
 
-- **Prueba principal de transferencia.** Aplicar en Tumbes y Lambayeque la versión ajustada y congelada en Piura, con su par sin clima y sus baselines congelados, en un periodo común verificable. Evaluar semanas objetivo posteriores al corte de entrenamiento de ese paquete. La historia local de casos se usa para construir predictores y definir el evento de cada distrito. La exposición se calcula con los polígonos y la población de destino aplicando la fórmula congelada. Se mantienen fijos los árboles, calibradores, parámetros de distribución, pesos de la mezcla y decisiones aprendidas en Piura. Auditar la cobertura de covariables y el rango de los predictores en los destinos. Elegir periodo, departamentos y métricas antes de ver su desempeño. Loreto puede ampliar el contraste si hay insumos equivalentes. Para una lectura externa de años anteriores al congelamiento, ajustar solo con Piura en cada corte retrospectivo y aplicar ese modelo al destino. Reportar esa transferencia retrospectiva por separado.
-- **Réplica metodológica secundaria.** Si interesa saber cómo funciona el método al adaptarse a otra región, reentrenar en cada departamento con la receta, el presupuesto y los cortes fijados. Reportar esta réplica aparte de la transferencia del modelo congelado.
-- **Trabajo de datos.** Usar el CSV nacional de confirmados, generar límites y catálogos de cada departamento desde COD-AB, conseguir clima y denominadores equivalentes y revisar la Sala solo si hace falta extender el periodo común. El pipeline actual está configurado para Piura. Mantener Piura como estudio principal y mostrar la validación externa por departamento y temporada, considerando que una epidemia regional puede afectar simultáneamente a varios departamentos.
+- **Prueba principal de transferencia.** La versión ajustada y congelada en Piura, con su par sin clima y sus baselines
+  congelados, se aplica en Tumbes y Lambayeque en un periodo común verificable, sobre semanas objetivo posteriores al corte
+  de entrenamiento del paquete. La historia local de casos construye los predictores y define el evento de cada distrito;
+  la exposición se calcula con los polígonos y la población de destino aplicando la fórmula congelada. Árboles,
+  calibradores, parámetros de distribución, pesos de la mezcla y decisiones aprendidas en Piura quedan fijos. Se audita la
+  cobertura de covariables y el rango de los predictores en los destinos, y periodo, departamentos y métricas se eligen
+  antes de ver el desempeño. Loreto puede ampliar el contraste si hay insumos equivalentes. Una lectura externa de años
+  anteriores al congelamiento ajusta solo con Piura en cada corte retrospectivo y se reporta por separado.
+- **Réplica metodológica secundaria.** Reentrenar en cada departamento con la receta, el presupuesto y los cortes fijados
+  muestra cómo funciona el método al adaptarse a otra región; se reporta aparte de la transferencia del modelo congelado.
+- **Datos.** CSV nacional de confirmados, límites y catálogos de cada departamento desde COD-AB, clima y denominadores
+  equivalentes, y la Sala solo si hace falta extender el periodo común. El pipeline del producto está configurado para
+  Piura. Piura sigue siendo el estudio principal y la validación externa se muestra por departamento y temporada,
+  considerando que una epidemia regional puede afectar a varios departamentos a la vez.
 
-**Cierre de fase.** Tablas externas pareadas, cobertura documentada y una conclusión que distingue resultados de Piura, transferencia y réplica. Integrar la validación externa al Word antes de marcar resuelto el comentario de alcance geográfico.
+**Salidas de la fase.** Tablas externas pareadas, cobertura documentada y una conclusión que distingue los resultados de
+Piura, la transferencia y la réplica. [Transferencia al norte](../../research/08_v3_confirmed_cases/resultados_transferencia_norte.md)
 
-## Trazabilidad de los comentarios del Word
+## Trazabilidad de los comentarios
 
 | Fase | Comentarios que atiende |
 |---|---|
@@ -100,42 +223,44 @@ El plan cubre los comentarios anclados 1–32 del Word revisado. El comentario 0
 | Validación externa | 6 |
 | Fuera del alcance acordado | 10 |
 
-### Componentes ya atendidos
+### Comentarios atendidos en la V4 del manuscrito
 
-Los números son los identificadores de los comentarios anclados en el Word. La V4 de Piura, `Denguekay_paper_IEEE_v4_Piura.docx`, consolida el manuscrito retrospectivo y conserva los 33 comentarios originales. Se verificaron seis tablas, siete figuras, las ecuaciones nativas de Word y 41 referencias citadas. Los archivos de las figuras y el cálculo por celda de los criterios internos se conservan en `models/experimentos/mejora_modelo/v3_confirmados/manuscrito_piura/`.
+Los números son los identificadores de los comentarios anclados en el Word. La V4 del manuscrito de Piura consolida el
+análisis retrospectivo y conserva los 33 comentarios originales; tiene seis tablas, siete figuras, ecuaciones nativas de
+Word y 41 referencias citadas. Las figuras y el cálculo por celda de los criterios internos se guardan en
+`models/experimentos/mejora_modelo/v3_confirmados/manuscrito_piura/`. El suplemento acompaña la V4 con tablas S1–S11 y
+dos figuras; sus datos, figuras, código y manifiesto se guardan en
+`models/experimentos/mejora_modelo/v3_confirmados/manuscrito_piura/suplemento/`. Las tablas S10–S11 (cambios de
+calibración por temporada y descomposición de Brier por modelo y horizonte) se reconstruyeron de los resultados
+archivados de historia y calibración y del diagnóstico de probabilidades.
 
-El suplemento `Denguekay_paper_IEEE_v4_Piura_Supplement.docx` acompaña la V4 con nueve tablas y dos figuras. Sus datos, figuras, código y manifiesto se conservan en `models/experimentos/mejora_modelo/v3_confirmados/manuscrito_piura/suplemento/`.
-
-La copia `Denguekay_paper_IEEE_v4_Piura_con_suplemento.docx` añade las cinco referencias a las tablas S1–S9 y las figuras S1–S2 en Resultados. El suplemento se adjunta como archivo separado.
-
-La revisión técnica y editorial quedó en `Denguekay_paper_IEEE_v4_Piura_revision_autores.docx` y `Denguekay_paper_IEEE_v4_Piura_Supplement_revision_autores.docx`. El resumen distingue el contraste principal a parámetros fijos del análisis con ajuste simétrico. El suplemento incorpora las tablas S10–S11 con los cambios de calibración por temporada y la descomposición de Brier por modelo y horizonte. Las tablas se reconstruyeron de los resultados archivados de historia y calibración y del diagnóstico de probabilidades.
-
-Para cerrar la revisión, Nicolás y Rosa deben aprobar la lectura final del manuscrito y la respuesta al asesor, confirmar afiliaciones, correos y autor de correspondencia, y completar las declaraciones de financiamiento, ética y conflictos de interés. La elección de revista o congreso permite verificar el límite de páginas y los requisitos de envío. El equipo debe confirmar qué evidencia publicará y adjuntar el enlace del archivo público.
-
-Los comentarios 6 y 31 dependen del paquete congelado para la transferencia externa y la validación prospectiva. El comentario 10 mantiene el alcance acordado.
+Los comentarios 6 y 31 dependen del paquete congelado para la transferencia externa y la validación prospectiva. El
+comentario 10 mantiene el alcance acordado.
 
 | Comentario de redacción | Integración en la V4 |
 |---|---|
 | 1, 5, 22 y 32 | Resumen, aportes y conclusión alineados con la comparación pareada. El Niño queda como hipótesis. |
 | 13 | Ecuaciones del umbral, el conteo y la probabilidad en formato matemático editable. |
-| 30 | Tabla VI con criterios internos y resultados por celda. Se explica el rol experimental del dashboard. |
+| 30 | Tabla VI con criterios internos y resultados por celda, y el rol experimental del dashboard. |
 
 | Comentario | Evidencia disponible | Estado en la V4 |
 |---|---|---|
-| 2–4 · XGBoost, literatura y aporte [3 es MAJOR] | Se revisaron estudios semanales comparables en Iquitos, Río de Janeiro y Vietnam, antecedentes regionales y fuentes metodológicas. El aporte se acota al contraste distrital pareado de Piura y a la evaluación de probabilidades y alertas. La justificación de XGBoost se apoya en su especificación y en los comparadores locales. La copia de Word `Denguekay_paper_IEEE_v3_comments_2-4.docx` integra 36 referencias en orden de citación. | Integrado en Introducción, Métodos y Discusión. La V4 contiene 41 referencias, incluidas las fuentes de la revisión. |
-| 7 · Cambio de fuente [MAJOR] | Solape de 2025 comprobado en 3 445 pares y sensibilidad sin 2026 para `d3`. | Integrado en Métodos y Resultados. Se declara que los archivos disponibles no permiten estimar el backfill histórico. |
-| 8 · Exposición climática | Comparación de área y población, auditoría costera, cotejo con dos estaciones y candidato completo de ERA5 para los 65 distritos. Se probaron la resolución de CHIRTS, los extremos térmicos y el rango diurno. A h4, añadir el rango elevó el Brier medio en 0,71% frente al punto medio de los extremos. [Resolución](../../research/08_v3_confirmed_cases/resultado_resolucion_chirts.md) · [Rango diurno](../../research/08_v3_confirmed_cases/resultados_rango_diurno_chirts.md) | Integrado en Métodos y Resultados. La comparación distingue el brazo principal por punto y las exposiciones alternativas ponderadas. |
-| 9 y 28 · Etiqueta [9 es MAJOR] | A/B con confirmados, mínimos de 1 y 5, percentil estacional robusto y ventanas recientes de 4, 8 y 12 semanas. Se recalcularon las probabilidades de las alternativas estacionales y se compararon los inicios. También se probaron cortes de 5, 10 y 20 casos semanales por 100 000 habitantes con la serie INEI 2018–2026. [Sensibilidad de la etiqueta](../../research/08_v3_confirmed_cases/resultados_sensibilidad_etiqueta_confirmados.md), [incidencia fija](../../research/08_v3_confirmed_cases/resultados_sensibilidad_incidencia.md) | Integrado en Métodos, Resultados y la tabla V. Se distingue la sensibilidad de incidencia por su cobertura temporal. |
-| 11 · Confusión espacial [MAJOR] | Geografía en el comparador, tres placebos térmicos, placebo conjunto, anomalías, ALE y cruce de geografía con disponibilidad ejecutados. | Integrado en Resultados, con la figura ALE y el contraste de disponibilidad y geografía. |
-| 12 · Equidad | Ajuste separado con presupuesto idéntico y temporadas comunes. Contraste ejecutado dentro de NB2 con y sin clima. | Integrado en Métodos y Resultados. Se informa el presupuesto común y la frecuencia de ajustes de respaldo del NB2. |
+| 2–4 · XGBoost, literatura y aporte [3 es MAJOR] | Estudios semanales comparables en Iquitos, Río de Janeiro y Vietnam, antecedentes regionales y fuentes metodológicas. El aporte se acota al contraste distrital pareado de Piura y a la evaluación de probabilidades y alertas; la justificación de XGBoost se apoya en su especificación y en los comparadores locales. | Integrado en Introducción, Métodos y Discusión. La V4 contiene 41 referencias, incluidas las fuentes de la revisión. |
+| 7 · Cambio de fuente [MAJOR] | Solape de 2025 comprobado en 3 445 pares y sensibilidad sin 2026 para `d3`. | Integrado en Métodos y Resultados. Los archivos disponibles no permiten estimar el backfill histórico. |
+| 8 · Exposición climática | Comparación de área y población, auditoría costera, cotejo con dos estaciones y candidato completo de ERA5 para los 65 distritos; resolución de CHIRTS, extremos térmicos y rango diurno. A h4, añadir el rango elevó el Brier medio en 0,71 % frente al punto medio de los extremos. [Resolución](../../research/08_v3_confirmed_cases/resultado_resolucion_chirts.md) · [Rango diurno](../../research/08_v3_confirmed_cases/resultados_rango_diurno_chirts.md) | Integrado en Métodos y Resultados, distinguiendo el brazo principal por punto de las exposiciones alternativas ponderadas. |
+| 9 y 28 · Etiqueta [9 es MAJOR] | A/B con confirmados, mínimos de 1 y 5, percentil estacional robusto y ventanas recientes de 4, 8 y 12 semanas; probabilidades recalculadas para las alternativas estacionales y comparación de inicios; cortes de 5, 10 y 20 casos semanales por 100 000 habitantes con la serie INEI 2018–2026. [Sensibilidad de la etiqueta](../../research/08_v3_confirmed_cases/resultados_sensibilidad_etiqueta_confirmados.md), [incidencia fija](../../research/08_v3_confirmed_cases/resultados_sensibilidad_incidencia.md) | Integrado en Métodos, Resultados y la tabla V, con la sensibilidad de incidencia distinguida por su cobertura temporal. |
+| 11 · Confusión espacial [MAJOR] | Geografía en el comparador, tres placebos térmicos, placebo conjunto, anomalías, ALE y cruce de geografía con disponibilidad. | Integrado en Resultados, con la figura ALE y el contraste de disponibilidad y geografía. |
+| 12 · Equidad | Ajuste separado con presupuesto idéntico y temporadas comunes; contraste dentro de NB2 con y sin clima. | Integrado en Métodos y Resultados, con el presupuesto común y la frecuencia de ajustes de respaldo del NB2. |
 | 16 · Calendario | Calendario uniforme y 60 cortes validados. 2024 se inspeccionó durante el desarrollo y 2008 carece de historial para calibrar. | Integrado en Métodos y en la serie temporal de la figura 6. |
-| 17, 18 y 20 · Inferencia y decisiones | Cronología con commits, inventario de configuraciones, incertidumbre pareada por temporada, variación entre semillas y exclusiones. [Resultados](../../research/08_v3_confirmed_cases/resultados_historia_calibracion_comun.md) | Integrado en Métodos, la tabla II y Resultados. La selección histórica de años queda documentada con sus límites. |
-| 19 · Baselines [MAJOR] | BSS contra persistencia probabilística y climatología en el calendario común. NB2, Poisson y LightGBM evaluados sobre el mismo soporte. | Integrado en las tablas III y IV y en la evaluación de alertas. |
-| 21 · Historia y modelos estadísticos | Contraste factorial ejecutado en el calendario común con Brier, AP, descomposición CORP y curvas de confiabilidad. El GLM ya se evaluó sobre las mismas semanas. [Resultados](../../research/08_v3_confirmed_cases/resultados_historia_calibracion_comun.md) | Integrado en las tablas de comparadores, la discusión y la tabla S10 con el desglose de calibración por temporada. |
-| 23 · Elección del modelo [MAJOR] | Se evaluaron `b3` principal, `d3` operativo y el par sin clima con cortes comunes y ajuste simétrico. | Integrado en la tabla III y la figura 4. La selección original queda diferenciada del contraste retrospectivo. |
-| 24 · Habilidad y estratos | BSS frente a persistencia y climatología, log score, descomposición de Brier, endemicidad, inicios y continuaciones, y diagnóstico de calibración a riesgo alto. [Resultados](../../research/08_v3_confirmed_cases/resultados_historia_calibracion_comun.md) | Integrado en Resultados y en las tablas S3–S4 y S11. El suplemento reporta calibración por horizonte, componentes CORP y log score, además de Brier, AP y BSS por fase del episodio y frecuencia previa de brote. |
-| 14 y 26 · Intervalos y conteos | WIS, PIT, cobertura, ancho, recalibración cronológica y errores por estrato y temporada. Se aclaró el uso de las dos medias y se cuantificó la discordancia de sus reglas de aviso. [Resultados](../../research/08_v3_confirmed_cases/resultados_intervalos_conteos.md) | Integrado en Resultados, la tabla IV, las tablas S1–S2 y la figura S1. El suplemento añade histogramas PIT y coberturas nominales de 50%, 80% y 95% por horizonte. |
-| 29 · Clima con y sin historia de casos | Contraste factorial ejecutado con cuatro brazos, cortes comunes y cinco semillas. [Resultados](../../research/08_v3_confirmed_cases/resultados_clima_sin_historia.md) | Integrado en Discusión. El contraste de cuatro brazos informa contribución predictiva. |
-| 15, 25 y 27 · Beneficio neto, alertas e inicios | Curvas precisión–recall, sensibilidad a la precisión de persistencia, beneficio neto y episodios discordantes auditados. [Resultados de alertas](../../research/08_v3_confirmed_cases/resultados_alertas_revision.md) | Integrado en Resultados, las figuras 5 y 7, y las tablas S5–S9 y figura S2. Se documentan las políticas de corte, los costos observados y las estrategias de inicio. La validación prospectiva de la política de alertas sigue pendiente. |
+| 17, 18 y 20 · Inferencia y decisiones | Cronología con commits, inventario de configuraciones, incertidumbre pareada por temporada, variación entre semillas y exclusiones. [Resultados](../../research/08_v3_confirmed_cases/resultados_historia_calibracion_comun.md) | Integrado en Métodos, la tabla II y Resultados, con la selección histórica de años y sus límites. |
+| 19 · Baselines [MAJOR] | BSS contra persistencia probabilística y climatología en el calendario común; NB2, Poisson y LightGBM sobre el mismo soporte. | Integrado en las tablas III y IV y en la evaluación de alertas. |
+| 21 · Historia y modelos estadísticos | Contraste factorial en el calendario común con Brier, AP, descomposición CORP y curvas de confiabilidad; GLM sobre las mismas semanas. [Resultados](../../research/08_v3_confirmed_cases/resultados_historia_calibracion_comun.md) | Integrado en las tablas de comparadores, la discusión y la tabla S10. |
+| 23 · Elección del modelo [MAJOR] | `b3` principal, `d3` operativo y el par sin clima con cortes comunes y ajuste simétrico. | Integrado en la tabla III y la figura 4, con la selección original diferenciada del contraste retrospectivo. |
+| 24 · Habilidad y estratos | BSS frente a persistencia y climatología, log score, descomposición de Brier, endemicidad, inicios y continuaciones, y calibración a riesgo alto. [Resultados](../../research/08_v3_confirmed_cases/resultados_historia_calibracion_comun.md) | Integrado en Resultados y en las tablas S3–S4 y S11 (calibración por horizonte, componentes CORP, log score y Brier, AP y BSS por fase del episodio y frecuencia previa de brote). |
+| 14 y 26 · Intervalos y conteos | WIS, PIT, cobertura, ancho, recalibración cronológica y errores por estrato y temporada; uso de las dos medias y discordancia de sus reglas de aviso. [Resultados](../../research/08_v3_confirmed_cases/resultados_intervalos_conteos.md) | Integrado en Resultados, la tabla IV, las tablas S1–S2 y la figura S1 (histogramas PIT y coberturas nominales de 50 %, 80 % y 95 % por horizonte). |
+| 29 · Clima con y sin historia de casos | Contraste factorial con cuatro brazos, cortes comunes y cinco semillas. [Resultados](../../research/08_v3_confirmed_cases/resultados_clima_sin_historia.md) | Integrado en Discusión como contribución predictiva. |
+| 15, 25 y 27 · Beneficio neto, alertas e inicios | Curvas precisión–recall, sensibilidad a la precisión de persistencia, beneficio neto y episodios discordantes auditados. [Resultados de alertas](../../research/08_v3_confirmed_cases/resultados_alertas_revision.md) | Integrado en Resultados, las figuras 5 y 7, las tablas S5–S9 y la figura S2, con las políticas de corte, los costos observados y las estrategias de inicio. La validación prospectiva de la política de alertas sigue pendiente. |
 
-Las fases se revisan con Rosa antes de continuar. El mayor trabajo de datos es reconstruir la exposición ERA5-Land y preparar los departamentos externos. El mayor costo de cómputo es la búsqueda simétrica. En cada fase se conserva la evidencia suficiente para aceptar un resultado favorable, un empate o un resultado desfavorable sin cambiar la regla después de mirar las cifras.
+El mayor trabajo de datos de la revisión es reconstruir la exposición ERA5-Land y preparar los departamentos externos, y
+el mayor costo de cómputo, la búsqueda simétrica. Cada fase conserva evidencia suficiente para aceptar un resultado
+favorable, un empate o uno desfavorable sin cambiar la regla después de mirar las cifras.

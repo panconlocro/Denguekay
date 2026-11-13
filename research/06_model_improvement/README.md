@@ -2,7 +2,7 @@
 
 - **Pregunta:** ¿hay una V3 que supere a la V2 (`CONFIG_2026`) con una regla preregistrada y una evaluación
   menos optimista? Hipótesis de trabajo: el cuello de botella es la poca historia, no la arquitectura.
-- **Plan:** [docs/plan.md](docs/plan.md) (fases 0 a 7; cada una se cierra con el visto bueno de Rosa).
+- **Diseño y decisiones:** [docs/plan.md](docs/plan.md) (fases 0 a 7 y registro de decisiones con su fecha).
 - **Decisión:** **V3** = L + 5a + d3 con los hiperparámetros del trial 191, congelada el 2026-11-09
   (`CONFIG_V3`, ficha [`models/registry/v3/ficha.md`](../../models/registry/v3/ficha.md), tag `model/v3`). b3
   queda como retadora para la evaluación prospectiva 2026–27. Protocolo en
