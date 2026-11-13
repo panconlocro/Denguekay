@@ -7,7 +7,7 @@ Solo consume lecturas de /api/v1; no lee datos, modelos ni la BD directamente.
 
 ## Trabajo por fases
 
-El [desarrollo por fases](PLAN.md) separa el commit inicial de la propuesta de los cierres de cada fase. La [fase 1](docs/fase-01-contrato-y-datos.md) documenta el contrato de cada componente y el
+El [desarrollo por fases](docs/desarrollo-por-fases.md) separa el commit inicial de la propuesta de los cierres de cada fase. La [fase 1](docs/fase-01-contrato-y-datos.md) documenta el contrato de cada componente y el
 inventario local. Después se [regeneró gold](docs/actualizacion-gold-20261104.md).
 La [fase 2](docs/fase-02-integracion-demo-v2.md) integra una demo local v2,
 con base y artefactos separados de la BD antigua. La interfaz identifica el entorno y verifica las

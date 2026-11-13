@@ -1,6 +1,6 @@
 # Mejora del modelo sobre la V2
 
-Informe del estudio 06. Plan y decisiones de Rosa en [plan.md](plan.md); preregistros en
+Informe del estudio 06. Diseño y decisiones de Rosa en [diseno_y_decisiones.md](diseno_y_decisiones.md); preregistros en
 `code/preregistration.py`.
 
 ## Estado actual (2026-11-09): CERRADO
@@ -83,7 +83,7 @@ Historia del estudio (lo que sigue es el estado previo al cierre):
 **Base de la V3: L + 5a + d3** (las 4 ventanas de temperatura de ERA5-Land), **con b3 como retadora**. Decisión de
 Rosa del 2026-11-08, **con contexto y no por la regla `SEASON_2026`** (por la regla solo se adopta b3): tomada después
 de ver la matriz y usando 2026 para elegir, por el objetivo de anticipar brotes en años de Niño. Justificación y tabla
-de diferencias de Brier por temporada y horizonte en [plan.md](plan.md), «Decisiones de Rosa (2026-11-08, después de
+de diferencias de Brier por temporada y horizonte en [diseno_y_decisiones.md](diseno_y_decisiones.md), «Decisiones de Rosa (2026-11-08, después de
 la matriz de clima)». Resumen (diferencia media de Brier frente a L + 5a, negativo = mejor):
 
 | Promedio de celdas | Celdas | d3 vs L + 5a | b3 vs L + 5a | d3 vs b3 |
@@ -118,13 +118,13 @@ consulta a Rosa. Antes: L + 5a + b3 (regla `SEASON_2026`, 2026-11-08) y L + 5a.
 
 **Decisión de Rosa (2026-11-04): en la V3 la lluvia es solo CHIRPS v3** (entrenamiento y actualización semanal;
 reemplazo, no agregado). La lluvia «Best match» de Open-Meteo queda solo para la V2: antes de 2017 Open-Meteo no
-tiene lluvia útil y se entrena desde 2005. Ver [plan.md](plan.md), «Decisiones de Rosa (2026-11-04)».
+tiene lluvia útil y se entrena desde 2005. Ver [diseno_y_decisiones.md](diseno_y_decisiones.md), «Decisiones de Rosa (2026-11-04)».
 
 **Pasos de clima (un preregistro commiteado por paso, sin adelantar ni mezclar):**
 
 a) ~~1b′: L + 5a + humedad de ERA5-Land~~: corrida el 2026-11-04, empate en los tres horizontes; la base sigue
    siendo L + 5a.
-b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [plan.md](plan.md), «Decisiones de Rosa
+b) **Lluvia de CHIRPS v3 sobre L + 5a: retomada el 2026-11-06** (ver [diseno_y_decisiones.md](diseno_y_decisiones.md), «Decisiones de Rosa
    (2026-11-06, lluvia de CHIRPS v3)»). Histórico final desde Google Earth Engine, semanas recientes con el
    preliminar del CHC, y lluvia por distrito como media del polígono ponderada por área. Variantes b1 (L + 5a +
    lluvia) y b2 (L + 5a + humedad + lluvia), cada una frente a L + 5a. Pasos internos b-I a b-VII, en la rama
@@ -178,7 +178,7 @@ d) **Ventanas de clima: corrido el 2026-11-06, empate en los criterios (a), (b) 
    `code/phase_d_weather_windows.py`. Respuestas de Rosa: >= 20 mm; la climatología propuesta; la base pasa a d1
    solo si gana frente a L + 5a (si además pierde frente a b3, se le consulta antes de la fase 7).
 
-e) **Temporada 2026 (decisiones de Rosa del 2026-11-08, ver [plan.md](plan.md)).** Regla de decisión preregistrada
+e) **Temporada 2026 (decisiones de Rosa del 2026-11-08, ver [diseno_y_decisiones.md](diseno_y_decisiones.md)).** Regla de decisión preregistrada
    (`SEASON_2026`, commit `e02ebe1`); `EVALUATION_2026` deja de ser independiente para la V3. **Punto 1 (datos)
    hecho el 2026-11-08** con una excepción de escritura acotada, ya cerrada (cifras en `metricas/datos_2026.json`):
    - Sala: 2025 sin cambios frente al silver (3445 filas, 0 distintas, 1117 casos); 2026 agregado al silver
@@ -213,10 +213,10 @@ f) **Matriz de clima: corrida el 2026-11-08; solo b3 se adopta y la base sigue s
    b2, b3, b4; ventanas d1 a d5; anomalías e1 y e2 con la climatología del bloque; n1 = b3 con el Niño monótono);
    15 comparaciones (12 + los 3 cruces fijos). Código de e1, e2 y n1 en `code/phase_climate_matrix.py` (guardas G45
    a G50), notebook `16_matriz_clima.ipynb`, cifras en `metricas/matriz_clima.json`. **Después, Rosa eligió L + 5a +
-   d3 como base con contexto** (b3 retadora; ver arriba y [plan.md](plan.md)).
+   d3 como base con contexto** (b3 retadora; ver arriba y [diseno_y_decisiones.md](diseno_y_decisiones.md)).
 g) **Diagnóstico frente a la persistencia (solo lectura, d3, b3 y L + 5a): hecho y aprobado por Rosa el 2026-11-08**
    (ver «Diagnóstico frente a la persistencia»). Las limitaciones para la fase 7 y la hipótesis de los inicios de
-   invierno están en [plan.md](plan.md), «Decisiones de Rosa (2026-11-08, diagnóstico frente a la persistencia
+   invierno están en [diseno_y_decisiones.md](diseno_y_decisiones.md), «Decisiones de Rosa (2026-11-08, diagnóstico frente a la persistencia
    aprobado)». El conteo se queda corto en los picos, no en la subida de 2026;
    la w retrospectiva es cercana a 0 en 2026; la persistencia avisa más inicios limpios que p >= 0,50 (18 de 20 son de
    junio a agosto, con el umbral estacional bajando); la calibración en promedio de 2026 es buena y `posterior_2026`

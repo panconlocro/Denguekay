@@ -1,6 +1,6 @@
 # Arquitectura multi-horizonte (h=2, 3, 4)
 
-**Estado:** estudio cerrado (fases 0–5). Este documento se completa por fases; el diseño está en [`plan_arquitectura_horizontes.md`](plan_arquitectura_horizontes.md). Las cifras salen de [`metricas/arquitectura_horizontes.json`](metricas/arquitectura_horizontes.json) (una sección por fase) y del [notebook 31](../notebooks/31_modelado_arquitectura_horizontes.ipynb). Equipo de referencia: GPU NVIDIA (`device="cuda"`), XGBoost 3.4.1.
+**Estado:** estudio cerrado (fases 0–5). Este documento se completa por fases; el diseño está en [`diseno_arquitectura_horizontes.md`](diseno_arquitectura_horizontes.md). Las cifras salen de [`metricas/arquitectura_horizontes.json`](metricas/arquitectura_horizontes.json) (una sección por fase) y del [notebook 31](../notebooks/31_modelado_arquitectura_horizontes.ipynb). Equipo de referencia: GPU NVIDIA (`device="cuda"`), XGBoost 3.4.1.
 
 ## Protocolo
 
