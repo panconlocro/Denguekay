@@ -1,4 +1,4 @@
-"""The API only knows the tables and the Predictor port (phase 3 of docs/backend/prompt_api_v1.md).
+"""The API only knows the tables and the Predictor port (phase 3 of the API v1, docs/backend/api_v1_decisiones.md).
 
 ``apps/api`` never imports the model or feature code, nor a concrete predictor: a new model is
 published without touching the API.

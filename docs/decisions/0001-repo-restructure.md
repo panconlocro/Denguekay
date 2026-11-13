@@ -186,7 +186,7 @@ la ficha de V0 y en `docs/backend/operacion.md`.
 
 ### Después del cierre: las guardas y la API v1 (29/10/2026, aprobado por Rosa)
 
-El encargo de la API v1 (`docs/backend/prompt_api_v1.md`, decisión G1 de
+El encargo de la API v1 (texto en el tag `api/v1.1.0`, decisión G1 de
 `docs/backend/api_v1_decisiones.md`) cambia la API y el esquema a propósito. Las guardas de este ADR quedan
 así, sin regenerar ninguna línea base de `tests/fixtures/equivalence/`:
 

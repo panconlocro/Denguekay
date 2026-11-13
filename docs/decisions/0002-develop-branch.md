@@ -1,6 +1,6 @@
 # ADR 0002: rama de integración `develop` y `main` como producción
 
-- **Estado:** propuesta (fase 0 del encargo `docs/backend/prompt_api_v1.md`); se acepta al mergear su PR.
+- **Estado:** propuesta (fase 0 del encargo de la API v1, cuyo texto queda en el tag `api/v1.1.0`); se acepta al mergear su PR.
 - **Fecha:** 29/10/2026.
 - **Punto de partida:** `main` en `8dc1735` (merge del PR #6, `refactor/registry-and-docs`, cierre de las
   fases 4 y 5 del [ADR 0001](0001-repo-restructure.md)). `develop` se creó desde ese mismo commit.

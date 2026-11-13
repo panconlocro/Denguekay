@@ -1,6 +1,6 @@
 # API v1: inventario y decisiones (fase 1)
 
-- **Encargo:** `docs/backend/prompt_api_v1.md`, fase 1 (diagnóstico, sin tocar código).
+- **Encargo:** API v1, fase 1 (diagnóstico, sin tocar código). El texto del encargo ya no se versiona; queda en el tag `api/v1.1.0`.
 - **Rama:** `docs/api-v1-decisions`, desde `develop` en `57e4df0`.
 - **Fecha:** 29/10/2026.
 - **Estado:** **respondido por Rosa el 29/10/2026** (§3). Las respuestas mandan sobre las recomendaciones de
