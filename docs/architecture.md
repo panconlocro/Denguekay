@@ -39,6 +39,7 @@ flowchart LR
 ```
 Denguekay/
 ├── README.md
+├── STATUS.md                  # estado actual: versión servida, congeladas y pendientes
 ├── CONTRIBUTING.md            # reglas del proyecto, ramas, commits, PR, tags e idioma del código
 ├── .mailmap                   # unifica las identidades de autor en git log/shortlog
 ├── .gitignore
