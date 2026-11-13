@@ -2,7 +2,7 @@
 
 ``build_gold`` computes every candidate in memory for any experimental horizon: the v2 matrices and the
 feature engineering experiments come from there. ``generate_gold`` persists only what must be in gold
-(rule 3 of CLAUDE.md): keys, target, label and the variables of the served configurations (v2: base_6, A3 and
+("Derived variables" rule in CONTRIBUTING.md): keys, target, label and the variables of the served configurations (v2: base_6, A3 and
 B3; v3: base_6, B3 and d3, the ERA5-Land temperature windows at the origin), one row per target week with the h=2
 alignment. The v0 reads the gold before the cleanup (``gold/respaldo_pre_b3``), which this module never writes. Learned statistics (climatology, PCA, alert
 threshold) are fitted later inside each fold.

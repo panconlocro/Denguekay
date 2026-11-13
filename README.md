@@ -142,7 +142,6 @@ locales): `.venv\Scripts\mlflow ui --backend-store-uri sqlite:///mlflow.db --wor
 Los estudios (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, feature
 engineering e hiperparámetros, y mejora del modelo) están congelados en `research/<estudio>/`; cada uno tiene un README
 con su pregunta, su decisión y el tag desde el que se reproduce. Índice: [research/README.md](research/README.md).
-Las instrucciones de Codex están en `AGENTS.md` y `.codex/skills/`; las de Claude Code, en `CLAUDE.md`.
 
 ## Contribuir
 

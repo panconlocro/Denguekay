@@ -27,7 +27,13 @@ __pycache__/
 .DS_Store
 trazabilidad_scraper_dengue_piura_2025/
 trazabilidad_scraper_dengue_piura_2025.zip
-.claude/settings.local.json
+# Configuración personal de asistentes de IA (cada quien la mantiene en su clon; no se versiona)
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+.claude/
+.codex/
+Claude outputs/
 # Seguimiento de experimentos (MLflow) y calidad de datos (Great Expectations):
 # se regeneran localmente al correr los módulos; no se versionan.
 mlflow.db

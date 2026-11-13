@@ -39,13 +39,8 @@ flowchart LR
 ```
 Denguekay/
 ├── README.md
-├── CONTRIBUTING.md            # ramas, commits, PR, tags e idioma del código
+├── CONTRIBUTING.md            # reglas del proyecto, ramas, commits, PR, tags e idioma del código
 ├── .mailmap                   # unifica las identidades de autor en git log/shortlog
-├── CLAUDE.md                  # contexto y reglas para Claude Code
-├── _claude_setup/             # configuración versionada para Claude Code
-├── .claude/agents/            # subagentes auditores versionados (revisor-backend, revisor-modelado)
-├── AGENTS.md                  # contexto y reglas para Codex
-├── .codex/skills/             # workflows de Codex (feature engineering)
 ├── .gitignore
 ├── .env.example               # variables de entorno (BD, clave, CORS, Storage) sin valores reales
 ├── alembic.ini                # migraciones del backend, sin credenciales
@@ -56,7 +51,7 @@ Denguekay/
 ├── constraints.txt            # versiones exactas del entorno de la V3 (pip install -r requirements.txt -c constraints.txt)
 ├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
 ├── render.yaml                # Blueprint de Render para la API (docs/backend/despliegue.md); no despliega por sí solo
-├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan) e install_claude_setup.ps1
+├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan)
 ├── configs/
 │   └── config.yaml
 │
@@ -510,7 +505,7 @@ módulo.
 - **`docs/pipeline.md`**: cómo se corre el pipeline de datos, el actualizador selectivo y la procedencia de los datos de 2025.
 - **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
 - **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR): 0001, reestructuración en monorepo; 0002, ramas `develop` (integración) y `main` (producción).
-- **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`. La skill local `.codex/skills/feature-engineering-dengue/` y `AGENTS.md` describen el flujo de Codex.
+- **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`.
 ---
 
 ## 6. `.gitignore` — qué NO se sube al repo
@@ -586,8 +581,7 @@ great_expectations/gx/
 | Registro de experimentos en MLflow | `src/denguekay/model/tracking.py` (no crear otro tracker) |
 | Documento de tesis / explicación de arquitectura | `docs/` |
 | Plan y hallazgos de feature engineering (congelado) | `research/02_feature_engineering/docs/` |
-| Instrucciones de Codex y skill local | `AGENTS.md` y `.codex/skills/` |
-| Convenciones de ramas, commits, PR y tags | `CONTRIBUTING.md` |
+| Reglas del proyecto y convenciones de ramas, commits, PR y tags | `CONTRIBUTING.md` |
 | Decisión de arquitectura del repo (ADR) | `docs/decisions/NNNN-<tema>.md` |
 
 ---
