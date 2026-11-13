@@ -15,8 +15,8 @@ de artefactos locales. Esto no demuestra que no existan en otra máquina o en un
 
 La inspección no cambió conexiones, bases, esquemas, fuentes, modelos ni el contrato. Se hicieron
 lecturas SQLite en modo `ro` y solicitudes GET de FastAPI en proceso, también con conexión de solo lectura.
-No se consultó una API externa de producción ni se ejecutó inferencia. Posteriormente, por indicación
-expresa del usuario, se ejecutó el notebook 10 y se actualizó gold; el resultado se registra en el
+No se consultó una API externa de producción ni se ejecutó inferencia. Posteriormente
+se ejecutó el notebook 10 y se actualizó gold; el resultado se registra en el
 [informe de regeneración](actualizacion-gold-20261104.md).
 
 ## Matriz de componentes
@@ -116,7 +116,7 @@ proceso de desarrollo, no una conexión de producción guardada. El proxy por de
    Revisar `/salud`, `/configuracion`, versiones por horizonte, cortes y predicciones de distritos antes
    de llamarla integración de v2. La cobertura completa no se presupone aunque haya 65 distritos.
 2. Si solo se dispone de esta copia local, preparar la BD/artefactos en un trabajo de backend separado.
-   El gold ya se regeneró por autorización expresa; eso no migra la base ni publica modelos.
+   El gold ya se regeneró; eso no migra la base ni publica modelos.
    No migrar a ciegas la única base antigua ni presentar el respaldo v0 como publicación v2.
 3. Mantener registradas las correcciones previas de API: completitud de sumas regionales, consistencia
    al desactivar modelos experimentales y validación del rango con fecha final implícita.

@@ -18,7 +18,7 @@ from denguekay.config.paths import ROOT
 
 # Product code, its tests and the configuration that names modules or paths.
 SCANNED_ROOTS = ("src/", "apps/", "tests/", "pipelines/", ".github/")
-SCANNED_FILES = ("alembic.ini", ".coveragerc", "pyproject.toml", "requirements.txt", ".claude/settings.json")
+SCANNED_FILES = ("alembic.ini", ".coveragerc", "pyproject.toml", "requirements.txt")
 LEGACY_MODULE = re.compile(r"(?<![\w.])src\.[A-Za-z_]")
 LEGACY_PATH = re.compile(r"(?<![\w./])src/(?!denguekay/)")
 SELF = Path(__file__).resolve().relative_to(ROOT).as_posix()

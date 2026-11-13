@@ -1,7 +1,6 @@
 # Fase 2 — base visual e integración con demo local v2
 
-Implementación del 04/11/2026, pendiente de revisión antes de la fase 3. El usuario autorizó continuar
-y eligió expresamente «Preparar demo local de v2».
+Implementación del 04/11/2026. La fase integra una demo local de v2.
 
 ## Resultado
 
@@ -19,7 +18,7 @@ El entorno de fixtures declara que incluye valores alterados para probar la inte
 Piura de la primera vista previa procede de una fixture del backend, no de esta demo v2. Los scripts
 de desarrollo fijan juntos el proxy y la etiqueta del entorno elegido.
 
-## Preparación local autorizada
+## Preparación local
 
 Se ejecutó el constructor existente, sin modificar el backend:
 
@@ -116,5 +115,5 @@ Este cierre valida la base y su integración. Las pantallas conservan su impleme
 entregas específicas pendientes. Serie regional e incidencia siguen ausentes del contrato. No se
 añadieron datos para llenar esos componentes, ni avisos artificiales a la demo; los escenarios con
 avisos se prueban con fixtures. Las limitaciones de backend y de la suite Python general registradas
-en `VALIDACION.md` siguen pendientes. Esta fase no certifica toda la suite en verde. La siguiente fase
-es completar el tablero con esta fuente real, tras la revisión del usuario.
+en `VALIDACION.md` siguen pendientes. Esta fase no certifica toda la suite en verde. La fase 3
+completa el tablero con esta fuente real.

@@ -46,7 +46,7 @@ problemas de backend señalados en la revisión previa y los cambios de soporte 
 
 ## Actualización posterior de gold
 
-Por solicitud expresa del usuario se ejecutó el notebook 10 después de esta validación inicial.
+Se ejecutó el notebook 10 después de esta validación inicial.
 El [informe de regeneración](docs/actualizacion-gold-20261104.md) registra el gold de 20 columnas,
 Great Expectations aprobado y B3 verificada. El problema de esquema antiguo de gold descrito arriba
 ya no representa su estado actual. Permanece una diferencia de igualdad exacta en seno/coseno
@@ -55,7 +55,7 @@ en verde. La BD operacional y la selección del servidor de vista previa no camb
 
 ## Fase 2: integración posterior con la demo local v2
 
-Por elección expresa del usuario se preparó una base nueva de demo v2 con el constructor existente,
+Se preparó una base nueva de demo v2 con el constructor existente,
 sin migrar la base antigua. La vista previa ahora usa esa API en modo de lectura, con una banda de
 procedencia y comprobación de versiones. Corte: 27/12/2025; 65 distritos por horizonte, h=2, 3 y 4.
 
@@ -132,7 +132,7 @@ preparados en el índice.
 
 La validación inicial de entradas aprobó silver 107/107 y gold h2 42/42, 30 485 filas cada uno.
 Los hashes de las dos bases, gold y silver permanecen iguales a fase 2. No se repitió la suite
-Python completa ni el CI; la validación de entrega de fase 7 espera revisión del usuario.
+Python completa ni el CI; la validación de entrega es la de la fase 7.
 El [cierre de fase 6](docs/fase-06-desempeno-y-ayuda.md) describe fuentes y evidencia.
 
 ## Fase 7: validación de entrega
@@ -150,6 +150,6 @@ no se presenta como verde; PostgreSQL/CUDA no se validaron aquí.
 CI y arquitectura están en un commit de soporte separado. El PR borrador de entrega reúne ambos
 alcances desde `develop` con merge commits, sin fusionar las ramas permanentes. Consultar los checks
 del PR para el resultado remoto; el [informe de fase 7](docs/fase-07-validacion-entrega.md) registra
-la evidencia local, sus límites y las condiciones de integración. El usuario decidió mantener todo
-local: no se publicó ninguna rama ni se creó PR; el CI remoto queda pendiente. El snapshot completo
+la evidencia local, sus límites y las condiciones de integración. Al cierre de la fase la entrega
+se mantuvo local; después entró a `develop` con el PR #31. El snapshot completo
 de entrega también se comprobó localmente, incluido el paso E2E real del workflow.

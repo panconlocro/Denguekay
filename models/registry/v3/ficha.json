@@ -47,7 +47,7 @@
   "estudio": {
     "carpeta": "research/06_model_improvement",
     "informe": "research/06_model_improvement/docs/mejora_modelo.md",
-    "plan": "research/06_model_improvement/docs/plan.md",
+    "plan": "research/06_model_improvement/docs/diseno_y_decisiones.md",
     "tag": "study/model-improvement"
   },
   "metricas_seleccion": {

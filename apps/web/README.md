@@ -7,10 +7,9 @@ Solo consume lecturas de /api/v1; no lee datos, modelos ni la BD directamente.
 
 ## Trabajo por fases
 
-El [plan de fases](PLAN.md) separa el commit inicial de la propuesta de los cierres que se revisarán con
-el usuario. La [fase 1](docs/fase-01-contrato-y-datos.md) documenta el contrato de cada componente y el
-inventario local. Después se [regeneró gold](docs/actualizacion-gold-20261104.md) por solicitud expresa.
-La [fase 2](docs/fase-02-integracion-demo-v2.md) integra una demo local v2 autorizada por el usuario,
+El [desarrollo por fases](docs/desarrollo-por-fases.md) separa el commit inicial de la propuesta de los cierres de cada fase. La [fase 1](docs/fase-01-contrato-y-datos.md) documenta el contrato de cada componente y el
+inventario local. Después se [regeneró gold](docs/actualizacion-gold-20261104.md).
+La [fase 2](docs/fase-02-integracion-demo-v2.md) integra una demo local v2,
 con base y artefactos separados de la BD antigua. La interfaz identifica el entorno y verifica las
 versiones de v2 antes de mostrar sus resultados. Su corte sigue siendo diciembre de 2025.
 
@@ -205,8 +204,7 @@ los tres horizontes, el recorrido distrital y el bloqueo de una conexión con ot
 
 El CI del frontend y el mapa global de arquitectura se prepararon como un commit de soporte en
 `chore/web-ci`, desde `develop`. La rama de entrega reúne ese soporte con esta implementación para
-su eventual PR hacia `develop`, sin fusionar automáticamente. Por decisión del usuario, la entrega
-se conserva local: no hay rama publicada ni PR creado. La rama de frontend conserva el
+su eventual PR hacia `develop`, sin fusionar automáticamente; entró a `develop` con el PR #31. La rama de frontend conserva el
 alcance apps/web establecido en CONTRIBUTING.md.
 
 Las lecturas tienen un plazo de 20 segundos y cancelación al cambiar de consulta. Los listados

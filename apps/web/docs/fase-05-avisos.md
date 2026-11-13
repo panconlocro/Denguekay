@@ -1,7 +1,6 @@
 # Fase 5 — avisos activos, retirados y detalle
 
-Implementación del 05/11/2026, autorizada con «ahora haz la fase 5» y pendiente de revisión antes de
-fase 6. El trabajo sigue en `feat/web-dashboard` y solo modifica `apps/web/`. Se reutiliza la demo
+Implementación del 05/11/2026. El trabajo sigue en `feat/web-dashboard` y solo modifica `apps/web/`. Se reutiliza la demo
 v2, sin reentrenarla, ejecutar inferencias sobre ella ni cambiar la API o las bases de trabajo.
 
 ## Listados y filtros
@@ -81,5 +80,5 @@ Las 9 guardas de estructura y contrato OpenAPI pasaron con los archivos nuevos p
 No se infieren una fecha de próxima actualización, cambios agregados por lote, probabilidades
 anteriores al retiro ni razones ausentes. Los avisos son registros de consulta; esta fase no añade
 notificaciones, activaciones ni mutaciones del historial. La suite Python general conserva las
-incidencias de `VALIDACION.md`; no se repitió completa ni se certifica verde. La siguiente fase es
-desempeño y ayuda, tras la revisión del usuario.
+incidencias de `VALIDACION.md`; no se repitió completa ni se certifica verde. La fase 6 cubre
+desempeño y ayuda.

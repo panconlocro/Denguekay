@@ -5,7 +5,7 @@
 - **Decisión:** gold h=2 y h=4 con 34 candidatas y la etiqueta `brote`: casos de la semana objetivo
   estrictamente mayores que la media de la misma semana distrital de los cinco años previos + 1,5 DE,
   con un mínimo provisional de 2 casos. El manifiesto `data/gold/manifest_fase6.json` documenta el
-  linaje. Plan en [plan.md](docs/plan.md); traspaso al modelado en
+  linaje. Fases en [fases_feature_engineering.md](docs/fases_feature_engineering.md); traspaso al modelado en
   [fase7_sintesis_traspaso.md](docs/fase7_sintesis_traspaso.md); alternativas de la etiqueta en
   [revision_definicion_brote.md](docs/revision_definicion_brote.md).
 - **Versión de modelo resultante:** ninguna; gold es la entrada de V0, V1 y V2.

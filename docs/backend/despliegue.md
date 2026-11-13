@@ -1,6 +1,6 @@
 # Despliegue en Render, Supabase y Vercel
 
-Fase 5 del encargo de la API v1 (`docs/backend/prompt_api_v1.md`). El repositorio queda **preparado** para
+Fase 5 del encargo de la API v1 (decisiones en `docs/backend/api_v1_decisiones.md`). El repositorio queda **preparado** para
 desplegar, pero desde el código y los tests no se despliega nada ni se conecta a servicios reales. El despliegue
 lo hace Rosa a mano, siguiendo estos pasos. Las opciones de Render y Supabase se verificaron en su documentación
 oficial el 29/10/2026 (fuentes al final). Lo que no está documentado o no se pudo confirmar se marca

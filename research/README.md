@@ -18,10 +18,12 @@ Para reproducir un estudio se parte de su tag (ver el README de cada uno). `pre-
 |---|---|---|---|
 | [01_eda](01_eda/README.md) | ¿Cómo es el panel distrito × semana y qué condiciona al modelo? | Hallazgos y recomendaciones para el feature engineering | `archive/EDA` |
 | [02_feature_engineering](02_feature_engineering/README.md) | ¿Qué variables sin fuga y qué etiqueta de brote van a gold? | Gold h=2 y h=4 (`manifest_fase6.json`) | `archive/feature-engineering` |
-| [03_first_models_and_ablations](03_first_models_and_ablations/README.md) | ¿Regresión o clasificación, y qué bloques de variables aportan? | **V0** (servida hoy) | `archive/training` |
+| [03_first_models_and_ablations](03_first_models_and_ablations/README.md) | ¿Regresión o clasificación, y qué bloques de variables aportan? | **V0** (reemplazada) | `archive/training` |
 | [04_horizon_architecture](04_horizon_architecture/README.md) | ¿Qué arquitectura para h=2, 3 y 4? | E3·S4_s2, base del estudio 05 | `study/horizon-architecture` |
-| [05_fe_hyperparameters](05_fe_hyperparameters/README.md) | ¿Qué variables e hiperparámetros sobre E3·S4_s2? | **V1** (reemplazada) y **V2** (servida) | `study/fe-hyperparameters` |
-| [06_model_improvement](06_model_improvement/README.md) | ¿Hay una V3 que supere a la V2 con una regla preregistrada? | **V3** (vigente, no servida todavía); b3 retadora | `study/model-improvement` |
+| [05_fe_hyperparameters](05_fe_hyperparameters/README.md) | ¿Qué variables e hiperparámetros sobre E3·S4_s2? | **V1** y **V2** (reemplazadas) | `study/fe-hyperparameters` |
+| [06_model_improvement](06_model_improvement/README.md) | ¿Hay una V3 que supere a la V2 con una regla preregistrada? | **V3** (la que publica el backend); b3 retadora | `study/model-improvement` |
+| [07_outbreak_label_sensitivity](07_outbreak_label_sensitivity/docs/informe.md) | ¿Cuánto cambian los resultados de la V3 con otra etiqueta de brote? | Sensibilidad de la etiqueta | — |
+| [08_v3_confirmed_cases](08_v3_confirmed_cases/README.md) | ¿Qué aporta el clima con casos confirmados, y transfiere a Lambayeque y Tumbes? | **V4** (`b3_obs`, congelada para el paper) | `model/v4` |
 
 ## Qué no está aquí
 
@@ -36,6 +38,6 @@ Para reproducir un estudio se parte de su tag (ver el README de cada uno). `pre-
 
 ## Estudios nuevos
 
-Un estudio nuevo va en `research/08_<nombre>/` (el `07` es del compañero de Rosa) con la misma forma (`README.md`, `notebooks/`,
+Un estudio nuevo va en `research/09_<nombre>/` (el siguiente número libre) con la misma forma (`README.md`, `notebooks/`,
 `code/`, `tests/`, `docs/`), importa el paquete `denguekay` y nunca al revés: el producto no
 importa `research/`. Al cerrarlo se crea el tag `study/<nombre>`.

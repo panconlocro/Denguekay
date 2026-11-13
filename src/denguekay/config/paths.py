@@ -129,7 +129,7 @@ COMPACT_PREDICTIONS = MODELS / "experimentos" / "validacion_temporal_compacta" /
 # Research studies, frozen in research/<study>/ (docs/decisions/0001-repo-restructure.md).
 RESEARCH = ROOT / "research"
 RESEARCH_FIRST_MODELS = RESEARCH / "03_first_models_and_ablations"
-# Multi-horizon architecture study (research/04_horizon_architecture/docs/plan_arquitectura_horizontes.md)
+# Multi-horizon architecture study (research/04_horizon_architecture/docs/diseno_arquitectura_horizontes.md)
 ARCHITECTURE_METRICS = RESEARCH / "04_horizon_architecture" / "docs" / "metricas" / "arquitectura_horizontes.json"
 ARCHITECTURE_FIGURES = RESEARCH / "04_horizon_architecture" / "docs" / "figuras"
 ARCHITECTURE_EXPERIMENTS = MODELS / "experimentos" / "arquitectura_horizontes"

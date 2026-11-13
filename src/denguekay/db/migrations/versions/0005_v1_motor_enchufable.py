@@ -1,4 +1,4 @@
-"""Motor de predicción enchufable (fase 3 de docs/backend/prompt_api_v1.md)
+"""Motor de predicción enchufable (fase 3 de la API v1, docs/backend/api_v1_decisiones.md)
 
 Revisión: 0005_v1
 Anterior: 0004_v1

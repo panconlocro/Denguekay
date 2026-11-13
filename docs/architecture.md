@@ -39,13 +39,9 @@ flowchart LR
 ```
 Denguekay/
 ├── README.md
-├── CONTRIBUTING.md            # ramas, commits, PR, tags e idioma del código
+├── STATUS.md                  # estado actual: versión servida, congeladas y pendientes
+├── CONTRIBUTING.md            # reglas del proyecto, ramas, commits, PR, tags e idioma del código
 ├── .mailmap                   # unifica las identidades de autor en git log/shortlog
-├── CLAUDE.md                  # contexto y reglas para Claude Code
-├── _claude_setup/             # configuración versionada para Claude Code
-├── .claude/agents/            # subagentes auditores versionados (revisor-backend, revisor-modelado)
-├── AGENTS.md                  # contexto y reglas para Codex
-├── .codex/skills/             # workflows de Codex (feature engineering)
 ├── .gitignore
 ├── .env.example               # variables de entorno (BD, clave, CORS, Storage) sin valores reales
 ├── alembic.ini                # migraciones del backend, sin credenciales
@@ -56,7 +52,7 @@ Denguekay/
 ├── constraints.txt            # versiones exactas del entorno de la V3 (pip install -r requirements.txt -c constraints.txt)
 ├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
 ├── render.yaml                # Blueprint de Render para la API (docs/backend/despliegue.md); no despliega por sí solo
-├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan) e install_claude_setup.ps1
+├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan)
 ├── configs/
 │   └── config.yaml
 │
@@ -182,7 +178,7 @@ gold/
 ```
 **Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
 
-El plan de construcción está en `research/02_feature_engineering/docs/plan.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
+Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
 
 ### `data/reference/` — catálogos que casi no cambian
 ```
@@ -376,8 +372,8 @@ Fase 4: `docs/backend/arquitectura.md`, `decisiones_tecnicas.md`,
 `trazabilidad_hu.md`, `fase4_calidad.md`, `fase4_verificacion.json` y los reportes `benchmark_*.json` documentan
 la implementación y mediciones reales. La copia de benchmark SQLite vive en
 `models/serving/fase4.sqlite`; las mediciones locales por defecto van en
-`models/serving/benchmark.json`. El encargo de la API v1 independiente del modelo está en
-`docs/backend/prompt_api_v1.md`, y su inventario y decisiones en `docs/backend/api_v1_decisiones.md`. `.github/workflows/backend.yml` ejecuta la
+`models/serving/benchmark.json`. El inventario y las decisiones de la API v1 independiente del modelo están en
+`docs/backend/api_v1_decisiones.md`. `.github/workflows/backend.yml` ejecuta la
 suite completa con fixtures versionadas, sin descargar gold/silver ni desplegar:
 en Linux, Windows y macOS sobre SQLite, y en Linux contra un servicio PostgreSQL 18
 desechable (`denguekay_pruebas`), que falla si las pruebas de PG se omiten. El job `humo-api` instala solo
@@ -510,7 +506,7 @@ módulo.
 - **`docs/pipeline.md`**: cómo se corre el pipeline de datos, el actualizador selectivo y la procedencia de los datos de 2025.
 - **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
 - **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR): 0001, reestructuración en monorepo; 0002, ramas `develop` (integración) y `main` (producción).
-- **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`. La skill local `.codex/skills/feature-engineering-dengue/` y `AGENTS.md` describen el flujo de Codex.
+- **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`.
 ---
 
 ## 6. `.gitignore` — qué NO se sube al repo
@@ -586,8 +582,7 @@ great_expectations/gx/
 | Registro de experimentos en MLflow | `src/denguekay/model/tracking.py` (no crear otro tracker) |
 | Documento de tesis / explicación de arquitectura | `docs/` |
 | Plan y hallazgos de feature engineering (congelado) | `research/02_feature_engineering/docs/` |
-| Instrucciones de Codex y skill local | `AGENTS.md` y `.codex/skills/` |
-| Convenciones de ramas, commits, PR y tags | `CONTRIBUTING.md` |
+| Reglas del proyecto y convenciones de ramas, commits, PR y tags | `CONTRIBUTING.md` |
 | Decisión de arquitectura del repo (ADR) | `docs/decisions/NNNN-<tema>.md` |
 
 ---

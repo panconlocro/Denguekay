@@ -15,7 +15,7 @@ El gold conserva `casos_Dengue` como conteo junto a la etiqueta `brote` (semana 
 encima de la media de esa semana en los cinco años previos + 1,5 DE, con un mínimo de 2 casos) y su umbral
 auditable `umbral_brote_casos`. El entrenamiento excluye esas tres columnas de los predictores.
 
-Gold persiste solo lo que debe estar en gold (regla 3 de `CLAUDE.md`): un archivo con la alineación h=2, una fila por
+Gold persiste solo lo que debe estar en gold (regla «Variables derivadas» de `CONTRIBUTING.md`): un archivo con la alineación h=2, una fila por
 distrito y semana objetivo, y 20 columnas:
 
 - llaves, semana y origen: `ubigeo`, `anio`, `semana`, `semana_inicio`, `origen_inicio`, `origen_cierre`;

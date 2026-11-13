@@ -1,6 +1,6 @@
 # Fase 3 — tablero con datos de la demo v2
 
-Implementación del 05/11/2026, autorizada con «siguiente fase» y pendiente de revisión antes de la fase 4.
+Implementación del 05/11/2026.
 El alcance sigue siendo `apps/web/`, en `feat/web-dashboard`. Se reutiliza la demo de fase 2: no se
 entrenó, ejecutó inferencia ni modificaron endpoints, datos o bases.
 
@@ -75,5 +75,5 @@ contrato; se explican sus ausencias y se ofrece la serie distrital. La verificac
 navegador no corrige el agregado incompleto del backend; esa corrección y la cobertura de observados
 siguen pendientes por separado. No se repitió la suite Python completa ni se certifica verde.
 
-La fase 4 (mapa y detalle distrital) requiere la siguiente revisión del usuario. Las vistas de fases
-posteriores conservan su implementación inicial.
+La fase 4 cubre el mapa y el detalle distrital. Al cierre de esta fase, las vistas de fases
+posteriores conservaban su implementación inicial.

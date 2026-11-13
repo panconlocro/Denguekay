@@ -1,7 +1,6 @@
 # Fase 7 — Validación de entrega
 
-El usuario autorizó esta fase con «go fase 7 pa ir a dormir» y después decidió **mantener todo local**.
-No se publicó ninguna rama ni se creó PR. Se revisaron las seis vistas,
+Al cierre de esta fase la entrega se mantuvo local; después entró a `develop` con el PR #31. Se revisaron las seis vistas,
 integración con API, accesibilidad, datos ausentes, compilación, documentación y soporte CI.
 Los cambios de interfaz permanecen en `feat/web-dashboard`, dentro de `apps/web/`.
 El commit de CI y arquitectura se prepara aparte en `chore/web-ci`, desde `origin/develop`.
@@ -94,7 +93,7 @@ Tiene espera acotada de salud, limpieza del proceso y diagnóstico de fallos. No
 local, no importa investigación y no sustituye la demo v2 con métricas de fixtures.
 El workflow backend conserva las pruebas de PostgreSQL y cobertura existentes.
 
-El CI remoto no se ejecutó: la entrega se conserva local por decisión del usuario. La rama
+Al cierre de la fase el CI remoto no se había ejecutado porque la entrega se conservaba local. La rama
 `chore/web-delivery` contiene el frontend y el workflow para una revisión y publicación posterior.
 La omisión del job cuando falta `package.json` no se considera una validación.
 La integración requiere revisión y los checks del PR aprobados. No se despliega ni se fusiona

@@ -1,0 +1,357 @@
+# Estudio 06 · diseño y registro de decisiones: mejorar el modelo sobre la V2
+
+Este documento describe el diseño del estudio (punto de partida, objetivo, criterios de método y fases) y registra,
+con su fecha, las decisiones que se tomaron durante el estudio. Los resultados están en
+[mejora_modelo.md](mejora_modelo.md). El estudio vive en `research/06_model_improvement/` (`README.md`,
+`notebooks/`, `code/`, `tests/`, `docs/`), importa `denguekay` y el producto nunca lo importa.
+
+> **Cerrado el 2026-11-09.**
+>
+> - **Resultado: la V3** = L + 5a + d3 con los hiperparámetros del trial 191 (`CONFIG_V3`, ficha
+>   `models/registry/v3/`, tags `model/v3` y `study/model-improvement`). b3 queda como retadora.
+> - **Cierre sin la fase 7:** se hicieron la corrida de cierre, la congelación, la auditoría y la reproducibilidad
+>   (Release de `model/v3`); lo demás pasa a «Pendientes fuera del estudio», abajo.
+> - **Informe:** [mejora_modelo.md](mejora_modelo.md), «Estado actual».
+
+## Pendientes fuera del estudio (2026-11-09)
+
+- **Intervalo del conteo** con la μ mezclada de 5a: cobertura y nitidez fuera de muestra (R17).
+- **Paquete del short paper** (R10, R13, R17–R20, R22, R23, R25, R28, R32–R34, R36, R38; ver la fase 7):
+  - previsto en un estudio aparte, desde el Release de `model/v3`, sin reentrenar;
+  - el diccionario (R13), los cortes (R20) y la especificación (R16, R30) ya están en
+    `docs/modeling/protocolo_v3.md`.
+- **Evaluación prospectiva 2026–27** de la V3 y de b3, la retadora, con lo publicado después del 2026-11-09
+  (`EVALUATION_2026` aplicada a la V3).
+- **Módulo de actualización semanal:** traer cada semana los casos de la Sala, la temperatura de ERA5-Land y la serie
+  desde 2000 que usa la V3. El servicio de la V3 se integró en la rama `feat/serve-v3`.
+- **Lo previsto en la fase 7 que no se hizo** (el estudio se cerró sin la fase 7):
+  - la síntesis frente a la V2 con la HU0007-4 por celda;
+  - las pruebas de robustez (sin las 8 primeras semanas de 2017 y sin la temporada de más peso);
+  - la comparación con la persistencia con IC sobre los inicios limpios.
+- **La 6′** (otra familia con clima, lectura): no se hizo.
+
+## Punto de partida
+
+La V2 (`CONFIG_2026`: C3+A3 · E3 · S4_s3, Platt, p ≥ 0,50) era la configuración vigente y la servida, y no cumplía la
+HU0007-4. Según los informes del estudio 05 (cifras que la fase 0 recalcula):
+
+- Clasificación: cumple en 4 de 9 celdas. Falla el recall: 2022 · h4 en 0,202 (el 0,40 era de la V1), y 0,00–0,15 en
+  las 2 primeras semanas de brotes nuevos (verificado en la fase 0).
+- Regresión: cumple en 2 de 9 celdas, 2023 · h3 (0,747 / 0,818) y 2023 · h4 (0,708 / 0,779); «ninguna» era la V1. En
+  el resto pierde o empata con la persistencia, sobre todo en el pico.
+- La caída de F1 en 2022 · h4 con A3 es de calibración: la AUPRC casi no cambia, el Platt se ajusta solo con 2021 y su
+  Brier calibrado es peor que el sin calibrar.
+- Las ganancias de B3 dependen de los inicios de 2017. 2022–2023 ya se habían usado en 19 comparaciones.
+
+**Hipótesis de trabajo:** el cuello de botella es la poca historia (pocos brotes para entrenar, calibrar y evaluar), no
+la arquitectura. `data/silver/epi_piura_semanal.csv` tiene casos por distrito de Piura desde 2000, pero el modelo
+entrenaba desde 2017. El clima (`denguekay.data.ingestion.openmeteo`, `START = "2017-01-01"`) y el socio empezaban en
+2017.
+
+Antecedentes: `models/registry/v2/ficha.md` y
+`research/05_fe_hyperparameters/docs/fe_hiperparametros.md` (fase 5 y encargo complementario).
+
+## Objetivo
+
+Encontrar una V3 que supere a la V2 con una regla preregistrada y una evaluación menos optimista. Si nada la supera, se
+queda la V2 y se documenta por qué; ese resultado también es válido.
+
+**Fuera de alcance:** serving, API, BD y frontend. No se escribe en `data/`. No se cambian el umbral p ≥ 0,50 ni la
+etiqueta de brote (canal endémico).
+
+## Criterios de método
+
+- El estudio avanza por fases; cada una se cierra con un resumen que Rosa aprueba antes de la siguiente.
+- `data/` es de solo lectura: todo cambio de datos (por ejemplo, clima anterior a 2017) se plantea como cambio al
+  pipeline (`openmeteo.py` y notebooks 02–09) y lo ejecuta el equipo; mientras tanto, todo se trabaja en memoria.
+- Variables nuevas: en memoria, con funciones de `denguekay.features` y un test de no fuga por perturbación.
+- Cada fase se registra en MLflow con `denguekay.model.tracking`, con 5 semillas (17/29/41/53/67), mediana y rango.
+- **Preregistro antes de correr cada fase:** candidatas, comparaciones, regla de decisión y temporadas que deciden
+  quedan en código y en un commit antes de ver resultados. El preregistro no se amplía sin aprobación de Rosa.
+- **Honestidad:** sin lenguaje causal; cada métrica se reporta con su número de positivos; las diferencias de una
+  celda o de 2 inicios no deciden nada.
+
+## Decisiones de Rosa (2026-11-02)
+
+1. **Los ceros son reales.** `epi_piura_semanal.csv` viene directamente del MINSA: un 0 (o una semana sin registro de
+   un distrito) significa que esa semana hubo 0 casos. No es subregistro ni falta de cobertura, y no se trata como dato
+   faltante, tampoco en 2000–2016.
+2. **El clima se extiende hacia atrás.** Según su documentación, el Historical Weather API de Open-Meteo
+   (`/v1/archive`, el que ya usa `openmeteo.py`) tiene ERA5 desde 1940 y ERA5-Land desde 1950
+   (https://open-meteo.com/en/docs/historical-weather-api), lo que alcanza para 2000–2016. Lo descarga el equipo con el
+   pipeline (ver la fase 1b).
+3. **La V3 pasa por todas las pruebas y experimentos necesarios** antes de congelarse (ver la fase 7). Si se congela,
+   el test independiente de 2026 (`EVALUATION_2026`) se aplica a la V3 desde su commit de congelamiento.
+
+## Decisiones de Rosa (2026-11-03, al cerrar la fase 0)
+
+1. **Protocolo nuevo:** bloques por temporada con ventana creciente desde 2005; Platt de cada bloque con todas las
+   temporadas cerradas anteriores; deciden 2010, 2015, 2016, 2022 y 2023 (mejora en al menos 4 de 5 y ninguna en
+   contra); 2024 queda como contraste. El bloque 2010 se reporta aparte porque entrena con pocos brotes. El umbral de
+   «en contra» se define en el preregistro de la fase 1.
+2. **Recorte del logit** como variante de la fase 2.
+3. **Corrección pendiente del pipeline:** `epi_piura_semanal.csv` tiene una semana 53 en 2009, que en MMWR no existe
+   (2009 tiene 52 semanas). En Piura son 3 filas con 4 casos (distritos 200601, 200701 y 200705), que la historia
+   larga deja fuera. Queda anotada; no se toca en este estudio.
+
+## Decisiones de Rosa (2026-11-04, clima y precipitación)
+
+1. **En la V3, la lluvia es solo CHIRPS v3**, para entrenar y para la actualización semanal (reemplazo, no agregado).
+   Antes de 2017 Open-Meteo no tiene lluvia útil (ERA5 a 0,25° deja iguales a los distritos vecinos y ERA5-Land no trae
+   precipitación), y como se entrena desde 2005, la lluvia de Open-Meteo solo cubriría 2017–2025. La lluvia «Best
+   match» de Open-Meteo queda solo para la V2.
+2. **Orden de los pasos de clima, cada uno con su propio preregistro commiteado antes de correr** (sin adelantarse ni
+   mezclarse):
+   a) 1b′: L + 5a + humedad de ERA5-Land;
+   b) la variante que agrega la lluvia de CHIRPS v3 sobre la base que gane en (a);
+   c) repetir el Niño 1+2 solo si la base cambió en (a) o en (b).
+3. **La fase 4 cerrada el 2026-11-04 es la primera medición del Niño 1+2** (sobre L + 5a; empate, no se adopta).
+4. **Disponibilidad de CHIRPS:** cada semana lleva una `fecha_disponible` según el calendario del preliminar (péntadas
+   publicadas los días 2, 7, 12, 17, 22 y 27) y una guarda tipo G21: ningún origen usa una semana publicada después de
+   su cierre. Sin esa guarda, la variante (b) no se preregistra.
+5. **Posible desfase entrenamiento–app:** el entrenamiento usa el final `sat` y la app el preliminar `sat`, que usa
+   menos estaciones; pueden diferir.
+
+## Decisiones de Rosa (2026-11-06, lluvia de CHIRPS v3)
+
+1. **Fuente única de lluvia de la V3: CHIRPS v3 diario `sat`.** Histórico con la versión final desde Google Earth Engine
+   (`UCSB-CHC/CHIRPS/V3/DAILY_SAT`, proyecto de Google Cloud `denguekay`, uso no comercial); las semanas que aún no
+   tienen final usan el preliminar `sat` del CHC (`prelim/sat/AAAA/chirps-v3.0.prelim.AAAA.MM.DD.tif`), que se reemplaza
+   por el final cuando se publica. Ninguna semana mezcla versiones.
+2. **Lluvia por distrito como media del polígono distrital ponderada por área** (límites del IGN publicados en HDX,
+   COD-AB, licencia CC BY-IGO), no el píxel del centroide.
+3. **No se une CHIRPS con la lluvia «Best match» de Open-Meteo.** En enero a abril de 2017, 2019 y 2023 (715 pares
+   distrito-mes, comparación fuera del estudio), Open-Meteo da en promedio un 65 % más (de 1,08 a 3,43 veces según el
+   mes), con correlación 0,82; unirlas metería un salto en 2017.
+4. **Hechos al 2026-11-06:** el preliminar llega al 2026-10-31 (publicado el 2 de noviembre; TIF globales de unos 11 MB,
+   no COG) y existe desde 2025; la final en el CHC y en Earth Engine llega al 2026-09-30 (publicada el 15 de octubre);
+   el CHC respondió 429 tras unos 11 archivos pedidos con 1,5 a 3 s de pausa.
+5. **Variantes del paso b) de clima** (cada una frente a L + 5a; después, el paso c, Niño 1+2, solo si la base cambia):
+   - **b1** = L + 5a + lluvia CHIRPS como media de 5 semanas hasta el origen, con la misma definición que la A3 de la V2
+     (`precip_total_mm_media5_h2`);
+   - **b2** = L + 5a + H (humedad ERA5-Land, `hum_rel_media_media5_h2`) + lluvia CHIRPS: la A3 de la V2 con fuentes
+     largas.
+6. **Pasos internos del paso b) de clima** (no son fases nuevas; cada uno se cerró por separado):
+   - b-I: polígonos distritales y verificación de los 65 distritos;
+   - b-II: `--dry-run` de `earthengine-api`;
+   - b-III: registro no comercial y autenticación en Earth Engine;
+   - b-IV: ingesta de Earth Engine y guarda de método (media local por polígono frente a la de Earth Engine en los 24
+     días del final ya bajados);
+   - b-V: preliminar del CHC (un archivo por petición, pausado, con parada ante el primer 429);
+   - b-VI: medición preliminar frente a final (descriptiva), en enero a abril de 2025 y de 2026, sobre la media de 5
+     semanas de b1;
+   - b-VII: preregistro de b1 y b2.
+7. **`data/` sigue siendo de solo lectura:** cada paso que escribe en `data/` tiene una autorización explícita y
+   acotada.
+
+## Fases
+
+### Fase 0 · Diagnóstico y techo (solo lectura, sin entrenar variantes)
+
+- Con las predicciones OOS guardadas de la V2, el error se separa por estado (inicio limpio, brote en curso, bajada y
+  valle), por temporada y por horizonte, para ver dónde se concentran los falsos negativos.
+- Calibración: curva de confiabilidad por temporada, número de semanas brote en [0,40, 0,50) y techo diagnóstico de F1
+  con calibración perfecta por temporada (no decide nada).
+- Persistencia: fracción de las semanas brote que ya acierta, como medida del margen real que queda para el modelo.
+- Historia previa a 2017 (los ceros son reales): casos por año, semanas brote según la regla de gold extendida con
+  `umbral_brote_futuro` y sus 5 años previos (la etiqueta existe desde ~2005) e inicios limpios por temporada.
+
+Salida: tablas de diagnóstico y la propuesta del protocolo de evaluación de la fase 1.
+
+### Fase 1 · Más historia (palanca principal)
+
+- **1a, solo epidemiología:** E3·S4_s3 con `base_6` + B3 (sin A3) entrenado desde la primera temporada con etiqueta
+  válida, la que tiene 5 años previos para la regla de brote (2005, con la historia desde 2000), frente a la misma
+  matriz entrenada desde 2017.
+- **Protocolo nuevo, preregistrado en esta fase:** bloques temporales por temporada; más **temporadas que deciden**
+  (2010, 2015, 2016, 2022 y 2023, según la fase 0) en vez de solo 2022–2023; 2024 como contraste. Así se reduce la
+  dependencia de 2017 y el optimismo acumulado.
+- **Platt con más temporadas:** el calibrador de cada bloque se ajusta con todas las temporadas cerradas anteriores,
+  no solo desde 2021.
+- **1b, clima 2000–2016:**
+  - cambio a `openmeteo.py` (rango de fechas parametrizable) y a los notebooks 02–03, ejecutado por el equipo;
+  - **consistencia:** `openmeteo.py` no fija el parámetro `models`, así que el API elige el modelo automáticamente y
+    puede no ser el mismo en todos los años. Antes de usar el clima largo se compara, en 2017–2025, lo ya descargado
+    con ERA5 (o ERA5-Land) fijado explícitamente, por variable. Descargar 2000–2025 con un solo modelo movería gold y
+    la paridad de la V2, por lo que es una decisión de Rosa;
+  - con el clima disponible se repite 1a con A3; mientras tanto, las fases 2 y 3 avanzan sobre la variante
+    epidemiológica;
+  - socio anterior a 2017: se usa el valor de 2017 del distrito (es casi fijo), declarado como supuesto.
+
+Salida: veredictos con la regla preregistrada, recall en inicios limpios y la HU0007-4 por celda.
+
+### Fase 2 · Calibración
+
+Sobre la mejor matriz de la fase 1, con p ≥ 0,50 fijo:
+
+- Platt por horizonte frente a Platt agrupado entre horizontes (el agrupado tiene más positivos).
+- Calibración beta (3 parámetros).
+- Isotónica, solo si hay suficientes positivos; la S5 del estudio 04 ya la probó en E1 con pocos datos.
+- Recorte del logit como **variante**: 1e-6 (el de la V2) frente a uno menor, fijado en el preregistro. La auditoría del
+  estudio 05 mostró que cambia 2022 · h4, y la fase 0, que 1e-6 aplasta entre el 1 % y el 8 % de las probabilidades sin
+  calibrar.
+- Guardas: el Brier y el log-loss calibrados no deben empeorar frente a los sin calibrar.
+
+### Fase 3 · Inicios de brote
+
+El recall en inicios es casi nulo. Se prueba una palanca a la vez:
+
+- **Pesos de muestra:** más peso a las semanas objetivo que son inicio, o peso por temporada para que 2017 y 2023 no
+  dominen, con el factor fijado a priori.
+- **Dos regímenes:** un modelo para distritos sin brote al origen (que solo predice inicios) y otro para brote en curso,
+  combinados por el estado al origen, que se conoce al emitir y no tiene fuga.
+- **Re-ensayo de B1/B2** (contexto espacial y distritos núcleo) **solo en el modelo de inicios**: en el modelo único no
+  agregaron sobre B3, pero la fase 1 del estudio 05 los marcó como observados en los inicios.
+
+### Fase 4 · Señal regional de El Niño (solo si la fase 1 deja margen)
+
+- *Hipótesis*, no verificada: un índice costero de El Niño (por ejemplo, el ICEN de ENFEN o la anomalía Niño 1+2) podría
+  aportar antelación regional en Piura.
+- La fuente, la frecuencia y el retraso de publicación se verifican antes de usarla; si no se pueden verificar, no se
+  usa.
+- Solo entran valores publicados al origen, como una ingesta nueva del pipeline que ejecuta el equipo.
+
+### Fase 5 · Conteo
+
+- **Mezcla con la persistencia:** μ = w·modelo + (1 − w)·persistencia por horizonte, con w ajustado solo en el
+  entrenamiento de cada bloque. Es el objetivo directo de la razón ≤ 0,85.
+- Rango ampliado de `max_delta_step` (en el estudio 05 quedó en el tope, 2,0), con preregistro aparte.
+- Conteo por fase de la curva (valle, subida, pico, bajada), siempre con MAE y RMSE juntos.
+
+### Fase 6 · Línea base de otra familia (lectura, no decide)
+
+Una binomial negativa GLM con rezagos (casos y clima) y un LightGBM con la misma matriz y el mismo protocolo, para saber
+si XGBoost es el límite o si lo son los datos.
+
+## Decisiones de Rosa (2026-11-08, temporada 2026)
+
+1. **Lluvia de la V3: solo CHIRPS v3 `sat`; el preliminar y el final se bajan por FTP** (`ftp.chc.ucsb.edu`,
+   `/products/CHIRPS/v3.0/daily/{prelim,final}/sat/AAAA/`). La prueba del 2026-11-08 bajó los 31 días del preliminar de
+   octubre de 2026 en 108 s, sin errores, con la grilla igual al final y el sha256 del 2026-10-01 idéntico al de b-V. Se
+   descarta la familia Open-Meteo (OM, OM + Niño, R + 5a y d1-2017).
+2. **La temporada 2026 se usa para comparar modelos.** La temporada 2026 (semana 35 de 2025 a semana 34 de 2026) y las
+   semanas posteriores disponibles son temporadas de evaluación. Con eso, **`EVALUATION_2026` deja de ser independiente
+   para la V3**: su prueba independiente pasa a ser lo publicado después de su congelamiento (el resto de la temporada
+   2026-2027). Esto reemplaza, para la V3, el punto 3 de «Decisiones de Rosa (2026-11-02)» y lo previsto en la fase 7.
+3. **Regla de decisión** (`SEASON_2026` en `code/preregistration.py`): el Brier como métrica principal sobre 2010, 2015,
+   2016, 2022, 2023 y 2026; gana con >= 5 de 6 a favor y 0 en contra; vetos con >= 4 de 6; adopción sin «pierde» ni
+   «compensa» en el Brier, la F1 ni la razón MAE; cruce entre adoptadas con empate a favor de la más simple. Se fijó
+   después de ver los pasos b y d.
+4. **Bloques:** `temporada_2026` se entrena hasta la temporada 2025; `posterior_2026` (semana 35 de 2026 en adelante)
+   hasta la temporada 2026 y solo se reporta. Las 2 últimas semanas publicadas de la Sala son provisionales: no entran en
+   las métricas y se reportan aparte.
+5. **Validación dejando una temporada fuera** (2010, 2015, 2016, 2017, 2022, 2023, 2024 y 2026): lectura optimista (usa
+   el futuro) que solo compara variantes entre sí y nunca se reporta como rendimiento esperado.
+6. **Orden:** primero los datos (Sala 2026, ERA5-Land 2026, CHIRPS por FTP y b-VI) con una excepción de escritura
+   acotada; después, el preregistro completo y la evaluación.
+
+## Decisiones de Rosa (2026-11-08, después de la matriz de clima)
+
+1. **La base de la V3 es L + 5a + d3** (las 4 ventanas de temperatura de ERA5-Land: semana del origen y medias de
+   o−1..o−4, o−5..o−8 y o−9..o−12) **y b3 queda como retadora.** **No sale de la regla `SEASON_2026`**: d3 gana el
+   Brier en un solo horizonte (h2) y es peor que L + 5a en 2016 en los tres (+0,4 %, +0,9 % y +2,3 %). Es una decisión
+   con contexto, **tomada después de ver los resultados de la matriz y usando 2026 para elegir**. Justificación:
+   - el objetivo operativo es anticipar brotes en años de Niño (el ENFEN prevé un Niño Costero extraordinario de
+     setiembre de 2026 a mayo de 2027; fuente citada por Rosa);
+   - en los periodos de Niño (2017, 2026 y `posterior_2026`), d3 baja el Brier frente a L + 5a un 5,97 % de media,
+     frente al 2,00 % de b3; b3 es peor que L + 5a en 2017 en los tres horizontes;
+   - en años normales d3 cuesta hasta 2–3 % de Brier frente a b3; en las 27 celdas, d3 −2,34 % y b3 −1,90 % frente a
+     L + 5a;
+   - mejora 21 de 24 celdas LOSO; es la mejor en F1 y en conteo en 2026 y en `posterior_2026`;
+   - es más simple: 4 columnas de clima y una sola fuente (ERA5-Land), sin CHIRPS ni NOAA en la operación semanal.
+2. **Se congelan las dos, d3 y b3,** para evaluarlas de forma prospectiva en la temporada 2026-2027.
+3. **Siguiente paso previsto:** diagnóstico de solo lectura frente a la persistencia (d3, b3 y L + 5a) y, después, el
+   preregistro del ajuste de hiperparámetros sobre L + 5a + d3.
+
+Diferencia de Brier en % (variante / referencia − 1; negativo = mejor), de `metricas/matriz_clima.json` (mediana de 5
+semillas):
+
+| Bloque | h | d3 vs L + 5a | b3 vs L + 5a | d3 vs b3 |
+|---|---|---|---|---|
+| 2010 | 2 / 3 / 4 | −0,84 / −0,66 / −0,74 | −1,09 / −1,97 / −2,76 | +0,25 / +1,34 / +2,08 |
+| 2015 | 2 / 3 / 4 | −0,55 / −0,66 / −1,74 | −0,53 / −0,64 / −2,68 | −0,02 / −0,03 / +0,97 |
+| 2016 | 2 / 3 / 4 | +0,42 / +0,94 / +2,32 | −0,98 / −1,59 / −0,51 | +1,42 / +2,57 / +2,85 |
+| 2017 (Niño) | 2 / 3 / 4 | −2,49 / −2,30 / −2,34 | +1,16 / +0,76 / +1,03 | −3,60 / −3,04 / −3,34 |
+| 2022 | 2 / 3 / 4 | −0,52 / −0,72 / −0,11 | −1,31 / −1,24 / −0,12 | +0,80 / +0,52 / +0,01 |
+| 2023 | 2 / 3 / 4 | −0,56 / −1,10 / −1,80 | −1,92 / −2,62 / −3,24 | +1,39 / +1,56 / +1,48 |
+| 2024 | 2 / 3 / 4 | −0,65 / −0,93 / −1,47 | −1,91 / −3,52 / −4,62 | +1,29 / +2,68 / +3,31 |
+| 2026 (Niño) | 2 / 3 / 4 | −4,44 / −7,22 / −6,90 | −3,34 / −4,90 / −3,83 | −1,13 / −2,44 / −3,19 |
+| posterior_2026 (Niño) | 2 / 3 / 4 | −8,41 / −9,37 / −10,28 | −4,43 / −2,69 / −1,74 | −4,16 / −6,87 / −8,70 |
+
+| Promedio de celdas | Celdas | d3 vs L + 5a | b3 vs L + 5a | d3 vs b3 |
+|---|---|---|---|---|
+| Decisivas (2010, 2015, 2016, 2022, 2023, 2026) | 18 | −1,38 | −1,96 | +0,58 |
+| Años de Niño (2017, 2026, `posterior_2026`) | 9 | −5,97 | −2,00 | −4,05 |
+| Años normales (el resto) | 18 | −0,52 | −1,85 | +1,36 |
+| Todas | 27 | −2,34 | −1,90 | −0,44 |
+
+## Decisiones de Rosa (2026-11-08, diagnóstico frente a la persistencia)
+
+**Limitaciones anotadas para la fase 7** (del diagnóstico de solo lectura, `metricas/diagnostico_persistencia.json`):
+
+1. **El conteo se queda corto en los picos** (18–38 % menos casos en el pico de la temporada 2026; 35–65 % en el de
+   `posterior_2026`) **y en la subida de `posterior_2026`** (21–51 % menos). En la subida de la temporada 2026, no.
+2. **En 2026 la predicción del conteo no le agrega nada a la persistencia:** la w de 5a que habría sido óptima en el
+   propio bloque es 0,02–0,32 en la temporada 2026 y 0 en `posterior_2026`. **No se ajusta w con 2026.**
+3. **La probabilidad subpronostica cuando la tasa de brote sale de lo habitual:** en `posterior_2026` (tasa 36,7 %) la
+   probabilidad media es 0,58–0,81 de la tasa observada; en la temporada 2026, 0,92–0,99.
+
+**Hipótesis anotada:** 18 de los 20 inicios limpios de la temporada 2026 son de junio a agosto. En los 20, el umbral
+estacional de la semana del inicio es más bajo que el de la semana del origen (h3), mientras los casos no bajan:
+transmisión que no bajó en el invierno de Niño, con un umbral que sí baja. d3 avisa más de esos inicios que L + 5a (con
+>= 2 semanas por p >= 0,50: 3 / 4 / 5 frente a 2 / 2 / 2 en h2 / h3 / h4). Es una hipótesis, no un hallazgo.
+
+**Siguiente paso previsto:** preregistrar y calcular la alerta combinada (p >= 0,50 o la alerta de la persistencia)
+sobre las predicciones guardadas de d3 y b3 y, después, el preregistro del ajuste de hiperparámetros sobre L + 5a + d3.
+
+## Fase 7 · Síntesis, pruebas y congelamiento
+
+- Configuración elegida frente a la V2, con el protocolo nuevo, y la HU0007-4 por celda.
+- **Pruebas previstas antes de congelar la V3:**
+  - 5 semillas con mediana y rango, y robustez (sin las 8 primeras semanas de 2017 y sin la temporada de mayor peso en
+    el entrenamiento nuevo);
+  - test de no fuga por perturbación de cada variable nueva;
+  - la configuración en `denguekay.model.frozen_configs` y en el registro, con su test de configuración y su huella de
+    comportamiento;
+  - suite completa (`python -m unittest discover -s tests`) y guardas de equivalencia en verde, sin regenerar la línea
+    base;
+  - comparación contra la persistencia (antelación con IC sobre los inicios limpios).
+- Auditoría independiente de las cifras del informe.
+- Si la nueva configuración gana: ficha `models/registry/v3/`, entrada del CHANGELOG, tag `model/v3`,
+  `EVALUATION_2026` aplicada a la V3 desde su commit de congelamiento y los cambios a `denguekay/features/gold.py`,
+  que el equipo regenera.
+- Cierre con el tag `study/model-improvement` y la fila del estudio en `research/README.md`.
+
+### Paquete previsto para el short paper (2026-11-08)
+
+El short paper se reescribe sobre la V3. Las observaciones del revisor (R01–R53 de
+`ShortPaper_Denguekay_EN_-_Q1_Review_v2_2.docx`) probablemente siguen aplicando. Una vez congeladas la V3 (d3) y su
+retadora (b3), se calcula de una vez, sin reentrenar si no hace falta, en **un JSON (`docs/metricas/paper_v3.json`) y una
+sección del informe pensados para el paper**:
+
+- **R23 · comparadores** con las mismas filas y cortes: estacional ingenuo (t−52), promedio histórico estacional y un
+  Poisson/NB autorregresivo simple (el GLM de la fase 6, 6a′, si aplica).
+- **R25 y R38 · IC pareados** de las diferencias de conteo y de las métricas de alerta clave, con remuestreo por distrito
+  y por bloques temporales.
+- **R17 · intervalos del conteo:** cobertura y nitidez fuera de muestra (NB2 con las α por bloque y horizonte), con las α
+  reportadas.
+- **R18 y R36 · calibración:** diagramas de confiabilidad antes y después de Platt, pendiente e intercepto de
+  calibración, y filas y positivos de cada calibrador.
+- **R19 · cortes:** precisión, sensibilidad y falsas alertas por distrito y temporada para cortes de 0,2 a 0,8, como
+  lectura; el corte operativo sigue en 0,50.
+- **R20 · fechas:** entrenamiento, origen, calibración y evaluación exactos, con número de filas, por bloque y horizonte.
+- **R22:** los resultados de 2025 (`calendario_2025`).
+- **R28:** los episodios afectados por bordes de bloque y la frecuencia de falsas alertas.
+- **R32 y R33 · errores:**
+  - MAE y RMSE absolutos en casos;
+  - métricas de alerta de la persistencia en las mismas filas;
+  - trayectorias observadas y predichas de distritos representativos (elegidos de antemano, antes de ver las
+    trayectorias) y de la región;
+  - errores por fase epidémica.
+- **R13 · diccionario de variables de la V3:** columna, unidades, fórmula, ventana y faltantes.
+- **R10:** prevalencia de semanas brote por distrito con el mínimo de 2 casos.
+- **R34 · reproducibilidad:**
+  - el tag de la V3 y el lock de dependencias;
+  - la información de GPU/CUDA y del driver;
+  - las semillas y los hashes de las entradas;
+  - los comandos que regeneran cada tabla.

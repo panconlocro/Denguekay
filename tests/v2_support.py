@@ -1,4 +1,4 @@
-"""Fixtures of the v2 serving (phase 4 of docs/backend/prompt_api_v1.md), apart from every earlier fixture.
+"""Fixtures of the v2 serving (phase 4 of the API v1, docs/backend/api_v1_decisiones.md), apart from every earlier fixture.
 
 ``data/`` is not in Git, so the CI has no gold. ``tests/fixtures/v2_serving/`` holds, recorded once:
 

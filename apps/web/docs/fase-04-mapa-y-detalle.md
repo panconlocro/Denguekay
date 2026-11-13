@@ -1,6 +1,6 @@
 # Fase 4 — mapa y detalle distrital
 
-Implementación del 05/11/2026, autorizada con «ahora fase 4», pendiente de revisión antes de la fase 5.
+Implementación del 05/11/2026.
 El código sigue limitado a `apps/web/`, en `feat/web-dashboard`. Se utiliza la demo de fase 2: no se
 entrenó, ejecutó inferencia ni modificaron la API, sus tipos generados o la base de datos.
 
@@ -89,4 +89,4 @@ usan centroides reales, no los polígonos esquemáticos del prototipo.
 Los polígonos publicables, umbrales futuros, explicaciones individuales y agregados de vecinos siguen
 pendientes de fuentes o extensiones del contrato. No se inventan esos componentes del mockup.
 La suite Python completa conserva las incidencias de `VALIDACION.md`; no se repitió completa ni se
-certifica verde. La siguiente fase es completar alertas, tras la revisión del usuario.
+certifica verde. La fase 5 completa las alertas.

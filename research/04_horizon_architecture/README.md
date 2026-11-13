@@ -6,7 +6,7 @@
   (t+2, t+3, t+4) desde el mismo origen; P(casos ≥ k) con binomial negativa NB2 y Platt
   cronológico; alerta con probabilidad calibrada ≥ 0,50. Es un solo modelo a desplegar en lugar de
   seis ([arquitectura_horizontes.md](docs/arquitectura_horizontes.md), «Fase 5: síntesis y
-  decisión»; encargo en [plan_arquitectura_horizontes.md](docs/plan_arquitectura_horizontes.md)).
+  decisión»; diseño en [diseno_arquitectura_horizontes.md](docs/diseno_arquitectura_horizontes.md)).
 - **Versión de modelo resultante:** ninguna congelada; es la arquitectura sobre la que el estudio 05
   congela V1 y V2.
 - **Tag:** `study/horizon-architecture` (`808c340`). Alternativa: `pre-restructure` (`3ad8312`).
