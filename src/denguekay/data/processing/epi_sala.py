@@ -1,12 +1,15 @@
 """Normalize and validate district-week dengue series from the Sala."""
 
+import logging
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 import pandas as pd
 
 from denguekay.data.keys import normalize_sala
 
 KEY = ["ubigeo", "anio", "semana"]
+SALA_FIRST_YEAR = 2025
 
 
 def load_ubigeo_catalog(path: Path) -> pd.DataFrame:
@@ -110,10 +113,30 @@ def normalize_sala_records(records: list[dict], controls: list[dict], catalog: p
     return result.sort_values(KEY).reset_index(drop=True)
 
 
-def upsert_sala_silver(path: Path, fresh: pd.DataFrame) -> None:
-    """Store normalized runtime output by district-year-week without duplicates."""
+def upsert_sala_silver(path: Path, fresh: pd.DataFrame, *, replace_legacy: bool = False) -> None:
+    """Replace refreshed district-years without mixing different case definitions."""
+    if "tipo_dx" not in fresh or not fresh["tipo_dx"].isin(["C"]).all():
+        raise ValueError("Sala silver requires confirmed cases (tipo_dx=C)")
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():
         previous = pd.read_csv(path, dtype={"ubigeo": "string"})
-        fresh = pd.concat([previous, fresh], ignore_index=True)
-    fresh.drop_duplicates(KEY, keep="last").sort_values(KEY).to_csv(path, index=False)
+        if "tipo_dx" in previous and previous["tipo_dx"].isin(["C"]).all():
+            district_year = ["ubigeo", "anio"]
+            refreshed = pd.MultiIndex.from_frame(fresh[district_year])
+            keep = ~pd.MultiIndex.from_frame(previous[district_year]).isin(refreshed)
+            fresh = pd.concat([previous.loc[keep], fresh], ignore_index=True)
+        elif replace_legacy:
+            logging.warning("Replacing legacy Sala silver with confirmed cases: %s", path)
+        else:
+            raise ValueError("Sala silver predates confirmed-only extraction; run notebook 06b first")
+    if fresh.duplicated(KEY).any():
+        raise ValueError("Sala silver contains duplicate district-weeks")
+    temporary = None
+    try:
+        with NamedTemporaryFile(mode="w", encoding="utf-8", newline="", dir=path.parent, delete=False) as output:
+            temporary = Path(output.name)
+            fresh.sort_values(KEY).to_csv(output, index=False)
+        temporary.replace(path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)

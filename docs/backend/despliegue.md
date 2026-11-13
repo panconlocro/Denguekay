@@ -1,6 +1,6 @@
 # Despliegue en Render, Supabase y Vercel
 
-Fase 5 del encargo de la API v1 (`docs/backend/prompt_api_v1.md`). El repositorio queda **preparado** para
+Fase 5 del encargo de la API v1 (decisiones en `docs/backend/api_v1_decisiones.md`). El repositorio queda **preparado** para
 desplegar, pero desde el código y los tests no se despliega nada ni se conecta a servicios reales. El despliegue
 lo hace Rosa a mano, siguiendo estos pasos. Las opciones de Render y Supabase se verificaron en su documentación
 oficial el 29/10/2026 (fuentes al final). Lo que no está documentado o no se pudo confirmar se marca
@@ -173,9 +173,18 @@ BD, su Storage y sus claves. **No verificado:** cuántos proyectos gratuitos per
 
 Desde la PC de Rosa:
 
-1. Cargar con `.\.venv\Scripts\python -m denguekay.serving.load_data`, con `DATABASE_URL` de `denguekay_pipeline`.
-2. Publicar con `python -m denguekay.serving.publish --seleccionar-experimental`, con `STORAGE_BACKEND=supabase`,
+1. Migrar (`alembic upgrade head`, incluye `0007_v3`: temperatura de ERA5-Land).
+2. Regenerar gold con el notebook 10 (gold trae d3 desde la v3).
+3. Cargar con `.\.venv\Scripts\python -m denguekay.serving.load_data`, con `DATABASE_URL` de `denguekay_pipeline`.
+   Necesita el silver de ERA5-Land (`meteo_humedad_era5_land_desde_2000.csv` del notebook 03 o el congelado del
+   Release de `model/v3`).
+4. Publicar con `python -m denguekay.serving.publish --seleccionar-experimental`, con `STORAGE_BACKEND=supabase`,
    `SUPABASE_URL` y `SUPABASE_SECRET_KEY`.
+   - Desde la v3 el paquete se entrena fuera de la BD con la serie desde 2000 y las predicciones congeladas del
+     Release (`release_bundles --version v3`).
+   - Conviene publicar desde una PC con GPU NVIDIA: la paridad con la v3 congelada se exige en GPU. En CPU se
+     registra pero no bloquea, y el booster es otra realización del mismo modelo.
+   - La inferencia en Render es en CPU con el booster guardado.
 3. Para las predicciones vigentes, llamar a `POST /api/v1/admin/inferencias` en la API de Render (D2), con
    `X-API-Key`.
 

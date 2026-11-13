@@ -6,7 +6,7 @@
   (t+2, t+3, t+4) desde el mismo origen; P(casos ≥ k) con binomial negativa NB2 y Platt
   cronológico; alerta con probabilidad calibrada ≥ 0,50. Es un solo modelo a desplegar en lugar de
   seis ([arquitectura_horizontes.md](docs/arquitectura_horizontes.md), «Fase 5: síntesis y
-  decisión»; encargo en [plan_arquitectura_horizontes.md](docs/plan_arquitectura_horizontes.md)).
+  decisión»; diseño en [diseno_arquitectura_horizontes.md](docs/diseno_arquitectura_horizontes.md)).
 - **Versión de modelo resultante:** ninguna congelada; es la arquitectura sobre la que el estudio 05
   congela V1 y V2.
 - **Tag:** `study/horizon-architecture` (`808c340`). Alternativa: `pre-restructure` (`3ad8312`).
@@ -30,10 +30,16 @@ módulos de ese tag.
 
 ## Cómo reproducir
 
+Los datos salen de los Releases (no de otra PC): los comandos de descarga se corren **desde un clon de `develop` con su `.venv`** (ver [docs/reproducibilidad.md](../../docs/reproducibilidad.md)) y extraen en la copia del tag con `--raiz`; cada archivo se verifica contra su SHA-256. `gold_anterior.zip` trae el gold anterior en su ruta original (`data/gold/`), con los mismos bytes que `gold/respaldo_pre_b3/` (Release de `model/v0`). El silver de la Sala del Release es el vigente: sus filas hasta 2025 son las mismas que leyó el estudio, pero trae además las semanas de 2026. Las cifras se verifican con los artefactos guardados del Release de cada estudio cuando existen.
+
 ```powershell
+# Desde un clon de develop, con su .venv: la copia del tag y sus datos
 git worktree add ..\denguekay-horizontes study/horizon-architecture
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --estudio 01_eda --raiz ..\denguekay-horizontes
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --estudio 03_first_models_and_ablations --solo gold_anterior.zip --raiz ..\denguekay-horizontes
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --estudio 04_horizon_architecture --raiz ..\denguekay-horizontes
+# En la copia del tag, con su propio entorno
 cd ..\denguekay-horizontes
-# data/ no está en git: copia (o enlaza) la carpeta data/ del repo principal.
 python -m venv .venv   # entorno propio: las dependencias pueden diferir de las de main
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace notebooks/31_modelado_arquitectura_horizontes.ipynb

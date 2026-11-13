@@ -16,7 +16,8 @@ from denguekay.serving import parameters
 INPUTS = frozenset({"casos", "clima", "poblacion", "calendario", "regla_brote"})
 # Database column -> modelling (silver/gold) name.
 CLIMATE = {"temp_media_c": "temp_media", "temp_min_c": "temp_min", "temp_max_c": "temp_max",
-           "precip_total_mm": "precip_total_mm", "hum_rel_media_pct": "hum_rel_media"}
+           "precip_total_mm": "precip_total_mm", "hum_rel_media_pct": "hum_rel_media",
+           "temp_media_era5_land_c": "temp_media_era5_land"}
 
 
 @dataclass(frozen=True)

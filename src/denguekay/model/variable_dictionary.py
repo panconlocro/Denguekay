@@ -111,6 +111,45 @@ DEFINITIONS = {
                         "test_cambio_posterior_al_origen_no_altera_feature"},
 }
 
+_D3_COMMON = {
+    "fuente": "meteorológica: ERA5-Land (0,1°) de Open-Meteo, archive API con models=era5_land, temperature_2m_mean "
+              "diaria (zona America/Lima) en el centroide del distrito, agregada a semana MMWR (domingo a sábado); "
+              "silver meteo_humedad_era5_land_2000_2026.csv (estudio 06)",
+    "transformacion": "media de las temperaturas medias semanales de la ventana, sin climatología ni anomalía",
+    "tipo": "real (°C)",
+    "nulos": "nulo si falta alguna semana de la ventana; ningún origen de 2005 en adelante queda nulo (guarda G42 "
+             "del estudio 06), así que no se excluye ninguna fila",
+    "por_que": "clima reciente y rezagado: la temperatura modula la transmisión del vector (hipótesis del estudio)",
+    "evidencia": "d3 de la matriz de clima del estudio 06; base de la V3 por decisión de Rosa con contexto",
+    "test_no_fuga": "research/06_model_improvement/tests/test_phase_d_weather_windows.py (ventanas hasta el origen)",
+}
+DEFINITIONS.update({
+    "temp_media_s0": {**_D3_COMMON, "definicion": "temperatura media de la semana de origen o", "ventana": "semana o"},
+    "temp_media_media_s1_4": {**_D3_COMMON, "definicion": "media de la temperatura media semanal de o − 4 a o − 1",
+                              "ventana": "semanas o − 4..o − 1"},
+    "temp_media_media_s5_8": {**_D3_COMMON, "definicion": "media de la temperatura media semanal de o − 8 a o − 5",
+                              "ventana": "semanas o − 8..o − 5"},
+    "temp_media_media_s9_12": {**_D3_COMMON, "definicion": "media de la temperatura media semanal de o − 12 a o − 9",
+                               "ventana": "semanas o − 12..o − 9"},
+})
+UNITS = {"hist_lag_a": "casos", "hist_lag_b": "casos", "hist_media_4": "casos por semana",
+         "hist_semanas_pos_4": "semanas (0–4)", "semana_epi_seno": "adimensional (−1 a 1)",
+         "semana_epi_coseno": "adimensional (−1 a 1)", "propia_semanas_desde_ultimo_caso": "semanas (0–52)",
+         "propia_pendiente_4": "log(1 + casos) por semana", "propia_log_casos_temporada_anterior": "log(1 + casos)",
+         "hum_rel_media_media5_h2": "%", "precip_total_mm_media5_h2": "mm por semana",
+         "temp_media_s0": "°C", "temp_media_media_s1_4": "°C", "temp_media_media_s5_8": "°C",
+         "temp_media_media_s9_12": "°C"}
+
+
+def compact_markdown(columns: list[str]) -> str:
+    """One-table dictionary (column, definition, units, window, transformation, missing values) of ``columns``."""
+    table = dictionary(columns)
+    lines = ["| Columna | Definición | Unidades | Ventana | Transformación | Faltantes |", "|---|---|---|---|---|---|"]
+    for _, f in table.iterrows():
+        lines.append(f"| `{f.variable}` | {f.definicion} | {UNITS[f.variable]} | {f.ventana} | {f.transformacion} "
+                     f"| {f.nulos} |")
+    return "\n".join(lines)
+
 INFERENCE_INPUT = {
     "nombre": "margen_persistencia (no es columna del modelo)",
     "definicion": "log(casos de la semana de origen + 0,5); base_margin de las tres salidas en S4_s3",

@@ -6,7 +6,7 @@
 drive:
   # ID del archivo de Google Drive (no de la carpeta).
   # Se obtiene del link: drive.google.com/file/d/<ESTE_ID>/view
-  epi_file_id: "1vSPn8SqR4ioz-uDj7HKmem6mgWexin8V"
+  epi_file_id: "1zI83fBig8eyEQI3cDfu709OP1pAjBx1i"  # DatosDengueV2.csv
   socio_file_id: "1x4NoX2vJEs_g3SQyZkfFFwvxTbXO4OBn"
 
 meteo:
@@ -23,14 +23,15 @@ xgboost:
 
 serving:
   # Paquete de modelo que construye la publicación (denguekay.serving.predictors): tipo de predictor,
-  # horizontes y opciones propias del tipo. v2_e3_s4 = modelo v2 (CONFIG_2026, E3 multisalida S4_s3);
-  # nivel_intervalo debe coincidir con parametro_sistema.nivel_intervalo_casos. La v0 sigue registrada
-  # como tipo v0_compact_xgb (opciones: variantes del protocolo compacto).
+  # horizontes y opciones propias del tipo. v3_l5a_d3 = modelo v3 (CONFIG_V3: L + 5a + d3, E3 multisalida
+  # S4_s3), entrenado fuera de la BD con la serie desde 2000; nivel_intervalo debe coincidir con
+  # parametro_sistema.nivel_intervalo_casos. La v2 (v2_e3_s4, opciones.configuracion: v2) y la v0
+  # (v0_compact_xgb, opciones: variantes del protocolo compacto) siguen registradas.
   paquete:
-    tipo: v2_e3_s4
+    tipo: v3_l5a_d3
     horizontes: [2, 3, 4]
     opciones:
-      configuracion: v2
+      configuracion: v3
       nivel_intervalo: 0.80
   # Demo experimental (desviación temporal OE2): si no hay versión activa, se sirve la
   # selección de parametro_sistema.seleccion_experimental, que fija la publicación

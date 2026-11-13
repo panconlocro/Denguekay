@@ -1,6 +1,6 @@
 # API v1: inventario y decisiones (fase 1)
 
-- **Encargo:** `docs/backend/prompt_api_v1.md`, fase 1 (diagnóstico, sin tocar código).
+- **Encargo:** API v1, fase 1 (diagnóstico, sin tocar código). El texto del encargo ya no se versiona; queda en el tag `api/v1.1.0`.
 - **Rama:** `docs/api-v1-decisions`, desde `develop` en `57e4df0`.
 - **Fecha:** 29/10/2026.
 - **Estado:** **respondido por Rosa el 29/10/2026** (§3). Las respuestas mandan sobre las recomendaciones de
@@ -351,7 +351,7 @@ del frontend corresponda al modelo servido? Recomiendo lo segundo. Se guardaría
 *Observación:* gold h=2 tiene A3 (`*_media5_h2`) pero no B3. La v2 se entrena con gold h=2 más B3 en memoria
 (`frozen_configs.origins`, `:100-117`). Regenerar gold h=2 cambia su SHA-256: rompe la validación de la v0
 (`serving/protocol.py:46-53`, §1.9.6) y la cita del gold en la ficha de la v2.
-*Propuesta (no ejecutada, regla 3 de `CLAUDE.md`):* en `src/denguekay/features/gold.py`, agregar a gold h=2 las
+*Propuesta (no ejecutada, regla «Variables derivadas» de `CONTRIBUTING.md`):* en `src/denguekay/features/gold.py`, agregar a gold h=2 las
 tres columnas B3 (`propia_semanas_desde_ultimo_caso`, `propia_pendiente_4`,
 `propia_log_casos_temporada_anterior`) con `features.onset_features`, leyendo `SILVER_EPI_HISTORICAL` para la
 temporada 2016, y con su suite de Great Expectations.

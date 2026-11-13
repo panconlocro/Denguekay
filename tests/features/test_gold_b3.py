@@ -8,6 +8,7 @@ import pandas as pd
 
 from denguekay.config.paths import GOLD, GOLD_BACKUP, GOLD_MANIFEST, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED
 from denguekay.features import onset_features as fi
+from denguekay.features.climate import D3_COLUMNS
 from denguekay.features.gold import ONSET_COLUMNS, PERSISTED_NON_PREDICTORS, persisted_columns
 
 NOMBRE = f"{SILVER_INTEGRATED.stem}_h2_gold.csv"
@@ -72,7 +73,7 @@ class TestGoldReal(unittest.TestCase):
 
     def test_esquema_y_filas(self):
         self.assertEqual(list(self.gold.columns), persisted_columns(2))
-        self.assertEqual(self.gold.shape, (30485, 20))
+        self.assertEqual(self.gold.shape, (30485, 24))  # 20 of the v2 + the 4 d3 columns of the v3
         self.assertEqual(sorted(p.name for p in GOLD.glob("*_gold.csv")), [NOMBRE])
 
     def test_b3_identica_a_frozen_configs_origins(self):
@@ -93,7 +94,7 @@ class TestGoldReal(unittest.TestCase):
     @unittest.skipUnless(GOLD_BACKUP.exists(), "requiere data/gold/respaldo_pre_b3/")
     def test_las_17_columnas_que_quedan_son_identicas_al_respaldo(self):
         respaldo = leer(GOLD_BACKUP / NOMBRE)
-        columnas = [c for c in persisted_columns(2) if c not in ONSET_COLUMNS]
+        columnas = [c for c in persisted_columns(2) if c not in ONSET_COLUMNS and c not in D3_COLUMNS]
         self.assertEqual(len(columnas), 17)
         self.assertTrue(set(PERSISTED_NON_PREDICTORS) <= set(columnas))
         pd.testing.assert_frame_equal(self.gold[columnas], respaldo[columnas], check_exact=True)

@@ -7,9 +7,46 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 
 | Versión | Estado | Tag | Ficha |
 |---|---|---|---|
-| v2 | vigente y servida (experimental) | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
+| v4 | congelada para el paper | — | [v4/ficha.md](v4/ficha.md) |
+| v3 | vigente y servida (experimental) | `model/v3` | [v3/ficha.md](v3/ficha.md) |
+| v2 | reemplazada por la v3 (sigue registrada como `v2_e3_s4`) | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
+
+## 2026-11-12 · v4 congelada para el paper
+
+- `b3_obs` y el comparador `historia_geo` se ajustaron sobre casos confirmados de Piura hasta la SE 41 de 2026.
+- La ficha enlaza el manifiesto con las huellas de los diez boosters y los insumos.
+
+## 2026-11-09 · v3 servida (feat/serve-v3)
+
+- La v3 se sirve con el predictor `v3_l5a_d3` como selección experimental (no se evaluó la HU0007-4).
+- **Ajuste fuera de la BD:** con la serie desde 2000. El comando sin BD es
+  `python -m denguekay.serving.predictors.v3_l5a_d3 --salida <carpeta>`; la publicación es
+  `python -m denguekay.serving.publish --seleccionar-experimental`.
+- **Paquete:** booster, α, Platt y la `w` de la mezcla 5a, por horizonte.
+- **Paridad:** el bloque `temporada_2026` reajustado reproduce las predicciones congeladas (diferencia 0,0 en GPU).
+- **Esquema:** migración `0007_v3` con `observacion_semanal.temp_media_era5_land_c` (desviación OE2 9).
+- **Gold** suma las 4 columnas de d3; hay que regenerarlo con el notebook 10. La v0 sigue leyendo
+  `gold/respaldo_pre_b3`.
+- La v2 queda reemplazada y registrada (`v2_e3_s4`); sus OOS dejan la serie y entran las de la v3.
+- Con d3, el SHA-256 del archivo gold h2 cambia, pero las 20 columnas de la v2 quedan iguales bit a bit. La ficha de
+  la v2 suma `sha256_columnas_v2` (digest de contenido de esas columnas), con el que `v2_e3_s4.prepare` sigue
+  reconociendo su gold y comparando su huella. Sin esto, la guarda `test_v2_parity` fallaba con el gold
+  regenerado. No se regeneró ninguna línea base.
+
+## 2026-11-09 · v3 vigente
+
+- v3 = L + 5a + d3 con los hiperparámetros del trial 191 (estudio 06, `research/06_model_improvement`):
+  - L: la V1 entrenada desde 2005;
+  - 5a: el conteo publicado se mezcla con la persistencia;
+  - d3: 4 ventanas de temperatura media de ERA5-Land.
+- Configuración `CONFIG_V3`; huella de comportamiento en GPU `99a0b26d…494de`.
+- Protocolo propio: `docs/modeling/protocolo_v3.md`, que no es el de la v2.
+- b3 queda congelada como retadora para la evaluación prospectiva 2026–27.
+- La v2 sigue siendo la servida hasta que la v3 entre a serving.
+- Los datos y las predicciones de referencia van en el Release de `model/v3`, con su manifiesto en
+  `v3/manifiesto_datos.json`.
 
 ## 2026-11-02 · Gold limpio con B3
 

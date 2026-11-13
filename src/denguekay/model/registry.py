@@ -10,9 +10,9 @@ import json
 from denguekay.config.paths import MODEL_REGISTRY
 from denguekay.model import frozen_configs
 
-VERSIONS = ("v0", "v1", "v2")
-CURRENT = "v2"  # frozen configuration in force, served since phase 4 of the API v1 (predictor v2_e3_s4)
-SERVED = "v2"
+VERSIONS = ("v0", "v1", "v2", "v3", "v4")
+CURRENT = "v3"  # frozen configuration in force since 2026-11-09 (study 06)
+SERVED = "v3"  # served with the predictor v3_l5a_d3 (feat/serve-v3); v2 and v0 stay registered
 
 
 def card_path(version: str):
@@ -31,7 +31,8 @@ def configuration(version: str) -> dict:
     """Frozen configuration of a version, loaded from the package constant its card names.
 
     V0 has no frozen configuration constant: its variants are the options of its package type
-    (``v0_compact_xgb``, ``opciones.variantes``), so this raises for it.
+    (``v0_compact_xgb``, ``opciones.variantes``). The V4 paper package stores
+    its configuration in the freeze manifest. This raises for V0 and V4.
     """
     source = card(version)["configuracion"]
     if source.get("constante") is None:

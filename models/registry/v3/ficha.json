@@ -1,0 +1,86 @@
+{
+  "version": "v3",
+  "estado": "servida",
+  "estado_detalle": "Configuración congelada vigente desde el 2026-11-09 (estudio 06) y la que se sirve, como selección experimental (no se evaluó la HU0007-4), con el predictor v3_l5a_d3. Su evaluación independiente es la prospectiva 2026–27, frente a b3 (retadora).",
+  "tag": "model/v3",
+  "commit": "el que lleva el tag model/v3",
+  "fecha_congelamiento": "2026-11-09",
+  "modelo": "L + 5a + d3 · E3 · S4_s3: la V1 entrenada desde 2005 (L), conteo publicado mezclado con la persistencia (5a), 4 ventanas de temperatura media de ERA5-Land (d3) e hiperparámetros del trial 191",
+  "configuracion": {
+    "modulo": "denguekay.model.frozen_configs",
+    "constante": "CONFIG_V3"
+  },
+  "protocolo": "docs/modeling/protocolo_v3.md (no es el protocolo de la v2)",
+  "reproduccion": "docs/modeling/reproducir_v3.md",
+  "huellas": {
+    "comportamiento": {
+      "definicion": "SHA-256(SHA-256(configuration JSON) + ':' + predictions_digest(reference predictions))",
+      "semilla": 17,
+      "bloques": "temporada_2008 … temporada_2024, calendario_2025, temporada_2026 y posterior_2026 (predicciones crudas del protocolo del estudio 06)",
+      "por_entorno": {
+        "device=cuda": "99a0b26dc4a453feea5ddc71d3438b7006e64d2ba5e12caa646f8035040494de",
+        "device=cpu,n_jobs=2": "7a46f4f2d8441486edee999c13dc9acf2e6d047f38cc39920d0f907911db72b6"
+      },
+      "nota": "GPU (RTX 5060, driver 621.01, XGBoost 3.4.1 con CUDA 13.3) es la referencia oficial y la servida. CPU con 2 hilos es determinista (misma huella en dos corridas) pero distinta de GPU: con subsample/colsample < 1 cada dispositivo muestrea distinto. Sus predicciones de 5 semillas están en predicciones_v3_cpu.zip; las conclusiones de la comparación V3 frente a L + 5a no cambian (docs/modeling/reproducir_v3.md)."
+    }
+  },
+  "datos": {
+    "manifiesto": "models/registry/v3/manifiesto_datos.json",
+    "release": "GitHub Release del tag model/v3: datos_v3.zip, predicciones_v3.zip y comparadores_v3.zip",
+    "modulo": "python -m denguekay.data.ingestion.release_bundles"
+  },
+  "predicciones_referencia": {
+    "carpeta": "models/experimentos/mejora_modelo/v3/",
+    "archivos": {
+      "V3": "predicciones_v3.csv.gz",
+      "L + 5a (comparador sin clima, mismos hiperparámetros)": "predicciones_l5a_sin_clima.csv.gz"
+    },
+    "semillas": [
+      17,
+      29,
+      41,
+      53,
+      67
+    ],
+    "guarda_G41": "la corrida de cierre reproduce ajuste_hp/predicciones_candidata.csv.gz con diferencia máxima 0,0 (975 000 filas)"
+  },
+  "estudio": {
+    "carpeta": "research/06_model_improvement",
+    "informe": "research/06_model_improvement/docs/mejora_modelo.md",
+    "plan": "research/06_model_improvement/docs/diseno_y_decisiones.md",
+    "tag": "study/model-improvement"
+  },
+  "metricas_seleccion": {
+    "archivo": "research/06_model_improvement/docs/metricas/ajuste_hp.json",
+    "criterio": "regla SEASON_2026 (Brier sobre 2010, 2015, 2016, 2022, 2023 y 2026) + filtro fuera de temporada >= 16 de 24 celdas frente a L + 5a + d3 con hiperparámetros heredados: gana el Brier en h2 y h3, empata en h4, en la alerta y en el conteo; 24 de 24 celdas",
+    "base_d3": "elegida por Rosa con contexto (2026-11-08); por la regla SEASON_2026 solo se adoptaba b3",
+    "metricas_v3": "research/06_model_improvement/docs/metricas/v3.json (Brier y AUPRC por variante, semilla, bloque y horizonte; cortes por bloque)"
+  },
+  "limitaciones": [
+    "la antelación queda en contra en 2, 1 y 3 de 6 temporadas (h2, h3, h4) frente a los hiperparámetros heredados y a favor en ninguna",
+    "2022 · h4: Brier +2,65 % frente a los hiperparámetros heredados",
+    "2026 se usó para elegir (d3 y la regla): la prueba independiente es solo lo publicado después del 2026-11-09",
+    "diagnóstico frente a la persistencia (hecho con L + 5a + d3 y los hiperparámetros heredados, no recalculado con el trial 191): el conteo se queda corto en los picos y la probabilidad se subestima en posterior_2026",
+    "no se ha evaluado la HU0007-4 ni el intervalo del conteo"
+  ],
+  "retadora": "b3 (clima completo), congelada para la evaluación prospectiva 2026–27",
+  "hu0007_4": {
+    "cumple": null,
+    "detalle": "No evaluada por celda (pendiente fuera del estudio). Al publicar (prueba de punta a punta del 2026-11-09 en una SQLite temporal), cumple_umbrales con parametro_sistema.umbrales_aceptacion (bloque temporada_2024) dio: clasificación sí en h2, h3 y h4; regresión no en ninguno. Como la activación es por pares, la v3 se sirve como selección experimental."
+  },
+  "reemplaza_a": "v2",
+  "reemplazada_por": null,
+  "servicio": {
+    "predictor": "v3_l5a_d3",
+    "modulo": "denguekay.serving.predictors.v3_l5a_d3",
+    "paquete": "modelos/<codigo_paquete>/manifest.json con booster.json (regresor multisalida), dispersion.json (α por horizonte), platt.json (a y b por horizonte) y mezcla.json (w de 5a por horizonte)",
+    "versiones": "6 filas de version_modelo (clasificación y regresión × h=2, 3 y 4), códigos v3-clf-h2-1 … v3-reg-h4-1, algoritmo xgboost_multisalida_bn, umbral_probabilidad 0,50 en clasificación",
+    "ajuste": "fuera de la BD (decisión de Rosa del 2026-11-09): features.long_history arma la serie desde 2000 con los silver y model.v3_training ajusta con todos los orígenes cuyo h=4 cerró al corte de los datos (semilla 17). Comando sin BD: python -m denguekay.serving.predictors.v3_l5a_d3 --salida <carpeta>; con BD: python -m denguekay.serving.publish --seleccionar-experimental",
+    "paridad": "al preparar el paquete se reajusta el bloque temporada_2026 en su corte y se compara μ con las predicciones congeladas del Release (tolerancia de G41, 1e-6); en GPU debe pasar o la publicación se rechaza, en CPU se registra",
+    "insumos_de_inferencia": "de la BD desde 2017: casos (el umbral necesita los 5 años previos al año objetivo, la temporada anterior unas 104 semanas, las semanas desde el último caso 52), temperatura de ERA5-Land de las 13 semanas hasta el origen (observacion_semanal.temp_media_era5_land_c, migración 0007_v3) y la regla de brote",
+    "probabilidad": "P(casos ≥ k) NB2 con la μ del modelo y la α dentro de la muestra del ajuste, Platt con las OOS congeladas de la v3 (semilla 17) cerradas al corte",
+    "conteo": "publicado = w·μ + (1 − w)·persistencia (5a), w por horizonte con las mismas filas que Platt",
+    "intervalo": "central de la NB2 alrededor del conteo publicado al 0,80; no está calibrado (pendiente R17)",
+    "oos": "las OOS congeladas de la v3 en los bloques temporada_2022 … calendario_2025 (calibradas, conteo publicado); reemplazan a las de la v2 en la serie"
+  }
+}

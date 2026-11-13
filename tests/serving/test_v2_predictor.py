@@ -40,7 +40,8 @@ def memory_inputs(close, panel=None):
     panel = vs.read("panel_muestra.csv") if panel is None else panel
     closed = panel.loc[(panel.semana_inicio + pd.Timedelta(days=6)).le(pd.Timestamp(close))]
     cases = closed[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue"]].astype({"casos_Dengue": float})
-    climate = closed[["ubigeo", "anio", "semana", "semana_inicio", *CLIMATE.values()]]
+    # Columns the fixtures lack (ERA5-Land temperature, 0007_v3) come as NULL, as from the database.
+    climate = closed.reindex(columns=["ubigeo", "anio", "semana", "semana_inicio", *CLIMATE.values()])
     return ServingInputs(cases.reset_index(drop=True), climate.reset_index(drop=True), None, None, RULE)
 
 

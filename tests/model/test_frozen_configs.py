@@ -27,7 +27,13 @@ class TestConfiguracion(unittest.TestCase):
                          {k: v for k, v in v1.items() if k not in ("columnas", "matriz", "decisiones",
                                                                    "fecha_congelamiento")})
         self.assertEqual(c["columnas"][:6], eh.GENERIC)
-        self.assertEqual(cf.HISTORY["V2"]["estado"], "vigente")
+        self.assertTrue(cf.HISTORY["V2"]["estado"].startswith("reemplazada"))
+        self.assertTrue(cf.HISTORY["V3"]["estado"].startswith("vigente"))
+        v3 = cf.CONFIG_V3
+        self.assertEqual(v3["columnas"], [*v1["columnas"], *cf.V3_D3_COLUMNS])
+        self.assertEqual(set(v3["hiperparametros"]), set(hp.BASE))
+        self.assertEqual(v3["formulacion"], v1["formulacion"])
+        self.assertTrue(all(len(h) == 64 for h in cf.V3_FINGERPRINTS.values()))
         # Huellas con la definición original (configuración + código): históricas desde la reestructuración (D1).
         self.assertEqual(cf.HISTORICAL_FINGERPRINTS["V1"]["sha256"],
                          "88ed2a43b0171a0878b99122b70109be61b27d5d4d29a2b93eae55066fd8f945")

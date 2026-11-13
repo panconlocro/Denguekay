@@ -61,7 +61,7 @@ def run_epidemiological(frame: pd.DataFrame, keys: set[DistrictWeek]) -> pd.Data
         logging.info("Sala: %s, %s requested districts", year, len(codes))
         records, controls = asyncio.run(scrape_sala(year, labels, artifact_dir))
         normalized = normalize_sala_records(records, controls, catalog)
-        batches.append(normalized)
+        batches.append(normalized.assign(tipo_dx="C"))
     result = pd.concat(batches, ignore_index=True)
     requested = _rows_for_keys(result, keys)
     upsert_sala_silver(SILVER_SALA, result)
@@ -69,6 +69,23 @@ def run_epidemiological(frame: pd.DataFrame, keys: set[DistrictWeek]) -> pd.Data
     if extra:
         logging.info("Sala returned %s additional district-weeks; retained in %s", extra, SILVER_SALA)
     return requested[KEY + ["casos_Dengue"]]
+
+
+def refresh_sala_silver(years: list[int]) -> pd.DataFrame:
+    """Pipeline step (notebook 06b): scrape every district of the catalogue for ``years`` from the public Sala
+    Situacional and upsert ``data/silver/epi_sala_semanal.csv``. Each run keeps its raw responses in
+    ``data/bronze/epi/sala/<year>_<UTC stamp>/``."""
+    catalog = load_ubigeo_catalog(UBIGEO_CATALOG)
+    labels = set(zip(catalog["provincia_sala"], catalog["distrito_sala"]))
+    batches = []
+    for year in sorted(set(years)):
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        logging.info("Sala: %s, %s districts", year, len(labels))
+        records, controls = asyncio.run(scrape_sala(year, labels, BRONZE_SALA / f"{year}_{stamp}"))
+        batches.append(normalize_sala_records(records, controls, catalog).assign(tipo_dx="C"))
+    result = pd.concat(batches, ignore_index=True)
+    upsert_sala_silver(SILVER_SALA, result, replace_legacy=True)
+    return result
 
 
 def _contiguous_ranges(starts: list[date]) -> list[tuple[date, date]]:

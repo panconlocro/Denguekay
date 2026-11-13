@@ -2,8 +2,9 @@
 
 ``build_gold`` computes every candidate in memory for any experimental horizon: the v2 matrices and the
 feature engineering experiments come from there. ``generate_gold`` persists only what must be in gold
-(rule 3 of CLAUDE.md): keys, target, label and the variables of the current configuration (v2: base_6,
-A3 and B3), one row per target week with the h=2 alignment. Learned statistics (climatology, PCA, alert
+("Derived variables" rule in CONTRIBUTING.md): keys, target, label and the variables of the served configurations (v2: base_6, A3 and
+B3; v3: base_6, B3 and d3, the ERA5-Land temperature windows at the origin), one row per target week with the h=2
+alignment. The v0 reads the gold before the cleanup (``gold/respaldo_pre_b3``), which this module never writes. Learned statistics (climatology, PCA, alert
 threshold) are fitted later inside each fold.
 """
 
@@ -18,6 +19,7 @@ import numpy as np
 import pandas as pd
 
 from denguekay.data.loading import load_integrated
+from denguekay.features import climate as cl
 from denguekay.features.climate import build_observed_climate
 from denguekay.features.outbreak_label import SeasonalOutbreakConfig, label_seasonal_outbreak
 from denguekay.features.history_calendar import build_history_calendar
@@ -80,6 +82,7 @@ def persisted_predictors(horizon: int = 2) -> dict[str, list[str]]:
                    f"casos_semanas_positivas_4_h{horizon}", "semana_epi_seno", "semana_epi_coseno"],
         "a3": [f"hum_rel_media_media5_h{horizon}", f"precip_total_mm_media5_h{horizon}"],
         "b3": list(ONSET_COLUMNS),
+        "d3": list(cl.D3_COLUMNS),
     }
 
 
@@ -216,6 +219,7 @@ def validate_gold(
     startup.update({c: horizon + 4 for c in gold if c.endswith(f"_media5_h{horizon}")})
     if persisted:  # B3 at the origin; the 4-week slope needs 3 more weeks of the panel
         startup.update({c: horizon for c in ONSET_COLUMNS})
+        startup.update({c: horizon for c in cl.D3_COLUMNS if c in gold})  # d3 needs only an origin
         startup["propia_pendiente_4"] = horizon + 3
     for column, start in startup.items():
         if column not in order or not order[column].isna().eq(position.lt(start)).all():
@@ -255,13 +259,18 @@ def generate_gold(
     input_path: Path = SILVER_INTEGRATED, output_dir: Path = GOLD,
     catalog_path: Path = UBIGEO_CATALOG,
     *, outbreak: SeasonalOutbreakConfig,
-    history_path: Path = SILVER_EPI_HISTORICAL,
+    history_path: Path = SILVER_EPI_HISTORICAL, era5_land_path: Path | None = None,
 ) -> dict[int, dict[str, object]]:
-    """Validate silver, keep the persisted columns and B3 and write reproducible CSV/lineage files."""
+    """Validate silver, keep the persisted columns, B3 and d3 and write reproducible CSV/lineage files.
+
+    d3 comes from the ERA5-Land weekly silver (``climate.era5_land_silver()`` by default), matched to each row's
+    origin week; it has no start-up nulls because that silver starts in 2000."""
     from denguekay.features.onset_features import with_onset_columns  # it imports this module
 
     input_path, output_dir, history_path = Path(input_path), Path(output_dir), Path(history_path)
+    era5_land_path = Path(era5_land_path) if era5_land_path is not None else cl.era5_land_silver()
     panel = load_integrated(input_path)
+    d3 = cl.weather_windows(cl.era5_land_weekly(era5_land_path, panel))
     coverage = load_case_coverage(coverage_path(input_path))
     if coverage is None:
         raise ValueError("Falta el archivo de cobertura epidemiológica del integrado")
@@ -270,8 +279,9 @@ def generate_gold(
     labels = build_labels(panel, outbreak, history_path)
     history = pd.read_csv(history_path, dtype={"ubigeo": "string"})
     check = {"with_outbreak": True, "min_outbreak_cases": outbreak.minimo_casos, "persisted": True}
-    outputs = {h: with_onset_columns(build_gold(panel, h, labels, min_outbreak_cases=outbreak.minimo_casos),
-                                     panel, history)[persisted_columns(h)]
+    outputs = {h: cl.add_weather_windows(
+                   with_onset_columns(build_gold(panel, h, labels, min_outbreak_cases=outbreak.minimo_casos),
+                                      panel, history), d3)[persisted_columns(h)]
                for h in HORIZONS}
     summary = {h: validate_gold(outputs[h], panel, h, **check) for h in HORIZONS}
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -297,6 +307,8 @@ def generate_gold(
             "sha256_cobertura": _sha256(coverage_path(input_path)),
             "catalogo_geografico": Path(catalog_path).name,
             "sha256_catalogo_geografico": _sha256(Path(catalog_path)),
+            "fuente_d3": era5_land_path.name,
+            "sha256_fuente_d3": _sha256(era5_land_path),
             "grano": KEY,
             "etiqueta": "brote (semana elevada; 0/1)",
             "columnas_no_predictoras": list(PERSISTED_NON_PREDICTORS),
@@ -309,8 +321,9 @@ def generate_gold(
                 "semana_53": "se suma a semana 52 para la referencia",
             },
             "limitaciones": [
-                "Solo las variables de la configuración vigente (v2); las demás candidatas se calculan en memoria "
-                "con build_gold.",
+                "Solo las variables de las configuraciones servidas (v2 y v3); las demás candidatas se calculan en "
+                "memoria con build_gold. La v3 entrena con la historia desde 2000 (features.long_history), no con "
+                "gold: gold guarda su vector desde 2017 para la trazabilidad y las pruebas de paridad.",
                 "Casos y clima semanal suponen disponibilidad al cierre de su semana; latencia no verificada.",
                 "No hay partición train/test final; brote y umbral son etiquetas/metadatos, no predictores.",
             ],

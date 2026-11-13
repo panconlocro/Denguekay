@@ -1,4 +1,4 @@
-"""Permiso de rol_pipeline para fijar la selección experimental (fase 4 de docs/backend/prompt_api_v1.md)
+"""Permiso de rol_pipeline para fijar la selección experimental (fase 4 de la API v1, docs/backend/api_v1_decisiones.md)
 
 Revisión: 0006_v1
 Anterior: 0005_v1

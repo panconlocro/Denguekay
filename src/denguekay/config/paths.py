@@ -28,10 +28,43 @@ REFERENCE = DATA / "reference"
 # Bronze subfolders per source
 BRONZE_METEO = BRONZE / "meteo"
 CACHE_METEO = BRONZE_METEO / "cache_meteo"   # formerly on Drive, now local
+# Separate caches of study 06 (phase 1b): weather with the model fixed, so the
+# "resume" of a download never mistakes them for the 2017-2025 cache.
+CACHE_METEO_ERA5_2017_2025 = BRONZE_METEO / "cache_meteo_era5_2017_2025"
+CACHE_METEO_ERA5_LAND_2017_2025 = BRONZE_METEO / "cache_meteo_era5_land_2017_2025"   # study 06, 1b: ERA5-Land check
+CACHE_METEO_2000_2016 = BRONZE_METEO / "cache_meteo_2000_2016"
+CACHE_METEO_ERA5_LAND_2000_2016 = BRONZE_METEO / "cache_meteo_era5_land_2000_2016"   # study 06, 1b'
+# ERA5-Land of 2026 up to 2026-10-31 (study 06) and the later downloads, one snapshot per end date
+# (cache_meteo_era5_land_reciente/<YYYY-MM-DD>/, notebook 02, cell C).
+CACHE_METEO_ERA5_LAND_2026 = BRONZE_METEO / "cache_meteo_era5_land_2026"
+CACHE_METEO_ERA5_LAND_RECENT = BRONZE_METEO / "cache_meteo_era5_land_reciente"
 BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
+BRONZE_EPI_CSV = BRONZE_EPI / "DatosDengueV2.csv"
 BRONZE_SALA = BRONZE_EPI / "sala"
+BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per download date
+# CHIRPS v3 daily, sat disaggregation: one GeoTIFF per day with the Piura window, plus the run manifests
+BRONZE_CHIRPS = BRONZE / "chirps" / "v3_sat"
+BRONZE_CHIRPS_FINAL = BRONZE_CHIRPS / "final"
+BRONZE_CHIRPS_FINAL_FTP = BRONZE_CHIRPS / "final_ftp"   # CHC final by FTP (2026-11-08): Piura windows, as prelim/
+BRONZE_CHIRPS_PRELIM = BRONZE_CHIRPS / "prelim"   # CHC preliminary: Piura windows of the days without final
+# Earth Engine (UCSB-CHC/CHIRPS/V3/DAILY_SAT): monthly reduceRegions responses per district polygon, as they arrive
+BRONZE_CHIRPS_EE_FINAL = BRONZE_CHIRPS / "ee_final"
+# Peru COD-AB (IGN, published by OCHA on HDX, CC BY-IGO): the downloaded archive as is, with its manifest
+BRONZE_BOUNDARIES = BRONZE / "limites" / "hdx_cod_ab_per"
 SILVER_SALA = SILVER / "epi_sala_semanal.csv"
+SILVER_METEO_2000_2016 = SILVER / "meteo_semanal_distrital_2000_2016.csv"   # study 06, phase 1b
+# Study 06, 1b': humidity and temperature from ERA5-Land 2000-2025 (no precipitation), apart from the silver in use.
+SILVER_METEO_ERA5_LAND_2000_2025 = SILVER / "meteo_humedad_era5_land_2000_2025.csv"
+# ERA5-Land weekly temperature and humidity from 2000 to the latest download (notebook 03): input of the v3 (d3).
+SILVER_METEO_ERA5_LAND = SILVER / "meteo_humedad_era5_land_desde_2000.csv"
+# The frozen input of the v3 (2000 to the week of 2026-10-25), in datos_v3.zip of the model/v3 Release; used when
+# SILVER_METEO_ERA5_LAND does not exist yet (features.climate.era5_land_silver).
+SILVER_METEO_ERA5_LAND_2000_2026 = SILVER / "meteo_humedad_era5_land_2000_2026.csv"
+# Weekly precipitation per district from CHIRPS v3 sat (polygon mean; final from Earth Engine, preliminary from
+# the CHC for the weeks without final), with version and fecha_disponible; apart from the V2 silver
+SILVER_CHIRPS_PRECIP = SILVER / "precip_chirps_v3_semanal_desde_2000.csv"
+SILVER_ENSO = SILVER / "enso_nino12_mensual.csv"   # monthly Niño 1+2 with the date it becomes usable
 
 # Integrated silver: silver sources already joined (meteo + socio + epi),
 # still WITHOUT feature engineering. Gold is reserved for the dataset with
@@ -43,6 +76,8 @@ SILVER_INTEGRATED = SILVER_INTEGRATED_DIR / "meteo_socio_epi_piura_2017_2025.csv
 
 UBIGEO_CATALOG = REFERENCE / "catalogo_ubigeos_piura.csv"
 DISTRICT_COORDS = REFERENCE / "distritos_piura_coords.csv"
+# The 65 Piura district polygons (from the COD-AB) for the area-weighted CHIRPS mean; versioned
+DISTRICT_BOUNDARIES = REFERENCE / "distritos_piura_limites.geojson"
 GOLD_MANIFEST = GOLD / "manifest_fase6.json"
 # Gold before the cleanup (all the candidates, h=2 and h=4): the input of the v0 and of study 03. Only copy.
 GOLD_BACKUP = GOLD / "respaldo_pre_b3"
@@ -53,6 +88,11 @@ SERVING_MODELS = MODELS / "serving"
 STORAGE = MODELS / "storage"
 # Model registry: one card per version (v0, v1, v2) and CHANGELOG.md; versioned in git, artifacts are not.
 MODEL_REGISTRY = MODELS / "registry"
+# Data bundles of the frozen V3 (zips attached to the GitHub Release of model/v3): files, rows and SHA-256.
+V3_DATA_MANIFEST = MODEL_REGISTRY / "v3" / "manifiesto_datos.json"
+# Frozen out-of-sample predictions of the v3 (5 seeds, every block; predicciones_v3.zip of the Release): the v3
+# package fits Platt and the 5a mixture with them and publishes their 2022-2025 blocks as its OOS.
+V3_REFERENCE_PREDICTIONS = MODELS / "experimentos" / "mejora_modelo" / "v3" / "predicciones_v3.csv.gz"
 ENV_FILE = ROOT / ".env"
 ALEMBIC_CONFIG = ROOT / "alembic.ini"
 DB_MIGRATIONS = ROOT / "src" / "denguekay" / "db" / "migrations"
@@ -72,6 +112,7 @@ OPENAPI_JSON = BACKEND_DOCS / "openapi.json"
 OPENAPI_V1_JSON = BACKEND_DOCS / "openapi_v1.json"
 # Demo database for the frontend (decision D1); not versioned.
 DEMO_DIR = SERVING_MODELS / "demo"
+DEMO_V4_DIR = SERVING_MODELS / "demo_v4"
 # Versioned evidence of the OE2 refactor (no credentials).
 BACKEND_EVIDENCE = BACKEND_DOCS / "evidencia"
 OE2_MIGRATION_SQL = BACKEND_EVIDENCE / "migracion_0003_oe2_postgresql.sql"
@@ -88,7 +129,7 @@ COMPACT_PREDICTIONS = MODELS / "experimentos" / "validacion_temporal_compacta" /
 # Research studies, frozen in research/<study>/ (docs/decisions/0001-repo-restructure.md).
 RESEARCH = ROOT / "research"
 RESEARCH_FIRST_MODELS = RESEARCH / "03_first_models_and_ablations"
-# Multi-horizon architecture study (research/04_horizon_architecture/docs/plan_arquitectura_horizontes.md)
+# Multi-horizon architecture study (research/04_horizon_architecture/docs/diseno_arquitectura_horizontes.md)
 ARCHITECTURE_METRICS = RESEARCH / "04_horizon_architecture" / "docs" / "metricas" / "arquitectura_horizontes.json"
 ARCHITECTURE_FIGURES = RESEARCH / "04_horizon_architecture" / "docs" / "figuras"
 ARCHITECTURE_EXPERIMENTS = MODELS / "experimentos" / "arquitectura_horizontes"

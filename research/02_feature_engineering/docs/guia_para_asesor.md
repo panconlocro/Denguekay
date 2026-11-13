@@ -134,7 +134,7 @@ Las 15 fracciones anuales anteriores comparten la motivación exploratoria de la
 - Entrada: `data/silver/integrado/meteo_socio_epi_piura_2017_2025.csv` y cobertura lateral.
 - Código: `src/modeling/` (features, etiqueta y familias), `src/validation/contrato_pronostico.py`.
 - Orquestación: notebooks `17`–`23`; el `22_fe_integracion.ipynb` regenera gold y el `23_fe_sintesis.ipynb` audita el traspaso.
-- Evidencia: [plan por fases](plan.md), [informes de fase](fase1_contrato_objetivo.md), [métricas del EDA](../../01_eda/docs/hallazgos.md), [síntesis gold](fase7_sintesis_traspaso.md) y los JSON en `docs/feature_engineering/metricas/`.
+- Evidencia: [fases del estudio](fases_feature_engineering.md), [informes de fase](fase1_contrato_objetivo.md), [métricas del EDA](../../01_eda/docs/hallazgos.md), [síntesis gold](fase7_sintesis_traspaso.md) y los JSON en `docs/feature_engineering/metricas/`.
 - Comprobación actual: `.venv/bin/python -m unittest discover -s tests` y auditoría de silver/gold/manifest con `src.modeling.contrato_xgboost.auditar_traspaso()`.
 
 **Nota de lectura:** los números de ridge de fases 4–5 son experimentos exploratorios de **conteos**; las métricas de F1 de alerta y las decisiones sobre subconjuntos proceden de los ensayos XGBoost descritos en el segundo documento.

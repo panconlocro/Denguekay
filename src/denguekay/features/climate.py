@@ -135,3 +135,70 @@ def build_observed_climate(
             rolling.groupby(data["ubigeo"], sort=False).shift(horizon)
         )
     return output
+
+
+# --- d3: ERA5-Land temperature windows at the origin (V3) ------------------------------------------------------
+
+# Windows (a, b) = weeks o − b .. o − a of the origin week o; same definition as study 06 (phase_d_weather_windows).
+D3_SOURCE = "temp_media"
+D3_WINDOWS = {"s0": (0, 0), "media_s1_4": (1, 4), "media_s5_8": (5, 8), "media_s9_12": (9, 12)}
+D3_COLUMNS = [f"{D3_SOURCE}_{name}" for name in D3_WINDOWS]
+D3_DEPTH = max(b for _, b in D3_WINDOWS.values())  # 12: the deepest week a window reads before the origin
+
+
+def era5_land_silver():
+    """The ERA5-Land weekly silver to use: the one the pipeline keeps up to date (notebook 03) or, if it does not
+    exist yet, the frozen input of the v3 that comes in the model/v3 Release."""
+    from denguekay.config.paths import SILVER_METEO_ERA5_LAND, SILVER_METEO_ERA5_LAND_2000_2026
+
+    for path in (SILVER_METEO_ERA5_LAND, SILVER_METEO_ERA5_LAND_2000_2026):
+        if path.exists():
+            return path
+    raise FileNotFoundError(f"Falta el silver de ERA5-Land: {SILVER_METEO_ERA5_LAND.name} (notebook 03) o "
+                            f"{SILVER_METEO_ERA5_LAND_2000_2026.name} (Release model/v3)")
+
+
+def era5_land_weekly(path, districts: pd.DataFrame) -> pd.DataFrame:
+    """Weekly ERA5-Land ``temp_media`` per ``ubigeo`` from the silver (one row per district and MMWR week).
+
+    The silver has no ``ubigeo``: districts are matched by the centroid coordinates (``lat``, ``lon``) that the
+    download used, which ``districts`` (the integrated panel or the coordinates catalogue with ``ubigeo``) holds.
+    """
+    weekly = pd.read_csv(path, parse_dates=["semana_inicio"], float_precision="round_trip")
+    keys = districts[["lat", "lon", "ubigeo"]].drop_duplicates()
+    if keys[["lat", "lon"]].duplicated().any() or keys.ubigeo.duplicated().any():
+        raise ValueError("lat/lon no identifican un único ubigeo")
+    out = weekly.merge(keys, on=["lat", "lon"], how="left", validate="many_to_one")
+    if out.ubigeo.isna().any():
+        raise ValueError(f"Distritos de ERA5-Land sin ubigeo: {sorted(out.loc[out.ubigeo.isna(), 'distrito'].unique())}")
+    out["ubigeo"] = out.ubigeo.astype(str)
+    return out[["ubigeo", "semana_inicio", D3_SOURCE]].sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True)
+
+
+def weather_windows(weekly: pd.DataFrame, value: str = D3_SOURCE, windows: dict | None = None) -> pd.DataFrame:
+    """Per district and origin week o (``semana_origen``): the mean of ``value`` over weeks o − b .. o − a of each
+    window ``(a, b)``; NaN unless every week of the window has a value. ``weekly`` must be regular (one row per
+    district and week, no gaps)."""
+    windows = D3_WINDOWS if windows is None else windows
+    data = weekly.sort_values(["ubigeo", "semana_inicio"]).reset_index(drop=True)
+    gaps = data.groupby("ubigeo").semana_inicio.diff().dropna()
+    if not gaps.eq(pd.Timedelta(days=7)).all():
+        raise ValueError(f"La serie semanal de {value} tiene huecos o semanas repetidas")
+    by = data.groupby("ubigeo")
+    out = data[["ubigeo", "semana_inicio"]].rename(columns={"semana_inicio": "semana_origen"}).copy()
+    for name, (a, b) in windows.items():
+        width = b - a + 1
+        rolled = by[value].transform(lambda s: s.rolling(width, min_periods=width).mean())
+        out[f"{value}_{name}"] = rolled.groupby(data.ubigeo).shift(a)
+    return out
+
+
+def add_weather_windows(frame: pd.DataFrame, by_week: pd.DataFrame) -> pd.DataFrame:
+    """``frame`` (``origen_cierre`` is the Saturday of the origin week) plus the window columns of ``by_week``."""
+    week = pd.to_datetime(frame.origen_cierre) - pd.Timedelta(days=6)
+    key = pd.DataFrame({"ubigeo": frame.ubigeo.astype(str).to_numpy(), "semana_origen": week.to_numpy()})
+    joined = key.merge(by_week, on=["ubigeo", "semana_origen"], how="left", validate="many_to_one")
+    out = frame.copy()
+    for c in by_week.columns.drop(["ubigeo", "semana_origen"]):
+        out[c] = joined[c].to_numpy()
+    return out

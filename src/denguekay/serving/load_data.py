@@ -1,8 +1,8 @@
 """Transactional, idempotent load of the OE2 store from the pipeline sources.
 
 It reads reference, integrated silver (cases and climate), gold h2 (only ``brote``
-and ``umbral_brote_casos``: they are not recomputed) and the Sala Situacional
-(2025 cross-check). It validates the existing GX and lineage, and writes only to
+and ``umbral_brote_casos``: they are not recomputed), the Sala Situacional
+(2025 cross-check) and the ERA5-Land weekly silver (``temp_media_era5_land_c``, d3 of the v3, since 0007_v3). It validates the existing GX and lineage, and writes only to
 the database: provincia, distrito, semana_epidemiologica and observacion_semanal,
 recorded as an ``ejecucion`` of type ``ingesta``. It persists no feature engineering.
 """
@@ -30,7 +30,9 @@ from denguekay.config.paths import (DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, 
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
 # Version of this transformation; part of the ingestion fingerprint. 3: humidity is no longer rounded (M5).
-TRANSFORMATION = 3
+# 4: ERA5-Land temperature (0007_v3).
+TRANSFORMATION = 4
+ERA5_LAND_COLUMN = "temp_media_era5_land_c"
 SEASON_START_WEEK = 35  # same rule as the modelling (src/denguekay/model/train.py)
 COVERAGE = {"verified": "verificado", "missing": "sin_registro", "no_record": "sin_registro"}
 CLIMATE = {"temp_media": "temp_media_c", "temp_min": "temp_min_c", "temp_max": "temp_max_c",
@@ -55,9 +57,11 @@ class LoadBatch:
 
 def source_hashes():
     """Fingerprint of every input used, without storing credentials."""
+    from denguekay.features.climate import era5_land_silver
+
     sources = [UBIGEO_CATALOG, DISTRICT_COORDS, SILVER_INTEGRATED,
                SILVER_INTEGRATED.with_suffix(".coverage.csv"), SILVER_EPI_HISTORICAL,
-               SILVER_SALA, GOLD_MANIFEST]
+               SILVER_SALA, GOLD_MANIFEST, era5_land_silver()]
     sources.append(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv")
     return {str(p.relative_to(ROOT)).replace("\\", "/"):
             hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
@@ -128,8 +132,20 @@ def _optional(value, decimals=2):
     return float(value) if decimals is None else round(float(value), decimals)
 
 
-def prepare_observations(silver, coverage, gold, sala):
-    """Silver cases and climate; brote and threshold copied from gold; 2025 cross-checked with the Sala."""
+def era5_land_temperature(silver, era5_land):
+    """{(ubigeo, semana_inicio): ERA5-Land weekly mean temperature} for the silver weeks (full value)."""
+    if era5_land is None:
+        return {}
+    weeks = silver[["ubigeo", "semana_inicio"]].assign(semana_inicio=lambda d: pd.to_datetime(d.semana_inicio))
+    data = weeks.merge(era5_land.assign(semana_inicio=lambda d: pd.to_datetime(d.semana_inicio)),
+                       on=["ubigeo", "semana_inicio"], how="left", validate="one_to_one")
+    return {(u, s): (None if pd.isna(t) else float(t))
+            for u, s, t in zip(data.ubigeo, data.semana_inicio, data.temp_media)}
+
+
+def prepare_observations(silver, coverage, gold, sala, era5_land=None):
+    """Silver cases and climate; brote and threshold copied from gold; 2025 cross-checked with the Sala;
+    ERA5-Land temperature (``ubigeo``, ``semana_inicio``, ``temp_media``) when given."""
     keys = ["ubigeo", "anio", "semana"]
     for name, data in (("silver", silver), ("gold", gold), ("cobertura", coverage)):
         if data.empty or data.duplicated(keys).any():
@@ -158,6 +174,7 @@ def prepare_observations(silver, coverage, gold, sala):
     if not (comparison._merge.eq("both").all() and comparison.casos_Dengue.eq(comparison.casos_Dengue_sala).all()):
         raise ValueError("Los casos de 2025 no coinciden con la Sala Situacional")
     cutoff = data.semana_inicio.max().date() + timedelta(days=6)
+    temperature = era5_land_temperature(silver, era5_land)
     result = []
     for row in data.itertuples():
         cases = None if pd.isna(row.casos_Dengue) else float(row.casos_Dengue)
@@ -174,14 +191,15 @@ def prepare_observations(silver, coverage, gold, sala):
                     "estado_cobertura": COVERAGE.get(row.source, "pendiente")}
         record.update({destination: _optional(getattr(row, origin), CLIMATE_DECIMALS[destination])
                        for origin, destination in CLIMATE.items()})
+        record[ERA5_LAND_COLUMN] = temperature.get((row.ubigeo, pd.Timestamp(row.semana_inicio)))
         result.append(record)
     return result, cutoff
 
 
-def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation):
+def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation, era5_land=None):
     """Build the whole batch; kept apart from file reading so it can be tested with fixtures."""
     provinces, districts = prepare_districts(catalog, coordinates, census_population_2017(silver))
-    observations, cutoff = prepare_observations(silver, coverage, gold, sala)
+    observations, cutoff = prepare_observations(silver, coverage, gold, sala, era5_land)
     known = {d["ubigeo"] for d in districts}
     if not {o["ubigeo"] for o in observations} <= known:
         raise ValueError("Hay observaciones de distritos fuera del catálogo")
@@ -203,11 +221,15 @@ def prepare_load():
     hashes = source_hashes()
     audit_handoff()
     quality = validate_modeling_inputs(gold_dir=GOLD, silver_path=SILVER_INTEGRATED)
+    from denguekay.features.climate import era5_land_silver, era5_land_weekly
+
     gold, _ = read_gold(GOLD, 2)
+    silver = read_silver()
     data = prepare_from_tables(
-        load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS), read_silver(),
+        load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS), silver,
         pd.read_csv(SILVER_INTEGRATED.with_suffix(".coverage.csv"), dtype={"ubigeo": "string"}),
-        gold, pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}), hashes, quality)
+        gold, pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}), hashes, quality,
+        era5_land=era5_land_weekly(era5_land_silver(), silver))
     if hashes != source_hashes():
         raise ValueError("Las fuentes cambiaron durante la validación; vuelva a ejecutar la carga")
     return data

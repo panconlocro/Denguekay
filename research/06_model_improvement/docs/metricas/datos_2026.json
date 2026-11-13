@@ -1,0 +1,435 @@
+{
+ "fecha": "2026-11-08",
+ "sala": {
+  "2025": {
+   "carpeta_bronze": "2025_20261108T172033739861Z",
+   "segundos": 46.8,
+   "filas": 3445,
+   "distritos": 65,
+   "semana_min": 1,
+   "semana_max": 53,
+   "casos": 1117
+  },
+  "2026": {
+   "carpeta_bronze": "2026_20261108T172120536836Z",
+   "segundos": 48.2,
+   "filas": 2795,
+   "distritos": 65,
+   "semana_min": 1,
+   "semana_max": 43,
+   "casos": 15716
+  },
+  "diff_2025": {
+   "filas_silver": 3445,
+   "filas_sala": 3445,
+   "solo_en_silver": 0,
+   "solo_en_sala": 0,
+   "filas_distintas": 0,
+   "casos_silver": 1117,
+   "casos_sala": 1117
+  },
+  "upsert_2026": {
+   "filas_antes": 3445,
+   "filas_despues": 6240,
+   "filas_2026": 2795,
+   "filas_previas_identicas": true
+  }
+ },
+ "era5_land": {
+  "inicio": "2026-01-01",
+  "fin_pedido": "2026-10-31",
+  "pendientes": 0,
+  "segundos_descarga": 0.0,
+  "diario_2026": {
+   "filas": 19760,
+   "ultimo_dia": "2026-10-31",
+   "nulos": {
+    "temperature_2m_mean": 0,
+    "temperature_2m_max": 0,
+    "temperature_2m_min": 0,
+    "relative_humidity_2m_mean": 0
+   }
+  },
+  "validacion_2000_2025": {
+   "filas_silver_actual": 88140,
+   "sin_par": 0,
+   "columnas_identicas": {
+    "provincia": true,
+    "distrito": true,
+    "lat": true,
+    "lon": true,
+    "anio": true,
+    "semana": true,
+    "temp_media": true,
+    "temp_max": true,
+    "temp_min": true,
+    "hum_rel_media": true,
+    "distrito_key": true
+   },
+   "pasa": true
+  },
+  "semanas_nuevas": {
+   "filas": 2860,
+   "primera": "2025-12-28",
+   "ultima": "2026-10-25",
+   "nulos": {
+    "temp_media": 0,
+    "hum_rel_media": 0
+   }
+  },
+  "silver_nuevo": {
+   "archivo": "meteo_humedad_era5_land_2000_2026.csv",
+   "filas": 91000,
+   "desde": "2000-01-02",
+   "hasta": "2026-10-25"
+  }
+ },
+ "semanas_brote": {
+  "sala_2026": {
+   "ultima_semana": 43,
+   "distritos": 65,
+   "semanas_por_distrito": {
+    "43": 65
+   },
+   "min_semana": 1,
+   "max_semana": 43,
+   "casos": 15716,
+   "semanas_observadas_en_grafico": 2795
+  },
+  "semanas_provisionales": [
+   "2026-S42",
+   "2026-S43"
+  ],
+  "temporada_2026": {
+   "semanas": 52,
+   "desde": "2025-08-24",
+   "hasta": "2026-08-23",
+   "casos": 7564,
+   "semanas_brote": 89,
+   "distritos_con_brote": 19,
+   "semanas_brote_por_horizonte": {
+    "h2": 89,
+    "h3": 89,
+    "h4": 89
+   },
+   "alcanza_minimo_30": true
+  },
+  "posterior_2026": {
+   "semanas": 7,
+   "desde": "2026-08-30",
+   "hasta": "2026-10-11",
+   "casos": 5631,
+   "semanas_brote": 167,
+   "distritos_con_brote": 36,
+   "semanas_brote_por_horizonte": {
+    "h2": 167,
+    "h3": 167,
+    "h4": 167
+   },
+   "alcanza_minimo_30": true
+  },
+  "provisionales": {
+   "semanas": 2,
+   "desde": "2026-10-18",
+   "hasta": "2026-10-25",
+   "casos": 2629,
+   "semanas_brote": 60,
+   "distritos_con_brote": 37,
+   "semanas_brote_por_horizonte": {
+    "h2": 60,
+    "h3": 60,
+    "h4": 60
+   },
+   "alcanza_minimo_30": true
+  },
+  "inicios_limpios": {
+   "2022": 38,
+   "2023": 57,
+   "2024": 23,
+   "2025": 13,
+   "2026": 20,
+   "2027": 17
+  },
+  "referencia": {
+   "2017": {
+    "casos": 44249,
+    "semanas_brote": 539
+   },
+   "2023": {
+    "casos": 74770,
+    "semanas_brote": 1039
+   },
+   "2024": {
+    "casos": 36160,
+    "semanas_brote": 857
+   },
+   "2025": {
+    "casos": 2190,
+    "semanas_brote": 57
+   }
+  },
+  "umbral_2026_media": 26.519284368171004
+ },
+ "final_ftp_vs_earth_engine": {
+  "dias": 240,
+  "primer_dia": "2025-01-01",
+  "ultimo_dia": "2026-04-30",
+  "pasa": false,
+  "pares": 15600,
+  "sin_pareja": 0,
+  "nulos": 0,
+  "fuera_de_tolerancia": 2,
+  "dif_max_mm": 0.14533665489666703,
+  "dif_media_mm": 0.0025550004703025144,
+  "dif_rel_max_si_local_ge_1mm": 0.043389381902863566,
+  "peor": {
+   "ubigeo": "200209",
+   "fecha": "2025-01-14 00:00:00",
+   "local": 68.69144131958478,
+   "ee": 68.83677797448145
+  },
+  "tolerancia": {
+   "abs_mm": 0.05,
+   "rel": 0.02
+  }
+ },
+ "b_VI_2025": {
+  "dias_final": 120,
+  "dias_prelim": 111,
+  "dias_sin_prelim": [
+   "2025-02-26",
+   "2025-02-27",
+   "2025-02-28",
+   "2025-03-26",
+   "2025-03-27",
+   "2025-03-28",
+   "2025-03-29",
+   "2025-03-30",
+   "2025-03-31"
+  ],
+  "pares_distrito_dia": 7215,
+  "diario": {
+   "dif_media_mm": 0.1946165639627046,
+   "dif_abs_media_mm": 0.6138607159119672,
+   "dif_abs_p95_mm": 3.344103451580093,
+   "dif_abs_max_mm": 29.243564648209166,
+   "correlacion": 0.9507864716772295,
+   "lluvia_total_final_mm": 16119.468673568237,
+   "lluvia_total_prelim_mm": 17523.627182559154,
+   "dias_ge20_final": 109,
+   "dias_ge20_prelim": 142,
+   "dias_ge20_coinciden": 95,
+   "dif_abs_media_dias_humedos_mm": 1.6180612914920396
+  },
+  "semanal": {
+   "semanas": 13,
+   "pares": 845,
+   "dif_media_mm": 0.7957095255542969,
+   "dif_abs_media_mm": 3.9693668591712665,
+   "dif_abs_max_mm": 53.541037746015036,
+   "correlacion": 0.9464192452681351,
+   "dif_relativa_total": 0.050057585727042664
+  },
+  "variables_del_modelo": {
+   "precip_total_mm_media5_h2": {
+    "origenes": 845,
+    "dif_media": 0.014967740338028617,
+    "dif_abs_media": 2.263401549622139,
+    "dif_abs_max": 14.493587460577814,
+    "origenes_que_cambian": 832,
+    "correlacion": 0.9790933195424336
+   },
+   "precip_total_mm_s0": {
+    "origenes": 845,
+    "dif_media": 0.7922655670570826,
+    "dif_abs_media": 3.968640191736197,
+    "dif_abs_max": 53.87785001457544,
+    "origenes_que_cambian": 733,
+    "correlacion": 0.9464001915338635
+   },
+   "precip_total_mm_media_s1_4": {
+    "origenes": 845,
+    "dif_media": -0.17935671634173492,
+    "dif_abs_media": 2.315412125136797,
+    "dif_abs_max": 18.11698432572227,
+    "origenes_que_cambian": 758,
+    "correlacion": 0.9758028357563703
+   },
+   "precip_total_mm_media_s5_8": {
+    "origenes": 845,
+    "dif_media": -0.48930188908627137,
+    "dif_abs_media": 1.408462138455925,
+    "dif_abs_max": 18.11698432572227,
+    "origenes_que_cambian": 518,
+    "correlacion": 0.9859791665580082
+   },
+   "precip_total_mm_media_s9_12": {
+    "origenes": 845,
+    "dif_media": -0.25605443249002313,
+    "dif_abs_media": 0.9030676920303893,
+    "dif_abs_max": 16.039363352571797,
+    "origenes_que_cambian": 321,
+    "correlacion": 0.9686342920514339
+   },
+   "dias_precip_20mm_s0_3": {
+    "origenes": 845,
+    "dif_media": 0.0485207100591716,
+    "dif_abs_media": 0.13846153846153847,
+    "dif_abs_max": 2.0,
+    "origenes_que_cambian": 106,
+    "correlacion": 0.9316780423566859
+   },
+   "dias_precip_20mm_s4_7": {
+    "origenes": 845,
+    "dif_media": -0.016568047337278107,
+    "dif_abs_media": 0.07337278106508875,
+    "dif_abs_max": 2.0,
+    "origenes_que_cambian": 56,
+    "correlacion": 0.9558953964013512
+   }
+  }
+ },
+ "b_VI_2026": {
+  "dias_final": 120,
+  "dias_prelim": 120,
+  "dias_sin_prelim": [],
+  "pares_distrito_dia": 7800,
+  "diario": {
+   "dif_media_mm": -0.18204526276626345,
+   "dif_abs_media_mm": 0.671152269061779,
+   "dif_abs_p95_mm": 3.51266552612569,
+   "dif_abs_max_mm": 28.527645624107933,
+   "correlacion": 0.9449923901120378,
+   "lluvia_total_final_mm": 20631.953899448745,
+   "lluvia_total_prelim_mm": 19212.00084987189,
+   "dias_ge20_final": 213,
+   "dias_ge20_prelim": 170,
+   "dias_ge20_coinciden": 145,
+   "dif_abs_media_dias_humedos_mm": 1.9154462067100113
+  },
+  "semanal": {
+   "semanas": 16,
+   "pares": 1040,
+   "dif_media_mm": -1.2800247500471529,
+   "dif_abs_media_mm": 4.53159496584061,
+   "dif_abs_max_mm": 77.00557886214804,
+   "correlacion": 0.9425860414412487,
+   "dif_relativa_total": -0.06608787265299221
+  },
+  "variables_del_modelo": {
+   "precip_total_mm_media5_h2": {
+    "origenes": 1040,
+    "dif_media": -1.064934659228972,
+    "dif_abs_media": 3.0884157314214042,
+    "dif_abs_max": 20.814950667998374,
+    "origenes_que_cambian": 1027,
+    "correlacion": 0.9651286895125509
+   },
+   "precip_total_mm_s0": {
+    "origenes": 1040,
+    "dif_media": -1.2834659152754515,
+    "dif_abs_media": 4.532398153732105,
+    "dif_abs_max": 77.12712738628886,
+    "origenes_que_cambian": 862,
+    "correlacion": 0.9425861252439285
+   },
+   "precip_total_mm_media_s1_4": {
+    "origenes": 1040,
+    "dif_media": -1.0103018452173522,
+    "dif_abs_media": 3.2116431982438765,
+    "dif_abs_max": 25.499865995432366,
+    "origenes_que_cambian": 945,
+    "correlacion": 0.9617614447501552
+   },
+   "precip_total_mm_media_s5_8": {
+    "origenes": 1040,
+    "dif_media": -0.20925327398142254,
+    "dif_abs_media": 2.367841161672541,
+    "dif_abs_max": 25.039390669605126,
+    "origenes_que_cambian": 711,
+    "correlacion": 0.9718046469639973
+   },
+   "precip_total_mm_media_s9_12": {
+    "origenes": 1040,
+    "dif_media": 0.5579002915936028,
+    "dif_abs_media": 0.9684243162528261,
+    "dif_abs_max": 20.962293581073332,
+    "origenes_que_cambian": 451,
+    "correlacion": 0.9878542770422517
+   },
+   "dias_precip_20mm_s0_3": {
+    "origenes": 1040,
+    "dif_media": -0.13942307692307693,
+    "dif_abs_media": 0.2875,
+    "dif_abs_max": 5.0,
+    "origenes_que_cambian": 219,
+    "correlacion": 0.848731097107256
+   },
+   "dias_precip_20mm_s4_7": {
+    "origenes": 1040,
+    "dif_media": -0.10673076923076923,
+    "dif_abs_media": 0.2548076923076923,
+    "dif_abs_max": 5.0,
+    "origenes_que_cambian": 190,
+    "correlacion": 0.8586090256318192
+   }
+  }
+ },
+ "chirps_ftp": {
+  "preliminar": {
+   "rango": [
+    "2026-09-27",
+    "2026-10-31"
+   ],
+   "dias": 35,
+   "guardados": 34,
+   "sin_cambios": [
+    "2026-10-01"
+   ],
+   "revisiones": [],
+   "segundos": 120.0
+  },
+  "enero_abril": {
+   "final_2025": 120,
+   "final_2026": 120,
+   "prelim_2025": 111,
+   "prelim_2026": 120,
+   "prelim_2025_sin_archivo": [
+    "2025-02-26",
+    "2025-02-27",
+    "2025-02-28",
+    "2025-03-26",
+    "2025-03-27",
+    "2025-03-28",
+    "2025-03-29",
+    "2025-03-30",
+    "2025-03-31"
+   ],
+   "segundos": [
+    442.3,
+    448.1,
+    428.3,
+    446.9
+   ],
+   "errores": 0
+  },
+  "silver_nuevo": {
+   "archivo": "precip_chirps_v3_semanal_desde_2000_20261108.csv",
+   "filas": 91000,
+   "final": 90675,
+   "prelim": 325,
+   "semanas_prelim": [
+    "2026-09-27",
+    "2026-10-04",
+    "2026-10-11",
+    "2026-10-18",
+    "2026-10-25"
+   ],
+   "diff_con_vigente": {
+    "filas_vigente": 90675,
+    "solo_vigente": 0,
+    "filas_comunes_distintas": 0
+   }
+  }
+ }
+}
