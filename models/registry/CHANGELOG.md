@@ -13,6 +13,13 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
 
+## 2026-11-15 · Pipeline de datos V4
+
+- `run_all --version v4 --verificar` construye el integrado de confirmados y el gold B3 de h2–h4, y coteja
+  los insumos con los manifiestos congelados. La reproducción exacta usa los insumos del Release `model/v4`.
+- `v4_b3_live` puede cargar el integrado y las observaciones generadas por el pipeline. La publicación
+  conserva el booster y las métricas congeladas. Pasos y resultados en la [guía de V4](../../docs/modeling/reproducir_v4.md).
+
 ## 2026-11-12 · v4 congelada para el paper
 
 - `b3_obs` y el comparador `historia_geo` se ajustaron sobre casos confirmados de Piura hasta la SE 41 de 2026.

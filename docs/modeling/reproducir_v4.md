@@ -66,18 +66,53 @@ El extractor comprueba SHA-256 de cada ZIP y cada archivo. Conserva las rutas re
 
 Para repetir el ajuste congelado con los scripts del paper, instala `requirements.txt` con `constraints.txt` y selecciona `datos_v4.zip predicciones_v4.zip` con `--solo`. Sigue el [protocolo de congelamiento](https://github.com/panconlocro/Denguekay/blob/model/v4/research/08_v3_confirmed_cases/congelamiento_b3_v4.md) con CPU y dos hilos. Usa otra ruta de salida si también extrajiste el modelo archivado. Los boosters adjuntos son la referencia para usar el modelo congelado en otros equipos.
 
-## Regenerar el gold de entrenamiento
+## Regenerar el gold congelado desde el Release
 
-Desde un clon con este documento, instala Python 3.12 y las dependencias de investigación con
-`python -m pip install -r requirements.txt -c constraints.txt` y `python -m pip install --no-deps -e .`.
-Desde un clon limpio que incluya el pipeline medallion V4, extrae los insumos verificados y ejecuta el
-exportador. En PowerShell, desde la raíz del clon:
+Instala el [entorno completo de Python 3.12](../reproducibilidad.md#0-entorno-una-vez) en un clon limpio
+que incluya `denguekay.features.gold_v4`. Usa ese clon para los archivos del Release. Desde su raíz, en
+PowerShell, ejecuta los tres comandos en orden.
 
 ```powershell
 .\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip
 .\.venv\Scripts\python -m denguekay.features.gold_v4 --desde-release
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --solo-verificar --desde-release
 ```
 
-El exportador verifica los insumos por SHA-256, alinea los objetivos h2, h3 y h4 con un origen común
-y guarda `piura_confirmados_v4_gold.csv` y `manifest_v4.json` en `data/gold/`. El gold h2 y
-`manifest_fase6.json` quedan en el Release como evidencia del linaje de los insumos originales.
+Los resultados quedan en `data/gold/`.
+
+- `piura_confirmados_v4_gold.csv` contiene **73 775 filas** de los **65 distritos** de Piura. Las filas
+  se identifican por `(ubigeo, anio, semana)` de h2 y comparten un origen para los objetivos h2, h3 y h4.
+  Cada horizonte lleva la semana objetivo, los casos confirmados, el umbral y la etiqueta `brote`.
+- `manifest_v4.json` enumera los 16 predictores de B3, los hashes de los insumos y del CSV, y el cierre de
+  las etiquetas. El corte del ajuste congelado es el **17 de octubre de 2026 (SE 41)**.
+- `verificacion_v4.json` muestra el SHA-256 esperado y el observado para cada insumo. Se apoya en el
+  [manifiesto del estudio](../../research/08_v3_confirmed_cases/manifiesto_b3_v4.json) y el
+  [registro del Release](../../models/registry/v4/manifiesto_datos.json). El SHA-256 del gold se
+  comprueba contra `manifest_v4.json`, porque los manifiestos publicados enumeran los insumos del gold.
+
+En la comprobación del 15 de noviembre de 2026 coincidieron los diez hashes de los insumos. El SHA-256
+del CSV exportado fue `63148b7144eebe7442d45f6a21069dc988984a2d4f8a0db94f5ee75ec8e78045`. El
+`manifest_fase6.json` y el gold h2 presentes en `datos_v4.zip` son evidencia del linaje que se validó
+al congelar V4. El ajuste de los boosters se reproduce por separado con el protocolo del paper.
+
+## Regenerar desde las fuentes
+
+Usa el mismo entorno en un clon reservado al pipeline desde las fuentes. El histórico y la Sala de confirmados
+comparten las rutas del Release y sus CSV cambian cuando se actualizan las capturas.
+
+```powershell
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --verificar
+```
+
+Si ya tienes en `data/bronze/` las capturas de la Sala confirmada, la consulta de elevación y los cachés de las
+demás fuentes, añade `--sin-descargas`. Este modo también requiere que la geografía fija de `datos_v4.zip` esté
+disponible en la ruta del Release. Para una corrida nueva con acceso a red, 01b descarga y verifica ese archivo
+del Release si falta. `--desde <paso>` permite reanudar la generación. El paso `11` construye el gold al corte
+congelado con los insumos disponibles en ese clon. La actualización de observaciones para servir pronósticos
+usa sus propios cortes de publicación.
+
+El informe en `data/gold/verificacion_v4.json` registra los archivos que coinciden, difieren o faltan, y el
+estado de los pasos. El código de salida `1` al verificar indica una discrepancia, un insumo ausente o un paso
+fallido. Comprueba `pasos_ejecutados` para distinguir una corrida terminada con diferencias de una corrida que
+se interrumpió. La [tabla de cotejo](../reproducibilidad.md#v4-con-confirmados) documenta qué diferencias se
+observaron al repetir el pipeline. Para replicar el ajuste del estudio se usa el Release de `model/v4`.
