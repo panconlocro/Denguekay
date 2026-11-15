@@ -70,21 +70,14 @@ Para repetir el ajuste congelado con los scripts del paper, instala `requirement
 
 Desde un clon con este documento, instala Python 3.12 y las dependencias de investigación con
 `python -m pip install -r requirements.txt -c constraints.txt` y `python -m pip install --no-deps -e .`.
-Abre una copia independiente del tag congelado y ejecuta el exportador del repo desde esa copia:
+Desde un clon limpio que incluya el pipeline medallion V4, extrae los insumos verificados y ejecuta el
+exportador. En PowerShell, desde la raíz del clon:
 
-```sh
-git worktree add --detach ../denguekay-gold-v4 model/v4
-cd ../denguekay-gold-v4
-PYTHONPATH=src python -m denguekay.data.ingestion.release_bundles \
-  --manifiesto ../Denguekay/models/registry/v4/manifiesto_datos.json \
-  --solo datos_v4.zip modelo_v4.zip
-PYTHONPATH=src python -B ../Denguekay/scripts/regenerar_gold_v4.py
+```powershell
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip
+.\.venv\Scripts\python -m denguekay.features.gold_v4 --desde-release
 ```
 
-Los ejemplos suponen que el clon principal se llama `Denguekay` y que su entorno Python está activo.
-En PowerShell, establece `$env:PYTHONPATH = 'src'` una vez antes de los dos comandos Python.
-
 El exportador verifica los insumos por SHA-256, alinea los objetivos h2, h3 y h4 con un origen común
-y guarda `piura_confirmados_v4_gold.csv` y `manifest_v4.json` en `data/gold/`. Comprueba que el vector de
-la SE 41 y los dos boosters de la semilla 17 coincidan con los archivados. El gold h2 anterior y
-`manifest_fase6.json`, incluidos en `datos_v4.zip`, se usan para validar los insumos del ajuste congelado.
+y guarda `piura_confirmados_v4_gold.csv` y `manifest_v4.json` en `data/gold/`. El gold h2 y
+`manifest_fase6.json` quedan en el Release como evidencia del linaje de los insumos originales.

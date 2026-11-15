@@ -82,7 +82,7 @@ Denguekay/
 │   │   └── tools/             # benchmark, export_openapi, smoke_test
 │   └── web/                   # SPA React + Vite (ver 3c)
 │
-├── pipelines/notebooks/       # pipeline: 01–09 (con 03b Niño, 03c CHIRPS y 06b Sala) y 10_silver_to_gold; todo junto: python -m denguekay.pipelines.run_all
+├── pipelines/notebooks/       # pipeline 01–10 y recorrido V4 con paso 11; ambos en denguekay.pipelines.run_all
 ├── research/                  # estudios congelados: 01_eda … 06_model_improvement (README y, si hace falta, manifiesto_datos.json por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
@@ -137,6 +137,7 @@ bronze/
 ├── meteo/cache_meteo_era5_land_2000_2016/  # estudio 06 (1b′): ERA5-Land 2000-2016 (humedad y temperatura)
 ├── meteo/cache_meteo_era5_land_2026/  # estudio 06 (temporada 2026): ERA5-Land 2026 (humedad y temperatura)
 ├── enso/                    # sstoi.indices de NOAA CPC (Niño 1+2), un archivo por fecha de descarga
+├── geografia/open_meteo_elevation/ # respuesta GLO-90 por consulta y manifiesto de puntos y SHA-256
 ├── limites/hdx_cod_ab_per/  # COD-AB de Perú (IGN, publicado por OCHA en HDX, CC BY-IGO) tal cual, con su manifiesto
 ├── chirps/v3_sat/           # CHIRPS v3 diario (sat): final/AAAA/, final_ftp/AAAA/ (final por FTP) y prelim/AAAA/ (revisiones en AAAA/<fecha_descarga>/) con la ventana de Piura por día, y los manifiestos de cada corrida;
 │                            #   ee_final/AAAA/AAAA-MM.json: media por polígono distrital desde Earth Engine, tal cual llega, con un manifiesto por corrida
@@ -158,7 +159,9 @@ silver/
 ├── socio_anual.csv
 ├── epi_piura_semanal.csv
 ├── epi_sala_semanal.csv            # exportación normalizada por ejecución
+├── confirmados/                    # histórico y Sala por separado; ERA5-Land, CHIRPS y Niño del recorrido V4
 └── integrado/                      # fuentes silver unidas entre sí
+    ├── confirmados/                # panel V4 y cobertura epidemiológica
     ├── meteo_socio_piura_2017_2025.csv                   # meteo + socio
     ├── meteo_socio_epi_base_piura_2017_2025.csv          # + epi histórico (entrada del actualizador)
     ├── meteo_socio_epi_piura_2017_2025.csv               # + epi completado por el actualizador
@@ -174,11 +177,17 @@ gold/
 ├── .gitkeep
 ├── meteo_socio_epi_piura_2017_2025_h2_gold.csv
 ├── manifest_fase6.json
+├── piura_confirmados_v4_gold.csv # matriz B3 al corte congelado, con un origen común y objetivos h2–h4
+├── manifest_v4.json              # hashes de entradas de la generación y del CSV
 └── respaldo_pre_b3/           # gold anterior (h=2, h=4, manifiesto y SHA256SUMS.txt) para la v0 y el estudio 03; única copia, guardarla fuera de la PC
 ```
 **Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
 
 Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
+
+El recorrido `run_all --version v4` llama al notebook 11 y a `features.gold_v4`. El CSV de elevación
+generado para el cotejo queda en `data/reference/geografia_distritos_v4.csv`, fuera de Git. El gold y
+el paquete de servicio V4 usan la geografía exacta verificada del Release.
 
 ### `data/reference/` — catálogos que casi no cambian
 ```

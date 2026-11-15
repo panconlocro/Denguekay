@@ -6,31 +6,36 @@ import numpy as np
 import pandas as pd
 
 from denguekay.config.paths import (DISTRICT_COORDS, ROOT, SILVER_CHIRPS_PRECIP, SILVER_CONFIRMED,
-                                    SILVER_ENSO, SILVER_EPI_HISTORICAL, SILVER_INTEGRATED,
-                                    SILVER_METEO_ERA5_LAND_2000_2026, SILVER_SALA, UBIGEO_CATALOG)
+                                    SILVER_ENSO, SILVER_INTEGRATED, SILVER_METEO_ERA5_LAND_2000_2026, UBIGEO_CATALOG,
+                                    V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_HISTORY, V4_INTEGRATED, V4_SALA)
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
-from denguekay.data.validation.integrated_expectations import coverage_path
+from denguekay.data.validation.integrated_expectations import coverage_path, load_case_coverage
+from denguekay.data.validation.v4_panel import validate_confirmed_panel
 from denguekay.features.long_history import long_case_series, long_labels, sala_after_panel
 from denguekay.serving import load_data as loader
 from denguekay.serving.artifacts import sha256_bytes
 
 PANEL = SILVER_CONFIRMED / SILVER_INTEGRATED.name
-HISTORY = SILVER_CONFIRMED / SILVER_EPI_HISTORICAL.name
-SALA = SILVER_CONFIRMED / SILVER_SALA.name
+HISTORY = V4_HISTORY
+SALA = V4_SALA
 
 
-def _paths(options):
+def _paths(options, *, medallion):
     return {
         "sala": ROOT / options.get("sala", SALA),
-        "era5_land": ROOT / options.get("era5_land", SILVER_METEO_ERA5_LAND_2000_2026),
-        "chirps": ROOT / options.get("chirps", SILVER_CHIRPS_PRECIP),
-        "nino12": ROOT / options.get("nino12", SILVER_ENSO),
+        "era5_land": ROOT / options.get("era5_land", V4_ERA5_LAND if medallion else SILVER_METEO_ERA5_LAND_2000_2026),
+        "chirps": ROOT / options.get("chirps", V4_CHIRPS if medallion else SILVER_CHIRPS_PRECIP),
+        "nino12": ROOT / options.get("nino12", V4_ENSO if medallion else SILVER_ENSO),
     }
 
 
 def source_hashes(options):
-    paths = [UBIGEO_CATALOG, DISTRICT_COORDS, PANEL, HISTORY, coverage_path(PANEL),
-             loader.GOLD_MANIFEST, loader.GOLD / f"{PANEL.stem}_h2_gold.csv", *_paths(options).values()]
+    medallion = V4_INTEGRATED.is_file()
+    panel = V4_INTEGRATED if medallion else PANEL
+    paths = [UBIGEO_CATALOG, DISTRICT_COORDS, panel, HISTORY, coverage_path(panel),
+             *_paths(options, medallion=medallion).values()]
+    if not medallion:
+        paths.extend([loader.GOLD_MANIFEST, loader.GOLD / f"{PANEL.stem}_h2_gold.csv"])
     return {path.relative_to(ROOT).as_posix(): sha256_bytes(path.read_bytes()) for path in paths}
 
 
@@ -82,14 +87,21 @@ def _nino12(path):
 
 
 def prepare_load(options):
-    from denguekay.data.validation.gx_quality import validate_modeling_inputs
+    from denguekay.data.validation.gx_quality import validate_integrated_gx, validate_modeling_inputs
     from denguekay.features.model_input_contract import audit_handoff
 
     hashes = source_hashes(options)
-    paths = _paths(options)
-    audit_handoff(silver_path=PANEL, history_path=HISTORY)
-    quality = validate_modeling_inputs(silver_path=PANEL)
-    panel = _read(PANEL, ("semana_inicio",))
+    medallion = V4_INTEGRATED.is_file()
+    panel_path = V4_INTEGRATED if medallion else PANEL
+    paths = _paths(options, medallion=medallion)
+    panel = _read(panel_path, ("semana_inicio",))
+    if medallion:
+        validate_confirmed_panel(panel, load_case_coverage(coverage_path(panel_path)))
+        suite = validate_integrated_gx(panel_path)
+        quality = {"exito": suite["exito"], "suites": {"silver_integrado": suite}}
+    else:
+        audit_handoff(silver_path=panel_path, history_path=HISTORY)
+        quality = validate_modeling_inputs(silver_path=panel_path)
     sala = _read(paths["sala"])
     if sala.empty or not sala.tipo_dx.eq("C").all():
         raise ValueError("V4 requiere la serie de diagnóstico confirmado de la Sala Situacional")

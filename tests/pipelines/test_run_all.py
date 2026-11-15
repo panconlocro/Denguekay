@@ -22,6 +22,13 @@ class TestSteps(unittest.TestCase):
         for step in run_all.available_steps():
             self.assertTrue((run_all.NOTEBOOKS / f"{step}.ipynb").exists())
 
+    def test_v4_has_separate_merge_and_gold_steps(self):
+        v4 = run_all.available_steps(version="v4")
+        self.assertEqual(v4[-2:], ["09b_integrado_confirmados_v4", "11_silver_to_gold_v4"])
+        self.assertFalse({"02_ingesta_meteo", "09_silver_merge_epi", "10_silver_to_gold"}.intersection(v4))
+        self.assertEqual(run_all.available_steps("06c", "07b", version="v4"),
+                         ["06c_sala_confirmados_v4", "07b_historico_confirmados_v4"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -16,6 +16,7 @@ data of each model version is in its Release (docs/reproducibilidad.md).
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -26,30 +27,45 @@ NOTEBOOKS = ROOT / "pipelines" / "notebooks"
 STEPS = ["01_ingesta_distritos", "02_ingesta_meteo", "03_bronze_to_silver_meteo", "03b_ingesta_enso",
          "03c_ingesta_chirps", "04_ingesta_socio", "05_bronze_to_silver_socio", "06_ingesta_epi", "06b_ingesta_sala",
          "07_bronze_to_silver_epi", "08_silver_merge_meteo_socio", "09_silver_merge_epi", "10_silver_to_gold"]
+V4_STEPS = ["01b_geografia_v4", "02b_ingesta_meteo_v4", "03d_silver_clima_v4", "04_ingesta_socio",
+            "05_bronze_to_silver_socio", "06_ingesta_epi", "06c_sala_confirmados_v4", "07b_historico_confirmados_v4",
+            "08_silver_merge_meteo_socio", "09b_integrado_confirmados_v4", "11_silver_to_gold_v4"]
+V4_DOWNLOAD_STEPS = {"02b_ingesta_meteo_v4", "04_ingesta_socio", "06_ingesta_epi"}
 
 
-def available_steps(first: str | None = None, last: str | None = None) -> list[str]:
+def available_steps(first: str | None = None, last: str | None = None, *, version: str = "v3") -> list[str]:
     """The steps between ``first`` and ``last`` (by prefix, e.g. ``03`` or ``06b``) whose notebook exists."""
+    ordered = V4_STEPS if version == "v4" else STEPS
+
     def index(prefix, default):
         if prefix is None:
             return default
-        hits = [i for i, s in enumerate(STEPS) if s.split("_")[0] == prefix or s == prefix]
+        hits = [i for i, s in enumerate(ordered) if s.split("_")[0] == prefix or s == prefix]
         if not hits:
             raise ValueError(f"Paso desconocido: {prefix}")
         return hits[0]
 
-    chosen = STEPS[index(first, 0): index(last, len(STEPS) - 1) + 1]
+    chosen = ordered[index(first, 0): index(last, len(ordered) - 1) + 1]
+    if version == "v4":
+        missing = [step for step in chosen if not (NOTEBOOKS / f"{step}.ipynb").is_file()]
+        if missing:
+            raise FileNotFoundError(f"Faltan notebooks requeridos de V4: {', '.join(missing)}")
     return [s for s in chosen if (NOTEBOOKS / f"{s}.ipynb").exists()]
 
 
-def run(steps: list[str], timeout: int = -1) -> list[dict]:
+def run(steps: list[str], timeout: int = -1, *, version: str = "v3", offline: bool = False) -> list[dict]:
     results = []
     for step in steps:
         start = time.perf_counter()
-        command = [sys.executable, "-m", "jupyter", "nbconvert", "--to", "notebook", "--execute", "--inplace",
+        command = [sys.executable, "-m", "jupyter", "nbconvert", "--to", "notebook", "--execute",
+                   "--stdout" if version == "v4" else "--inplace",
                    f"--ExecutePreprocessor.timeout={timeout}", str(NOTEBOOKS / f"{step}.ipynb")]
         print(f"→ {step}", flush=True)
-        done = subprocess.run(command, cwd=ROOT)
+        if version == "v4":
+            env = dict(os.environ, DENGUEKAY_V4_OFFLINE="1" if offline else "0")
+            done = subprocess.run(command, cwd=ROOT, env=env, stdout=subprocess.DEVNULL)
+        else:
+            done = subprocess.run(command, cwd=ROOT)
         results.append({"paso": step, "codigo": done.returncode, "segundos": round(time.perf_counter() - start, 1)})
         if done.returncode != 0:
             print(f"✗ {step} falló; corrija y vuelva a correr desde --desde {step.split('_')[0]}", flush=True)
@@ -62,13 +78,19 @@ def main(argv=None) -> int:
     parser.add_argument("--desde", help="primer paso (prefijo, p. ej. 03 o 06b)")
     parser.add_argument("--hasta", help="último paso (prefijo)")
     parser.add_argument("--lista", action="store_true", help="solo muestra los pasos")
+    parser.add_argument("--version", choices=("v3", "v4"), default="v3")
+    parser.add_argument("--sin-descargas", action="store_true", help="V4: usa el bronze disponible")
     args = parser.parse_args(argv)
-    steps = available_steps(args.desde, args.hasta)
-    missing = [s for s in STEPS if not (NOTEBOOKS / f"{s}.ipynb").exists()]
+    if args.sin_descargas and args.version != "v4":
+        parser.error("--sin-descargas requiere --version v4")
+    steps = available_steps(args.desde, args.hasta, version=args.version)
+    if args.sin_descargas:
+        steps = [step for step in steps if step not in V4_DOWNLOAD_STEPS]
+    missing = [] if args.version == "v4" else [s for s in STEPS if not (NOTEBOOKS / f"{s}.ipynb").exists()]
     if args.lista:
         print("\n".join(steps + [f"(no está en esta rama: {s})" for s in missing]))
         return 0
-    results = run(steps)
+    results = run(steps, version=args.version, offline=args.sin_descargas)
     for r in results:
         print(f"{r['paso']}: {'ok' if r['codigo'] == 0 else 'falló'} ({r['segundos']} s)")
     return 0 if all(r["codigo"] == 0 for r in results) and len(results) == len(steps) else 1
