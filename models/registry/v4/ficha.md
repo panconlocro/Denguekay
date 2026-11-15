@@ -13,3 +13,5 @@
 La [especificación del congelamiento](../../../research/08_v3_confirmed_cases/congelamiento_b3_v4.md)
 documenta el ajuste, los artefactos locales y su reproducción. El [manifiesto](../../../research/08_v3_confirmed_cases/manifiesto_b3_v4.json)
 contiene las variables, los parámetros y las huellas de los archivos.
+
+Los paquetes descargables se describen en la [guía de reproducción de V4](../../../docs/modeling/reproducir_v4.md).

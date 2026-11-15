@@ -1,0 +1,2350 @@
+{
+  "version": "v4",
+  "tag": "model/v4",
+  "repositorio": "panconlocro/Denguekay",
+  "fecha": "2026-11-14",
+  "commit_congelamiento": "305005ce096a55bc16757ce3f6efcd69b145596d",
+  "commit_codigo_demo": "38de6f4b260aa0aa72d76c4f9824d1f24c8664f4",
+  "descripcion": "Paquetes del modelo B3 congelado, insumos agregados, pronósticos retrospectivos y demo local.",
+  "paquetes": [
+    {
+      "nombre": "datos_v4.zip",
+      "bytes": 5038809,
+      "sha256": "c8081a921b20ec3f311858cf6f37befd9ef267e07874fb905261166e0f811d0f",
+      "destino": [
+        "data",
+        "models/experimentos"
+      ],
+      "archivos": [
+        {
+          "ruta": "data/gold/manifest_fase6.json",
+          "filas": null,
+          "bytes": 3032,
+          "sha256": "024c654f9b5a5cf38ac5e1e38d15e4e4c857154ee97da8b96930ade901ac1a24"
+        },
+        {
+          "ruta": "data/gold/meteo_socio_epi_piura_2017_2025_h2_gold.csv",
+          "filas": 30485,
+          "bytes": 7365986,
+          "sha256": "0bbf34a8825d9a669b3debfec883681acaef4e809d380a079c8ca68fc9c58087"
+        },
+        {
+          "ruta": "data/silver/confirmados/epi_piura_semanal.csv",
+          "filas": 10240,
+          "bytes": 176068,
+          "sha256": "6b5b62e8fbc4a395adae4dfda24f534c272a7b18cbc53477c9e5ff88709d776c"
+        },
+        {
+          "ruta": "data/silver/confirmados/epi_sala_semanal.csv",
+          "filas": 6240,
+          "bytes": 247050,
+          "sha256": "ff3354ca19cf9ab996b348cb9cfd1b587267290ae821a666d70a2ae8db0b42a2"
+        },
+        {
+          "ruta": "data/silver/confirmados/meteo_socio_epi_piura_2017_2025.coverage.csv",
+          "filas": 30485,
+          "bytes": 820392,
+          "sha256": "865f1338d5758a17f1c5af27f049d749a36d10d89e94d2018daf6a4f3198c24a"
+        },
+        {
+          "ruta": "data/silver/confirmados/meteo_socio_epi_piura_2017_2025.csv",
+          "filas": 30485,
+          "bytes": 9465955,
+          "sha256": "ad0a9917d1542dd7fa8b70fccc03230b83734b47ba99e5c5c42805f29cdb2307"
+        },
+        {
+          "ruta": "data/silver/enso_nino12_mensual.csv",
+          "filas": 538,
+          "bytes": 16524,
+          "sha256": "3250fdfa62fb930fa51c48ae3f4d599aaa5924a7867cf5c39c428f117d24eb16"
+        },
+        {
+          "ruta": "data/silver/meteo_humedad_era5_land_2000_2026.csv",
+          "filas": 91000,
+          "bytes": 12138962,
+          "sha256": "3e91e57f31fa47af3f01515caa42ec1cf758ecfbe0320cbea50d23fb73d03879"
+        },
+        {
+          "ruta": "data/silver/precip_chirps_v3_semanal_desde_2000.csv",
+          "filas": 91000,
+          "bytes": 4610004,
+          "sha256": "e4cd57a5927cadc20de78dbdb29065c8a2e87608eb0d9ee43503877ecdf1d6ce"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/insumos/geografia_distritos.csv",
+          "filas": 65,
+          "bytes": 3307,
+          "sha256": "b56bacee763b9c7abaaa9f1a8200ed713b5021515335ab70001c07ab40c56b6f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/resultados.json",
+          "filas": null,
+          "bytes": 1250026,
+          "sha256": "34ce02a8164b290f1af637cd3e06b0b5fdd5b116fcbd7b2db707add1dfab2643"
+        }
+      ]
+    },
+    {
+      "nombre": "predicciones_v4.zip",
+      "bytes": 64635022,
+      "sha256": "b3e159e88cf2b4ec5a7f3cbd615e1bea36b7873aa31314ddf95eb6e33555a7f0",
+      "destino": "models/experimentos/mejora_modelo/v3_confirmados",
+      "archivos": [
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1907,
+          "sha256": "7e327be93f75433b918aa9f896c7000d9fddeaf5303bdf8e2d61a98583d4a80c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4339,
+          "sha256": "af0c07aa70cffe751f7f9f0a203750acf584b968b509c9014343437d0407a7dc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6680776,
+          "sha256": "928e1d09955f13efa7da035d08fa2c31d5f7c82fc788c11266d91f914fd4f4b9"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1903,
+          "sha256": "ca879b125af5c990d5e865852f596e5905cee7542394a49fecd21b7774c461fc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4345,
+          "sha256": "4634164f20c732b394e35afa9848af9742d68f9f857a394fe1ef4f2353dfb630"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6669577,
+          "sha256": "04e95f0f0757e11035228e243c2a45eb099b50dabba2f334883ef19b9a91f0e2"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1899,
+          "sha256": "be890c24fd8cb29becf89260cec74f97ef50686b6db63c5b5c1c8d7871c3b5b1"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4354,
+          "sha256": "d0a7ecf03d6a6cff867a2edb9a53ba9200a29fd6a2a788ee41b47f988b1afdbf"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6644786,
+          "sha256": "953b8592de2be06243951b42ddfa66d7087c93a9c7acb599331fe8a92d805e52"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1898,
+          "sha256": "bc2f227bdeeff0bd9940f55fe77380efa6f37fddeaa0f0e7933e3214a4b8af83"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4341,
+          "sha256": "49277271e1a694f58722bbe52540dc0980b592167686f7307ef3cbb790d5468c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6642026,
+          "sha256": "0ff8b2fdd5027b0d96b41af31370c30920d950e62a88dba715cf39dc1e5f8f5c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1909,
+          "sha256": "aebeb0b3db0d8f8e29651f665016174e310a15513ca5b3294dffa81d24717465"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4345,
+          "sha256": "fc846d51f72ae5c1c18588de6cfc6f8f27250d575951a259614bd97c7bac9983"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6629520,
+          "sha256": "babc78553c773dd720d9e833fe0f90e64e6145af169e488cfadb2bc40cad9417"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/resultados.json",
+          "filas": null,
+          "bytes": 8298,
+          "sha256": "f78a5d27570774e0161c989d3eb22032f83133e56d73ac136df350f7c9d94b13"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 2033,
+          "sha256": "6b324dda8e86d0191afdcbdd350c198a72ffccbb17698223b964734fa3d09d20"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "12664df54131ccec9c010efe7b184d9e5d63dd7a5827b543f0cc265f0633b179"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 5311,
+          "sha256": "378df57be2a840bc57a14c82efc3b6c1340762cfb4251dd6b12e14a2a151f76e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6316016,
+          "sha256": "0d18e1a6ce9af9ef47b0ce1af749d71642186f351c4022f21b5aba995bade326"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 2027,
+          "sha256": "377e4e75f7fd0199ed68c1c34b9e78d7cdc09c22c41cb85f60b74c3ee450f52a"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "12664df54131ccec9c010efe7b184d9e5d63dd7a5827b543f0cc265f0633b179"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 5301,
+          "sha256": "4314730cb13a52644e8f3639f598025c7b07a052d36f403de02fc9f4e7ddf4ba"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6247642,
+          "sha256": "ac226ffe95bc8a61e42373a283623cf92263f91158b7d54c74f75d26284fd537"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 2029,
+          "sha256": "8b077703743a9ab1e9fced04cd661ca3fea935623e4ee958de87bd6fe57880ca"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "12664df54131ccec9c010efe7b184d9e5d63dd7a5827b543f0cc265f0633b179"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 5315,
+          "sha256": "d7371b6a7c492b154a7dea3b7487ec367b674c0a2b7548c321342063374cee09"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6258578,
+          "sha256": "89bec453306a3accb55005e5a37b61845c16764e6a82c060f3399f0835d1ea1d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 2034,
+          "sha256": "e6202cc3247c578e221492b42f1d984552262b642fa486e94e4869504c84e5c2"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "12664df54131ccec9c010efe7b184d9e5d63dd7a5827b543f0cc265f0633b179"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 5297,
+          "sha256": "ff5b8a5dcc9b2a70c06fd94aff3c0e2b663a88075c6d3ac0125c41a21b8506bc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6268765,
+          "sha256": "018a16100cc64608aea329a717a327ed0a507fafd90833124ae10f4e87eed223"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 2029,
+          "sha256": "a229309336a0178b046bdae942ea2eaa21063cb4d150d1025c52e8c3122103bc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "12664df54131ccec9c010efe7b184d9e5d63dd7a5827b543f0cc265f0633b179"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 5311,
+          "sha256": "04a9ca7c6cd011fc6e3ff4495c92665d2ef32c7cb6f4790f22968c495396a9b4"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6310895,
+          "sha256": "749ff7b1f1338646f99ccb444af770a757856690e0ab59c77a5c6189dbb52382"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/pronosticos/resultados.json",
+          "filas": null,
+          "bytes": 5546,
+          "sha256": "b45051147b2725d0c3c28218568e9fe87808f10051d3594374ed3281bd08a1c8"
+        }
+      ]
+    },
+    {
+      "nombre": "comparadores_v4.zip",
+      "bytes": 444461391,
+      "sha256": "93ecfd8f581357789d58bf072541a2abb5e2126c545d441393fabf86c0ac0fd8",
+      "destino": "models/experimentos/mejora_modelo/v3_confirmados",
+      "archivos": [
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/conteos_por_bloque_y_semilla.csv",
+          "filas": 864,
+          "bytes": 84051,
+          "sha256": "f1a5adf563f17301812162e5d39a94aa5fdcac4ed9fb558079b5f92e68af61b6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/diseno.json",
+          "filas": null,
+          "bytes": 3628,
+          "sha256": "7c7e7c99c7563e0de5562a3decac987a2d9bcbb258a9627b842a87c4074cf4df"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1806,
+          "sha256": "79a1bd2131c340ca0944f06dbbf29a72dc881daa61649792e0e8cc79f48ee87e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "80479a8799d90cf281467199eb929d6eb8684802b374b45872723b225468c7b3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 5194,
+          "sha256": "b37434de8bb2c4997cade21bd138de5882a5c7b45413514abedaf7d9c06b2fd3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6130656,
+          "sha256": "6167ef297277cd66a0a5780ddab526e107345d4a9a4c15e0c43085f1644d0caf"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1808,
+          "sha256": "7e5d93bf680f9e5d2280d960076a3be7001dbbcc53da2722421ca5b0fe685c43"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "80479a8799d90cf281467199eb929d6eb8684802b374b45872723b225468c7b3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 5182,
+          "sha256": "2a91305a252c3de3297d6ab300a5a26cbf807dfb01e25abacf0880b2ee5c33ee"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6187618,
+          "sha256": "b6fe17fa0f0ebfbaea1d8bb834b6b3525251f735a79abd5913c1304a69ccd5f0"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1803,
+          "sha256": "50853360f0b5f515d16d1a159c260ec5bfa0e4c4a8835ad6d1f394fb78a4820b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "80479a8799d90cf281467199eb929d6eb8684802b374b45872723b225468c7b3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 5188,
+          "sha256": "3643037ab727805205daf19af9722f81824fa69fd47e1b48798827b0f8bc4a4b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6122387,
+          "sha256": "46354d167353bc4cfa177681bc58f386112a297686246ea8677a0f73764743d9"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1812,
+          "sha256": "8004a33d9305aa6f1f3051f2d785256a8e68a1285d4d9ae25ce5d09b65419052"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "80479a8799d90cf281467199eb929d6eb8684802b374b45872723b225468c7b3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 5206,
+          "sha256": "ab4e65bde9f50ef9db833c8809a440f0622f6159ff7e7fcfa78544098e2fc900"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6153127,
+          "sha256": "f0e4265db675b2bcd1a68377bb803c18f36107f7c7288288fe557fd866b7a02c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1802,
+          "sha256": "f97022a3dd8f21f9de13816b6380854aab93feb35d35fa352130fc9da1e0fdc1"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "80479a8799d90cf281467199eb929d6eb8684802b374b45872723b225468c7b3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 5194,
+          "sha256": "2476319bc6005c4527137e6988f31e8eecc946db056ba5f28e21703323f61799"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/lightgbm_historia_geo_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6148247,
+          "sha256": "1f1985a22723d317b6a53c992da8c607ee97cc4b3cb6f03a332f542d0b35e95f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/metricas_por_bloque.csv",
+          "filas": 633,
+          "bytes": 54486,
+          "sha256": "dd651c36d34cbb7515c4412f242d15445cb4e8a4fbd0f711524367475e27d6cb"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/nb_clima_rezagos_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 2157,
+          "sha256": "4bb1b6cfd4b99cc31d04f1578b28ff269763581e5955b6de2a01a2c4fd1f5adc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/nb_clima_rezagos_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "80479a8799d90cf281467199eb929d6eb8684802b374b45872723b225468c7b3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/nb_clima_rezagos_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4911,
+          "sha256": "957bd7e652f007bb3ab2dc0fd2f1561bcb026689b4798e38ed71ad904dd8d059"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/nb_clima_rezagos_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 9297922,
+          "sha256": "f1a7dd398e0b492e028aabc428bc5cb7ab6710cd7c8be55e8f28e3175c5cf8f3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/nb_historia_geo_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 2150,
+          "sha256": "05584b58b4a705192d173c9c5da7baad29c7dde2c75333f7bb83277a8f8d67d4"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/nb_historia_geo_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "80479a8799d90cf281467199eb929d6eb8684802b374b45872723b225468c7b3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/nb_historia_geo_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4846,
+          "sha256": "615277542b7f72c877373affe78bc5039fac9c727cbc72b2d54e141702d83b2c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/nb_historia_geo_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 9318824,
+          "sha256": "ca53cb614dcfb1f129d7e86406066ac2870d7ab120606f70bc6f8762b503e223"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/poisson_historia_geo_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 2549,
+          "sha256": "2133e02a35c77120bee3e420970693d069e87e01ff81ce5aeb40943432d0d9e8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/poisson_historia_geo_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "80479a8799d90cf281467199eb929d6eb8684802b374b45872723b225468c7b3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/poisson_historia_geo_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 5132,
+          "sha256": "0fd62954d54d566c96885b6e9419476c771161db33fa5a8034236e279a3d31ba"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/poisson_historia_geo_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 9366695,
+          "sha256": "0ae0e18d687b5e696420cbf9162716dbe6f8bb7e64d5d6aecc2fa311c150769d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/predicciones_baselines.csv.gz",
+          "filas": 194805,
+          "bytes": 1553090,
+          "sha256": "13bcec2a057520a98a3c1d891f09da70ea81c719c3264ddc8f11022d03194d94"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/probabilidades_por_bloque_y_semilla.csv",
+          "filas": 1482,
+          "bytes": 230917,
+          "sha256": "e1a76eef41231bfbd0448e5819768e76605e18bb1de2a0bd03dc185cdbcc1fcf"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/resultados.json",
+          "filas": null,
+          "bytes": 3680,
+          "sha256": "93f05ea3aeab2242f6aa25347f3fd0548149e2cea6cf5e498257662b8b0b1d8b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/tabla_conteos.csv",
+          "filas": 48,
+          "bytes": 3950,
+          "sha256": "47f4920f9f4911562a97dfb25ad2a4d9d3733bc12be756452117050d2ce3ebfb"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/comparadores_revision/tabla_probabilidades.csv",
+          "filas": 30,
+          "bytes": 2858,
+          "sha256": "5e5230948492ba0a1a1a26f7991a902c19da30c7f9be271fbe520187b31225ca"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/ale_b3_h4_2023.csv",
+          "filas": 10,
+          "bytes": 1014,
+          "sha256": "00f1c644873272c4dd44a678a5f9c522a34e57559d2ea6fcdf6a22fcab7acf8d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/ale_b3_h4_2023.json",
+          "filas": null,
+          "bytes": 261,
+          "sha256": "2932affa73a726f15fa20e9b295ef5fe3ef1a7fe759ab3e6cb185a7e5b2ef23e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1906,
+          "sha256": "011c659aad6b8dfb190b5b2824078c24d23084c9cdb75b905316036348111453"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4638,
+          "sha256": "0e3fa426c11d9c7c14e39dad721cabc1a5b4ec53dbe43a8acf860dc3e8614214"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6790997,
+          "sha256": "aca64a2d2382505033ff7601bea2c84d1752bdb66e76901a62897232ed091986"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1899,
+          "sha256": "73e282995304e51b5be83b1c46828685ae4842d8688285f2746f21c5d9969ae6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4625,
+          "sha256": "5921085ebb6807fdb53343e620d80dbe17ffa1bc91aec57c9977aabc9bf661a6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6816048,
+          "sha256": "caf9435a87377d6e2315e92b5aec2d1d7ef234c8ff33772f5f91f83d6e9f56ed"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1899,
+          "sha256": "c9317bb4fb50070dd751f566ce20a918a145893ae58cf44280754b8ea559e47c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4635,
+          "sha256": "f261af1670d3c43518a4fe3d772c927c24b9bab904d5feb03d045a4ba0a83a3b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6816916,
+          "sha256": "ffcd3e4370d1b20bb7bbe96cf9f58b025a916907531b5fefce3bfd7dcb801486"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1906,
+          "sha256": "320ce4f33ca5fa3da279c90d26d66d3d7692ef3f711083d7927880d32fafa4a9"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4637,
+          "sha256": "ec6fa060fe4973ba241205c0a32f73b66ec53d4937d1ab603ddcea6b38239e19"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6676153,
+          "sha256": "f1fb54430b349bab1d6e1d307a797dd2fec54b4b986732b3ba408bb403fc55a6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1909,
+          "sha256": "97542821ab6dbb6e6b4ae0e88203a56abc509bbd9b06dea9d83cca48e7d4595d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4632,
+          "sha256": "604fd2840e07a4d9ccc7cea2c6541ac448cf2decc79a8a787f04f8184e5827c1"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_anomalia_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6727770,
+          "sha256": "f87cc04c1cff05650cae24f2a2b09411a7f0c3b32908242bd4ef043a7f01cf67"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1903,
+          "sha256": "10a6f53d4582192a18a5ccdd1a8cba5dc4db6b6bd5cfdead6b399a86c7346256"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4662,
+          "sha256": "4bb30c157259b2c3523b79f7244a99fdaf2ea112be00508069d69b9b41e5d69d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6327390,
+          "sha256": "fd113e19153b625658ffa666bdb57e867537992188af30549c0f7abe844fc91f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1905,
+          "sha256": "5b85cb72835104a659bdc1aa6b901a4dd5b0c1c9bb7262b97af49e5f37ad95b8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4676,
+          "sha256": "48d6ee049036e6f2749e321385734ee472c4c7a92c39076f961a9800a9a846aa"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6363241,
+          "sha256": "4571eed9b41c00852165ae6418cdc169832c3a0f504df35278242f193d2841ad"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1902,
+          "sha256": "b287ab9345c5eb7249f64f97e911c11555784e54b278fff99eccef6caa05c7de"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4689,
+          "sha256": "df013af060314e5402ef374befc4bea2cd246ace344ced3cb952219312a5f60e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6378770,
+          "sha256": "ca5dd52f2c27de74d77c4c00eaf36294066b3044977ac98b79bb561d02707b13"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "c6c0f37524b217b46c248f6240896071a08eb2dcb6a429de994a5141b23d7589"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4687,
+          "sha256": "d200a63a23ea4c9683b7180392e2a2e727c797b9a4bd3989721ac1298f635490"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6388501,
+          "sha256": "a8f134b802b647183fbfd9c7f1cd5aa9314c5158603f871e1a31b0f6e6a34a9f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1904,
+          "sha256": "41f75faeba4fe12efcfa9f13e77311b027c6ed6774cb61d8e75a2790f648a36f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4681,
+          "sha256": "53898443f76899a696a861e9eff8545ace6ac3de9d1b77edcea5e88ebb4b3fc1"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_historico_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6314152,
+          "sha256": "a62e36d7efe1e40e7127cbc5f547fca2c16935417927c50bff64087c43009860"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1899,
+          "sha256": "da14db3c2a6bafefb1f3e32a62a1072e7085676f8d159fabaaed4961c3d238a8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 5088,
+          "sha256": "1955c37d98bedfd14c42a56f6271981652d78b2f91c5e973ac66334f82e23f94"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6695845,
+          "sha256": "c28378b750e935540035f53145f16dbfcdead2d257894740ef776ef643476466"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1899,
+          "sha256": "94bf1399f5eca8207b8992bf6baf5cc2a0406e5848a3f10dd21cc3e7b5201d6f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 5091,
+          "sha256": "52d36bc60c6321b265edfda69b2181d715a91932d4b30373e33d4a848a232471"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6654415,
+          "sha256": "5aefff1d0535678cdbbb32bc8eab4888bf29cbdc82b802c366c0a2de9729c9d8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1915,
+          "sha256": "1be651567fab0641d66d903a874e5b8b1746fce2a996a2b85cf0be3b2b4651cb"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 5081,
+          "sha256": "33eaaca4657af96afbaa940aa59ebefbc33fafd7272289e97035f0d73c406039"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6641654,
+          "sha256": "805db29d8f973d946be75b4c6169637933873bb6fdd89b1d310fb9c29df25fad"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1898,
+          "sha256": "a39873f6d631ff576126f86a79607ebcb24f585e1e1c5957a393ac1f8b04b221"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 5088,
+          "sha256": "4eeb586294416f88579ceb75a714f8f43c01289d36509ac2d6172ccb63402f72"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6660620,
+          "sha256": "1eba193733c4316ade877e4bf279bf03280d8326ce1af168a00ce795125d09dc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1905,
+          "sha256": "d09288bc1a51cd26c2a4311d6b30dd0b020d23467e48fcb8da5302ef6a505eee"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 5088,
+          "sha256": "252e9180b3a3fdf9382c21fea3abe1a5f71272b614ee54524c324e44f055f68d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_conjunto_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6636626,
+          "sha256": "8b889b02a26bb8435c3ab8dd67631accc670bd3eeecfd55556e0c32882203d58"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "6f2171bdeb4aff50174df93ddcca050cc1df2c5682c27b2d1939b97af385afe8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4749,
+          "sha256": "b97d27f99b16946d0086e29ec38b8ce479e68ee352c322e5e8ce8d2100c6b729"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6547439,
+          "sha256": "6a3e4faa0d38bad77871c16d9f63a5c88a583d8ac6dec6e20115ceb03d168a1c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1903,
+          "sha256": "685272ed12eb0cb865208ca669ad41bd1785af12da03cf566e5e9b2b210ad03f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4739,
+          "sha256": "9b81dc06984cce888dd6d22d9ad8d40b84d2b7601001c0864a69e191a6c08d64"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6569288,
+          "sha256": "5438ec6ebc0097e52561a37c80d01c0c62c35826e0008dbafcbb2dbba2414fc8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1898,
+          "sha256": "0ed621cef348c05b299371d6f8a2438f26fcb45904243686a24f17f55978fb12"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4743,
+          "sha256": "5b15425b4714405e5a9b1ac43bc573aad761274fce2923633bafeb37f6c7990e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6506916,
+          "sha256": "8a37e4ede336873f706d0289e68d7967124db29382eb1d60f996f4d2155d786e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "37c92b810ae132e26efacb1e2c8493be6ef81f3fb8a6ef1dbbb4298b613169e5"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4743,
+          "sha256": "b00c3db1f39962245109df13be9f48744dc2c9e9ed71a59a10c00b2cd93f4dd1"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6524686,
+          "sha256": "7f9c88acce4788958a957d68f17cfd002fcf019125c1cf6334441a23ab355e1c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1907,
+          "sha256": "eaad534dc6e3fc901d3a4f017bd563439f162cfccd2cef0e5f4ecb90067d2926"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4732,
+          "sha256": "adf8db1bc84291c1cb607be6cac2d03cfe0d37b5ab01b008670f8902d9162dd2"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t1_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6457151,
+          "sha256": "b0c44d924e596e668966914cc0f656a0ad8de6172a2b494cf8e9e2d5355aab66"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1905,
+          "sha256": "42f7217e1dfaade04fbf389fa627263623f94fb5cf7c36d1c7379204885811ff"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4749,
+          "sha256": "592b5b4c29bd6dcf50507b2fe9c47a055b9113b6d8b4e2541a40a26dc238bf6b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6638301,
+          "sha256": "65138783e31a1ea01ac7c309f2a6ee7c28128e0916b434983fe0ed9da91c9ed0"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1903,
+          "sha256": "39680aa091b1ba909c499a592d1a913b54de2ff2fa5b81f137b35e4f5e6f8cc2"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4753,
+          "sha256": "a87e98d7bdae32d4120d74bdfbd96e9e0558f4be013deadf20fa43cac8d8f890"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6631971,
+          "sha256": "4ddeef342861926945b8fc29d333733706e1953a279cb7bdcc2bab4cb92df043"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1903,
+          "sha256": "1cc091f362f046dc7175fadbebfd80c35631e87e1b3308af318c21e82d7967fc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4747,
+          "sha256": "48bc3fa90a63377f915bace2a09671eacf96501e954dc244a703a6b6d3702acf"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6610386,
+          "sha256": "fce11739dbb27be0ba2ea22871c7bd6ff4b6349268e54b596cfe3818d400740f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1905,
+          "sha256": "deebca2946b152ef35f5288a171faaa80e29ea8222c1c40fc4972ba79014fcd6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4743,
+          "sha256": "9d2d96fd0976fd4dcb683b1ca202cb44c4b70d9ba388c1a199b4f2efcf97b421"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6520087,
+          "sha256": "6914cecd7e7b3fc4fb13897e8f7955b8ce2d0fe5ae002ee6c0564e5aa96fc145"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1903,
+          "sha256": "6c6ed689566a4fe166e35155d807c5dc8af6345267f52135625341ac4e8148a3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4740,
+          "sha256": "e7d6317181c7ef1bd967e4bbc8c585ed262da36b74c9fded55ea22a03c079bf9"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t2_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6574033,
+          "sha256": "2baf8ea45d08fce53dea03abb62dda3e56b347d93e795a2ad19b272fe09358d2"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1911,
+          "sha256": "7084f9221e3d3c6310f59a5b226db9f5fc260e5a56061c6e8dbde0d94d361447"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4745,
+          "sha256": "8c990ec7ce24b4765a1fd60ebf09f44916293f09d601564ab86f929e0e5f2e82"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6570724,
+          "sha256": "1a9072d7051edea8b53f700c1da33e34836a30044dcc45d1282de23d7a8240dc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1899,
+          "sha256": "03bd28089bcec17c730beacb8650385ef3aa0fffb8c4f849036978fc5e0ae83e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4749,
+          "sha256": "59d8c64ba0afc910ff66f87c010145c1a008524f1756b00d00a86877f37660c7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6597727,
+          "sha256": "ae4ca0134ff944385d738d7df8a3e1b2759c062abfcd91805fb722e6f5cbfc5f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1907,
+          "sha256": "5e6ee775fee53264839953b736b280552d75134c22496d477d1ddf57e245527c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4740,
+          "sha256": "9a9ef347ca8d0e777a6f09f88d9081e2b1870795212a5f4cd73ae1cf77776a01"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6599350,
+          "sha256": "f7f4c99da1baa50e2d12a8e16f1d9187f0fb9755852d27db29c80c374f6a45a1"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1905,
+          "sha256": "d6468086074161c3c7c1891124742dc9e2d10c35c5713f876ea2ea43a1d72cd4"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4753,
+          "sha256": "c6ad00a0b464c339127c44ca4d4ef38eb3507f0dffca05de6c8a580f68000646"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6489006,
+          "sha256": "ea9debb38931d6e3890c747ef495ade95a38e6b9367a20407ded380c14b65984"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1900,
+          "sha256": "6b585becc491016933954ecffcb7206bdd75a8d1d2abd89d26bdd4220eed54c1"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4740,
+          "sha256": "b5077f406867740d484956d9faeccecae3b0400e5d4b0e66bf3357621d33673f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_placebo_t3_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6580283,
+          "sha256": "0b83b62662a95cbfb14a93d72b2d045e74a9b19f072a9a19f297c615acffa98c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/contrastes_por_temporada.csv",
+          "filas": 741,
+          "bytes": 62249,
+          "sha256": "393ece8b09ed73ce970f1ab0e41b971ada6702e634e04cc35949eaec08b26926"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/cortes.csv",
+          "filas": 60,
+          "bytes": 7988,
+          "sha256": "e48139948989a648f933aec634a2f36de514e46fd414e06841e2d2701ca7dbb2"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1905,
+          "sha256": "d77689191f0bdc5376c6b71c054810a8c65efa4b142f8ceed614f7e6b5355f09"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4683,
+          "sha256": "acb79739f362ddf156d662750385fba2046af1685e1de33617941b692b6c56ba"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6257192,
+          "sha256": "5c2ec03dfd9d14cfff178a354ef91ffa00191b00d4cf55330ae700a1696a3b11"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1904,
+          "sha256": "85afb94585120ee920c108ef5dbf26c1ed8c842dd94ef63154aa8237e6b37907"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4691,
+          "sha256": "468c0f4a2ba039f2f57b094be4ef7195aa4d05d93d52f70db315ce47ba075229"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6268425,
+          "sha256": "6dfa5acda0586dbd1dde1c63f31ae8c03470c4474f17711592d2ff4740267475"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1910,
+          "sha256": "f15ed4f9f85f082fb42c8770a0a36d3c01385e2e97276fe46674338d52e319f5"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4688,
+          "sha256": "f88ff5906940517dc2dc7a4296462f7cdd167d856d5c9dd35731f27471743591"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6312853,
+          "sha256": "dc71b1833fc4cdccf7e21d1edf13c38d3ad59adc741f6e8f326cdb04c482f0cc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1904,
+          "sha256": "0ac8eac804a785f7d5240ad3750ed28feef5eb8b2cca62e47511b5be86c9354d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4688,
+          "sha256": "cd06fdcefc2614f2b8289078528838b4b69134897fd0b7b0f085e91d6c63fb9f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6290562,
+          "sha256": "430568444aaccc811de61a5364b4ba49a94d9e332892ca6e7a98553ebd41f5c8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1902,
+          "sha256": "a9737507e04d47579e053580032e17f85443e5daffee1d93239ebfddbed44d21"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4686,
+          "sha256": "93e6810dda252f18afb29a79724f8564096df8e79566aab33cd7120f78015020"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_historico_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6287385,
+          "sha256": "de1d4e89b76ffe3fb5e9337448fbdfc33d6efa2473b71e825af0a90e01aaadea"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "721a624b0d54d2a86ab6a728bda233a635c9a38740ff52c4747eee475ac0c0f3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4347,
+          "sha256": "f4066f2b8c3d03c8c446a461bb65bab6d8a2d5f9cd31bca8cbd911aa54b898d5"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6655325,
+          "sha256": "9643dcdc0e84c3901f8029e8bede50ed28ce092b2ad95379e8f7bd3b6517bb19"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "fd53ee4f226752ed305a22b5f6bc8da593fb5ee8ce91712e1d1f08740bc92164"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4324,
+          "sha256": "8c343693fe26094214ca27cc32afb72e91da6d1d2af3d1bf091e576f89cee73a"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6603303,
+          "sha256": "a0e8081733d165e098174ff66fb5a258a6df7953d31337634d15b4b64c4069e7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "ac5254382b42244f43d594a83a0e7f83b0139f8943763b3d2cb1e7267dc323e2"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4349,
+          "sha256": "b71181a02bd7804f84e2783f2404fb691bbc3ca0f2cdf82cfa8510e74ee4c3ca"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6671036,
+          "sha256": "8c823fa6915bf32bb05cbdb67baa84074502d4a96f93af0409d48cc1dc0d57cd"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1905,
+          "sha256": "f1facec3781d4490465e4863a47839918cb5cba8f5012b1ee58bc3c577166921"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4342,
+          "sha256": "113e0e467c1fe949ed2baed7fd021c69d60d5d3e6108cd8ef0e841bc10688e9f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6644864,
+          "sha256": "35733fc741c97299ebbadb4e0e4b3b8ae535c9f09770ce2fc4f09e43dccb4979"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1899,
+          "sha256": "14ae36e08de6c35b1aff91f9b940e62d05f85e86b5886717282df2feae606668"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4332,
+          "sha256": "c050e36ed2f0d4094fbb58383294d62fb95c8ba66189be8ddb9a566c9295981b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_obs_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6608989,
+          "sha256": "5ef48cadd8280534a6a596be9747c30c9b4abb935fbf4790f8a0c15ea7e5b4f8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1911,
+          "sha256": "a51a7bf4aa67e09aeda40327ba63ab3f8a244b9b101fb7f40d5318e9fadc8d40"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4553,
+          "sha256": "fd50aece1993df08337cc20d8b840eb9c2499dd7d06fcd7f1e8c973e7cf22e3e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6364337,
+          "sha256": "f343d7818cd4e3d29152d8abcfb0b45ed896b7b3bae5d1c0f85aec92efc7aa5a"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1902,
+          "sha256": "706b78e5f0370c1d7d79813d1156a7fc4ce17aea7b64a58028c9cdbb0b8fbcfc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4567,
+          "sha256": "778833dea22f294d3dfd7ed3b20aa3b769e2d9a370b463a290baf487e723c9b4"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6397197,
+          "sha256": "4c5846e1c75b249fc468204abc34e42502474d06e783df9b6a5c313b48caa9a9"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1910,
+          "sha256": "fc956d34e047149e555a4326535a0cb00459f27d48426c8562dc9e6e2b66b5dc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4569,
+          "sha256": "5938d277ac2f154ab866df22cdfa752baa831cbcd6dce09ba06d129c00277ecf"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6432794,
+          "sha256": "e0789c0d86ad2f90d96e720e65815313cb3221841e177b89bc4b6b37cc72778f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1906,
+          "sha256": "c557c5b9331ff2723ae7c42ad287cb639d1fdafc1350ea0beffb168d174c15ad"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4572,
+          "sha256": "c776f222a9b3c812a1d8c27427bbed66464b0f24dab0709e2a31353981a00766"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6448864,
+          "sha256": "dc2aab21a3adabd1237bde41d2fff655688079c99fc7733461d099a30a40478d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1909,
+          "sha256": "68d586d7e56d2e7aadf81212694db6dd9aff600a01a0f9a54cef3155ac4524dd"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4574,
+          "sha256": "9d0519979c30cf0e071912f1d081c5cb8f8c5de12cb4daa0ec976b973a11d554"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/d3_placebo_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6470322,
+          "sha256": "a6784e06c49e407b73cd5ac9ee0f2290458a82c07cfc5aedaf3a40b2e858c2ad"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1910,
+          "sha256": "d252181cec6aff50921e2cd714066ef3aff346e07270efb66edf1518a7487a86"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4458,
+          "sha256": "cd3709a0ef8e3abb7c64729f85b6af1524b3e36ba95105f7c7483a6a9dd175f8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 5061730,
+          "sha256": "b6753f22d36035580c4266ca3f673960fc8bcbd7fce2d91b20e80287ba3fd7c9"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "3a85e7b43b5092727f140793cb6c09f9d9d0560b74392fe19fbb755a0b4de52c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4461,
+          "sha256": "7e0b16ed0e05f311e900e6035d5b0981cd9d206668aad5b2ed04a024b30d40eb"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 5060670,
+          "sha256": "c5693505b61beb9a884d1854dc917084847a7e687a9b9048ddd3a22393aa7b4c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1895,
+          "sha256": "2e4a10d87ef1a127d84f994caf835fd346a122c9149f1260427e7b1a5bb37455"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4455,
+          "sha256": "34db1e205fa5d14b27da623b8d714176aa212437b261279c33816fcd06620d5e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 5069952,
+          "sha256": "990da90a0c61482c9f7f58b4f0f20ad7d7dbf7cbf4b5ad5455b6c5735f8ff82d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "4624325f18aac743329af8f1f15a2eb4aca87d439de7cd4215ec83e8d973d0a8"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4455,
+          "sha256": "f205ff9173abee35a7e09baba9892a723cc4ff0760cebfccaf9c39d91805c6d9"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 5054183,
+          "sha256": "f83f3b3409c48ddd4fc83a5686ffd9dfdf1db1010a517d28c3ac0d211b4f2b57"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1904,
+          "sha256": "e985c2e71072e8608c7029352415221e84b9614393d76c4c40998c709eeec2ae"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "8bd9a0fd908209db340db4990846b3a6ac096958d131a6ed9e868badb0a85fe7"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4460,
+          "sha256": "dcf0993f09dfcd64b307cc0824782b01261f1c58b61576761f52e6132becffb5"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/historia_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 5083149,
+          "sha256": "cff9a132240d4a3c6123aeb9eb88c56eb887389cd5643e266307a3be6bd1310a"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/metricas_por_bloque.csv",
+          "filas": 3420,
+          "bytes": 268034,
+          "sha256": "854a5f4e21d3b8399d999d5ba5fa3d3a95ce4172852313f39ec4c1eb2e4f13ae"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/placebos_donantes.csv",
+          "filas": 3411,
+          "bytes": 176880,
+          "sha256": "49560e5fcbba86da962432078f799daa6826554fd92b8b67525e72f119522dbc"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1905,
+          "sha256": "b412d0d121fcae271a0aa5f77202cb2166469a11e79a3034a2f5369f0e856016"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4619,
+          "sha256": "96fd03ebc9904a6abde10bcfac3a36106fcafcad35b8f57c245b62d1fa48e092"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6736238,
+          "sha256": "d451a484faf912c04644fefe3f60838a6c7fbdc7254f993d21b808794b7a8016"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1905,
+          "sha256": "b8d776bf6476d708d71cdc77c43f271726dbfce0eb9fceba0a05d87f17279742"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4618,
+          "sha256": "57c8a40d6b184089300571c214b21221ea9321a6d5f39b0b0b22e865ef7625d6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6695369,
+          "sha256": "6e1b025db52c531e8d11d2304d2533965685f86d6bcba8d7094b3870fd01865f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1898,
+          "sha256": "66e981be8bbff346da2d9565c808a15fe591c9c4f28158ca4ef9a46ed1fa0a46"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4637,
+          "sha256": "ee428c059cdd5f4095cbd9a0a4ea92b1a949e10a7efd42aa2ba24148b983272a"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6709995,
+          "sha256": "6bc97cede904fc997b79a0c334758f29bc9eed36f1c4ec051afebe14cc7a694d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1892,
+          "sha256": "a02d9770edf2408b847f11f3bf02eb1ca187888ff87960a44ab7be2c5d03efc4"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4623,
+          "sha256": "35284da69f022d62d28f49660135f4a5ecf3b8035318bc7a7e00272e9b4c59a6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6664092,
+          "sha256": "a39884d0e9bdd311fb8730d36329c3fd56b277f1f7b44ad09b9a54d2b1fbfabe"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "0363cd166386cbc5f775a922813a6d9bd60a97910f021f26b6fcceb2f729598d"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4631,
+          "sha256": "66bc08b60aaffa41d827747104a7dcb3e4b8762761025654c41abd20fed6c23c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_hist_geo_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6720997,
+          "sha256": "4883eb4bae63ee73e18b31d916a0517249f93f157133a2519f6b585d1418dce5"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s17/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "a8ba2b8406e820425d750b7f1b51244248f23a29485d4a3e2d789453179947dd"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s17/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s17/metricas.csv",
+          "filas": 57,
+          "bytes": 4791,
+          "sha256": "c288485a79548b1d79bb501bd301ff62713a0751936f0deecfef416b5b98f460"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s17/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6261936,
+          "sha256": "8ec19c456df8caac973e5d7052118d43dda9dea2db0c10ad479db25c3467478b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s29/ajustes.csv",
+          "filas": 20,
+          "bytes": 1906,
+          "sha256": "c409a4f79aaf54ca2e5d8496f200ba1941dc3d1d9892d00d83aa8310dd1bb178"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s29/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s29/metricas.csv",
+          "filas": 57,
+          "bytes": 4804,
+          "sha256": "a60f57c49d494e73523c38fac4d62cb745d8a3f4547645bedebbe412279bea4e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s29/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6281030,
+          "sha256": "2514b1f7988219e32d6f69c6d5fdd671e906aeedb585f9964cafe17337440313"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s41/ajustes.csv",
+          "filas": 20,
+          "bytes": 1903,
+          "sha256": "6b4af190ad7bff0a75eb6bd138ff7524775182b363a890186b2899c1e0110078"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s41/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s41/metricas.csv",
+          "filas": 57,
+          "bytes": 4796,
+          "sha256": "689bd5a0ff2df7a72fce0ea85b06bc165043c5ae264091b6db17ec3f6ab6903b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s41/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6245746,
+          "sha256": "853223aad001d25da7816b9078597565f2cabd274a35e554985579e5eed91c67"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s53/ajustes.csv",
+          "filas": 20,
+          "bytes": 1901,
+          "sha256": "471c6af9b8ca531f64878af5f8e1d4eade9601da317112216e47a326f58c4fb6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s53/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s53/metricas.csv",
+          "filas": 57,
+          "bytes": 4808,
+          "sha256": "847fa60bb047662d94b15b9d5820644e4bdd8fdd71cc53d681edcebea8eae57f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s53/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6323328,
+          "sha256": "d36eeba83b85fa2800ed7027da861759d2da89234f659c7433838c6cc26e2944"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s67/ajustes.csv",
+          "filas": 20,
+          "bytes": 1903,
+          "sha256": "06d041c4bee7a0d9deaf5552fe8201646ddfe516ee236a57721410b019b24c2e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s67/control.json",
+          "filas": null,
+          "bytes": 219,
+          "sha256": "ee77bebdb8ea189da26abd12e3d5b26f43bdc70e105d7dfee4ae1eaed90c5869"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s67/metricas.csv",
+          "filas": 57,
+          "bytes": 4791,
+          "sha256": "5efafb53226650e67c7d55ec2c989201ae6ed700fe015ab0f6e98ad5e6289647"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/b3_obs_sin_geo_s67/predicciones.csv.gz",
+          "filas": 194805,
+          "bytes": 6236811,
+          "sha256": "cf908a889f819f3a4b10be6b8188a4caa416272bd216f08e88d2f32231d0781b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/contrastes_por_temporada.csv",
+          "filas": 228,
+          "bytes": 22654,
+          "sha256": "867fda7f710d773f4235fe5d8a4957c058c0c00f9fa33b67383beb988c871318"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/cortes.csv",
+          "filas": 60,
+          "bytes": 7988,
+          "sha256": "e48139948989a648f933aec634a2f36de514e46fd414e06841e2d2701ca7dbb2"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/metricas_por_bloque.csv",
+          "filas": 1710,
+          "bytes": 132737,
+          "sha256": "c2b86a5832545f93c8e6c9cbd85076bfc897afa8b6f5c9866b020d1dcc93c26c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/resultados.json",
+          "filas": null,
+          "bytes": 1316,
+          "sha256": "3dc7a8119c6bed9939219dd8886ad8363dc2401de50e7f52e1704f850fa8a0d3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/puente_geografia_disponibilidad/resumen.csv",
+          "filas": 24,
+          "bytes": 1729,
+          "sha256": "f45523e529ce3f137039c5b2ecc1d579df2383a52c07653449cd02abbde2a2c6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/resumen_y_sensibilidad.csv",
+          "filas": 273,
+          "bytes": 21815,
+          "sha256": "d792e81fad25a9dc59c93ed04445289bf7a1f4b7c0b2a1eedc282bf9e541b8ae"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/tiempos_ajuste_simetrico.json",
+          "filas": null,
+          "bytes": 113,
+          "sha256": "2fcca7209e3a1425f6c4199f0fa364360749fe14205e124040d45c5d44dab679"
+        }
+      ]
+    },
+    {
+      "nombre": "clima_sensibilidad_v4.zip",
+      "bytes": 9433101,
+      "sha256": "ee86cd310d6f5fd367524ddc5a44be2a0b8c253eec67fa1cd6fad30cd7192d27",
+      "destino": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima",
+      "archivos": [
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/candidato_era5/era5_piura_poligono_semanal.csv.gz",
+          "filas": 91000,
+          "bytes": 6429952,
+          "sha256": "e6d280e27ddbf446a43aa53ac6eacf5ae5ac2dfcc35b1d62ccb057727a531581"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/candidato_era5/manifiesto.json",
+          "filas": null,
+          "bytes": 1794,
+          "sha256": "f3539408ad435960e2d3ffaed31fa2f6711f8c7d1e7c5430ef36b59cffbb281a"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/fuentes_costa/cobertura_piscot_2020.csv",
+          "filas": 910,
+          "bytes": 51608,
+          "sha256": "413e8cf767bfb1839a6a9cb0cc30d18e7539ec1b241e3673ee9b4b5c68cdd4f0"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/fuentes_costa/cobertura_y_temperatura_diaria.csv.gz",
+          "filas": 5915,
+          "bytes": 71475,
+          "sha256": "b1b2336477729c79b516171364a8785f2f922af263b3025ff493409274074800"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/fuentes_costa/estaciones_noaa_2020.csv",
+          "filas": 112,
+          "bytes": 11499,
+          "sha256": "8740a2e1bc0e89e82553c4fc2094e739519f10ef422f64876588b3e20a7e0b20"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/fuentes_costa/estaciones_noaa_2023.csv",
+          "filas": 112,
+          "bytes": 11858,
+          "sha256": "98a5ff30348d3519035aa8b503bc59d8aa5a49fc63405a01268bce7d7b52463b"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/fuentes_costa/manifiesto.json",
+          "filas": null,
+          "bytes": 1202,
+          "sha256": "bd56ce9e553325af8d8ce209455ff6cd3f16e41486374dddb7ae4dc77170af45"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/fuentes_costa/mascara_cds_vs_open_meteo.csv",
+          "filas": 349,
+          "bytes": 15559,
+          "sha256": "cb29329796c9f791b8f5ca5b74ef69e33926eb1d87e24238b4f15843b1ea975e"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/fuentes_costa/piscot_extremos_invertidos.csv",
+          "filas": 6,
+          "bytes": 228,
+          "sha256": "5b87429969e042840be0f44939c17e978acb4b0d278e07c1887f2f4c8bf89c0f"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/chirts_resoluciones_semanal.csv.gz",
+          "filas": 74295,
+          "bytes": 2905832,
+          "sha256": "ee3a536dc7676dd318c55c1412966f4023d7984aa78963b3cfc54c3552f3815c"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v3_confirmados/piloto_clima/resolucion_chirts/historico/manifiesto.json",
+          "filas": null,
+          "bytes": 763,
+          "sha256": "684b8e419b659b0a17ceb3b5d7a27ab976b05887fc73ea1d59b8cbda45ec896c"
+        }
+      ]
+    },
+    {
+      "nombre": "modelo_v4.zip",
+      "bytes": 3847394,
+      "sha256": "65adc3d4e3aae3550d0f9eee83ad66f5d4ffda77202c646faeba8e4908d96b4e",
+      "destino": "models/experimentos/mejora_modelo/v4_b3_confirmados",
+      "archivos": [
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/b3_obs_s17.ubj",
+          "filas": null,
+          "bytes": 228569,
+          "sha256": "495189729e3b27c0f8bf89f0a51b5ad1e84a791e56ecc4ef58f947a5f9d9a317"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/b3_obs_s29.ubj",
+          "filas": null,
+          "bytes": 228569,
+          "sha256": "95fb2365c85f19b86eed379324492b244b3f0452111a9ee1325baadb3da9d2c6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/b3_obs_s41.ubj",
+          "filas": null,
+          "bytes": 228569,
+          "sha256": "3ce686ad1de298ea45e24c8b393873c08c0cd0ca152813a402218e0f9f6661bd"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/b3_obs_s53.ubj",
+          "filas": null,
+          "bytes": 228473,
+          "sha256": "ebc5088c85182686f648a3b9862716aa68391aee9e26e512430b4f215ae3a017"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/b3_obs_s67.ubj",
+          "filas": null,
+          "bytes": 228569,
+          "sha256": "1e6bc7ac2069606623568b362d499f0ef6be2d4f6b962e2698d125abdd874667"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/historia_geo_s17.ubj",
+          "filas": null,
+          "bytes": 228367,
+          "sha256": "9853f110b2a2e9c04478d7bcac938012c0142bc74e1d1c8110b26cea93eefaaa"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/historia_geo_s29.ubj",
+          "filas": null,
+          "bytes": 228367,
+          "sha256": "fc472d13c13f8a0c3e8f27a56e4a04b2bd9ad564d9afe777d697cd2183ec4bd4"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/historia_geo_s41.ubj",
+          "filas": null,
+          "bytes": 228271,
+          "sha256": "94b4aa7f78655d82aa4116e269998bcdac40b43d55e38d89f8870ee8e80bc229"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/historia_geo_s53.ubj",
+          "filas": null,
+          "bytes": 228367,
+          "sha256": "d722c5c66e694bc9cfb7ab374e65bc9b0050a44ba62fc36f99d66b78d29d30b6"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/historia_geo_s67.ubj",
+          "filas": null,
+          "bytes": 228271,
+          "sha256": "b19f447b1e7cef14ec4002297fe230f462964038d4ae1cfba646834e5e4ab5db"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/observaciones.csv.gz",
+          "filas": 33215,
+          "bytes": 198924,
+          "sha256": "962667803c9ae40fd6ea7b7e88d4490c01ad0ce499245adb0d3e0bff03a8c9ea"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/oos_b3_s17.csv.gz",
+          "filas": 194805,
+          "bytes": 3157720,
+          "sha256": "3328e206952187eb91b39d5a0717b2788f74d024d371e1abf52ba530485dbdb3"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/origen.csv",
+          "filas": 65,
+          "bytes": 15623,
+          "sha256": "877672ec410b5c88abb1496f9891a5696bdd653bbaae892014c49bb4ba13b7f2"
+        },
+        {
+          "ruta": "models/experimentos/mejora_modelo/v4_b3_confirmados/paquete.json",
+          "filas": null,
+          "bytes": 16323,
+          "sha256": "8eb51d3568e987bd8ea2a162c9b3fe30c8a4b825a0f8a18d2db71352a83c44bf"
+        }
+      ]
+    },
+    {
+      "nombre": "demo_v4.zip",
+      "bytes": 756436,
+      "sha256": "936c67880fdbf677d5305e19ad0a60c0a3885a8f2b8d0e6cd1a4a13321fb41f4",
+      "destino": "models/serving/demo_v4",
+      "archivos": [
+        {
+          "ruta": "models/serving/demo_v4/denguekay_demo.sqlite",
+          "filas": null,
+          "bytes": 3330048,
+          "sha256": "538026696acdae1b68cb6dd08180d45fb6df128ec3eaedb4539a3424340e8115"
+        },
+        {
+          "ruta": "models/serving/demo_v4/storage/modelos/v4-62c3ac278706/b3.json",
+          "filas": null,
+          "bytes": 677,
+          "sha256": "53b853a1033e3ba53dde03cd46c282fd61eb78c2a439c2d6527d5b519f66e29a"
+        },
+        {
+          "ruta": "models/serving/demo_v4/storage/modelos/v4-62c3ac278706/booster.ubj",
+          "filas": null,
+          "bytes": 228569,
+          "sha256": "495189729e3b27c0f8bf89f0a51b5ad1e84a791e56ecc4ef58f947a5f9d9a317"
+        },
+        {
+          "ruta": "models/serving/demo_v4/storage/modelos/v4-62c3ac278706/manifest.json",
+          "filas": null,
+          "bytes": 47068,
+          "sha256": "082a033fd3e72225823c6fabdb35e3507e00310cc2cbf16163aeded6850db358"
+        },
+        {
+          "ruta": "models/serving/demo_v4/storage/modelos/v4-62c3ac278706/origen.csv",
+          "filas": 65,
+          "bytes": 15623,
+          "sha256": "877672ec410b5c88abb1496f9891a5696bdd653bbaae892014c49bb4ba13b7f2"
+        }
+      ]
+    },
+    {
+      "nombre": "tablas_paper_v4.zip",
+      "bytes": 4471660,
+      "sha256": "d513c4baa0ab954a8a8c2a281480abf1054be48e586b48c22514b4d5b90e37f8",
+      "destino": "reproducibility",
+      "archivos": [
+        {
+          "ruta": "reproducibility/README.md",
+          "filas": null,
+          "bytes": 2278,
+          "sha256": "6c7a7f15f3de1e15a44d6a7d4e30dde0c6885de31ee7d4663ef0bc4d88153eb3"
+        },
+        {
+          "ruta": "reproducibility/manifest.json",
+          "filas": null,
+          "bytes": 2007,
+          "sha256": "83dd9513bd10079fb99a5b6c7454fb3001090b9f7d90bc1f51cbc054d4b2a923"
+        },
+        {
+          "ruta": "reproducibility/predictions.csv.gz",
+          "filas": 61230,
+          "bytes": 4466189,
+          "sha256": "00a185202d4778f0f2c9109539c85c08525f2bb477e57a6b69541c9b35ee02a0"
+        },
+        {
+          "ruta": "reproducibility/reproduce.py",
+          "filas": null,
+          "bytes": 6845,
+          "sha256": "1170530cb8dfb02052c882c3d0310df135c6d329580ac2416c4f1478a465f1c9"
+        }
+      ]
+    }
+  ]
+}

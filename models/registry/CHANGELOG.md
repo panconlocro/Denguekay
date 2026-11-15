@@ -7,7 +7,7 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 
 | Versión | Estado | Tag | Ficha |
 |---|---|---|---|
-| v4 | congelada para el paper | — | [v4/ficha.md](v4/ficha.md) |
+| v4 | congelada para el paper | `model/v4` | [v4/ficha.md](v4/ficha.md) |
 | v3 | vigente y servida (experimental) | `model/v3` | [v3/ficha.md](v3/ficha.md) |
 | v2 | reemplazada por la v3 (sigue registrada como `v2_e3_s4`) | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
