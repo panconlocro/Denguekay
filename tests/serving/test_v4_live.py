@@ -1,5 +1,6 @@
 """B3 reads the new origin from the database and keeps archived thresholds honest."""
 
+from contextlib import ExitStack
 from dataclasses import replace
 from datetime import date
 import hashlib
@@ -48,7 +49,7 @@ class TestB3Availability(unittest.TestCase):
 
 class TestLivePublication(unittest.TestCase):
     def test_republishes_after_threshold_changes_and_reads_a_new_week(self):
-        with TemporaryDirectory() as directory:
+        with TemporaryDirectory() as directory, ExitStack() as cleanup:
             root = Path(directory)
             folder = root / "model"
             folder.mkdir()
@@ -78,7 +79,7 @@ class TestLivePublication(unittest.TestCase):
             ]
             batch = replace(template, observaciones=observations, fecha_corte_datos=cutoff)
             motor = motor_temporal(root)
-            self.addCleanup(motor.dispose)
+            cleanup.callback(motor.dispose)
             storage = LocalStorage(root / "storage")
             with patch.multiple(v4, V4_FROZEN=folder, V4_DATA_MANIFEST=manifest,
                                 V4_GEOGRAPHY=geo, ROOT=root), \
