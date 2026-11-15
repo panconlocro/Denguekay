@@ -90,6 +90,11 @@ STORAGE = MODELS / "storage"
 MODEL_REGISTRY = MODELS / "registry"
 # Data bundles of the frozen V3 (zips attached to the GitHub Release of model/v3): files, rows and SHA-256.
 V3_DATA_MANIFEST = MODEL_REGISTRY / "v3" / "manifiesto_datos.json"
+V4_DATA_MANIFEST = MODEL_REGISTRY / "v4" / "manifiesto_datos.json"
+V4_FROZEN = MODELS / "experimentos" / "mejora_modelo" / "v4_b3_confirmados"
+V4_GEOGRAPHY = (MODELS / "experimentos" / "mejora_modelo" / "v3_confirmados" / "piloto_clima"
+                / "resolucion_chirts" / "historico" / "insumos" / "geografia_distritos.csv")
+SILVER_CONFIRMED = SILVER / "confirmados"
 # Frozen out-of-sample predictions of the v3 (5 seeds, every block; predicciones_v3.zip of the Release): the v3
 # package fits Platt and the 5a mixture with them and publishes their 2022-2025 blocks as its OOS.
 V3_REFERENCE_PREDICTIONS = MODELS / "experimentos" / "mejora_modelo" / "v3" / "predicciones_v3.csv.gz"

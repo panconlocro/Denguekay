@@ -171,22 +171,37 @@ BD, su Storage y sus claves. **No verificado:** cuántos proyectos gratuitos per
 
 ### Datos y modelo
 
-Desde la PC de Rosa:
+La publicación de V4 registra el booster congelado de **B3, semilla 17**. La inferencia usa
+casos confirmados, latitud, longitud, elevación, temperatura y humedad ERA5-Land, precipitación CHIRPS
+y Niño 1+2. La geografía fija viene del paquete; la API consulta las observaciones de la BD al corte.
 
-1. Migrar (`alembic upgrade head`, incluye `0007_v3`: temperatura de ERA5-Land).
-2. Regenerar gold con el notebook 10 (gold trae d3 desde la v3).
-3. Cargar con `.\.venv\Scripts\python -m denguekay.serving.load_data`, con `DATABASE_URL` de `denguekay_pipeline`.
-   Necesita el silver de ERA5-Land (`meteo_humedad_era5_land_desde_2000.csv` del notebook 03 o el congelado del
-   Release de `model/v3`).
-4. Publicar con `python -m denguekay.serving.publish --seleccionar-experimental`, con `STORAGE_BACKEND=supabase`,
-   `SUPABASE_URL` y `SUPABASE_SECRET_KEY`.
-   - Desde la v3 el paquete se entrena fuera de la BD con la serie desde 2000 y las predicciones congeladas del
-     Release (`release_bundles --version v3`).
-   - Conviene publicar desde una PC con GPU NVIDIA: la paridad con la v3 congelada se exige en GPU. En CPU se
-     registra pero no bloquea, y el booster es otra realización del mismo modelo.
-   - La inferencia en Render es en CPU con el booster guardado.
-3. Para las predicciones vigentes, llamar a `POST /api/v1/admin/inferencias` en la API de Render (D2), con
-   `X-API-Key`.
+1. Antes de desplegar el código, el dueño del esquema aplica `alembic upgrade head` a la BD de
+   producción. La migración `0008_v4` agrega datos crudos y fechas de disponibilidad de B3,
+   además de la serie mensual Niño 1+2.
+2. En la PC de publicación, instala las dependencias y descarga
+   `python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip modelo_v4.zip`.
+   Si ya hay archivos de otra versión, usa un clon dedicado para conservarlos.
+3. Prepara los silver operativos. B3 usa la Sala de confirmados en
+   `data/silver/confirmados/epi_sala_semanal.csv` junto con los CSV de ERA5-Land, CHIRPS y Niño
+   indicados en `denguekay.config.paths`. Para mantener el archivo congelado, deposita las series
+   actualizadas en rutas propias del repo e indícalas con las opciones `sala`, `era5_land`,
+   `chirps` y `nino12` en `serving.paquete.opciones`. El histórico confirmado de 2017–2025 se
+   toma del panel congelado. La carga excluye las últimas dos semanas publicadas en Sala por
+   defecto, según `semanas_provisionales`. El cálculo al corte usa la fecha registrada por CHIRPS,
+   el día de disponibilidad de cada mes de Niño y la fecha de ERA5-Land cuando está en el CSV
+   (si falta la columna, semana meteorológica más siete días desde el cierre).
+4. Con el rol `denguekay_pipeline` y Storage de Supabase, ejecuta
+   `python -m denguekay.serving.publish --seleccionar-experimental`. La publicación registra las
+   versiones a partir de sus métricas archivadas y de los umbrales vigentes en la BD. Si se
+   aprueba un cambio de umbrales, vuelve a publicar para que el registro refleje ese cambio.
+5. Para activar una pareja que cumple los criterios, usa `POST /api/v1/admin/modelos/{version}/activar`.
+   Luego ejecuta `POST /api/v1/admin/inferencias` para h2, h3 y h4 y verifica las versiones y el
+   corte con `GET /api/v1/modelos/activo` y `GET /api/v1/predicciones?horizonte=4`.
+   La selección experimental se usa cuando no hay versiones activas y Render admite
+   `SERVIR_NO_VALIDADAS=true`. Una pareja activa tiene prioridad.
+6. Tras incorporar semanas nuevas a los silver operativos, ejecuta
+   `python -m denguekay.serving.load_data --v4` y la inferencia para los tres horizontes.
+   Eso actualiza las observaciones de la BD y usa el mismo booster publicado.
 
 ### Storage
 

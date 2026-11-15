@@ -338,3 +338,11 @@ La tabla siguiente es la propuesta original:
 |---|---|---|
 | Columna nueva `observacion_semanal.temp_media_era5_land_c` | La v3 usa la temperatura media semanal de ERA5-Land (d3: semana del origen y medias de o−1..o−4, o−5..o−8 y o−9..o−12). La de `temp_media_c` es la de Open-Meteo sin modelo fijado y la siguen usando la v0 y la v2: no se toca. La columna nueva es anulable, `double precision` (reproduce el silver sin redondear) y tiene un CHECK de rango físico (−20 a 50 °C). Migración `0007_v3`; la llena `load_data` desde `data/silver/meteo_humedad_era5_land_desde_2000.csv` (o el silver congelado de la v3). | Extensión (columna) |
 | Entrenamiento de la v3 fuera de la BD | La v3 entrena con la historia desde 2000 (`features.long_history`) y la BD empieza en 2017 (decisión M4). El paquete se ajusta con los silver y la BD solo da los insumos de inferencia (casos desde 2017, temperatura de las 13 semanas hasta el origen y la regla de brote). Comprobado: el umbral necesita los 5 años previos al año objetivo, la temporada anterior unas 104 semanas y las semanas desde el último caso 52, todo cubierto para objetivos desde 2022. | Uso (sin cambio de esquema) |
+
+## 10. Datos semanales para el predictor V4 B3
+
+La migración `0008_v4` amplía `observacion_semanal` con la marca de casos confirmados y valores
+semanales de humedad ERA5-Land y precipitación CHIRPS a precisión completa. Guarda las fechas de
+disponibilidad de ERA5-Land y CHIRPS. `observacion_nino12` contiene la anomalía regional mensual
+y su fecha de disponibilidad. En PostgreSQL, la API tiene acceso de lectura y el pipeline
+puede insertar y actualizar los registros. El cálculo de las ventanas se hace en memoria.

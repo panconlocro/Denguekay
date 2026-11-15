@@ -20,8 +20,7 @@ class Predictor(v3.Predictor):
     required_inputs = frozenset()
 
     @classmethod
-    def from_package(cls, package):
-        config = v2._json_file(package, PARAMETERS)
+    def _from_parameters(cls, package, config):
         horizons = package.horizons
         columns = config["columnas"]
         for h in horizons:
@@ -36,19 +35,26 @@ class Predictor(v3.Predictor):
         if (any(value <= 0 for value in alpha.values()) or any(len(pair) != 2 for pair in platt.values())
                 or any(not 0 <= value <= 1 for value in weights.values())):
             raise InvalidArtifact("Parámetros probabilísticos inválidos en el paquete V4")
+        if package.interval_level is not None:
+            raise InvalidArtifact("V4 no declara intervalos de casos")
+        return cls(horizons, columns, booster, alpha, platt, weights, None)
+
+    @classmethod
+    def from_package(cls, package):
+        config = v2._json_file(package, PARAMETERS)
+        predictor = cls._from_parameters(package, config)
         cutoff = pd.Timestamp(config["corte"])
-        if cutoff.dayofweek != 5 or package.interval_level is not None:
+        if cutoff.dayofweek != 5:
             raise InvalidArtifact("Origen o intervalo inválido en el paquete V4")
         vectors = pd.read_csv(BytesIO(package.files[SNAPSHOT]), dtype={"ubigeo": str},
                               float_precision="round_trip").set_index("ubigeo", verify_integrity=True)
-        thresholds = {f"umbral_h{h}": h for h in horizons}
-        fields = [*columns, *thresholds]
+        thresholds = {f"umbral_h{h}": h for h in predictor.horizons}
+        fields = [*predictor.columns, *thresholds]
         if (len(vectors) != 65 or not vectors.index.str.fullmatch(r"20[0-9]{4}").all()
                 or not set(fields) <= set(vectors)
                 or not np.isfinite(vectors[fields].to_numpy(float)).all()
                 or vectors[list(thresholds)].lt(0).any().any()):
             raise InvalidArtifact("Vectores distritales V4 incompletos o inválidos")
-        predictor = cls(horizons, columns, booster, alpha, platt, weights, None)
         predictor.cutoff = cutoff.date()
         predictor.snapshot = vectors.rename(columns=thresholds)
         return predictor

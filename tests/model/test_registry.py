@@ -65,12 +65,11 @@ class TestRegistry(unittest.TestCase):
         self.assertEqual(fc.HISTORY["V3"]["ficha"], "models/registry/v3/ficha.md")
         self.assertTrue((ROOT / card["datos"]["manifiesto"]).exists())
 
-    def test_v3_is_the_configured_package(self):
-        card = registry.card("v3")
+    def test_v4_is_the_configured_package(self):
         package = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))["serving"]["paquete"]
-        self.assertEqual((card["servicio"]["predictor"], package["tipo"]), ("v3_l5a_d3", "v3_l5a_d3"))
-        self.assertEqual((package["horizontes"], package["opciones"]["configuracion"]), ([2, 3, 4], "v3"))
-        self.assertEqual(registry.card("v2")["servicio"]["predictor"], "v2_e3_s4")  # still registered
+        self.assertEqual((package["tipo"], package["horizontes"]), ("v4_b3_live", [2, 3, 4]))
+        self.assertEqual(registry.card("v3")["servicio"]["predictor"], "v3_l5a_d3")
+        self.assertEqual(registry.card("v2")["servicio"]["predictor"], "v2_e3_s4")
 
     def test_v0_matches_its_package(self):
         """config.yaml publishes v2 since phase 4; the v0 package of the tests keeps the card's variants."""

@@ -145,7 +145,7 @@ class EsquemaOE2:
                 diferencias = compare_metadata(MigrationContext.configure(conexion), Base.metadata)
         self.assertEqual(diferencias, [])
         tablas = set(inspect(self.motor).get_table_names())
-        self.assertEqual(tablas, TABLAS_OE2 | {"importancia_variable", "alembic_version"})
+        self.assertEqual(tablas, TABLAS_OE2 | {"importancia_variable", "observacion_nino12", "alembic_version"})
         indices = {i["name"] for t in tablas for i in inspect(self.motor).get_indexes(t)}
         self.assertLessEqual({"ix_pred_objetivo", "ix_alerta_estado", "ix_obs_semana",
                               "ix_ejecucion_tipo_inicio", "ux_version_activa"}, indices)
@@ -331,6 +331,7 @@ class TestEsquemaOE2SQLite(EsquemaOE2, unittest.TestCase):
     def test_migracion_0004_solo_datos_y_reversible(self):
         """0004_v1 siembra horizonte_por_defecto y su downgrade lo quita sin tocar el esquema."""
         consulta = text("SELECT valor FROM parametro_sistema WHERE clave = 'horizonte_por_defecto'")
+        bajar_una_revision(self.motor, "0004_v1")
         tablas = set(inspect(self.motor).get_table_names())
         bajar_una_revision(self.motor, "0003_oe2")
         with self.motor.connect() as conexion:
@@ -436,11 +437,11 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
     def test_rls_politicas_y_roles(self):
         rls = dict(self.consulta("SELECT relname, relrowsecurity FROM pg_class WHERE relkind = 'r' "
                                  "AND relnamespace = 'public'::regnamespace"))
-        for tabla in TABLAS_OE2 | {"importancia_variable"}:
+        for tabla in TABLAS_OE2 | {"importancia_variable", "observacion_nino12"}:
             with self.subTest(tabla=tabla):
                 self.assertTrue(rls[tabla])
         politicas = {r[0] for r in self.consulta("SELECT policyname FROM pg_policies WHERE schemaname = 'public'")}
-        self.assertEqual(politicas, {f"servicio_{t}" for t in TABLAS_OE2 | {"importancia_variable"}}
+        self.assertEqual(politicas, {f"servicio_{t}" for t in TABLAS_OE2 | {"importancia_variable", "observacion_nino12"}}
                          | {"pipeline_seleccion_experimental"})
         roles = dict(self.consulta("SELECT rolname, rolcanlogin FROM pg_roles WHERE rolname IN ('rol_api', 'rol_pipeline')"))
         self.assertEqual(roles, {"rol_api": False, "rol_pipeline": False})
