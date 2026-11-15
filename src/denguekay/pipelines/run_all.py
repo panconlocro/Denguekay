@@ -80,9 +80,19 @@ def main(argv=None) -> int:
     parser.add_argument("--lista", action="store_true", help="solo muestra los pasos")
     parser.add_argument("--version", choices=("v3", "v4"), default="v3")
     parser.add_argument("--sin-descargas", action="store_true", help="V4: usa el bronze disponible")
+    checks = parser.add_mutually_exclusive_group()
+    checks.add_argument("--verificar", action="store_true", help="V4: coteja los SHA-256 después de ejecutar")
+    checks.add_argument("--solo-verificar", action="store_true", help="V4: coteja los archivos locales sin descargarlos")
+    parser.add_argument("--desde-release", action="store_true", help="con --solo-verificar, coteja los insumos del Release")
     args = parser.parse_args(argv)
-    if args.sin_descargas and args.version != "v4":
-        parser.error("--sin-descargas requiere --version v4")
+    if (args.sin_descargas or args.verificar or args.solo_verificar or args.desde_release) and args.version != "v4":
+        parser.error("Las opciones de fuentes y verificación requieren --version v4")
+    if args.desde_release and not args.solo_verificar:
+        parser.error("--desde-release requiere --solo-verificar")
+    if args.solo_verificar:
+        if args.desde or args.hasta or args.lista or args.sin_descargas:
+            parser.error("--solo-verificar no ejecuta notebooks ni selecciona pasos")
+        return _verify(release=args.desde_release)
     steps = available_steps(args.desde, args.hasta, version=args.version)
     if args.sin_descargas:
         steps = [step for step in steps if step not in V4_DOWNLOAD_STEPS]
@@ -93,7 +103,18 @@ def main(argv=None) -> int:
     results = run(steps, version=args.version, offline=args.sin_descargas)
     for r in results:
         print(f"{r['paso']}: {'ok' if r['codigo'] == 0 else 'falló'} ({r['segundos']} s)")
-    return 0 if all(r["codigo"] == 0 for r in results) and len(results) == len(steps) else 1
+    status = 0 if all(r["codigo"] == 0 for r in results) and len(results) == len(steps) else 1
+    if args.verificar:
+        return max(status, _verify(steps=results))
+    return status
+
+
+def _verify(**options):
+    from denguekay.data.validation.v4_reproducibility import print_result, verify_v4
+
+    report = verify_v4(**options)
+    print_result(report)
+    return 0 if report["exito"] else 1
 
 
 if __name__ == "__main__":

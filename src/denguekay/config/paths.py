@@ -107,6 +107,7 @@ V4_ELEVATION_RAW = BRONZE / "geografia" / "open_meteo_elevation"
 V4_LIVE_GEOGRAPHY = REFERENCE / "geografia_distritos_v4.csv"
 V4_GOLD = GOLD / "piura_confirmados_v4_gold.csv"
 V4_GOLD_MANIFEST = GOLD / "manifest_v4.json"
+V4_VERIFICATION_REPORT = GOLD / "verificacion_v4.json"
 # Frozen out-of-sample predictions of the v3 (5 seeds, every block; predicciones_v3.zip of the Release): the v3
 # package fits Platt and the 5a mixture with them and publishes their 2022-2025 blocks as its OOS.
 V3_REFERENCE_PREDICTIONS = MODELS / "experimentos" / "mejora_modelo" / "v3" / "predicciones_v3.csv.gz"

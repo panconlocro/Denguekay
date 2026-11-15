@@ -1,6 +1,7 @@
 """Order and selection of the pipeline steps (nothing is executed)."""
 
 import unittest
+from unittest.mock import patch
 
 from denguekay.pipelines import run_all
 
@@ -28,6 +29,12 @@ class TestSteps(unittest.TestCase):
         self.assertFalse({"02_ingesta_meteo", "09_silver_merge_epi", "10_silver_to_gold"}.intersection(v4))
         self.assertEqual(run_all.available_steps("06c", "07b", version="v4"),
                          ["06c_sala_confirmados_v4", "07b_historico_confirmados_v4"])
+
+    def test_checks_existing_release_without_running_notebooks(self):
+        with patch.object(run_all, "run") as run, patch.object(run_all, "_verify", return_value=1) as verify:
+            self.assertEqual(run_all.main(["--version", "v4", "--solo-verificar", "--desde-release"]), 1)
+        run.assert_not_called()
+        verify.assert_called_once_with(release=True)
 
 
 if __name__ == "__main__":
