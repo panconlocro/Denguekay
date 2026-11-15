@@ -66,14 +66,17 @@ def select_published(motor, summary, horizons):
 
 
 def publish_to_db(motor, load, built, run_id, fingerprint, storage, start, *, servir_no_validadas=True,
-                  run_inference=False, select_experimental=False):
+                  run_inference=False, select_experimental=False, expected_criteria=None):
     """Package in Storage, versions and OOS in a single transaction; optionally the experimental selection
     of its horizons and the current inference (which then uses that selection)."""
     with transaction(motor) as sesion:
         run = Run(tipo="reentrenamiento", estado="en_curso", detalle={"huella": fingerprint})
         sesion.add(run)
         sesion.flush()
-        meets = thresholds(built, parametros.acceptance_criteria(sesion))
+        criteria = parametros.acceptance_criteria(sesion)
+        if expected_criteria is not None and criteria != expected_criteria:
+            raise ValueError("Los umbrales de aceptación cambiaron durante la publicación")
+        meets = thresholds(built, criteria)
         path, sha256 = save_package(storage, built, meets)
         versions = save_versions(sesion, built, path, sha256, run_id, meets)
         oos = import_oos(sesion, built.oos, built.oos_detail, versions) if built.oos is not None else []
@@ -111,13 +114,21 @@ def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False
         raise ValueError("Indique horizontes no repetidos")
     builder.validate(horizons, cfg.opciones)
     require_schema(motor)
-    load = prepare_load()
+    if hasattr(builder, "prepare_load"):
+        load = builder.prepare_load(cfg.opciones)
+        current_source_hashes = lambda: builder.source_hashes(cfg.opciones)
+    else:
+        load = prepare_load()
+        current_source_hashes = source_hashes
     prepared = builder.prepare(horizons, cfg.opciones)
     hashes = {**load.hashes, **prepared.hashes, **code_hashes()}
-    fingerprint = json_fingerprint({"hashes": hashes, "configuracion": cfg.publication_options(), "horizontes": horizons,
-                                    **builder.fingerprint_parameters(),
-                                    "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}"})
     with transaction(motor) as sesion:
+        criteria = parametros.acceptance_criteria(sesion)
+        fingerprint = json_fingerprint({
+            "hashes": hashes, "configuracion": cfg.publication_options(), "horizontes": horizons,
+            "umbrales_aceptacion": criteria, **builder.fingerprint_parameters(),
+            "plataforma": f"{platform.system()} {platform.release()} {platform.machine()}",
+        })
         persist_load(sesion, load)
         previous = existing_publication(sesion, fingerprint)
         if previous is not None:
@@ -136,12 +147,13 @@ def publish(motor, horizons=None, *, cfg=None, storage=None, run_inference=False
         report_path.write_text(json.dumps(built.report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         run_id = log_report("serving", built.report, metrics_path=report_path,
             output_dir=directory, gold_dir=getattr(builder, "GOLD_DIR", GOLD), data_quality=load.validacion_gx,
+            log_datasets=getattr(builder, "LOG_DATASETS", True),
             description="Ajuste de servicio. La evaluación temporal adjunta es importada del protocolo previo, no un entrenamiento OOS de esta corrida.")
-        if load.hashes != source_hashes() or code_hashes() != {k: v for k, v in hashes.items() if k.startswith("src/denguekay/")}:
+        if load.hashes != current_source_hashes() or code_hashes() != {k: v for k, v in hashes.items() if k.startswith("src/denguekay/")}:
             raise ValueError("Las entradas o el código cambiaron durante la ejecución; publicación rechazada")
         summary = publish_to_db(motor, load, built, run_id, fingerprint, storage, start,
                                 servir_no_validadas=cfg.servir_no_validadas, run_inference=run_inference,
-                                select_experimental=select_experimental)
+                                select_experimental=select_experimental, expected_criteria=criteria)
         (directory / "publicacion.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2, default=str) + "\n",
                                                     encoding="utf-8")
         return summary

@@ -187,10 +187,23 @@ class WeeklyObservation(WithUbigeo, Base):
     # ERA5-Land weekly mean temperature (d3 of the v3) since 0007_v3: apart from temp_media_c, full precision.
     temp_media_era5_land_c: Mapped[float | None] = mapped_column(
         Double().with_variant(Numeric(asdecimal=False), "sqlite"))
+    casos_solo_confirmados: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    humedad_era5_land_pct: Mapped[float | None] = mapped_column(Double)
+    fecha_era5_land_disponible: Mapped[date | None] = mapped_column(Date)
+    lluvia_chirps_mm: Mapped[float | None] = mapped_column(Double)
+    fecha_chirps_disponible: Mapped[date | None] = mapped_column(Date)
     fuente_casos: Mapped[str] = mapped_column(enum(CASE_SOURCE, "fuente_casos_t"))
     estado_cobertura: Mapped[str] = mapped_column(enum(COVERAGE, "cobertura_t"))
     fecha_extraccion: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     id_ejecucion: Mapped[int] = mapped_column(ForeignKey("ejecucion.id_ejecucion"))
+
+
+class Nino12Observation(Base):
+    __tablename__ = "observacion_nino12"
+
+    mes: Mapped[date] = mapped_column(Date, primary_key=True)
+    fecha_disponible: Mapped[date] = mapped_column(Date)
+    anomalia: Mapped[float] = mapped_column(Double)
 
 
 class ModelVersion(Base):

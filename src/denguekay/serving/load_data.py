@@ -8,7 +8,7 @@ recorded as an ``ejecucion`` of type ``ingesta``. It persists no feature enginee
 """
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 import hashlib
 import json
@@ -20,7 +20,7 @@ from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from denguekay.db.settings import InvalidDatabaseSettings
-from denguekay.db.models import (District, Run, WeeklyObservation, Province,
+from denguekay.db.models import (District, Nino12Observation, Run, WeeklyObservation, Province,
                             EpiWeek, utc_now)
 from denguekay.db.session import make_engine, transaction, upsert
 from denguekay.data.processing.weekly_aggregation import clean_names_for_join
@@ -53,6 +53,7 @@ class LoadBatch:
     hashes: dict
     validacion_gx: dict
     fecha_corte_datos: date
+    nino12: list[dict] = field(default_factory=list)
 
 
 def source_hashes():
@@ -236,8 +237,10 @@ def prepare_load():
 
 
 def load_fingerprint(data):
-    return hashlib.sha256(json.dumps({"transformacion": TRANSFORMATION, "hashes": data.hashes},
-                                     sort_keys=True).encode("utf-8")).hexdigest()
+    payload = {"transformacion": TRANSFORMATION, "hashes": data.hashes}
+    if data.nino12:
+        payload.update(configuracion="v4", fecha_corte_datos=data.fecha_corte_datos.isoformat())
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
 
 
 def existing_ingestion(sesion, fingerprint):
@@ -265,8 +268,11 @@ def persist_load(sesion, data):
     upsert(sesion, District.__table__, data.distritos, ["ubigeo"])
     upsert(sesion, EpiWeek.__table__, data.semanas, ["id_semana"])
     upsert(sesion, WeeklyObservation.__table__,
-           [{**o, "fecha_extraccion": instant, "id_ejecucion": run.id_ejecucion} for o in data.observaciones],
+           [{"casos_solo_confirmados": False, **o, "fecha_extraccion": instant,
+             "id_ejecucion": run.id_ejecucion} for o in data.observaciones],
            ["ubigeo", "id_semana"])
+    if data.nino12:
+        upsert(sesion, Nino12Observation.__table__, data.nino12, ["mes"])
     last = max(o["id_semana"] for o in data.observaciones)
     summary = {"provincias": len(data.provincias), "distritos": len(data.distritos),
                "semanas_calendario": len(data.semanas), "observaciones": len(data.observaciones),
@@ -294,11 +300,11 @@ def require_schema(motor):
         raise ValueError("Faltan tablas del esquema OE2: ejecute alembic upgrade head antes de cargar")
 
 
-def load_data(motor):
+def load_data(motor, *, prepare=prepare_load):
     """Require a migrated database and publish the whole load in a single transaction."""
     require_schema(motor)
     try:
-        data = prepare_load()
+        data = prepare()
     except (ValueError, OSError) as error:
         record_failure(motor, "ingesta", error, {"etapa": "preparacion"})
         raise
@@ -312,11 +318,26 @@ def load_data(motor):
 
 def main(argv=None):
     """CLI without credentials in arguments or error output."""
-    argparse.ArgumentParser(description=__doc__).parse_args(argv)
+    parser = argparse.ArgumentParser(description=__doc__)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--v4", action="store_true", help="Cargar confirmados y fuentes climáticas B3")
+    mode.add_argument("--v3", action="store_true", help="Usar la ruta histórica de carga V3")
+    args = parser.parse_args(argv)
     motor = None
     try:
         motor = make_engine()
-        print(json.dumps(load_data(motor), ensure_ascii=False))
+        from functools import partial
+        from denguekay.serving.settings import service_settings
+
+        cfg = service_settings()
+        prepare = prepare_load
+        if args.v4 or (cfg.tipo_paquete == "v4_b3_live" and not args.v3):
+            from denguekay.serving.predictors import v4_b3_live
+
+            options = cfg.opciones if cfg.tipo_paquete == v4_b3_live.KIND else {}
+            v4_b3_live.validate((2, 3, 4), options)
+            prepare = partial(v4_b3_live.prepare_load, options)
+        print(json.dumps(load_data(motor, prepare=prepare), ensure_ascii=False))
         return 0
     except SQLAlchemyError:
         print("No se pudo completar la carga en la BD; revise conexión, migraciones y permisos", file=sys.stderr)
