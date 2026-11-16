@@ -80,13 +80,17 @@ def main(argv=None) -> int:
     parser.add_argument("--lista", action="store_true", help="solo muestra los pasos")
     parser.add_argument("--version", choices=("v3", "v4"), default="v3")
     parser.add_argument("--sin-descargas", action="store_true", help="V4: usa el bronze disponible")
+    parser.add_argument("--bronze-publicado", action="store_true", help="V4: restaura el bronze climático publicado")
     checks = parser.add_mutually_exclusive_group()
     checks.add_argument("--verificar", action="store_true", help="V4: coteja los SHA-256 después de ejecutar")
     checks.add_argument("--solo-verificar", action="store_true", help="V4: coteja los archivos locales sin descargarlos")
     parser.add_argument("--desde-release", action="store_true", help="con --solo-verificar, coteja los insumos del Release")
     args = parser.parse_args(argv)
-    if (args.sin_descargas or args.verificar or args.solo_verificar or args.desde_release) and args.version != "v4":
+    v4_options = (args.sin_descargas, args.bronze_publicado, args.verificar, args.solo_verificar, args.desde_release)
+    if args.version != "v4" and any(v4_options):
         parser.error("Las opciones de fuentes y verificación requieren --version v4")
+    if args.bronze_publicado and (args.sin_descargas or args.solo_verificar):
+        parser.error("--bronze-publicado requiere una ejecución con descargas")
     if args.desde_release and not args.solo_verificar:
         parser.error("--desde-release requiere --solo-verificar")
     if args.solo_verificar:
@@ -100,6 +104,10 @@ def main(argv=None) -> int:
     if args.lista:
         print("\n".join(steps + [f"(no está en esta rama: {s})" for s in missing]))
         return 0
+    if args.bronze_publicado:
+        from denguekay.pipelines.v4_inputs import restore_published_bronze
+
+        restore_published_bronze()
     results = run(steps, version=args.version, offline=args.sin_descargas)
     for r in results:
         print(f"{r['paso']}: {'ok' if r['codigo'] == 0 else 'falló'} ({r['segundos']} s)")

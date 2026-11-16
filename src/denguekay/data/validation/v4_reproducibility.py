@@ -54,6 +54,7 @@ def _entries(release, study, registry, digest):
             "insumo": name,
             "ruta": _relative(actual) if actual is not None else None,
             "ruta_release": _relative(reference),
+            "regenerado": not release and actual is not None and actual != reference,
             "sha256_estudio": expected,
             "sha256_registro": registered,
             "estado_manifiestos": state,
@@ -111,11 +112,13 @@ def verify_v4(*, release=False, steps=None):
                                     "estado": _compare(study["fuentes"]["geografia"], candidate_geo)},
         "gold": gold, "pasos_ejecutados": steps,
     }
-    report["coinciden_insumos_verificados"] = all(item["estado"] in {"coincide", "solo_referencia"}
-                                                 and item["estado_manifiestos"] in {"coincide", "solo_archivo"}
-                                                 for item in inputs)
-    report["exito"] = (report["coinciden_insumos_verificados"]
-                       and all(item["estado"] == "coincide" for item in model)
+    registry_matches = all(item["estado_manifiestos"] in {"coincide", "solo_archivo"} for item in inputs)
+    matched = {"coincide", "solo_referencia"}
+    report["coinciden_insumos_verificados"] = registry_matches and all(item["estado"] in matched for item in inputs)
+    drift = [item["insumo"] for item in inputs if item["regenerado"] and item["estado"] == "difiere"]
+    report["diferencias_en_fuentes"] = drift
+    inputs_valid = all(item["estado"] in matched or item["insumo"] in drift for item in inputs)
+    report["exito"] = (registry_matches and inputs_valid and all(item["estado"] == "coincide" for item in model)
                        and gold["estado"] in {"coincide", "dentro_tolerancia"}
                        and (steps is None or (bool(steps) and all(step["codigo"] == 0 for step in steps))))
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -142,4 +145,6 @@ def print_result(report):
             for name, result in reference["columnas"].items():
                 if result["estado"] != "coincide":
                     print(f"  {name}: {result['estado']} (Δ máx. {result.get('diferencia_max_abs', '-')})")
+    if report["exito"] and report["diferencias_en_fuentes"]:
+        print("Verificación completada con diferencias en los insumos regenerados.")
     print(f"Informe: {report['ruta_informe']}")

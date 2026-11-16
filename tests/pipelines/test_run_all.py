@@ -37,6 +37,19 @@ class TestSteps(unittest.TestCase):
         run.assert_not_called()
         verify.assert_called_once_with(release=True)
 
+    def test_published_bronze_is_restored_before_running_v4(self):
+        from denguekay.pipelines import v4_inputs
+
+        with patch.object(v4_inputs, "restore_published_bronze") as restore, patch.object(run_all, "run") as run:
+            def execute(steps, **kwargs):
+                restore.assert_called_once()
+                self.assertEqual(steps, ["01b_geografia_v4"])
+                self.assertFalse(kwargs["offline"])
+                return [{"paso": steps[0], "codigo": 0, "segundos": 0}]
+
+            run.side_effect = execute
+            self.assertEqual(run_all.main(["--version", "v4", "--bronze-publicado", "--hasta", "01b"]), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
