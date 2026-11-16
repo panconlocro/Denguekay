@@ -1,0 +1,53 @@
+name: V4 gold cross-platform audit
+
+on:
+  push:
+    branches: [exp/v4-gold-platform-check]
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    name: Gold from Release / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      DENGUEKAY_XGB_DEVICE: cpu
+      DENGUEKAY_XGB_NJOBS: '2'
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            constraints.txt
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install -r requirements.txt -c constraints.txt
+          python -m pip install --no-deps -e .
+      - name: Generate and verify gold from the published input ZIP
+        run: |
+          python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip
+          python -m denguekay.features.gold_v4 --desde-release
+          python -m denguekay.pipelines.run_all --version v4 --solo-verificar --desde-release
+          python -c "import json,platform,sys,numpy,pandas; from pathlib import Path; e=dict(platform=platform.platform(),machine=platform.machine(),python=sys.version,numpy=numpy.__version__,pandas=pandas.__version__); Path('data/gold/entorno_v4.json').write_text(json.dumps(e),encoding='utf-8'); print(json.dumps(e))"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: v4-gold-audit-${{ matrix.os }}
+          path: |
+            data/gold/piura_confirmados_v4_gold.csv
+            data/gold/manifest_v4.json
+            data/gold/verificacion_v4.json
+            data/gold/entorno_v4.json
+          retention-days: 1
+          if-no-files-found: error
