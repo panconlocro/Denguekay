@@ -1,6 +1,7 @@
 """Engines and transactions portable between SQLite and PostgreSQL."""
 
 from contextlib import contextmanager
+from sqlite3 import SQLITE_LIMIT_VARIABLE_NUMBER
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
@@ -61,6 +62,11 @@ def upsert(session, table, rows, keys, update=None, batch=2000):
         from sqlalchemy.dialects.postgresql import insert
     else:
         from sqlalchemy.dialects.sqlite import insert
+
+        connection = session.connection().connection.driver_connection
+        variable_limit = connection.getlimit(SQLITE_LIMIT_VARIABLE_NUMBER)
+        # Count all columns to allow for client-side defaults added by SQLAlchemy.
+        batch = min(batch, max(1, variable_limit // len(table.columns)))
     columns = list(rows[0])
     updatable = [c for c in (columns if update is None else update) if c not in keys]
     for start in range(0, len(rows), batch):

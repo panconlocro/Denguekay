@@ -11,6 +11,7 @@ from denguekay.config.paths import (
 )
 from denguekay.data.ingestion.release_bundles import sha256_file
 from denguekay.data.validation.integrated_expectations import coverage_path
+from denguekay.data.validation.v4_gold_reference import compare_gold_reference
 from denguekay.features.gold_v4 import input_paths, output_paths
 
 
@@ -75,10 +76,12 @@ def _check_gold(profile, inputs, digest, cutoff):
     valid = (lineage.get("fuentes") == expected_inputs and all(expected_inputs.values())
              and lineage.get("origen_insumos") == profile and lineage.get("corte_etiquetas") == cutoff
              and lineage.get("archivo") == gold.name and lineage.get("sha256") == actual)
-    return {"estado": "coincide" if valid else "difiere", "ruta": _relative(gold),
+    reference = compare_gold_reference(gold) if profile == "release" else None
+    reference_status = reference["estado"] if reference else "coincide"
+    return {"estado": reference_status if valid else "difiere", "ruta": _relative(gold),
             "sha256_obtenido": actual, "sha256_manifest_local": lineage.get("sha256"),
             "archivo_manifest_local": _relative(manifest),
-            "sha256_publicado": None}
+            "estado_manifiesto_local": "coincide" if valid else "difiere", "referencia_independiente": reference}
 
 
 def verify_v4(*, release=False, steps=None):
@@ -112,7 +115,8 @@ def verify_v4(*, release=False, steps=None):
                                                  and item["estado_manifiestos"] in {"coincide", "solo_archivo"}
                                                  for item in inputs)
     report["exito"] = (report["coinciden_insumos_verificados"]
-                       and all(item["estado"] == "coincide" for item in model) and gold["estado"] == "coincide"
+                       and all(item["estado"] == "coincide" for item in model)
+                       and gold["estado"] in {"coincide", "dentro_tolerancia"}
                        and (steps is None or (bool(steps) and all(step["codigo"] == 0 for step in steps))))
     destination.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=destination.parent) as temp:
@@ -128,5 +132,14 @@ def print_result(report):
               f"obtenido {entry['sha256_obtenido'] or entry.get('sha256_archivo_local') or '-'}, "
               f"manifiestos {entry['estado_manifiestos']})")
     print(f"Elevación de consulta nueva: {report['geografia_consulta_nueva']['estado']}")
-    print(f"Gold V4 contra su manifiesto local: {report['gold']['estado']}")
+    gold = report["gold"]
+    print(f"Gold V4 contra su manifiesto local: {gold.get('estado_manifiesto_local', gold['estado'])}")
+    if reference := gold.get("referencia_independiente"):
+        print(f"Gold V4 contra la referencia independiente: {reference['estado']}")
+        if "motivo" in reference:
+            print(reference["motivo"])
+        else:
+            for name, result in reference["columnas"].items():
+                if result["estado"] != "coincide":
+                    print(f"  {name}: {result['estado']} (Δ máx. {result.get('diferencia_max_abs', '-')})")
     print(f"Informe: {report['ruta_informe']}")

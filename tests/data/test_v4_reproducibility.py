@@ -2,12 +2,14 @@
 
 import hashlib
 import json
+import lzma
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
 from denguekay.data.validation.integrated_expectations import coverage_path
+from denguekay.data.validation import v4_gold_reference as reference
 from denguekay.data.validation import v4_reproducibility as audit
 from denguekay.features.gold_v4 import GoldInputs
 
@@ -54,9 +56,14 @@ class TestV4Reproducibility(unittest.TestCase):
                                 V4_LIVE_GEOGRAPHY=root / "new_geo.csv", UBIGEO_CATALOG=catalog, GOLD_MANIFEST=h2,
                                 V4_SOURCE_GOLD=root, V4_VERIFICATION_REPORT=verify), \
                     patch.object(audit, "input_paths", side_effect=lambda release: frozen if release else live), \
-                    patch.object(audit, "output_paths", return_value=(output, local)):
+                    patch.object(audit, "output_paths", return_value=(output, local)), \
+                    patch.object(audit, "compare_gold_reference", return_value={"estado": "dentro_tolerancia"}) as compare:
                 write_local_manifest("release", frozen)
                 self.assertTrue(audit.verify_v4(release=True)["exito"])
+                compare.return_value = {"estado": "difiere"}
+                failure = audit.verify_v4(release=True)
+                self.assertFalse(failure["exito"])
+                self.assertEqual(failure["gold"]["estado_manifiesto_local"], "coincide")
                 write_local_manifest("fuentes", live)
                 self.assertTrue(audit.verify_v4()["exito"])
                 self.assertFalse(audit.verify_v4(steps=[{"codigo": 1}])["exito"])
@@ -71,3 +78,21 @@ class TestV4Reproducibility(unittest.TestCase):
                 self.assertFalse(report["exito"])
                 self.assertEqual(live.sala.read_bytes(), b"revised")
                 self.assertEqual(json.loads(verify.read_bytes()), report)
+
+    def test_reference_distinguishes_rounding_from_changes(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            gold = root / "gold.csv"
+            fixture = {"filas": 1, "atol": 1e-12, "sha256_columnas": {"macOS ARM64": {
+                "ubigeo": reference.column_digest(["012345"]), "value": reference.column_digest(["1.0"]),
+            }}}
+            (root / "referencia.json").write_text(json.dumps(fixture), encoding="utf-8")
+            with lzma.open(root / "flotantes.csv.xz", "wt", encoding="utf-8") as expected:
+                expected.write("value\n1.0\n")
+            with patch.object(reference, "V4_GOLD_REFERENCE", root):
+                for row, state in (("012345,1.0", "coincide"), ("012345,1.0000000000000002", "dentro_tolerancia"),
+                                   ("012345,1.000000000002", "difiere"), ("012345,nan", "difiere"),
+                                   ("123456,1.0", "difiere")):
+                    with self.subTest(row=row):
+                        gold.write_text(f"ubigeo,value\n{row}\n", encoding="utf-8")
+                        self.assertEqual(reference.compare_gold_reference(gold)["estado"], state)

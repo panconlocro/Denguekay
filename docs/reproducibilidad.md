@@ -56,7 +56,7 @@ guardan por entorno.
 | Estudios 01–06 | ver el README de cada estudio (`research/<estudio>/README.md`) | sus cifras desde su tag y los Releases | según el estudio | los estudios 03–06 se grabaron en GPU | exacto con los datos del Release; las búsquedas largas no se repiten (abajo) |
 | Pipeline de V0–V3 | `python -m denguekay.pipelines.run_all` | recorrido 01–10 y gold h2 | días (ERA5-Land 4–5 días por el tope diario; CHIRPS por FTP unas 10 h) | no | desde las fuentes |
 | Pipeline de V4 | `python -m denguekay.pipelines.run_all --version v4 --verificar` | silver e integrado de confirmados, gold B3 y cotejo de SHA-256 | depende del caché y de los límites de descarga | no | desde las fuentes |
-| Gold congelado de V4 | `python -m denguekay.features.gold_v4 --desde-release` tras extraer `datos_v4.zip` | 73 775 filas de 65 distritos al corte de la SE 41 de 2026 | segundos con los insumos extraídos | no | exacto, cotejado en macOS ARM |
+| Gold congelado de V4 | `python -m denguekay.features.gold_v4 --desde-release` tras extraer `datos_v4.zip` | 73 775 filas de 65 distritos al corte de la SE 41 de 2026 | segundos con los insumos extraídos | no | llaves y etiquetas exactas, flotantes con tolerancia de `1e-12` entre plataformas |
 | API con la v3 | `docs/modeling/reproducir_v3.md`, «Ruta del producto» | `GET /api/v1/salud` → 200 | minutos | no (la inferencia es en CPU) | — |
 
 Huellas registradas (`denguekay.model.frozen_configs`; fichas en `models/registry/`):
@@ -76,6 +76,15 @@ Guías por versión: [V3](modeling/reproducir_v3.md) y [V4](modeling/reproducir_
 
 Cada Release lleva zips con SHA-256 en un manifiesto versionado. El módulo de descarga verifica el zip y cada
 archivo, y no sobrescribe un archivo distinto sin `--sobrescribir`.
+
+Para cotejar los archivos ya extraídos, ejecuta el siguiente comando desde el clon de trabajo. Se puede
+repetir `--version` o quitarlo para consultar V0–V4. El comando imprime el informe sin modificar archivos.
+Cada versión se compara con su propio manifiesto. Si una ruta aparece en dos versiones, el mismo archivo
+puede coincidir con una y diferir con la otra. Cualquier archivo ausente o distinto da código de salida `1`.
+
+```powershell
+.\.venv\Scripts\python -m denguekay.data.validation.frozen_inputs --version v4 --raiz .
+```
 
 | Tag | Assets | Manifiesto |
 |---|---|---|

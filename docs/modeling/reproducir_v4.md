@@ -87,15 +87,18 @@ Los resultados quedan en `data/gold/`.
   las etiquetas. El corte del ajuste congelado es el **17 de octubre de 2026 (SE 41)**.
 - `verificacion_v4.json` muestra el SHA-256 esperado y el observado para cada insumo. Se apoya en el
   [manifiesto del estudio](../../research/08_v3_confirmed_cases/manifiesto_b3_v4.json) y el
-  [registro del Release](../../models/registry/v4/manifiesto_datos.json). El SHA-256 del gold se
-  comprueba contra `manifest_v4.json`, porque los manifiestos publicados enumeran los insumos del gold.
+  [registro del Release](../../models/registry/v4/manifiesto_datos.json). Para el gold, comprueba la
+  integridad del archivo contra `manifest_v4.json` y la equivalencia de sus 34 columnas contra la
+  [referencia independiente](../../tests/fixtures/v4_gold/referencia.json).
 
-En la comprobación del 15 de noviembre de 2026 coincidieron los diez hashes de los insumos. En macOS ARM,
-el SHA-256 del CSV fue `63148b7144eebe7442d45f6a21069dc988984a2d4f8a0db94f5ee75ec8e78045`.
-El cotejo en Linux y Windows produjo otros hashes del CSV con el mismo conjunto de insumos. Queda pendiente
-una referencia independiente por columna que permita distinguir diferencias numéricas de cambios de datos.
-En el informe actual, `gold: coincide` acredita la integridad del CSV respecto de su manifiesto local. El
-`manifest_fase6.json` y el gold h2 presentes en `datos_v4.zip` son evidencia del linaje que se validó
+Los diez hashes de entrada coincidieron en macOS ARM64, Linux x86-64 y Windows x86-64. Difieren cuatro
+columnas de punto flotante del CSV, con una desviación absoluta máxima de `8,88e-16`. La referencia
+registra los hashes de los tres entornos observados y usa igualdad exacta para llaves, fechas, conteos,
+etiquetas y variables de aritmética exacta. Los valores de punto flotante calculados se verifican celda a
+celda con `rtol=0, atol=1e-12`. El CI de las tres plataformas regenera el gold y comprueba también la
+equivalencia entre el clima del gold, el vector de la BD y el `origen.csv` congelado en la SE 41.
+
+El `manifest_fase6.json` y el gold h2 presentes en `datos_v4.zip` son evidencia del linaje que se validó
 al congelar V4. El ajuste de los boosters se reproduce por separado con el protocolo del paper.
 
 ## Regenerar desde las fuentes
@@ -118,7 +121,9 @@ congelado con los insumos disponibles en ese clon. La actualización de observac
 usa sus propios cortes de publicación.
 
 El informe en `data/v4_fuentes/gold/verificacion_v4.json` registra los archivos que coinciden, difieren o faltan, y el
-estado de los pasos. El código de salida `1` al verificar indica una discrepancia, un insumo ausente o un paso
+estado de los pasos. En este recorrido `gold.estado_manifiesto_local` comprueba la integridad del CSV y
+la referencia independiente del gold se aplica con `--solo-verificar --desde-release`. El código de salida `1` al
+verificar indica una discrepancia, un insumo ausente o un paso
 fallido. Comprueba `pasos_ejecutados` para distinguir una corrida terminada con diferencias de una corrida que
 se interrumpió. La [tabla de cotejo](../reproducibilidad.md#v4-con-confirmados) documenta qué diferencias se
 observaron al repetir el pipeline. Para replicar el ajuste del estudio se usa el Release de `model/v4`.

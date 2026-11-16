@@ -73,6 +73,14 @@ jobs:
           path: coverage.xml
           if-no-files-found: warn
           retention-days: 14
+      - name: Verificar gold V4 y el origen congelado de la SE 41
+        env:
+          DENGUEKAY_TEST_V4_RELEASE: "1"
+        run: |
+          python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip modelo_v4.zip
+          python -m denguekay.features.gold_v4 --desde-release
+          python -m denguekay.pipelines.run_all --version v4 --solo-verificar --desde-release
+          python -m unittest discover -s tests -p test_gold_v4_equivalence.py
 
   postgresql:
     # Los contenedores de servicio de GitHub Actions solo existen en Linux.
