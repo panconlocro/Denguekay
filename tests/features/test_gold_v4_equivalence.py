@@ -1,6 +1,7 @@
 """Check the operational B3 vector against the frozen Release at the training cutoff."""
 
 from pathlib import Path
+from sqlite3 import SQLITE_LIMIT_VARIABLE_NUMBER
 from tempfile import TemporaryDirectory
 import json
 import os
@@ -43,6 +44,7 @@ class TestV4ReleaseEquivalence(unittest.TestCase):
             engine = motor_temporal(Path(directory))
             try:
                 with transaction(engine) as session:
+                    session.connection().connection.driver_connection.setlimit(SQLITE_LIMIT_VARIABLE_NUMBER, 32_766)
                     load = persist_load(session, batch)
                     cutoff = session.get(EpiWeek, load["id_semana_corte"])
                     inputs = build_inputs(session, cutoff, predictor.required_inputs)
