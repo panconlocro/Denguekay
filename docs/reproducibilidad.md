@@ -4,7 +4,7 @@ Esta es la entrada única. Una persona sin acceso a la PC de Rosa clona el repo 
 
 - **(a)** regenerar `data/` desde las fuentes públicas;
 - **(b)** obtener los datos exactos de cada versión;
-- **(c)** reentrenar y verificar v0, v1, v2 y v3;
+- **(c)** reentrenar y verificar v0–v3, y regenerar y verificar la matriz de entrenamiento congelada de V4;
 - **(d)** reproducir las cifras de cada estudio desde su tag;
 - **(e)** levantar la API.
 
@@ -54,7 +54,9 @@ guardan por entorno.
 | v3 | `python research/06_model_improvement/code/phase_v3_close.py verificar --semilla 17` | `VERIFICACION: PASA`: G41, huella y métricas | 6 min en GPU, 5,3 min en CPU con 2 hilos | no | exacto en CUDA (referencia oficial) y en CPU con 2 hilos (referencia CPU, `--solo predicciones_v3_cpu.zip`) |
 | Métricas de la v3 sin reentrenar | `python research/06_model_improvement/code/phase_v3_close.py metricas` | Brier y AUPRC de 570 celdas iguales al JSON | 15 s | no | exacto |
 | Estudios 01–06 | ver el README de cada estudio (`research/<estudio>/README.md`) | sus cifras desde su tag y los Releases | según el estudio | los estudios 03–06 se grabaron en GPU | exacto con los datos del Release; las búsquedas largas no se repiten (abajo) |
-| Pipeline completo | `python -m denguekay.pipelines.run_all` | `data/` regenerado | días (ERA5-Land 4–5 días por el tope diario; CHIRPS por FTP unas 10 h) | no | desde las fuentes |
+| Pipeline de V0–V3 | `python -m denguekay.pipelines.run_all` | recorrido 01–10 y gold h2 | días (ERA5-Land 4–5 días por el tope diario; CHIRPS por FTP unas 10 h) | no | desde las fuentes |
+| Pipeline de V4 | `python -m denguekay.pipelines.run_all --version v4 --verificar` | silver e integrado de confirmados, gold B3 y cotejo de SHA-256 | depende del caché y de los límites de descarga | no | desde las fuentes |
+| Gold congelado de V4 | `python -m denguekay.features.gold_v4 --desde-release` tras extraer `datos_v4.zip` | 73 775 filas de 65 distritos al corte de la SE 41 de 2026 | segundos con los insumos extraídos | no | exacto, cotejado en macOS ARM |
 | API con la v3 | `docs/modeling/reproducir_v3.md`, «Ruta del producto» | `GET /api/v1/salud` → 200 | minutos | no (la inferencia es en CPU) | — |
 
 Huellas registradas (`denguekay.model.frozen_configs`; fichas en `models/registry/`):
@@ -67,8 +69,8 @@ Huellas registradas (`denguekay.model.frozen_configs`; fichas en `models/registr
 | v0 | sin huella: su identidad es el SHA-256 del paquete y sus métricas de selección (`models/registry/v0/validacion_temporal_compacta.json`) | — |
 
 Fichas: [v0](../models/registry/v0/ficha.md), [v1](../models/registry/v1/ficha.md),
-[v2](../models/registry/v2/ficha.md) y [v3](../models/registry/v3/ficha.md). La v3 tiene además su guía:
-[reproducir_v3.md](modeling/reproducir_v3.md).
+[v2](../models/registry/v2/ficha.md), [v3](../models/registry/v3/ficha.md) y [v4](../models/registry/v4/ficha.md).
+Guías por versión: [V3](modeling/reproducir_v3.md) y [V4](modeling/reproducir_v4.md).
 
 ## 2. Datos exactos por versión y por estudio (Releases)
 
@@ -81,6 +83,7 @@ archivo, y no sobrescribe un archivo distinto sin `--sobrescribir`.
 | `model/v1` | `datos_v1.zip` (integrado, cobertura, epi histórico y gold anterior), `predicciones_v1.zip` | `models/registry/v1/` |
 | `model/v2` | `datos_v2.zip` (integrado, base, cobertura, epi histórico, Sala, gold h2 vigente y su manifiesto), `predicciones_v2.zip` | `models/registry/v2/` |
 | `model/v3` | `datos_v3.zip`, `predicciones_v3.zip`, `comparadores_v3.zip`, `predicciones_v3_cpu.zip` | `models/registry/v3/` |
+| `model/v4` | `datos_v4.zip` (entradas exactas del gold), `modelo_v4.zip` (boosters y parámetros), `demo_v4.zip` y los demás paquetes de la [guía de V4](modeling/reproducir_v4.md#archivos-del-release) | `models/registry/v4/manifiesto_datos.json` |
 | `archive/EDA` | `datos_estudio01.zip` (silver por fuente e integrados) | `research/01_eda/` |
 | `archive/training` | `gold_anterior.zip` (el gold anterior en `data/gold/`, como lo leen los tags 02–05), `artefactos_estudio03.zip` | `research/03_first_models_and_ablations/` |
 | `study/horizon-architecture` | `artefactos_estudio04.zip` | `research/04_horizon_architecture/` |
@@ -103,6 +106,8 @@ Cada README de `research/` dice qué bajar y en qué orden.
 10 h) quedó en `optuna.db`, y el notebook 19 lee de ahí sus cifras. El estudio 05 publica sus resultados por fase.
 
 ## 3. Desde las fuentes (pipeline)
+
+### V0–V3
 
 ```powershell
 .\.venv\Scripts\python -m denguekay.pipelines.run_all --lista
@@ -138,6 +143,49 @@ SHA-256 de lo que devolvió Drive el 2026-11-09:
 - El pipeline usa el FTP anónimo. En los 240 días que se solapan (enero a abril de 2025 y 2026), las medias
   diarias por polígono difieren como máximo 0,15 mm (media 0,003 mm) y las sumas semanales, como máximo 0,34 mm.
 - `silver-ftp --con-earth-engine` reconstruye el silver congelado. La v3 no usa lluvia.
+
+### V4 con confirmados
+
+Ejecuta desde la raíz con el entorno de la sección 0. Las salidas regeneradas se guardan en `data/v4_fuentes/`.
+Para reproducir el ajuste del paper usa la [ruta exacta del Release](modeling/reproducir_v4.md#regenerar-el-gold-congelado-desde-el-release).
+
+```powershell
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --lista
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --verificar
+```
+
+Con las capturas completas ya guardadas en `data/bronze/`, añade `--sin-descargas` al segundo comando. Usa
+`--desde <paso>` para reanudar y `--solo-verificar` para cotejar archivos que ya existen sin ejecutar notebooks.
+El pipeline conserva el orden de los notebooks y guarda el informe en `data/v4_fuentes/gold/verificacion_v4.json`.
+
+| Paso | Fuentes y salidas V4 |
+|---|---|
+| 01b | Puntos distritales versionados y respuesta GLO-90 de Open-Meteo. Archiva la consulta en `data/bronze/geografia/` y guarda `data/v4_fuentes/reference/geografia_distritos_v4.csv` para el cotejo. B3 conserva la geografía verificada del Release. |
+| 02b → 03d | Open-Meteo para el panel 2017–2025 y ERA5-Land desde 2000. NOAA CPC para Niño 1+2. CHIRPS v3 por polígono desde bronze de Earth Engine y FTP, con una versión completa por semana y fecha de disponibilidad. |
+| 04 → 05b y 08b | Excel socio, limpieza y unión con el silver meteorológico del panel bajo `data/v4_fuentes/silver/`. |
+| 06 → 07b | `DatosDengueV2.csv` de Drive a bronze y agregado por distrito y semana con `tipo_dx=C`. V4 toma del CSV el tramo 2000–2024. |
+| 06c | Sala Situacional de 2025 en adelante. Guarda las capturas crudas, reconcilia totales y escribe el silver de confirmados. La extensión del ajuste congelado incluye la SE 53 de 2025 y acaba en la SE 41 de 2026. |
+| 09b → 11 | Panel y cobertura en `data/v4_fuentes/silver/integrado/`. La matriz B3 y su manifiesto quedan en `data/v4_fuentes/gold/`. El gold representa h2–h4 desde un mismo origen al corte congelado. |
+
+Con `--verificar` y `--solo-verificar`, el código de salida `1` indica que algún insumo difiere, falta, o que
+la ejecución falló. El JSON distingue el estado de los pasos, el cotejo de los insumos y la integridad del
+gold respecto de su manifiesto local. `manifest_fase6.json` figura como evidencia archivada del gold h2.
+La consulta nueva de elevación se reporta por separado de la geografía fija usada en B3.
+
+**Cotejo realizado el 15 de noviembre de 2026.** Se ejecutaron los ocho pasos de la ruta sin descargas con los
+cachés disponibles y una captura de Sala archivada ese día. Los resultados corresponden a esos insumos.
+
+| Insumo | Comparación con el Release |
+|---|---|
+| Histórico confirmado, cobertura del integrado, UBIGEO, CHIRPS, Niño 1+2 y geografía usada por B3 | SHA-256 idénticos. CHIRPS y Niño usaron cachés locales. La geografía usada por B3 provino del Release. |
+| Sala Situacional | Las 3 445 filas de 2025 conservaron sus conteos. En 2026 se añadió la SE 44 (65 filas) y se revisaron 102 conteos en semanas que ya estaban en el Release. De esos, 61 corresponden a la SE 41 o anteriores. |
+| ERA5-Land | Coincidieron las 91 000 llaves. El SHA-256 difirió, con diferencias numéricas máximas de 3,6 × 10⁻¹⁵ °C en temperatura y 1,5 × 10⁻¹⁴ puntos porcentuales en humedad. |
+| Integrado de confirmados | Coincidieron las 30 485 llaves y todos sus conteos. El SHA-256 difirió, con una diferencia numérica máxima de 1,2 × 10⁻¹³ mm en precipitación. |
+| Consulta nueva de elevación | Los 65 distritos conservaron la misma elevación. Dos latitudes difirieron en el último decimal representado. El SHA-256 difirió. |
+
+El gold de la corrida desde bronze tuvo las mismas 73 775 llaves del gold congelado. Las revisiones de casos
+cambiaron dos etiquetas de brote por horizonte. Con los archivos del Release se verificaron los diez hashes
+de los insumos y el CSV congelado se regeneró byte por byte. La guía de V4 explica ambas rutas y sus salidas.
 
 ## 4. Límites conocidos
 

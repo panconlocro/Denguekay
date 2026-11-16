@@ -73,8 +73,10 @@ class Prepared:
 def validate(horizons, options):
     if horizons != v3.HORIZONS:
         raise ValueError("El paquete congelado V4 requiere los horizontes 2, 3 y 4")
-    if set(options) - {"sala", "era5_land", "chirps", "nino12", "semanas_provisionales"}:
+    if set(options) - {"sala", "era5_land", "chirps", "nino12", "semanas_provisionales", "perfil_datos"}:
         raise ValueError("La publicación V4 solo admite opciones de procedencia de insumos")
+    if options.get("perfil_datos", "release") not in ("release", "fuentes"):
+        raise ValueError("perfil_datos debe ser release o fuentes")
     trailing = options.get("semanas_provisionales", 2)
     if type(trailing) is not int or trailing < 0:
         raise ValueError("semanas_provisionales debe ser un entero no negativo")

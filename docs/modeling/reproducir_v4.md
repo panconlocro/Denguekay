@@ -66,25 +66,59 @@ El extractor comprueba SHA-256 de cada ZIP y cada archivo. Conserva las rutas re
 
 Para repetir el ajuste congelado con los scripts del paper, instala `requirements.txt` con `constraints.txt` y selecciona `datos_v4.zip predicciones_v4.zip` con `--solo`. Sigue el [protocolo de congelamiento](https://github.com/panconlocro/Denguekay/blob/model/v4/research/08_v3_confirmed_cases/congelamiento_b3_v4.md) con CPU y dos hilos. Usa otra ruta de salida si también extrajiste el modelo archivado. Los boosters adjuntos son la referencia para usar el modelo congelado en otros equipos.
 
-## Regenerar el gold de entrenamiento
+## Regenerar el gold congelado desde el Release
 
-Desde un clon con este documento, instala Python 3.12 y las dependencias de investigación con
-`python -m pip install -r requirements.txt -c constraints.txt` y `python -m pip install --no-deps -e .`.
-Abre una copia independiente del tag congelado y ejecuta el exportador del repo desde esa copia:
+Instala el [entorno completo de Python 3.12](../reproducibilidad.md#0-entorno-una-vez) en un clon limpio
+que incluya `denguekay.features.gold_v4`. Usa ese clon para los archivos del Release. Desde su raíz, en
+PowerShell, ejecuta los tres comandos en orden.
 
-```sh
-git worktree add --detach ../denguekay-gold-v4 model/v4
-cd ../denguekay-gold-v4
-PYTHONPATH=src python -m denguekay.data.ingestion.release_bundles \
-  --manifiesto ../Denguekay/models/registry/v4/manifiesto_datos.json \
-  --solo datos_v4.zip modelo_v4.zip
-PYTHONPATH=src python -B ../Denguekay/scripts/regenerar_gold_v4.py
+```powershell
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip
+.\.venv\Scripts\python -m denguekay.features.gold_v4 --desde-release
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --solo-verificar --desde-release
 ```
 
-Los ejemplos suponen que el clon principal se llama `Denguekay` y que su entorno Python está activo.
-En PowerShell, establece `$env:PYTHONPATH = 'src'` una vez antes de los dos comandos Python.
+Los resultados quedan en `data/gold/`.
 
-El exportador verifica los insumos por SHA-256, alinea los objetivos h2, h3 y h4 con un origen común
-y guarda `piura_confirmados_v4_gold.csv` y `manifest_v4.json` en `data/gold/`. Comprueba que el vector de
-la SE 41 y los dos boosters de la semilla 17 coincidan con los archivados. El gold h2 anterior y
-`manifest_fase6.json`, incluidos en `datos_v4.zip`, se usan para validar los insumos del ajuste congelado.
+- `piura_confirmados_v4_gold.csv` contiene **73 775 filas** de los **65 distritos** de Piura. Las filas
+  se identifican por `(ubigeo, anio, semana)` de h2 y comparten un origen para los objetivos h2, h3 y h4.
+  Cada horizonte lleva la semana objetivo, los casos confirmados, el umbral y la etiqueta `brote`.
+- `manifest_v4.json` enumera los 16 predictores de B3, los hashes de los insumos y del CSV, y el cierre de
+  las etiquetas. El corte del ajuste congelado es el **17 de octubre de 2026 (SE 41)**.
+- `verificacion_v4.json` muestra el SHA-256 esperado y el observado para cada insumo. Se apoya en el
+  [manifiesto del estudio](../../research/08_v3_confirmed_cases/manifiesto_b3_v4.json) y el
+  [registro del Release](../../models/registry/v4/manifiesto_datos.json). El SHA-256 del gold se
+  comprueba contra `manifest_v4.json`, porque los manifiestos publicados enumeran los insumos del gold.
+
+En la comprobación del 15 de noviembre de 2026 coincidieron los diez hashes de los insumos. En macOS ARM,
+el SHA-256 del CSV fue `63148b7144eebe7442d45f6a21069dc988984a2d4f8a0db94f5ee75ec8e78045`.
+El cotejo en Linux y Windows produjo otros hashes del CSV con el mismo conjunto de insumos. Queda pendiente
+una referencia independiente por columna que permita distinguir diferencias numéricas de cambios de datos.
+En el informe actual, `gold: coincide` acredita la integridad del CSV respecto de su manifiesto local. El
+`manifest_fase6.json` y el gold h2 presentes en `datos_v4.zip` son evidencia del linaje que se validó
+al congelar V4. El ajuste de los boosters se reproduce por separado con el protocolo del paper.
+
+## Regenerar desde las fuentes
+
+Usa el mismo entorno. Los resultados de este recorrido quedan en `data/v4_fuentes/`, con su propio `silver/`,
+`gold/` y `reference/`. Los archivos descargados del Release mantienen sus rutas originales. Los dos perfiles
+pueden coexistir en el mismo clon.
+
+```powershell
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --verificar
+```
+
+Si ya tienes en `data/bronze/` las capturas de la Sala confirmada, la consulta de elevación y los cachés de las
+demás fuentes, añade `--sin-descargas`. Este modo también requiere que la geografía fija de `datos_v4.zip` esté
+disponible en la ruta del Release. Para una corrida nueva con acceso a red, 01b descarga y verifica ese archivo
+del Release si falta. B3 usa esa geografía para conservar los valores que recibió el booster congelado.
+El paso 01b guarda la consulta nueva por separado para cotejarla. `--desde <paso>` permite reanudar la
+generación. El paso `11` construye el gold al corte
+congelado con los insumos disponibles en ese clon. La actualización de observaciones para servir pronósticos
+usa sus propios cortes de publicación.
+
+El informe en `data/v4_fuentes/gold/verificacion_v4.json` registra los archivos que coinciden, difieren o faltan, y el
+estado de los pasos. El código de salida `1` al verificar indica una discrepancia, un insumo ausente o un paso
+fallido. Comprueba `pasos_ejecutados` para distinguir una corrida terminada con diferencias de una corrida que
+se interrumpió. La [tabla de cotejo](../reproducibilidad.md#v4-con-confirmados) documenta qué diferencias se
+observaron al repetir el pipeline. Para replicar el ajuste del estudio se usa el Release de `model/v4`.

@@ -1,5 +1,7 @@
 data/bronze/
 data/silver/
+data/reference/geografia_distritos_v4.csv
+data/v4_fuentes/
 data/gold/*
 !data/gold/.gitkeep
 models/*.pkl
