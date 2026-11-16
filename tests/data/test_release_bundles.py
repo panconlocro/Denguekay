@@ -72,6 +72,16 @@ class TestReleaseBundles(unittest.TestCase):
         with self.assertRaises(rb.BundleError):
             rb.verify_bundle(zip_path, {**entry, "destino": "data"})
 
+    def test_selects_bronze_without_extracting_silver(self):
+        raw = self.root / "data" / "bronze" / "raw.txt"
+        raw.parent.mkdir()
+        raw.write_bytes(b"raw")
+        entry = rb.build_bundle([raw, self.csv], self.zip, "data", self.root)
+        report = rb.extract_bundle(self.zip, entry, self.destination, prefixes=("data/bronze",))
+        self.assertEqual(report["extraidos"], 1)
+        self.assertEqual((self.destination / "data/bronze/raw.txt").read_bytes(), b"raw")
+        self.assertFalse((self.destination / "data/silver").exists())
+
     def test_manifest_per_version_or_study(self):
         from denguekay.config.paths import MODEL_REGISTRY
 

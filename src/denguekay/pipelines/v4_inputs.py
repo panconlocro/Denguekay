@@ -8,13 +8,13 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 
 from denguekay.config.paths import (
-    BRONZE_CHIRPS_EE_FINAL, BRONZE_CHIRPS_FINAL_FTP, BRONZE_CHIRPS_PRELIM, BRONZE_ENSO, BRONZE_EPI_CSV,
+    BRONZE_CHIRPS_EE_FINAL, BRONZE_CHIRPS_FINAL, BRONZE_CHIRPS_FINAL_FTP, BRONZE_CHIRPS_PRELIM, BRONZE_ENSO, BRONZE_EPI_CSV,
     BRONZE_SALA, BRONZE_SOCIO, CACHE_METEO, CACHE_METEO_ERA5_LAND_2000_2016, CACHE_METEO_ERA5_LAND_2017_2025,
-    CACHE_METEO_ERA5_LAND_2026, CACHE_METEO_ERA5_LAND_RECENT, DISTRICT_COORDS, UBIGEO_CATALOG,
+    CACHE_METEO_ERA5_LAND_2026, CACHE_METEO_ERA5_LAND_RECENT, DISTRICT_COORDS, ROOT, UBIGEO_CATALOG,
     V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_HISTORY, V4_INTEGRATED, V4_PANEL_WEATHER, V4_SALA, V4_SOCIO,
     V4_WEATHER_SOCIO,
 )
-from denguekay.data.ingestion import chirps, chirps_ee, chirps_prelim, openmeteo
+from denguekay.data.ingestion import chirps, chirps_ee, chirps_prelim, openmeteo, release_bundles
 from denguekay.data.ingestion.enso import download_sstoi
 from denguekay.data.ingestion.minsa_sala_scraper import confirmed_weekly_points, scrape_sala
 from denguekay.data.keys import normalize
@@ -47,6 +47,22 @@ def _weather_caches():
         ("2017-01-01", "2025-12-31", CACHE_METEO_ERA5_LAND_2017_2025),
         ("2026-01-01", "2026-10-31", CACHE_METEO_ERA5_LAND_2026),
     ]
+
+
+def restore_published_bronze():
+    """Restore verified historical climate snapshots without installing any archived silver or gold."""
+    sources = (
+        (release_bundles.manifest_path(study="06_model_improvement"), "bronze_estudio06.zip",
+         (CACHE_METEO, *(cache for _, _, cache in _weather_caches()), BRONZE_CHIRPS_FINAL,
+          BRONZE_CHIRPS_FINAL_FTP, BRONZE_CHIRPS_PRELIM)),
+        (release_bundles.manifest_path(version="v3"), "datos_v3.zip", (BRONZE_CHIRPS_EE_FINAL,)),
+    )
+    for manifest, name, folders in sources:
+        prefixes = tuple(folder.relative_to(ROOT).as_posix() for folder in folders)
+        report = release_bundles.fetch(manifest, only=[name], prefixes=prefixes)[name]
+        if not (report["extraidos"] or report["ya_estaban"]):
+            raise ValueError(f"No historical climate inputs in {name}")
+        print(f"{name}: {report['extraidos']} extraídos y {report['ya_estaban']} ya verificados", flush=True)
 
 
 def download_weather():

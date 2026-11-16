@@ -111,6 +111,17 @@ pueden coexistir en el mismo clon.
 .\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --verificar
 ```
 
+En un clon limpio, el histórico de clima tarda por la cuota de Open-Meteo y el volumen de CHIRPS. Para
+empezar con las capturas climáticas históricas publicadas y descargar el tramo reciente, usa:
+
+```powershell
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --bronze-publicado --verificar
+```
+
+La opción comprueba `bronze_estudio06.zip` y `datos_v3.zip` y extrae solo los cachés climáticos a
+`data/bronze/`. Si un archivo de destino ya existe con otro hash, la extracción se detiene. Los pasos
+siguientes descargan el clima reciente y las demás fuentes, y generan silver e integrado antes del gold.
+
 Si ya tienes en `data/bronze/` las capturas de la Sala confirmada, la consulta de elevación y los cachés de las
 demás fuentes, añade `--sin-descargas`. Este modo también requiere que la geografía fija de `datos_v4.zip` esté
 disponible en la ruta del Release. Para una corrida nueva con acceso a red, 01b descarga y verifica ese archivo

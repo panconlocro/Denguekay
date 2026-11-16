@@ -108,17 +108,21 @@ def verify_bundle(zip_path: Path, entry: dict) -> None:
                           f"(sobran {sorted(set(members) - expected)}, faltan {sorted(expected - set(members))})")
 
 
-def extract_bundle(zip_path: Path, entry: dict, root: Path = ROOT, overwrite: bool = False) -> dict:
+def extract_bundle(zip_path: Path, entry: dict, root: Path = ROOT, overwrite: bool = False, *,
+                   prefixes: tuple[str, ...] = ()) -> dict:
     """Verify the zip and extract it under ``root``, checking each extracted file's SHA-256.
 
     A file already present with the same SHA-256 is left alone; with a different one it is an error unless
-    ``overwrite``.
+    ``overwrite``. When prefixes are given, verify the complete zip and extract only those directories.
     """
     verify_bundle(zip_path, entry)
     report = {"extraidos": 0, "ya_estaban": 0, "sobrescritos": 0}
     with zipfile.ZipFile(zip_path) as z:
         for f in entry["archivos"]:
-            target = root / Path(*PurePosixPath(f["ruta"]).parts)
+            member = PurePosixPath(f["ruta"])
+            if prefixes and not any(member.is_relative_to(prefix) for prefix in prefixes):
+                continue
+            target = root / Path(*member.parts)
             if target.exists():
                 if sha256_file(target) == f["sha256"]:
                     report["ya_estaban"] += 1
@@ -172,11 +176,11 @@ def load_manifest(path: Path = V3_DATA_MANIFEST) -> dict:
 
 
 def fetch(manifest_path: Path = V3_DATA_MANIFEST, root: Path = ROOT, only: list[str] | None = None,
-          overwrite: bool = False, folder: Path | None = None) -> dict:
+          overwrite: bool = False, folder: Path | None = None, *, prefixes: tuple[str, ...] = ()) -> dict:
     """Download the manifest's zips from its Release, verify them and extract them under ``root``.
 
     ``folder`` keeps the downloaded zips (and reuses a zip already there if its SHA-256 matches); without it they
-    go to a temporary folder that is removed afterwards.
+    go to a temporary folder that is removed afterwards. Prefixes restrict extracted members, not verification.
     """
     manifest = load_manifest(manifest_path)
     reports = {}
@@ -188,7 +192,7 @@ def fetch(manifest_path: Path = V3_DATA_MANIFEST, root: Path = ROOT, only: list[
             zip_path = where / entry["nombre"]
             if not (zip_path.exists() and sha256_file(zip_path) == entry["sha256"]):
                 download(release_url(manifest["repositorio"], manifest["tag"], entry["nombre"]), zip_path)
-            reports[entry["nombre"]] = extract_bundle(zip_path, entry, root, overwrite)
+            reports[entry["nombre"]] = extract_bundle(zip_path, entry, root, overwrite, prefixes=prefixes)
     return reports
 
 

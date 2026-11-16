@@ -166,6 +166,9 @@ Para reproducir el ajuste del paper usa la [ruta exacta del Release](modeling/re
 Con las capturas completas ya guardadas en `data/bronze/`, añade `--sin-descargas` al segundo comando. Usa
 `--desde <paso>` para reanudar y `--solo-verificar` para cotejar archivos que ya existen sin ejecutar notebooks.
 El pipeline conserva el orden de los notebooks y guarda el informe en `data/v4_fuentes/gold/verificacion_v4.json`.
+En un clon limpio, `--bronze-publicado` restaura las capturas climáticas históricas verificadas para reducir
+la descarga inicial. El [detalle de la opción](modeling/reproducir_v4.md#regenerar-desde-las-fuentes)
+describe los paquetes y las fuentes que se consultan en vivo.
 
 | Paso | Fuentes y salidas V4 |
 |---|---|
