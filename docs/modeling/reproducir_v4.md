@@ -133,8 +133,9 @@ usa sus propios cortes de publicación.
 
 El informe en `data/v4_fuentes/gold/verificacion_v4.json` registra los archivos que coinciden, difieren o faltan, y el
 estado de los pasos. En este recorrido `gold.estado_manifiesto_local` comprueba la integridad del CSV y
-la referencia independiente del gold se aplica con `--solo-verificar --desde-release`. El código de salida `1` al
-verificar indica una discrepancia, un insumo ausente o un paso
-fallido. Comprueba `pasos_ejecutados` para distinguir una corrida terminada con diferencias de una corrida que
-se interrumpió. La [tabla de cotejo](../reproducibilidad.md#v4-con-confirmados) documenta qué diferencias se
+la referencia independiente del gold se aplica con `--solo-verificar --desde-release`. Una corrida válida
+desde las fuentes devuelve `0` aunque hayan cambiado los insumos regenerados. Sus nombres y hashes quedan
+en `diferencias_en_fuentes` e `insumos`. Un paso fallido, un archivo requerido ausente, un hash distinto en
+una entrada congelada o un manifiesto local que no corresponda al gold devuelven `1`.
+La [tabla de cotejo](../reproducibilidad.md#v4-con-confirmados) documenta qué diferencias se
 observaron al repetir el pipeline. Para replicar el ajuste del estudio se usa el Release de `model/v4`.

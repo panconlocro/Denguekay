@@ -179,9 +179,11 @@ describe los paquetes y las fuentes que se consultan en vivo.
 | 06c | Sala Situacional de 2025 en adelante. Guarda las capturas crudas, reconcilia totales y escribe el silver de confirmados. La extensión del ajuste congelado incluye la SE 53 de 2025 y acaba en la SE 41 de 2026. |
 | 09b → 11 | Panel y cobertura en `data/v4_fuentes/silver/integrado/`. La matriz B3 y su manifiesto quedan en `data/v4_fuentes/gold/`. El gold representa h2–h4 desde un mismo origen al corte congelado. |
 
-Con `--verificar` y `--solo-verificar`, el código de salida `1` indica que algún insumo difiere, falta, o que
-la ejecución falló. El JSON distingue el estado de los pasos, el cotejo de los insumos y la integridad del
-gold respecto de su manifiesto local. `manifest_fase6.json` figura como evidencia archivada del gold h2.
+En el recorrido desde las fuentes, el código de salida `0` indica que la corrida produjo un gold válido con
+los insumos disponibles. El JSON registra los hashes y lista las diferencias de los insumos regenerados respecto
+del Release. Un archivo requerido ausente, un paso fallido o una inconsistencia de integridad devuelve `1`.
+La comprobación `--solo-verificar --desde-release` exige los hashes publicados y la referencia del gold.
+`manifest_fase6.json` figura como evidencia archivada del gold h2.
 La consulta nueva de elevación se reporta por separado de la geografía fija usada en B3.
 
 **Cotejo realizado el 15 de noviembre de 2026.** Se ejecutaron los ocho pasos de la ruta sin descargas con los

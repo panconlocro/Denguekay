@@ -48,7 +48,8 @@ class TestV4Reproducibility(unittest.TestCase):
 
             def write_local_manifest(profile, paths):
                 inputs = [*vars(paths).values(), coverage_path(paths.panel), catalog]
-                local.write_text(json.dumps({"fuentes": {relative(path): hashes[relative(path)] for path in inputs},
+                local.write_text(json.dumps({"fuentes": {relative(path): hashlib.sha256(path.read_bytes()).hexdigest()
+                                                        for path in inputs},
                                              "origen_insumos": profile, "corte_etiquetas": "2026-10-17",
                                              "archivo": output.name, "sha256": expected}))
 
@@ -64,10 +65,26 @@ class TestV4Reproducibility(unittest.TestCase):
                 failure = audit.verify_v4(release=True)
                 self.assertFalse(failure["exito"])
                 self.assertEqual(failure["gold"]["estado_manifiesto_local"], "coincide")
+                frozen.sala.write_bytes(b"changed Release")
+                write_local_manifest("release", frozen)
+                compare.return_value = {"estado": "dentro_tolerancia"}
+                self.assertFalse(audit.verify_v4(release=True)["exito"])
                 write_local_manifest("fuentes", live)
                 self.assertTrue(audit.verify_v4()["exito"])
                 self.assertFalse(audit.verify_v4(steps=[{"codigo": 1}])["exito"])
                 live.sala.write_bytes(b"revised")
+                self.assertFalse(audit.verify_v4()["exito"])
+                write_local_manifest("fuentes", live)
+                refreshed = audit.verify_v4(steps=[{"codigo": 0}])
+                self.assertTrue(refreshed["exito"])
+                self.assertFalse(refreshed["coinciden_insumos_verificados"])
+                self.assertEqual(refreshed["diferencias_en_fuentes"], [relative(frozen.sala)])
+                original_catalog = catalog.read_bytes()
+                catalog.write_bytes(b"changed frozen catalog")
+                write_local_manifest("fuentes", live)
+                self.assertFalse(audit.verify_v4()["exito"])
+                catalog.write_bytes(original_catalog)
+                write_local_manifest("fuentes", live)
                 live.enso.unlink()
                 report = audit.verify_v4()
                 observed = {item["insumo"]: item["estado"] for item in report["insumos"]}
