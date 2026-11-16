@@ -138,3 +138,24 @@ verificar indica una discrepancia, un insumo ausente o un paso
 fallido. Comprueba `pasos_ejecutados` para distinguir una corrida terminada con diferencias de una corrida que
 se interrumpió. La [tabla de cotejo](../reproducibilidad.md#v4-con-confirmados) documenta qué diferencias se
 observaron al repetir el pipeline. Para replicar el ajuste del estudio se usa el Release de `model/v4`.
+
+## Recuperar la lluvia conocida en una emisión histórica
+
+Cada ejecución con descargas del paso 03d conserva un ZIP del silver semanal de CHIRPS en
+`data/v4_fuentes/silver/chirps_capturas/`. Registra cuándo se observó el conjunto, en UTC, y el SHA-256 del CSV.
+Las capturas anteriores conservan los valores preliminares cuando el CHC publica el final en una sesión posterior.
+Las ejecuciones con `--sin-descargas` reconstruyen el silver con el bronze disponible y conservan el historial
+de capturas tal cual estaba.
+
+```powershell
+.\.venv\Scripts\python -m denguekay.data.processing.chirps_snapshots --corte ((Get-Date).ToString("o"))
+```
+
+Para un corte anterior, pasa la fecha y hora efectiva de emisión en ISO 8601 entre comillas después de
+`--corte`, con su desfase UTC. El comando elige la captura más reciente observada hasta ese instante y aplica la fecha de
+disponibilidad de cada semana en hora de Piura. Exporta el CSV al directorio `chirps_al_corte/` y muestra los
+SHA-256 de la captura y del CSV exportado. Un corte anterior a la primera captura produce un error explícito.
+
+El archivo exportado acredita la disponibilidad de **CHIRPS**. Para reconstruir una emisión completa hacen falta
+también las capturas de los demás insumos tal como se conocían en esa fecha. Para reproducir la SE 41 congelada
+usa los archivos de `model/v4`, que incluyen el preliminar utilizado en ese vector.
