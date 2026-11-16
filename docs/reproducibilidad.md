@@ -146,10 +146,8 @@ SHA-256 de lo que devolvió Drive el 2026-11-09:
 
 ### V4 con confirmados
 
-Ejecuta desde la raíz en un clon reservado a esta corrida, con el entorno de la sección 0. Para reproducir el
-ajuste del paper usa otro clon limpio y la [ruta exacta del Release](modeling/reproducir_v4.md#regenerar-el-gold-congelado-desde-el-release).
-El silver de confirmados comparte los nombres de archivo del Release para el histórico y la Sala, por lo que una
-actualización en el mismo clon los reemplazaría.
+Ejecuta desde la raíz con el entorno de la sección 0. Las salidas regeneradas se guardan en `data/v4_fuentes/`.
+Para reproducir el ajuste del paper usa la [ruta exacta del Release](modeling/reproducir_v4.md#regenerar-el-gold-congelado-desde-el-release).
 
 ```powershell
 .\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --lista
@@ -158,16 +156,16 @@ actualización en el mismo clon los reemplazaría.
 
 Con las capturas completas ya guardadas en `data/bronze/`, añade `--sin-descargas` al segundo comando. Usa
 `--desde <paso>` para reanudar y `--solo-verificar` para cotejar archivos que ya existen sin ejecutar notebooks.
-El pipeline conserva el orden de los notebooks y guarda el informe en `data/gold/verificacion_v4.json`.
+El pipeline conserva el orden de los notebooks y guarda el informe en `data/v4_fuentes/gold/verificacion_v4.json`.
 
 | Paso | Fuentes y salidas V4 |
 |---|---|
-| 01b | Puntos distritales versionados y respuesta GLO-90 de Open-Meteo. Archiva la consulta en `bronze/geografia/` y guarda `reference/geografia_distritos_v4.csv` para el cotejo. La geografía que usa B3 se toma del Release y se verifica por SHA-256. |
+| 01b | Puntos distritales versionados y respuesta GLO-90 de Open-Meteo. Archiva la consulta en `data/bronze/geografia/` y guarda `data/v4_fuentes/reference/geografia_distritos_v4.csv` para el cotejo. B3 conserva la geografía verificada del Release. |
 | 02b → 03d | Open-Meteo para el panel 2017–2025 y ERA5-Land desde 2000. NOAA CPC para Niño 1+2. CHIRPS v3 por polígono desde bronze de Earth Engine y FTP, con una versión completa por semana y fecha de disponibilidad. |
-| 04 → 05 y 08 | Excel socio, limpieza y unión con el silver meteorológico del panel. |
+| 04 → 05b y 08b | Excel socio, limpieza y unión con el silver meteorológico del panel bajo `data/v4_fuentes/silver/`. |
 | 06 → 07b | `DatosDengueV2.csv` de Drive a bronze y agregado por distrito y semana con `tipo_dx=C`. V4 toma del CSV el tramo 2000–2024. |
 | 06c | Sala Situacional de 2025 en adelante. Guarda las capturas crudas, reconcilia totales y escribe el silver de confirmados. La extensión del ajuste congelado incluye la SE 53 de 2025 y acaba en la SE 41 de 2026. |
-| 09b → 11 | Panel y cobertura en `silver/integrado/confirmados/`; matriz B3 y manifiesto en `data/gold/`. El gold representa h2–h4 desde un mismo origen al corte congelado. |
+| 09b → 11 | Panel y cobertura en `data/v4_fuentes/silver/integrado/`. La matriz B3 y su manifiesto quedan en `data/v4_fuentes/gold/`. El gold representa h2–h4 desde un mismo origen al corte congelado. |
 
 Con `--verificar` y `--solo-verificar`, el código de salida `1` indica que algún insumo difiere, falta, o que
 la ejecución falló. El JSON distingue el estado de los pasos, el cotejo de los insumos y la integridad del

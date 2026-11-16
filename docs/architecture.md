@@ -159,9 +159,8 @@ silver/
 ├── socio_anual.csv
 ├── epi_piura_semanal.csv
 ├── epi_sala_semanal.csv            # exportación normalizada por ejecución
-├── confirmados/                    # histórico y Sala por separado; ERA5-Land, CHIRPS y Niño del recorrido V4
+├── confirmados/                    # entradas archivadas del Release V4
 └── integrado/                      # fuentes silver unidas entre sí
-    ├── confirmados/                # panel V4 y cobertura epidemiológica
     ├── meteo_socio_piura_2017_2025.csv                   # meteo + socio
     ├── meteo_socio_epi_base_piura_2017_2025.csv          # + epi histórico (entrada del actualizador)
     ├── meteo_socio_epi_piura_2017_2025.csv               # + epi completado por el actualizador
@@ -185,9 +184,10 @@ gold/
 
 Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
 
-El recorrido `run_all --version v4` llama al notebook 11 y a `features.gold_v4`. El CSV de elevación
-generado para el cotejo queda en `data/reference/geografia_distritos_v4.csv`, fuera de Git. El gold y
-el paquete de servicio V4 usan la geografía exacta verificada del Release.
+El recorrido `run_all --version v4` llama al notebook 11 y a `features.gold_v4`. Escribe en
+`data/v4_fuentes/silver/`, `data/v4_fuentes/gold/` y `data/v4_fuentes/reference/`, fuera de Git.
+`data/bronze/` conserva las capturas. El gold de reproducción del Release se genera en `data/gold/`.
+Ambos recorridos y el paquete de servicio V4 usan la geografía exacta del Release.
 
 ### `data/reference/` — catálogos que casi no cambian
 ```

@@ -5,9 +5,11 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 
-from denguekay.config.paths import (DISTRICT_COORDS, ROOT, SILVER_CHIRPS_PRECIP, SILVER_CONFIRMED,
-                                    SILVER_ENSO, SILVER_INTEGRATED, SILVER_METEO_ERA5_LAND_2000_2026, UBIGEO_CATALOG,
-                                    V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_HISTORY, V4_INTEGRATED, V4_SALA)
+from denguekay.config.paths import (DISTRICT_COORDS, ROOT, SILVER_CHIRPS_PRECIP,
+                                    SILVER_ENSO, SILVER_METEO_ERA5_LAND_2000_2026, UBIGEO_CATALOG,
+                                    V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_HISTORY, V4_INTEGRATED,
+                                    V4_RELEASE_HISTORY, V4_RELEASE_INTEGRATED, V4_RELEASE_SALA, V4_SALA)
+from denguekay.data.processing.district_locations import read_v4_era5
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.data.validation.integrated_expectations import coverage_path, load_case_coverage
 from denguekay.data.validation.v4_panel import validate_confirmed_panel
@@ -15,14 +17,13 @@ from denguekay.features.long_history import long_case_series, long_labels, sala_
 from denguekay.serving import load_data as loader
 from denguekay.serving.artifacts import sha256_bytes
 
-PANEL = SILVER_CONFIRMED / SILVER_INTEGRATED.name
-HISTORY = V4_HISTORY
-SALA = V4_SALA
+def _uses_sources(options):
+    return options.get("perfil_datos", "release") == "fuentes"
 
 
 def _paths(options, *, medallion):
     return {
-        "sala": ROOT / options.get("sala", SALA),
+        "sala": ROOT / options.get("sala", V4_SALA if medallion else V4_RELEASE_SALA),
         "era5_land": ROOT / options.get("era5_land", V4_ERA5_LAND if medallion else SILVER_METEO_ERA5_LAND_2000_2026),
         "chirps": ROOT / options.get("chirps", V4_CHIRPS if medallion else SILVER_CHIRPS_PRECIP),
         "nino12": ROOT / options.get("nino12", V4_ENSO if medallion else SILVER_ENSO),
@@ -30,12 +31,13 @@ def _paths(options, *, medallion):
 
 
 def source_hashes(options):
-    medallion = V4_INTEGRATED.is_file()
-    panel = V4_INTEGRATED if medallion else PANEL
-    paths = [UBIGEO_CATALOG, DISTRICT_COORDS, panel, HISTORY, coverage_path(panel),
+    medallion = _uses_sources(options)
+    panel = V4_INTEGRATED if medallion else V4_RELEASE_INTEGRATED
+    history = V4_HISTORY if medallion else V4_RELEASE_HISTORY
+    paths = [UBIGEO_CATALOG, DISTRICT_COORDS, panel, history, coverage_path(panel),
              *_paths(options, medallion=medallion).values()]
     if not medallion:
-        paths.extend([loader.GOLD_MANIFEST, loader.GOLD / f"{PANEL.stem}_h2_gold.csv"])
+        paths.extend([loader.GOLD_MANIFEST, loader.GOLD / f"{panel.stem}_h2_gold.csv"])
     return {path.relative_to(ROOT).as_posix(): sha256_bytes(path.read_bytes()) for path in paths}
 
 
@@ -44,13 +46,7 @@ def _read(path, dates=()):
 
 
 def _weekly_climate(paths, panel):
-    era = _read(paths["era5_land"], ("semana_inicio",))
-    coords = panel[["lat", "lon", "ubigeo"]].drop_duplicates()
-    era = era.merge(coords, on=["lat", "lon"], how="left", validate="many_to_one")
-    if era.ubigeo.isna().any():
-        raise ValueError("El silver ERA5-Land contiene coordenadas sin UBIGEO")
-    if "fecha_disponible" not in era:
-        era["fecha_disponible"] = era.semana_inicio + pd.Timedelta(days=13)
+    era = read_v4_era5(paths["era5_land"])
     rain = _read(paths["chirps"], ("semana_inicio", "fecha_disponible"))
     columns = ["ubigeo", "semana_inicio"]
     a = era[columns + ["temp_media", "hum_rel_media", "fecha_disponible"]].rename(columns={
@@ -61,7 +57,7 @@ def _weekly_climate(paths, panel):
         "precip_total_mm": "lluvia_chirps_mm", "fecha_disponible": "fecha_chirps_disponible",
     })
     result = a.merge(b, on=columns, how="outer", validate="one_to_one")
-    if not set(result.ubigeo) <= set(coords.ubigeo):
+    if not set(result.ubigeo) <= set(panel.ubigeo):
         raise ValueError("Clima de distritos fuera del catálogo de Piura")
     for column in ("fecha_era5_land_disponible", "fecha_chirps_disponible"):
         result[column] = pd.to_datetime(result[column])
@@ -91,8 +87,9 @@ def prepare_load(options):
     from denguekay.features.model_input_contract import audit_handoff
 
     hashes = source_hashes(options)
-    medallion = V4_INTEGRATED.is_file()
-    panel_path = V4_INTEGRATED if medallion else PANEL
+    medallion = _uses_sources(options)
+    panel_path = V4_INTEGRATED if medallion else V4_RELEASE_INTEGRATED
+    history_path = V4_HISTORY if medallion else V4_RELEASE_HISTORY
     paths = _paths(options, medallion=medallion)
     panel = _read(panel_path, ("semana_inicio",))
     if medallion:
@@ -100,7 +97,7 @@ def prepare_load(options):
         suite = validate_integrated_gx(panel_path)
         quality = {"exito": suite["exito"], "suites": {"silver_integrado": suite}}
     else:
-        audit_handoff(silver_path=panel_path, history_path=HISTORY)
+        audit_handoff(silver_path=panel_path, history_path=history_path)
         quality = validate_modeling_inputs(silver_path=panel_path)
     sala = _read(paths["sala"])
     if sala.empty or not sala.tipo_dx.eq("C").all():
@@ -118,7 +115,7 @@ def prepare_load(options):
             or not np.isfinite(cases).all() or not cases.ge(0).all() or not cases.mod(1).eq(0).all()):
         raise ValueError("Faltan semanas verificadas de confirmados o hay valores inválidos")
 
-    labels = long_labels(long_case_series(recent, HISTORY))
+    labels = long_labels(long_case_series(recent, history_path))
     observed = recent.merge(labels[["ubigeo", "semana_inicio", "brote", "umbral_brote_casos"]],
                             on=["ubigeo", "semana_inicio"], validate="one_to_one")
     observed = observed.merge(_weekly_climate(paths, panel), on=["ubigeo", "semana_inicio"],

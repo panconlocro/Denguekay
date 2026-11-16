@@ -28,8 +28,8 @@ STEPS = ["01_ingesta_distritos", "02_ingesta_meteo", "03_bronze_to_silver_meteo"
          "03c_ingesta_chirps", "04_ingesta_socio", "05_bronze_to_silver_socio", "06_ingesta_epi", "06b_ingesta_sala",
          "07_bronze_to_silver_epi", "08_silver_merge_meteo_socio", "09_silver_merge_epi", "10_silver_to_gold"]
 V4_STEPS = ["01b_geografia_v4", "02b_ingesta_meteo_v4", "03d_silver_clima_v4", "04_ingesta_socio",
-            "05_bronze_to_silver_socio", "06_ingesta_epi", "06c_sala_confirmados_v4", "07b_historico_confirmados_v4",
-            "08_silver_merge_meteo_socio", "09b_integrado_confirmados_v4", "11_silver_to_gold_v4"]
+            "05b_socio_v4", "06_ingesta_epi", "06c_sala_confirmados_v4", "07b_historico_confirmados_v4",
+            "08b_meteo_socio_v4", "09b_integrado_confirmados_v4", "11_silver_to_gold_v4"]
 V4_DOWNLOAD_STEPS = {"02b_ingesta_meteo_v4", "04_ingesta_socio", "06_ingesta_epi"}
 
 

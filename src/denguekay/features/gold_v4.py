@@ -11,11 +11,13 @@ import numpy as np
 import pandas as pd
 
 from denguekay.config.paths import (
-    ROOT, SILVER_CHIRPS_PRECIP, SILVER_CONFIRMED, SILVER_ENSO, SILVER_INTEGRATED,
+    ROOT, SILVER_CHIRPS_PRECIP, SILVER_ENSO,
     SILVER_METEO_ERA5_LAND_2000_2026, UBIGEO_CATALOG, V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_GEOGRAPHY, V4_GOLD,
-    V4_GOLD_MANIFEST, V4_HISTORY, V4_INTEGRATED, V4_SALA, V4_STUDY_MANIFEST,
+    V4_GOLD_MANIFEST, V4_HISTORY, V4_INTEGRATED, V4_RELEASE_HISTORY, V4_RELEASE_INTEGRATED, V4_RELEASE_SALA,
+    V4_SALA, V4_SOURCE_GOLD, V4_STUDY_MANIFEST,
 )
 from denguekay.data.loading import load_integrated
+from denguekay.data.processing.district_locations import read_v4_era5
 from denguekay.data.validation.integrated_expectations import coverage_path, load_case_coverage
 from denguekay.data.validation.v4_panel import validate_confirmed_panel
 from denguekay.features.b3 import GEO, NINO, WEATHER
@@ -39,13 +41,19 @@ class GoldInputs:
 
 def input_paths(release=False):
     if release:
-        return GoldInputs(SILVER_CONFIRMED / SILVER_INTEGRATED.name, V4_HISTORY, V4_SALA,
+        return GoldInputs(V4_RELEASE_INTEGRATED, V4_RELEASE_HISTORY, V4_RELEASE_SALA,
                           SILVER_METEO_ERA5_LAND_2000_2026, SILVER_CHIRPS_PRECIP, SILVER_ENSO, V4_GEOGRAPHY)
     return GoldInputs(V4_INTEGRATED, V4_HISTORY, V4_SALA, V4_ERA5_LAND, V4_CHIRPS, V4_ENSO, V4_GEOGRAPHY)
 
 
 def read_csv(path, dates=()):
     return pd.read_csv(path, dtype={"ubigeo": "string"}, parse_dates=list(dates), float_precision="round_trip")
+
+
+def output_paths(release):
+    if release:
+        return V4_GOLD, V4_GOLD_MANIFEST
+    return V4_SOURCE_GOLD / V4_GOLD.name, V4_SOURCE_GOLD / V4_GOLD_MANIFEST.name
 
 
 def _weekly_means(frame, value, target):
@@ -82,24 +90,8 @@ def climate_table(era, rain, enso, origins):
     return result
 
 
-def _read_era(path, panel):
-    era = read_csv(path, ("semana_inicio",))
-    locations = panel[["lat", "lon", "ubigeo"]].drop_duplicates()
-    era = era.merge(locations, on=["lat", "lon"], how="left", validate="many_to_one")
-    if era.ubigeo.isna().any():
-        raise ValueError("ERA5-Land coordinates do not map to the integrated panel")
-    if "fecha_disponible" in era:
-        era["fecha_disponible"] = pd.to_datetime(era.fecha_disponible)
-    else:
-        era["fecha_disponible"] = era.semana_inicio + 13 * DAY
-    return era
-
-
-def _gold_frame(inputs, spec, *, release=False):
+def _gold_frame(inputs, spec):
     panel = load_integrated(inputs.panel)
-    if not release:
-        locations = read_csv(inputs.panel)[["ubigeo", "lat", "lon"]].drop_duplicates()
-        panel = panel.drop(columns=["lat", "lon"]).merge(locations, how="left", on="ubigeo", validate="many_to_one")
     coverage = load_case_coverage(coverage_path(inputs.panel))
     if coverage is None:
         raise ValueError("Confirmed panel coverage is missing")
@@ -108,7 +100,7 @@ def _gold_frame(inputs, spec, *, release=False):
     if sala.empty or not sala.tipo_dx.eq("C").all():
         raise ValueError("V4 requires confirmed Sala observations")
     cutoff = pd.Timestamp(spec["corte"])
-    data = long_inputs(panel, inputs.era5, sala=sala, history_path=inputs.history)
+    data = long_inputs(panel, inputs.era5, sala=sala, history_path=inputs.history, include_d3=False)
     if data["ultima_semana"] + 6 * DAY < cutoff:
         raise ValueError(f"Confirmed observations do not reach the frozen cutoff {cutoff.date()}")
     origins = data["origenes"]
@@ -120,7 +112,7 @@ def _gold_frame(inputs, spec, *, release=False):
             or not np.isfinite(geography[list(GEO)].to_numpy(float)).all()):
         raise ValueError("Invalid frozen district geography")
     train = train.merge(geography[["ubigeo", *GEO]], on="ubigeo", how="left", validate="many_to_one")
-    climate = climate_table(_read_era(inputs.era5, panel), read_csv(inputs.chirps, ("semana_inicio", "fecha_disponible")),
+    climate = climate_table(read_v4_era5(inputs.era5), read_csv(inputs.chirps, ("semana_inicio", "fecha_disponible")),
                             read_csv(inputs.enso, ("fecha_disponible",)), train)
     train = train.join(climate)
     predictors = spec["columnas"]["b3_obs"]
@@ -166,11 +158,12 @@ def generate_gold(*, release=False):
         for name, expected in spec["fuentes"].items():
             if name in archive_sources and sha256(archive_sources[name].read_bytes()).hexdigest() != expected:
                 raise ValueError(f"V4 release input differs from the frozen manifest: {name}")
-    frame, provisional = _gold_frame(inputs, spec, release=release)
-    V4_GOLD.parent.mkdir(parents=True, exist_ok=True)
-    with TemporaryDirectory(dir=V4_GOLD.parent) as temp:
-        csv = Path(temp) / V4_GOLD.name
-        manifest = Path(temp) / V4_GOLD_MANIFEST.name
+    frame, provisional = _gold_frame(inputs, spec)
+    destination, lineage = output_paths(release)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(dir=destination.parent) as temp:
+        csv = Path(temp) / destination.name
+        manifest = Path(temp) / lineage.name
         frame.to_csv(csv, index=False, date_format="%Y-%m-%d", lineterminator="\n")
         metadata = {"version_modelo": "v4-b3", "archivo": csv.name, "sha256": sha256(csv.read_bytes()).hexdigest(),
                     "corte_etiquetas": spec["corte"], "llave": KEY, "horizontes": list(HORIZONS),
@@ -179,8 +172,8 @@ def generate_gold(*, release=False):
                     "semanas_provisionales": provisional, "fuentes": hashes,
                     "origen_insumos": "release" if release else "fuentes"}
         manifest.write_bytes((json.dumps(metadata, ensure_ascii=False, indent=2) + "\n").encode())
-        csv.replace(V4_GOLD)
-        manifest.replace(V4_GOLD_MANIFEST)
+        csv.replace(destination)
+        manifest.replace(lineage)
     return metadata
 
 

@@ -96,15 +96,24 @@ V4_FROZEN = MODELS / "experimentos" / "mejora_modelo" / "v4_b3_confirmados"
 V4_GEOGRAPHY = (MODELS / "experimentos" / "mejora_modelo" / "v3_confirmados" / "piloto_clima"
                 / "resolucion_chirts" / "historico" / "insumos" / "geografia_distritos.csv")
 SILVER_CONFIRMED = SILVER / "confirmados"
-V4_HISTORY = SILVER_CONFIRMED / SILVER_EPI_HISTORICAL.name
-V4_SALA = SILVER_CONFIRMED / SILVER_SALA.name
-V4_INTEGRATED = SILVER_INTEGRATED_DIR / "confirmados" / SILVER_INTEGRATED.name
-# Separate outputs for mutable sources and immutable release inputs.
-V4_CHIRPS = SILVER_CONFIRMED / SILVER_CHIRPS_PRECIP.name
-V4_ENSO = SILVER_CONFIRMED / SILVER_ENSO.name
-V4_ERA5_LAND = SILVER_CONFIRMED / SILVER_METEO_ERA5_LAND.name
+V4_RELEASE_HISTORY = SILVER_CONFIRMED / SILVER_EPI_HISTORICAL.name
+V4_RELEASE_SALA = SILVER_CONFIRMED / SILVER_SALA.name
+V4_RELEASE_INTEGRATED = SILVER_CONFIRMED / SILVER_INTEGRATED.name
+# Every derived output from a source run stays outside the legacy and Release paths.
+V4_SOURCE_DATA = DATA / "v4_fuentes"
+V4_SOURCE_SILVER = V4_SOURCE_DATA / "silver"
+V4_SOURCE_GOLD = V4_SOURCE_DATA / "gold"
+V4_HISTORY = V4_SOURCE_SILVER / SILVER_EPI_HISTORICAL.name
+V4_SALA = V4_SOURCE_SILVER / SILVER_SALA.name
+V4_INTEGRATED = V4_SOURCE_SILVER / "integrado" / SILVER_INTEGRATED.name
+V4_PANEL_WEATHER = V4_SOURCE_SILVER / "meteo_semanal_distrital.csv"
+V4_SOCIO = V4_SOURCE_SILVER / "socio_anual.csv"
+V4_WEATHER_SOCIO = V4_SOURCE_SILVER / "integrado" / SILVER_METEO_SOCIO.name
+V4_CHIRPS = V4_SOURCE_SILVER / SILVER_CHIRPS_PRECIP.name
+V4_ENSO = V4_SOURCE_SILVER / SILVER_ENSO.name
+V4_ERA5_LAND = V4_SOURCE_SILVER / SILVER_METEO_ERA5_LAND.name
 V4_ELEVATION_RAW = BRONZE / "geografia" / "open_meteo_elevation"
-V4_LIVE_GEOGRAPHY = REFERENCE / "geografia_distritos_v4.csv"
+V4_LIVE_GEOGRAPHY = V4_SOURCE_DATA / "reference" / "geografia_distritos_v4.csv"
 V4_GOLD = GOLD / "piura_confirmados_v4_gold.csv"
 V4_GOLD_MANIFEST = GOLD / "manifest_v4.json"
 V4_VERIFICATION_REPORT = GOLD / "verificacion_v4.json"

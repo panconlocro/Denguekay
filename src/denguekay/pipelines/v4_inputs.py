@@ -1,6 +1,5 @@
 """Build the source and integrated silver tables for V4."""
 
-import asyncio
 from datetime import date, datetime, timedelta, timezone
 import json
 from pathlib import Path
@@ -10,18 +9,21 @@ import pandas as pd
 
 from denguekay.config.paths import (
     BRONZE_CHIRPS_EE_FINAL, BRONZE_CHIRPS_FINAL_FTP, BRONZE_CHIRPS_PRELIM, BRONZE_ENSO, BRONZE_EPI_CSV,
-    BRONZE_SALA, CACHE_METEO, CACHE_METEO_ERA5_LAND_2000_2016, CACHE_METEO_ERA5_LAND_2017_2025,
-    CACHE_METEO_ERA5_LAND_2026, CACHE_METEO_ERA5_LAND_RECENT, DISTRICT_COORDS, SILVER, SILVER_METEO_SOCIO,
-    UBIGEO_CATALOG, V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_HISTORY, V4_INTEGRATED, V4_SALA,
+    BRONZE_SALA, BRONZE_SOCIO, CACHE_METEO, CACHE_METEO_ERA5_LAND_2000_2016, CACHE_METEO_ERA5_LAND_2017_2025,
+    CACHE_METEO_ERA5_LAND_2026, CACHE_METEO_ERA5_LAND_RECENT, DISTRICT_COORDS, UBIGEO_CATALOG,
+    V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_HISTORY, V4_INTEGRATED, V4_PANEL_WEATHER, V4_SALA, V4_SOCIO,
+    V4_WEATHER_SOCIO,
 )
 from denguekay.data.ingestion import chirps, chirps_ee, chirps_prelim, openmeteo
 from denguekay.data.ingestion.enso import download_sstoi
 from denguekay.data.ingestion.minsa_sala_scraper import confirmed_weekly_points, scrape_sala
+from denguekay.data.keys import normalize
 from denguekay.data.processing import chirps_precipitation as rain
+from denguekay.data.processing import socio_interpolation as socio
 from denguekay.data.processing.enso_index import nino12_monthly
 from denguekay.data.processing.epi_cases import build_weekly_cases, load_raw
 from denguekay.data.processing.epi_sala import SALA_FIRST_YEAR, load_ubigeo_catalog, normalize_sala_records
-from denguekay.data.processing.merge import merge_with_epi
+from denguekay.data.processing.merge import merge_meteo_socio, merge_with_epi
 from denguekay.data.processing.weekly_aggregation import (
     aggregate_available_to_weekly, aggregate_to_weekly, clean_names_for_join, latest_snapshot, load_daily_from_caches,
 )
@@ -75,7 +77,7 @@ def weather_silver():
                                                                openmeteo.ERA5_LAND_DAILY_VARS))
     if weekly.duplicated(["id_distrito", "semana_inicio"]).any() or weekly.empty:
         raise ValueError("ERA5-Land has duplicate or missing district-weeks")
-    return [write_silver(panel_weekly, SILVER / "meteo_semanal_distrital.csv", line_ending="\n"),
+    return [write_silver(panel_weekly, V4_PANEL_WEATHER, line_ending="\n"),
             write_silver(weekly, V4_ERA5_LAND)]
 
 
@@ -146,7 +148,7 @@ def replay_sala(folder, year, catalog):
     for entry in sorted(folder.glob("*.json")):
         record = json.loads(entry.read_bytes())
         if record["anio"] != year or record.get("tipo_dx") != "C":
-            raise ValueError(f"Invalid year or diagnosis in {entry.name}")
+            raise ValueError(f"{entry.name} is not a confirmed Sala capture for {year}; rerun V4 step 06c with downloads")
         points = confirmed_weekly_points(record["chart"]["x"]["opts"], year)
         records.append({**record, "points": points})
     districts = [r for r in records if r["nivel"] == "distrito"]
@@ -157,7 +159,8 @@ def replay_sala(folder, year, catalog):
     return result.assign(tipo_dx="C")
 
 
-def sala_silver(*, offline=False, year=None):
+async def sala_silver(*, offline=False, year=None):
+    """Capture or replay the confirmed Sala series under the caller's event loop."""
     catalog = load_ubigeo_catalog(UBIGEO_CATALOG)
     targets = set(zip(catalog.provincia_sala, catalog.distrito_sala))
     frames = []
@@ -170,7 +173,7 @@ def sala_silver(*, offline=False, year=None):
         else:
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
             folder = BRONZE_SALA / f"{item}_{stamp}"
-            asyncio.run(scrape_sala(item, targets, folder))
+            await scrape_sala(item, targets, folder)
         frames.append(replay_sala(folder, item, catalog))
     return write_silver(pd.concat(frames, ignore_index=True).sort_values(["ubigeo", "anio", "semana"]), V4_SALA)
 
@@ -179,9 +182,23 @@ def historical_silver():
     return write_silver(build_weekly_cases(load_raw(BRONZE_EPI_CSV)), V4_HISTORY, line_ending="\n")
 
 
+def socio_silver():
+    raw = socio.load_raw(BRONZE_SOCIO / "data_socio_2017_2025.xlsx")
+    return write_silver(socio.build_annual_socio(socio.clean_duplicates(raw)), V4_SOCIO, line_ending="\n")
+
+
+def weather_socio_silver():
+    weather = pd.read_csv(V4_PANEL_WEATHER, float_precision="round_trip")
+    demographics = pd.read_csv(V4_SOCIO, dtype={"ubigeo": "string"}, float_precision="round_trip")
+    aliases = {"El Carmendela Frontera": "El Carmen de la Frontera", "San Miguelde El Faique": "San Miguel de el Faique"}
+    weather["distrito"] = weather.distrito.replace(aliases)
+    weather["distrito_key"] = weather.distrito.map(normalize)
+    return write_silver(merge_meteo_socio(weather, demographics), V4_WEATHER_SOCIO, line_ending="\n")
+
+
 def integrate_confirmed():
     dtype = {"ubigeo": "string"}
-    base = pd.read_csv(SILVER_METEO_SOCIO, dtype=dtype, float_precision="round_trip")
+    base = pd.read_csv(V4_WEATHER_SOCIO, dtype=dtype, float_precision="round_trip")
     history = pd.read_csv(V4_HISTORY, dtype=dtype)
     sala = pd.read_csv(V4_SALA, dtype=dtype)
     calendar = week_grid(2025, 2025)

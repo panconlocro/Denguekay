@@ -90,15 +90,19 @@ Los resultados quedan en `data/gold/`.
   [registro del Release](../../models/registry/v4/manifiesto_datos.json). El SHA-256 del gold se
   comprueba contra `manifest_v4.json`, porque los manifiestos publicados enumeran los insumos del gold.
 
-En la comprobación del 15 de noviembre de 2026 coincidieron los diez hashes de los insumos. El SHA-256
-del CSV exportado fue `63148b7144eebe7442d45f6a21069dc988984a2d4f8a0db94f5ee75ec8e78045`. El
+En la comprobación del 15 de noviembre de 2026 coincidieron los diez hashes de los insumos. En macOS ARM,
+el SHA-256 del CSV fue `63148b7144eebe7442d45f6a21069dc988984a2d4f8a0db94f5ee75ec8e78045`.
+El cotejo en Linux y Windows produjo otros hashes del CSV con el mismo conjunto de insumos. Queda pendiente
+una referencia independiente por columna que permita distinguir diferencias numéricas de cambios de datos.
+En el informe actual, `gold: coincide` acredita la integridad del CSV respecto de su manifiesto local. El
 `manifest_fase6.json` y el gold h2 presentes en `datos_v4.zip` son evidencia del linaje que se validó
 al congelar V4. El ajuste de los boosters se reproduce por separado con el protocolo del paper.
 
 ## Regenerar desde las fuentes
 
-Usa el mismo entorno en un clon reservado al pipeline desde las fuentes. El histórico y la Sala de confirmados
-comparten las rutas del Release y sus CSV cambian cuando se actualizan las capturas.
+Usa el mismo entorno. Los resultados de este recorrido quedan en `data/v4_fuentes/`, con su propio `silver/`,
+`gold/` y `reference/`. Los archivos descargados del Release mantienen sus rutas originales. Los dos perfiles
+pueden coexistir en el mismo clon.
 
 ```powershell
 .\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --verificar
@@ -107,11 +111,13 @@ comparten las rutas del Release y sus CSV cambian cuando se actualizan las captu
 Si ya tienes en `data/bronze/` las capturas de la Sala confirmada, la consulta de elevación y los cachés de las
 demás fuentes, añade `--sin-descargas`. Este modo también requiere que la geografía fija de `datos_v4.zip` esté
 disponible en la ruta del Release. Para una corrida nueva con acceso a red, 01b descarga y verifica ese archivo
-del Release si falta. `--desde <paso>` permite reanudar la generación. El paso `11` construye el gold al corte
+del Release si falta. B3 usa esa geografía para conservar los valores que recibió el booster congelado.
+El paso 01b guarda la consulta nueva por separado para cotejarla. `--desde <paso>` permite reanudar la
+generación. El paso `11` construye el gold al corte
 congelado con los insumos disponibles en ese clon. La actualización de observaciones para servir pronósticos
 usa sus propios cortes de publicación.
 
-El informe en `data/gold/verificacion_v4.json` registra los archivos que coinciden, difieren o faltan, y el
+El informe en `data/v4_fuentes/gold/verificacion_v4.json` registra los archivos que coinciden, difieren o faltan, y el
 estado de los pasos. El código de salida `1` al verificar indica una discrepancia, un insumo ausente o un paso
 fallido. Comprueba `pasos_ejecutados` para distinguir una corrida terminada con diferencias de una corrida que
 se interrumpió. La [tabla de cotejo](../reproducibilidad.md#v4-con-confirmados) documenta qué diferencias se

@@ -6,12 +6,12 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from denguekay.config.paths import (
-    GOLD_MANIFEST, ROOT, UBIGEO_CATALOG, V4_DATA_MANIFEST, V4_FROZEN, V4_GOLD, V4_GOLD_MANIFEST,
-    V4_LIVE_GEOGRAPHY, V4_STUDY_MANIFEST, V4_VERIFICATION_REPORT,
+    GOLD_MANIFEST, ROOT, UBIGEO_CATALOG, V4_DATA_MANIFEST, V4_FROZEN,
+    V4_LIVE_GEOGRAPHY, V4_SOURCE_GOLD, V4_STUDY_MANIFEST, V4_VERIFICATION_REPORT,
 )
 from denguekay.data.ingestion.release_bundles import sha256_file
 from denguekay.data.validation.integrated_expectations import coverage_path
-from denguekay.features.gold_v4 import input_paths
+from denguekay.features.gold_v4 import input_paths, output_paths
 
 
 def _relative(path):
@@ -65,18 +65,19 @@ def _entries(release, study, registry, digest):
 
 
 def _check_gold(profile, inputs, digest, cutoff):
-    actual = digest(V4_GOLD)
-    if not V4_GOLD_MANIFEST.is_file() or actual is None:
-        return {"estado": "falta", "ruta": _relative(V4_GOLD), "sha256_obtenido": actual}
-    lineage = json.loads(V4_GOLD_MANIFEST.read_bytes())
+    gold, manifest = output_paths(profile == "release")
+    actual = digest(gold)
+    if not manifest.is_file() or actual is None:
+        return {"estado": "falta", "ruta": _relative(gold), "sha256_obtenido": actual}
+    lineage = json.loads(manifest.read_bytes())
     expected_inputs = {item["ruta"]: item["sha256_obtenido"] for item in inputs
                        if item["ruta"] and item["ruta"] != _relative(GOLD_MANIFEST)}
     valid = (lineage.get("fuentes") == expected_inputs and all(expected_inputs.values())
              and lineage.get("origen_insumos") == profile and lineage.get("corte_etiquetas") == cutoff
-             and lineage.get("archivo") == V4_GOLD.name and lineage.get("sha256") == actual)
-    return {"estado": "coincide" if valid else "difiere", "ruta": _relative(V4_GOLD),
+             and lineage.get("archivo") == gold.name and lineage.get("sha256") == actual)
+    return {"estado": "coincide" if valid else "difiere", "ruta": _relative(gold),
             "sha256_obtenido": actual, "sha256_manifest_local": lineage.get("sha256"),
-            "archivo_manifest_local": _relative(V4_GOLD_MANIFEST),
+            "archivo_manifest_local": _relative(manifest),
             "sha256_publicado": None}
 
 
@@ -96,8 +97,10 @@ def verify_v4(*, release=False, steps=None):
     profile = "release" if release else "fuentes"
     gold = _check_gold(profile, inputs, digest, study["corte"])
     candidate_geo = digest(V4_LIVE_GEOGRAPHY)
+    destination = V4_VERIFICATION_REPORT if release else V4_SOURCE_GOLD / V4_VERIFICATION_REPORT.name
     report = {
         "version": registry["version"], "perfil": profile, "referencia": registry["tag"],
+        "ruta_informe": _relative(destination),
         "manifiesto_estudio": _relative(V4_STUDY_MANIFEST), "manifiesto_release": _relative(V4_DATA_MANIFEST),
         "corte_etiquetas": study["corte"], "insumos": inputs, "archivos_modelo_en_manifiestos": model,
         "geografia_consulta_nueva": {"ruta": _relative(V4_LIVE_GEOGRAPHY), "sha256_obtenido": candidate_geo,
@@ -111,11 +114,11 @@ def verify_v4(*, release=False, steps=None):
     report["exito"] = (report["coinciden_insumos_verificados"]
                        and all(item["estado"] == "coincide" for item in model) and gold["estado"] == "coincide"
                        and (steps is None or (bool(steps) and all(step["codigo"] == 0 for step in steps))))
-    V4_VERIFICATION_REPORT.parent.mkdir(parents=True, exist_ok=True)
-    with TemporaryDirectory(dir=V4_VERIFICATION_REPORT.parent) as temp:
-        output = Path(temp) / V4_VERIFICATION_REPORT.name
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(dir=destination.parent) as temp:
+        output = Path(temp) / destination.name
         output.write_bytes((json.dumps(report, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
-        output.replace(V4_VERIFICATION_REPORT)
+        output.replace(destination)
     return report
 
 
@@ -126,4 +129,4 @@ def print_result(report):
               f"manifiestos {entry['estado_manifiestos']})")
     print(f"Elevación de consulta nueva: {report['geografia_consulta_nueva']['estado']}")
     print(f"Gold V4 contra su manifiesto local: {report['gold']['estado']}")
-    print(f"Informe: {_relative(V4_VERIFICATION_REPORT)}")
+    print(f"Informe: {report['ruta_informe']}")

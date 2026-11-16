@@ -182,9 +182,9 @@ y Niño 1+2. La geografía fija viene del paquete; la API consulta las observaci
    `python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip modelo_v4.zip`.
    Si ya hay archivos de otra versión, usa un clon dedicado para conservarlos.
 3. Prepara los silver operativos con el [pipeline de V4](../reproducibilidad.md#v4-con-confirmados).
-   Cuando existe el panel de `data/silver/integrado/confirmados/`, el cargador usa ese panel y los
-   silver de V4 de `data/silver/confirmados/`. En un clon de reproducción con los archivos del
-   Release, usa el panel archivado. Las opciones `sala`, `era5_land`, `chirps` y `nino12` de
+   Para cargar el panel y los silver de `data/v4_fuentes/`, fija `perfil_datos: fuentes` en
+   `serving.paquete.opciones`. El perfil por defecto, `release`, usa los archivos archivados.
+   Las opciones `sala`, `era5_land`, `chirps` y `nino12` de
    `serving.paquete.opciones` permiten indicar otros archivos operativos dentro del repo.
    La carga excluye las últimas dos semanas publicadas en Sala por
    defecto, según `semanas_provisionales`. El cálculo al corte usa la fecha registrada por CHIRPS,

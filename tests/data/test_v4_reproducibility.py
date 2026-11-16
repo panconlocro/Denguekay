@@ -52,8 +52,9 @@ class TestV4Reproducibility(unittest.TestCase):
 
             with patch.multiple(audit, ROOT=root, V4_STUDY_MANIFEST=study, V4_DATA_MANIFEST=registry, V4_FROZEN=model,
                                 V4_LIVE_GEOGRAPHY=root / "new_geo.csv", UBIGEO_CATALOG=catalog, GOLD_MANIFEST=h2,
-                                V4_GOLD=output, V4_GOLD_MANIFEST=local, V4_VERIFICATION_REPORT=verify), \
-                    patch.object(audit, "input_paths", side_effect=lambda release: frozen if release else live):
+                                V4_SOURCE_GOLD=root, V4_VERIFICATION_REPORT=verify), \
+                    patch.object(audit, "input_paths", side_effect=lambda release: frozen if release else live), \
+                    patch.object(audit, "output_paths", return_value=(output, local)):
                 write_local_manifest("release", frozen)
                 self.assertTrue(audit.verify_v4(release=True)["exito"])
                 write_local_manifest("fuentes", live)

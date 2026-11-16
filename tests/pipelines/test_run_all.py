@@ -26,7 +26,8 @@ class TestSteps(unittest.TestCase):
     def test_v4_has_separate_merge_and_gold_steps(self):
         v4 = run_all.available_steps(version="v4")
         self.assertEqual(v4[-2:], ["09b_integrado_confirmados_v4", "11_silver_to_gold_v4"])
-        self.assertFalse({"02_ingesta_meteo", "09_silver_merge_epi", "10_silver_to_gold"}.intersection(v4))
+        self.assertFalse({"02_ingesta_meteo", "05_bronze_to_silver_socio", "08_silver_merge_meteo_socio",
+                          "09_silver_merge_epi", "10_silver_to_gold"}.intersection(v4))
         self.assertEqual(run_all.available_steps("06c", "07b", version="v4"),
                          ["06c_sala_confirmados_v4", "07b_historico_confirmados_v4"])
 

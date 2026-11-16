@@ -122,8 +122,8 @@ def long_matrix(cases: pd.DataFrame, labels: pd.DataFrame, horizon: int) -> pd.D
 
 
 def long_inputs(panel: pd.DataFrame, era5_land_path, sala: pd.DataFrame | None = None,
-                history_path=SILVER_EPI_HISTORICAL) -> dict:
-    """Series, labels, matrices h=2..4 and origins (``base_6`` + B3 + d3, RangeIndex) of the V3."""
+                history_path=SILVER_EPI_HISTORICAL, *, include_d3: bool = True) -> dict:
+    """Build the long series, labels and origins, with the V3 d3 windows by default."""
     sala = pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}) if sala is None else sala
     recent = panel[SERIES_COLUMNS].assign(ubigeo=lambda d: d.ubigeo.astype(str),
                                           semana_inicio=lambda d: pd.to_datetime(d.semana_inicio))
@@ -133,8 +133,10 @@ def long_inputs(panel: pd.DataFrame, era5_land_path, sala: pd.DataFrame | None =
     matrices = {h: long_matrix(cases, labels, h) for h in eh.STRATEGY_HORIZONS}
     origins = fi.with_onset_columns(eh.origin_table(matrices[2]), cases, cases.iloc[:0][
         ["ubigeo", "anio", "semana", "casos_Dengue"]])
-    windows = cl.weather_windows(cl.era5_land_weekly(era5_land_path, panel))
-    origins = cl.add_weather_windows(origins, windows).reset_index(drop=True)
+    if include_d3:
+        windows = cl.weather_windows(cl.era5_land_weekly(era5_land_path, panel))
+        origins = cl.add_weather_windows(origins, windows)
+    origins = origins.reset_index(drop=True)
     series = labels[["ubigeo", "anio", "semana", "semana_inicio", "casos_Dengue", "brote"]].copy()
     series["semana_inicio"] = pd.to_datetime(series.semana_inicio)
     return {"casos": cases, "etiquetas": labels, "matrices": matrices, "origenes": origins, "serie": series,

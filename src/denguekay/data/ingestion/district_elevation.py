@@ -14,7 +14,7 @@ from denguekay.config.paths import (
     DISTRICT_COORDS, ROOT, UBIGEO_CATALOG, V4_DATA_MANIFEST, V4_ELEVATION_RAW, V4_GEOGRAPHY, V4_LIVE_GEOGRAPHY,
 )
 from denguekay.data.ingestion import release_bundles
-from denguekay.data.keys import normalize
+from denguekay.data.processing.district_locations import district_points
 from denguekay.features.b3 import GEO
 
 ELEVATION_URL = "https://api.open-meteo.com/v1/elevation"
@@ -45,20 +45,6 @@ def ensure_frozen_geography(*, offline=False):
     if release_bundles.sha256_file(V4_GEOGRAPHY) != expected:
         raise ValueError("Local V4 geography differs from its release checksum")
     return V4_GEOGRAPHY
-
-
-def district_points(coords=DISTRICT_COORDS, catalog=UBIGEO_CATALOG):
-    points = pd.read_csv(coords, float_precision="round_trip")
-    codes = pd.read_csv(catalog, dtype={"ubigeo": "string"})
-    keys = ["provincia", "distrito"]
-    for frame in (points, codes):
-        frame["provincia"] = frame.provincia.map(normalize)
-        frame["distrito"] = (frame.distrito.map(normalize).str.removesuffix("_S").str.replace(" ", "", regex=False))
-    joined = codes[keys + ["ubigeo"]].merge(points[keys + ["lat", "lon"]], on=keys, how="left",
-                                            validate="one_to_one")
-    if joined[["lat", "lon"]].isna().any().any() or not joined.ubigeo.str.fullmatch(r"\d{6}").all():
-        raise ValueError("District coordinates do not reconcile to the UBIGEO catalogue")
-    return joined[["lat", "lon", "ubigeo"]].sort_values("ubigeo").reset_index(drop=True)
 
 
 def elevation_reference(*, offline=False, points_path=DISTRICT_COORDS, catalog_path=UBIGEO_CATALOG,
