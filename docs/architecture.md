@@ -355,8 +355,8 @@ tests/
     ├── equivalence/          # línea base del ADR 0001 (no se regenera; smoke.json es historia)
     ├── contract_v1/          # línea base v1: esquema de cada migración nueva y smoke v1 (no se regenera)
     ├── pluggable_predictor/  # línea base de la v0 antes del motor enchufable, sus boosters congelados y su entorno (no se regenera)
-    └── v2_serving/           # 6 distritos reales y lo que la v2 congelada calcula con los datos completos: orígenes,
-                              #   predicciones, el modelo del bloque calendario_2025 y su entorno (no se regenera)
+    ├── v2_serving/           # 6 distritos reales, orígenes, predicciones y modelo congelado (no se regenera)
+    └── v4_gold/              # huellas por columna y referencia de flotantes del gold desde el Release (no se regenera)
 docs/backend/                 # especificación OE2, desviaciones, operación, despliegue y contrato (openapi_v1.json congelado)
 └── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
@@ -410,6 +410,9 @@ Las guardas que comparan con una línea base grabada siguen una sola regla:
     redondea distinto (se vio 7,5e-9 en casos);
   - las tolerancias ya acordadas con Rosa se mantienen en todas las plataformas: la precipitación de A3,
     guardada en `numeric(7,2)`, usa 1e-9.
+- **Gold V4 y origen congelado.** Después de la suite local, el CI descarga `datos_v4.zip` y `modelo_v4.zip`,
+  verifica las referencias del gold por columna y compara el vector de la SE 41 calculado desde una BD temporal
+  con `origen.csv`. La referencia fija del gold vive en `tests/fixtures/v4_gold/`.
 - **Reentrenar no es comparable entre sistemas operativos** (decisión D1 del ADR 0001). Las pruebas que
   reentrenan quedan clavadas al entorno de grabación y, fuera de él, se omiten con el motivo.
 
