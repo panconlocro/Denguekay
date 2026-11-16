@@ -20,6 +20,7 @@ from denguekay.data.ingestion.minsa_sala_scraper import confirmed_weekly_points,
 from denguekay.data.keys import normalize
 from denguekay.data.processing import chirps_precipitation as rain
 from denguekay.data.processing import socio_interpolation as socio
+from denguekay.data.processing.chirps_snapshots import archive_snapshot
 from denguekay.data.processing.enso_index import nino12_monthly
 from denguekay.data.processing.epi_cases import build_weekly_cases, load_raw
 from denguekay.data.processing.epi_sala import SALA_FIRST_YEAR, load_ubigeo_catalog, normalize_sala_records
@@ -155,8 +156,11 @@ def climate_silver(*, offline=False):
     weekly, discarded = rain.weekly_by_version(daily)
     if weekly.empty:
         raise ValueError("CHIRPS bronze has no complete weeks")
-    return {"series": [write_silver(enso, V4_ENSO), write_silver(weekly, V4_CHIRPS)],
-            "semanas_distritales_incompletas": len(discarded)}
+    result = {"semanas_distritales_incompletas": len(discarded)}
+    if not offline:
+        result["captura_chirps"] = archive_snapshot(weekly, observed_at=datetime.now(timezone.utc)).name
+    result["series"] = [write_silver(enso, V4_ENSO), write_silver(weekly, V4_CHIRPS)]
+    return result
 
 
 def replay_sala(folder, year, catalog):

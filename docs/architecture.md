@@ -186,6 +186,9 @@ Las fases de construcción están en `research/02_feature_engineering/docs/fases
 
 El recorrido `run_all --version v4` llama al notebook 11 y a `features.gold_v4`. Escribe en
 `data/v4_fuentes/silver/`, `data/v4_fuentes/gold/` y `data/v4_fuentes/reference/`, fuera de Git.
+El paso 03d conserva la serie limpia de CHIRPS de cada sesión con descarga en `data/v4_fuentes/silver/chirps_capturas/`,
+con su hora de observación en UTC y SHA-256. Una consulta histórica exporta la captura aplicable a
+`data/v4_fuentes/silver/chirps_al_corte/`.
 `data/bronze/` conserva las capturas. El gold de reproducción del Release se genera en `data/gold/`.
 Ambos recorridos y el paquete de servicio V4 usan la geografía exacta del Release.
 
