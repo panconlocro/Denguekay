@@ -30,9 +30,18 @@ class TestSteps(unittest.TestCase):
             self.assertTrue((run_all.version_folder("v4") / f"{step}.ipynb").exists())
 
     def test_version_without_folder_fails_clearly(self):
-        with self.assertRaises(FileNotFoundError):
-            run_all.available_steps(version="v2")
-        self.assertEqual(run_all.main(["--version", "v2", "--lista"]), 2)
+        with tempfile.TemporaryDirectory() as empty, patch.object(run_all, "NOTEBOOKS", Path(empty)):
+            with self.assertRaises(FileNotFoundError):
+                run_all.available_steps(version="v2")
+            self.assertEqual(run_all.main(["--version", "v2", "--lista"]), 2)
+
+    def test_every_version_has_its_folder_with_the_same_steps(self):
+        for version in ("v0", "v1", "v2", "v3", "v4"):
+            with self.subTest(version):
+                steps = run_all.available_steps(version=version)
+                self.assertEqual(len(steps), 12)
+                self.assertEqual(steps[0], "01_bronze_geografia")
+                self.assertEqual(steps[-2:], ["11_gold", "99_verificacion"])
 
     def test_no_step_runs_in_place(self):
         with tempfile.TemporaryDirectory() as temp, patch.object(run_all.subprocess, "run") as sub:
