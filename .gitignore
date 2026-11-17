@@ -2,6 +2,8 @@ data/bronze/
 data/silver/
 data/reference/geografia_distritos_v4.csv
 data/v4_fuentes/
+# Notebooks ejecutados y registros de run_all (uno por corrida)
+pipelines/ejecuciones/
 data/gold/*
 !data/gold/.gitkeep
 models/*.pkl

@@ -184,9 +184,9 @@ gold/
 
 Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
 
-El recorrido `run_all --version v4` llama al notebook 11 y a `features.gold_v4`. Escribe en
+El recorrido `run_all --version v4` ejecuta los notebooks de `pipelines/notebooks/V4/` (el 11 llama a `features.gold_v4`). Escribe en
 `data/v4_fuentes/silver/`, `data/v4_fuentes/gold/` y `data/v4_fuentes/reference/`, fuera de Git.
-El paso 03d conserva la serie limpia de CHIRPS de cada sesión con descarga en `data/v4_fuentes/silver/chirps_capturas/`,
+El paso 06 conserva la serie limpia de CHIRPS de cada sesión con descarga en `data/v4_fuentes/silver/chirps_capturas/`,
 con su hora de observación en UTC y SHA-256. Una consulta histórica exporta la captura aplicable a
 `data/v4_fuentes/silver/chirps_al_corte/`.
 `data/bronze/` conserva las capturas. El gold de reproducción del Release se genera en `data/gold/`.
