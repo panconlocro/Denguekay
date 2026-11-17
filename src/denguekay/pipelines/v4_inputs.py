@@ -91,7 +91,11 @@ def read_district_coords():
 
     The Release (datos_v4.zip) was written from the coordinates read with the default pandas float parser; the exact
     ``round_trip`` parser differs by one ulp in two districts (Arenal and Miguel Checa), which breaks the match of
-    the ERA5-Land centroids with the panel (``features.climate.era5_land_weekly``) and the byte equality."""
+    the ERA5-Land centroids with the panel (``features.climate.era5_land_weekly``) and the byte equality.
+
+    That holds for pandas 3.0.x, the version ``constraints.txt`` pins. From pandas 3.1 the parser is always exact
+    (``float_precision`` is deprecated and ignored), so the two latitudes are the exact ones: the run is consistent
+    with itself but its ERA5-Land silver differs from the Release by one ulp in those two districts."""
     return pd.read_csv(DISTRICT_COORDS)
 
 

@@ -293,7 +293,7 @@ extraer antes `datos_v4.zip`. Código de salida `0`. Lo que escribió el pipelin
 
 | Archivo | Comparación con el Release |
 |---|---|
-| Histórico confirmado, cobertura, Niño 1+2, ERA5-Land, UBIGEO y geografía de B3 | SHA-256 idénticos. Para ERA5-Land hace falta leer `distritos_piura_coords.csv` con el lector de pandas por defecto (con `round_trip` Arenal y Miguel Checa cambian 1 ulp). |
+| Histórico confirmado, cobertura, Niño 1+2, ERA5-Land, UBIGEO y geografía de B3 | SHA-256 idénticos. Para ERA5-Land hace falta leer `distritos_piura_coords.csv` con el lector de pandas por defecto y pandas 3.0.x, el de `constraints.txt` (con `round_trip` Arenal y Miguel Checa cambian 1 ulp; con pandas 3.1, que siempre lee exacto, también). |
 | Integrado de confirmados | Mismas llaves y textos. Diferencia numérica máxima 5,7 × 10⁻¹⁴ (dentro de 1 × 10⁻¹²). |
 | Sala Situacional | 102 filas con conteo distinto del Release (MINSA revisó conteos de semanas ya publicadas). |
 | CHIRPS | 325 filas distintas, que son 5 semanas (2026-09-27 a 2026-10-25) × 65 distritos: pasaron de `prelim` a `final` porque el CHC publicó el dato final después de congelar V4. Las demás filas, versiones y fechas son idénticas. |
