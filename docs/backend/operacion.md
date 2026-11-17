@@ -218,7 +218,11 @@ MAE y RMSE de los casos. Degradación relativa: Recall y F1, (referencia − per
 degradación > 10 %; con menos solo se registran, sin decisiones. Si la referencia es 0 no se calcula la degradación
 relativa. Precision se informa con su referencia pero el criterio no define su degradación, así que no se marca.
 El resultado es un registro para revisión del Ingeniero de Datos / ML: **no reentrena ni cambia la versión en uso**.
-Para correrlo a mano (mensual, desde la raíz y con `DATABASE_URL` apuntando a la BD que se use):
+Registrar el resultado agrega una fila de `ejecucion`, y `fecha_actualizacion` de las respuestas y `ultima_ejecucion`
+de `/salud` salen de la última ejecución exitosa de cualquier tipo: cada registro mensual las mueve (lo mismo que ya
+hace una activación). Las semanas cerradas se cuentan por semana objetivo, y las predicciones salen de la BD (con `--reemitir` el
+UPSERT reemplaza la predicción, mientras el archivo en disco conserva la primera emisión). Si el periodo no tiene
+brotes observados, Recall y F1 quedan en `null`. Para correrlo a mano (mensual, desde la raíz y con `DATABASE_URL` apuntando a la BD que se use):
 
 ```powershell
 .\.venv\Scripts\python -m denguekay.serving.drift                  # calcula y registra una ejecución de mantenimiento
