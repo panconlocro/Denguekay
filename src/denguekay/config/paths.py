@@ -158,6 +158,8 @@ COMPACT_METRICS = MODEL_REGISTRY / "v0" / "validacion_temporal_compacta.json"
 COMPACT_PREDICTIONS = MODELS / "experimentos" / "validacion_temporal_compacta" / "predicciones_por_bloque.csv"
 # Research studies, frozen in research/<study>/ (docs/decisions/0001-repo-restructure.md).
 RESEARCH = ROOT / "research"
+# Frozen paper inputs for study 09; the adjacent .tex files are reference snapshots.
+PAPER_BUNDLE = RESEARCH / "09_epidemics_revision" / "paper" / "reproducibility"
 RESEARCH_FIRST_MODELS = RESEARCH / "03_first_models_and_ablations"
 # Multi-horizon architecture study (research/04_horizon_architecture/docs/diseno_arquitectura_horizontes.md)
 ARCHITECTURE_METRICS = RESEARCH / "04_horizon_architecture" / "docs" / "metricas" / "arquitectura_horizontes.json"
