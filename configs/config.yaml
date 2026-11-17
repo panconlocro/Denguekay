@@ -31,7 +31,9 @@ serving:
       # Insumos de la operación semanal: los escribe `python -m denguekay.pipelines.v4_weekly` en
       # data/silver/operativo/ sin el corte congelado; la copia congelada de data/silver/ no cambia.
       perfil_datos: fuentes
-      semanas_provisionales: 2
+      # 0: la operación usa la última semana publicada por la Sala. La V4 se congeló excluyendo las 2 últimas
+      # (el valor por defecto del código); aquí se acepta que el conteo de las semanas más recientes puede ser incompleto.
+      semanas_provisionales: 0
       sala: data/silver/operativo/epi_sala_semanal.csv
       era5_land: data/silver/operativo/meteo_humedad_era5_land_desde_2000.csv
       chirps: data/silver/operativo/precip_chirps_v3_semanal_desde_2000.csv
