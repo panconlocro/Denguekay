@@ -1,0 +1,1300 @@
+{
+  "criterio": "HU0005-4 y HU0005-5 (US v1.4)",
+  "generado_utc": "2026-11-17T21:30:38.825081+00:00",
+  "estado": "conforme",
+  "no_conformidades": [],
+  "entradas": {
+    "panel": "meteo_socio_epi_piura_2017_2025.csv",
+    "cobertura": "meteo_socio_epi_piura_2017_2025.coverage.csv",
+    "notificaciones": "DatosDengueV2.csv",
+    "sala": "epi_sala_semanal.csv"
+  },
+  "columnas_obligatorias": {
+    "ubigeo": "ubigeo",
+    "año": "anio",
+    "semana": "semana",
+    "inicio de semana": "semana_inicio",
+    "casos": "casos_Dengue",
+    "temperatura": "temp_media",
+    "precipitación": "precip_total_mm",
+    "humedad": "hum_rel_media",
+    "población": "poblacion"
+  },
+  "completitud": {
+    "filas_esperadas": 30485,
+    "filas_presentes": 30485,
+    "filas_ausentes": 0,
+    "filas_completas": 30485,
+    "completitud": 1.0,
+    "minimo": 0.95,
+    "cumple": true,
+    "por_variable": {
+      "ubigeo": {
+        "criterio": "ubigeo",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "anio": {
+        "criterio": "año",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "semana": {
+        "criterio": "semana",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "semana_inicio": {
+        "criterio": "inicio de semana",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "casos_Dengue": {
+        "criterio": "casos",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "temp_media": {
+        "criterio": "temperatura",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "precip_total_mm": {
+        "criterio": "precipitación",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "hum_rel_media": {
+        "criterio": "humedad",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "poblacion": {
+        "criterio": "población",
+        "nulos": 0,
+        "completitud": 1.0
+      }
+    },
+    "periodo": {
+      "desde": "2017-01-01",
+      "hasta": "2025-12-21",
+      "semanas": 469,
+      "distritos": 65
+    }
+  },
+  "cobertura_por_distrito": {
+    "200101": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200104": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200105": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200107": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200108": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200109": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200110": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200111": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200114": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200115": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200201": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200202": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200203": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200204": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200205": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200206": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200207": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200208": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200209": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200210": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200301": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200302": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200303": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200304": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200305": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200306": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200307": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200308": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200401": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200402": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200403": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200404": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200405": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200406": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200407": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200408": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200409": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200410": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200501": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200502": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200503": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200504": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200505": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200506": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200507": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200601": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200602": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200603": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200604": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200605": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200606": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200607": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200608": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200701": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200702": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200703": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200704": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200705": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200706": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200801": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200802": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200803": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200804": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200805": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    },
+    "200806": {
+      "semanas_presentes": 469,
+      "semanas_esperadas": 469,
+      "filas_completas": 469,
+      "completitud": 1.0,
+      "casos_verificados": 1.0,
+      "no_nulos": {
+        "anio": 1.0,
+        "semana": 1.0,
+        "casos_Dengue": 1.0,
+        "temp_media": 1.0,
+        "precip_total_mm": 1.0,
+        "hum_rel_media": 1.0,
+        "poblacion": 1.0
+      }
+    }
+  },
+  "duplicados": {
+    "llave_ubigeo_anio_semana": 0,
+    "llave_ubigeo_semana_inicio": 0
+  },
+  "valores_faltantes": {
+    "ubigeo": {
+      "criterio": "ubigeo",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "anio": {
+      "criterio": "año",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "semana": {
+      "criterio": "semana",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "semana_inicio": {
+      "criterio": "inicio de semana",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "casos_Dengue": {
+      "criterio": "casos",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "temp_media": {
+      "criterio": "temperatura",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "precip_total_mm": {
+      "criterio": "precipitación",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "hum_rel_media": {
+      "criterio": "humedad",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "poblacion": {
+      "criterio": "población",
+      "nulos": 0,
+      "completitud": 1.0
+    }
+  },
+  "observaciones_descartadas": {
+    "por_anio": [
+      {
+        "anio": 2017,
+        "fuente": "notificaciones_csv",
+        "registros_originales": 42475,
+        "casos_en_el_panel": 42475,
+        "descartados": 0,
+        "exceso_en_el_panel": 0
+      },
+      {
+        "anio": 2018,
+        "fuente": "notificaciones_csv",
+        "registros_originales": 305,
+        "casos_en_el_panel": 305,
+        "descartados": 0,
+        "exceso_en_el_panel": 0
+      },
+      {
+        "anio": 2019,
+        "fuente": "notificaciones_csv",
+        "registros_originales": 66,
+        "casos_en_el_panel": 66,
+        "descartados": 0,
+        "exceso_en_el_panel": 0
+      },
+      {
+        "anio": 2020,
+        "fuente": "notificaciones_csv",
+        "registros_originales": 111,
+        "casos_en_el_panel": 111,
+        "descartados": 0,
+        "exceso_en_el_panel": 0
+      },
+      {
+        "anio": 2021,
+        "fuente": "notificaciones_csv",
+        "registros_originales": 4072,
+        "casos_en_el_panel": 4072,
+        "descartados": 0,
+        "exceso_en_el_panel": 0
+      },
+      {
+        "anio": 2022,
+        "fuente": "notificaciones_csv",
+        "registros_originales": 11905,
+        "casos_en_el_panel": 11905,
+        "descartados": 0,
+        "exceso_en_el_panel": 0
+      },
+      {
+        "anio": 2023,
+        "fuente": "notificaciones_csv",
+        "registros_originales": 79273,
+        "casos_en_el_panel": 79273,
+        "descartados": 0,
+        "exceso_en_el_panel": 0
+      },
+      {
+        "anio": 2024,
+        "fuente": "notificaciones_csv",
+        "registros_originales": 32245,
+        "casos_en_el_panel": 32245,
+        "descartados": 0,
+        "exceso_en_el_panel": 0
+      },
+      {
+        "anio": 2025,
+        "fuente": "sala",
+        "registros_originales": 1117,
+        "casos_en_el_panel": 1114,
+        "descartados": 3,
+        "exceso_en_el_panel": 0
+      }
+    ],
+    "registros_originales": 171569,
+    "descartados": 3,
+    "proporcion_descartada": 1.7e-05,
+    "maximo": 0.05,
+    "cumple": true,
+    "excluidos_por_definicion": {
+      "piura_no_confirmadas": 2316,
+      "otros_departamentos_o_fuera_del_periodo": 892506
+    },
+    "nota": "Los registros no confirmados y de otros departamentos se excluyen por la definición de la V4; no se cuentan como descartados."
+  },
+  "transformaciones": [
+    {
+      "paso": "Casos confirmados del CSV (hasta 2024)",
+      "modulo": "data/processing/epi_cases.py",
+      "descripcion": "Se filtran las notificaciones de Piura con tipo_dx = C, se valida UBIGEO, año y semana (un valor inválido detiene el proceso, no se descarta) y se cuentan por UBIGEO, año y semana; las filas repetidas se suman."
+    },
+    {
+      "paso": "Casos confirmados de la Sala (desde 2025)",
+      "modulo": "data/processing/epi_sala.py",
+      "descripcion": "Series distrito-año de la Sala Situacional normalizadas por semana epidemiológica; las semanas fuera del calendario del modelo se conservan en el silver de la Sala y no se asignan a otra semana."
+    },
+    {
+      "paso": "Unión con el panel",
+      "modulo": "data/processing/merge.py",
+      "descripcion": "Los casos se unen al panel de clima y sociodemografía por UBIGEO, año y semana; el relleno selectivo marca en el archivo de cobertura qué ceros están verificados."
+    },
+    {
+      "paso": "Clima semanal",
+      "modulo": "data/processing/weekly_aggregation.py",
+      "descripcion": "Los valores diarios se agregan por semana epidemiológica y distrito."
+    },
+    {
+      "paso": "Sociodemografía anual",
+      "modulo": "data/processing/socio_interpolation.py",
+      "descripcion": "Las fracciones con valores en 2017 y 2025 se interpolan entre ambos extremos."
+    }
+  ],
+  "ceros_de_casos": 23872,
+  "casos_antes_de_asignar_ceros": {
+    "filas": 30485,
+    "con_registro_de_casos_en_la_fuente": 9564,
+    "cero_asignado_en_la_union": 20921,
+    "proporcion_con_registro": 0.313728,
+    "nota": "Las semanas de un distrito sin notificaciones reciben cero en la unión (relleno selectivo; el archivo de cobertura las marca verificadas). La completitud de `casos` del panel es 100 % por construcción; esta es la proporción con un conteo en la fuente antes de esa asignación. Es un criterio de lectura a confirmar: un cero verificado de vigilancia no se trata como dato faltante."
+  },
+  "nota_rezagos": "El silver integrado no tiene columnas derivadas: los nulos estructurales de los rezagos no entran en la medida."
+}

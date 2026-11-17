@@ -258,6 +258,7 @@ data/
     ├── integrated_expectations.py  # cobertura y validación del integrado + suite GX silver_integrado
     ├── gold_expectations.py        # suite GX gold_h2 (esquema, llave, rangos, sin fuga temporal)
     ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
+    ├── quality_report.py           # reporte de calidad y completitud de la V4 (HU0005-4/5), solo lectura; escribe en docs/backend/evidencia/
     └── forecast_contract.py        # origen temporal y disponibilidad al pronosticar
 ```
 **Va acá:** una función que hable con una API o haga scraping (`ingestion/`); limpieza, agregación, interpolación o joins (`processing/`); cualquier comprobación de rangos, nulos, duplicados o conteos (`validation/`, un archivo por dataset: `<dataset>_expectations.py`). Las suites de GX se definen en código; `great_expectations/gx/` lo regenera GX y no se versiona. Guía: `docs/modeling/mlflow_great_expectations.md`.
@@ -377,7 +378,7 @@ tests/
     ├── v2_serving/           # 6 distritos reales, orígenes, predicciones y modelo congelado (no se regenera)
     └── v4_gold/              # huellas por columna y referencia de flotantes del gold desde el Release (no se regenera)
 docs/backend/                 # especificación OE2, desviaciones, operación, despliegue y contrato (openapi_v1.json congelado)
-└── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU (versionado)
+└── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU, reporte de calidad de datos de la V4 (calidad_datos_v4.json y .md) (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
 models/serving/               # BD SQLite y ejecuciones locales; no se versionan
 ├── actualizacion_semanal/    # v4_weekly: emisiones/<corte>/<UTC>/ (emision.json, predicciones.csv, vectores.csv), ejecuciones/, logs/ y en_curso.lock
