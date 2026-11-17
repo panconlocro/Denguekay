@@ -3,7 +3,7 @@ Bronze CHIRPS v3 -> weekly precipitation per district, with its availability dat
 
 Study 06 (step b-V) builds the silver from the area-weighted polygon means: the final from Earth Engine
 (``daily_final_from_ee``) and the CHC preliminary for the days without final (``daily_prelim_from_bronze``);
-see the functions at the end. The centroid functions below are the earlier approach, kept for notebook 03c.
+see the functions at the end. The centroid functions below are the earlier approach, kept from the former notebook 03c (see the tag model/v3).
 
 - Each district takes the pixel of its centroid (the same lat/lon of data/reference/distritos_piura_coords.csv
   that Open-Meteo uses). -9999 (sea / no data) becomes NaN, never 0.

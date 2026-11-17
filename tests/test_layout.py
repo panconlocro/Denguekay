@@ -115,5 +115,47 @@ class TestOneWayDependencies(unittest.TestCase):
         self.assertEqual(found, [])
 
 
+class TestPipelineNotebooksLayout(unittest.TestCase):
+    """One folder per model version (V0 to V4) under pipelines/notebooks, and nothing loose in its root."""
+
+    BASE = "pipelines/notebooks/"
+    STEP = re.compile(r"^\d{2}_[a-z0-9_]+\.ipynb$")
+
+    def tracked(self):
+        return [f for f in tracked_files() if f.startswith(self.BASE) and (ROOT / f).exists()]
+
+    def folders(self):
+        return {f[len(self.BASE):].split("/")[0] for f in self.tracked() if "/" in f[len(self.BASE):]}
+
+    def test_no_loose_file_in_the_root_of_the_notebooks_folder(self):
+        self.assertEqual([f for f in self.tracked() if "/" not in f[len(self.BASE):]], [])
+
+    def test_the_folders_are_the_model_versions(self):
+        self.assertEqual(self.folders(), {"V0", "V1", "V2", "V3", "V4"})
+
+    def test_each_version_has_its_readme_and_verification_notebook(self):
+        tracked = set(self.tracked())
+        for folder in sorted(self.folders()):
+            with self.subTest(folder):
+                self.assertIn(f"{self.BASE}{folder}/README.md", tracked)
+                self.assertIn(f"{self.BASE}{folder}/99_verificacion.ipynb", tracked)
+
+    def test_steps_are_numbered_without_repeats(self):
+        for folder in sorted(self.folders()):
+            names = sorted(f.rsplit("/", 1)[1] for f in self.tracked()
+                           if f.startswith(f"{self.BASE}{folder}/") and f.endswith(".ipynb"))
+            with self.subTest(folder):
+                self.assertTrue(all(self.STEP.match(name) for name in names), names)
+                prefixes = [name[:2] for name in names]
+                self.assertEqual(len(prefixes), len(set(prefixes)))
+
+    def test_every_notebook_starts_with_a_text_cell(self):
+        for f in self.tracked():
+            if f.endswith(".ipynb"):
+                with self.subTest(f):
+                    cells = json.loads(text_of(f))["cells"]
+                    self.assertTrue(cells and cells[0]["cell_type"] == "markdown")
+
+
 if __name__ == "__main__":
     unittest.main()

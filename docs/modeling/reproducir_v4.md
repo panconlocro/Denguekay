@@ -103,9 +103,9 @@ al congelar V4. El ajuste de los boosters se reproduce por separado con el proto
 
 ## Regenerar desde las fuentes
 
-Usa el mismo entorno. Los resultados de este recorrido quedan en `data/v4_fuentes/`, con su propio `silver/`,
-`gold/` y `reference/`. Los archivos descargados del Release mantienen sus rutas originales. Los dos perfiles
-pueden coexistir en el mismo clon.
+Usa el mismo entorno. Los resultados de este recorrido se escriben en `data/` con los mismos nombres que los del Release, que es como
+los leen el estudio 08 y el servicio. Por eso una corrida desde las fuentes **reemplaza** una copia exacta extraída
+antes; para recuperarla: `release_bundles --version v4 --solo datos_v4.zip --sobrescribir`.
 
 ```powershell
 .\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --verificar
@@ -131,7 +131,7 @@ generación. El paso `11` construye el gold al corte
 congelado con los insumos disponibles en ese clon. La actualización de observaciones para servir pronósticos
 usa sus propios cortes de publicación.
 
-El informe en `data/v4_fuentes/gold/verificacion_v4.json` registra los archivos que coinciden, difieren o faltan, y el
+El informe en `data/gold/verificacion_v4.json` registra los archivos que coinciden, difieren o faltan, y el
 estado de los pasos. En este recorrido `gold.estado_manifiesto_local` comprueba la integridad del CSV y
 la referencia independiente del gold se aplica con `--solo-verificar --desde-release`. Una corrida válida
 desde las fuentes devuelve `0` aunque hayan cambiado los insumos regenerados. Sus nombres y hashes quedan
@@ -142,8 +142,8 @@ observaron al repetir el pipeline. Para replicar el ajuste del estudio se usa el
 
 ## Recuperar la lluvia conocida en una emisión histórica
 
-Cada ejecución con descargas del paso 03d conserva un ZIP del silver semanal de CHIRPS en
-`data/v4_fuentes/silver/chirps_capturas/`. Registra cuándo se observó el conjunto, en UTC, y el SHA-256 del CSV.
+Cada ejecución con descargas del paso 06 conserva un ZIP del silver semanal de CHIRPS en
+`data/silver/chirps_capturas/`. Registra cuándo se observó el conjunto, en UTC, y el SHA-256 del CSV.
 Las capturas anteriores conservan los valores preliminares cuando el CHC publica el final en una sesión posterior.
 Las ejecuciones con `--sin-descargas` reconstruyen el silver con el bronze disponible y conservan el historial
 de capturas tal cual estaba.

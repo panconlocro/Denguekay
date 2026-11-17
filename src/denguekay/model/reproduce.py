@@ -43,7 +43,7 @@ def _setup() -> dict:
 
 def frozen(name: str) -> dict:
     """V1 or V2: retrain the protocol blocks (seed 17) and compare fingerprint and saved predictions."""
-    from denguekay.config.paths import FE_HYPERPARAMETERS_EXPERIMENTS, GOLD_MANIFEST, SILVER_INTEGRATED
+    from denguekay.config.paths import FE_HYPERPARAMETERS_EXPERIMENTS, GOLD_BACKUP, GOLD_MANIFEST, SILVER_INTEGRATED
     from denguekay.data.loading import load_integrated
     from denguekay.evaluation import variants
     from denguekay.model import frozen_configs as fc
@@ -51,7 +51,9 @@ def frozen(name: str) -> dict:
     config = {"V1": fc.CONFIG_2026_V1, "V2": fc.CONFIG_2026}[name]
     start = time.perf_counter()
     panel = load_integrated(SILVER_INTEGRATED)
-    rule = json.loads(GOLD_MANIFEST.read_text(encoding="utf-8"))["regla_brote"]
+    # The Release of v1 ships only the manifest of the gold before the cleanup; it carries the same rule.
+    manifest = GOLD_MANIFEST if GOLD_MANIFEST.is_file() else GOLD_BACKUP / "manifest_fase6.json"
+    rule = json.loads(manifest.read_text(encoding="utf-8"))["regla_brote"]
     inputs = variants.inputs(panel, rule)
     origins = fc.origins(panel, inputs, rule, configuration=config)
     predictions = fc.predict(inputs["matrices"], origins, configuration=config)

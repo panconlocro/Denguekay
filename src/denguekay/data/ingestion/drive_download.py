@@ -17,7 +17,7 @@ from tempfile import TemporaryDirectory
 
 import gdown
 
-from denguekay.config.paths import BRONZE_EPI, BRONZE_EPI_CSV, BRONZE_SOCIO
+from denguekay.config.paths import BRONZE_EPI, BRONZE_EPI_CSV, BRONZE_EPI_EXCEL, BRONZE_SOCIO
 
 
 def download_from_drive(file_id: str, destination: Path, force: bool = False) -> Path:
@@ -39,6 +39,11 @@ def download_from_drive(file_id: str, destination: Path, force: bool = False) ->
             raise OSError(f"Drive download failed: {destination.name}")
         temporary.replace(destination)
     return destination
+
+
+def download_epi_excel(file_id: str, force: bool = False) -> Path:
+    """Download the notified-case Excel of v0-v3 (``drive.epi_excel_file_id``) into data/bronze/epi/."""
+    return download_from_drive(file_id, BRONZE_EPI_EXCEL, force=force)
 
 
 def download_epi(file_id: str, file_name: str = BRONZE_EPI_CSV.name, force: bool = False) -> Path:

@@ -11,10 +11,8 @@ import numpy as np
 import pandas as pd
 
 from denguekay.config.paths import (
-    ROOT, SILVER_CHIRPS_PRECIP, SILVER_ENSO,
-    SILVER_METEO_ERA5_LAND_2000_2026, UBIGEO_CATALOG, V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_GEOGRAPHY, V4_GOLD,
-    V4_GOLD_MANIFEST, V4_HISTORY, V4_INTEGRATED, V4_RELEASE_HISTORY, V4_RELEASE_INTEGRATED, V4_RELEASE_SALA,
-    V4_SALA, V4_SOURCE_GOLD, V4_STUDY_MANIFEST,
+    GOLD, ROOT, UBIGEO_CATALOG, V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_GEOGRAPHY, V4_GOLD, V4_GOLD_MANIFEST, V4_HISTORY,
+    V4_INTEGRATED, V4_SALA, V4_STUDY_MANIFEST,
 )
 from denguekay.data.loading import load_integrated
 from denguekay.data.processing.district_locations import read_v4_era5
@@ -40,9 +38,8 @@ class GoldInputs:
 
 
 def input_paths(release=False):
-    if release:
-        return GoldInputs(V4_RELEASE_INTEGRATED, V4_RELEASE_HISTORY, V4_RELEASE_SALA,
-                          SILVER_METEO_ERA5_LAND_2000_2026, SILVER_CHIRPS_PRECIP, SILVER_ENSO, V4_GEOGRAPHY)
+    """The inputs of the gold. A run from the sources writes the same files as the Release, so ``release`` only
+    changes how the gold checks them (against the frozen hashes), not where they are."""
     return GoldInputs(V4_INTEGRATED, V4_HISTORY, V4_SALA, V4_ERA5_LAND, V4_CHIRPS, V4_ENSO, V4_GEOGRAPHY)
 
 
@@ -50,10 +47,8 @@ def read_csv(path, dates=()):
     return pd.read_csv(path, dtype={"ubigeo": "string"}, parse_dates=list(dates), float_precision="round_trip")
 
 
-def output_paths(release):
-    if release:
-        return V4_GOLD, V4_GOLD_MANIFEST
-    return V4_SOURCE_GOLD / V4_GOLD.name, V4_SOURCE_GOLD / V4_GOLD_MANIFEST.name
+def output_paths(release=False):
+    return V4_GOLD, V4_GOLD_MANIFEST
 
 
 def _weekly_means(frame, value, target):
@@ -175,6 +170,19 @@ def generate_gold(*, release=False):
         csv.replace(destination)
         manifest.replace(lineage)
     return metadata
+
+
+def generate_confirmed_h2():
+    """The h=2 gold of the confirmed panel and its ``manifest_fase6.json``, with the generator of the earlier versions.
+
+    The audit of the modelling inputs (study 08, serving in the ``release`` profile) reads these two files from
+    ``data/gold/``; the V4 matrix itself (``generate_gold``) is a different file."""
+    from denguekay.features.gold import generate_gold as generate_h2
+    from denguekay.features.outbreak_label import SeasonalOutbreakConfig
+
+    rule = SeasonalOutbreakConfig(multiplicador=OUTBREAK_RULE["multiplicador"], anios_previos=OUTBREAK_RULE["anios_previos"],
+                                  minimo_casos=OUTBREAK_RULE["minimo_casos"])
+    return generate_h2(V4_INTEGRATED, GOLD, outbreak=rule, history_path=V4_HISTORY, era5_land_path=V4_ERA5_LAND)
 
 
 def main(argv=None):

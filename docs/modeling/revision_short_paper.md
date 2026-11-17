@@ -24,9 +24,9 @@ inventario de lo ya disponible se distingue de los análisis nuevos.
   [Ingesta y validación de límites](../../src/denguekay/data/ingestion/district_boundaries.py)
 - El silver local de **CHIRPS v3 sat** tenía **91 000 filas**, 65 distritos y semanas del 2 de enero de 2000 al 25 de
   octubre de 2026: 90 675 filas finales y 325 preliminares, sin nulos ni llaves repetidas en el archivo inspeccionado.
-  La lluvia se agrega por polígono y el notebook 03c conserva versión y fecha de disponibilidad. La fecha del silver se
+  La lluvia se agrega por polígono y el paso `06_silver_clima` conserva versión y fecha de disponibilidad. La fecha del silver se
   audita contra los metadatos del producto antes de usarla como evidencia de disponibilidad histórica.
-  [Notebook 03c](../../pipelines/notebooks/03c_ingesta_chirps.ipynb) ·
+  [Paso 06 de V4](../../pipelines/notebooks/V4/06_silver_clima.ipynb) ·
   [Agregación y versionado](../../src/denguekay/data/processing/chirps_precipitation.py) ·
   [CHIRPS v3](https://chc.ucsb.edu/data/chirps3)
 - La temperatura y la humedad de ERA5-Land del estudio se extrajeron **en un punto por distrito**, mientras el protocolo

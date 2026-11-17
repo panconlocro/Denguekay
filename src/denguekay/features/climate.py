@@ -147,14 +147,14 @@ D3_DEPTH = max(b for _, b in D3_WINDOWS.values())  # 12: the deepest week a wind
 
 
 def era5_land_silver():
-    """The ERA5-Land weekly silver to use: the one the pipeline keeps up to date (notebook 03) or, if it does not
+    """The ERA5-Land weekly silver to use: the one the pipeline keeps up to date (step 06_silver_clima) or, if it does not
     exist yet, the frozen input of the v3 that comes in the model/v3 Release."""
     from denguekay.config.paths import SILVER_METEO_ERA5_LAND, SILVER_METEO_ERA5_LAND_2000_2026
 
     for path in (SILVER_METEO_ERA5_LAND, SILVER_METEO_ERA5_LAND_2000_2026):
         if path.exists():
             return path
-    raise FileNotFoundError(f"Falta el silver de ERA5-Land: {SILVER_METEO_ERA5_LAND.name} (notebook 03) o "
+    raise FileNotFoundError(f"Falta el silver de ERA5-Land: {SILVER_METEO_ERA5_LAND.name} (paso 06_silver_clima) o "
                             f"{SILVER_METEO_ERA5_LAND_2000_2026.name} (Release model/v3)")
 
 

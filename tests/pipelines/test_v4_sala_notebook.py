@@ -41,7 +41,7 @@ v4_inputs.scrape_sala = fake_scrape
 
 class TestSalaNotebook(unittest.TestCase):
     def test_download_path_runs_in_notebook_kernel(self):
-        notebook = nbformat.read(NOTEBOOKS / "06c_sala_confirmados_v4.ipynb", as_version=4)
+        notebook = nbformat.read(NOTEBOOKS / "V4" / "05_bronze_sala.ipynb", as_version=4)
         notebook.cells.insert(0, nbformat.v4.new_code_cell(SETUP))
         with TemporaryDirectory() as temp:
             NotebookClient(notebook, timeout=60, resources={"metadata": {"path": temp}}).execute()

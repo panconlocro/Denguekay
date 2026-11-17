@@ -79,7 +79,7 @@ Desde la raíz del repo:
 
 Imprime `[OK]` o `[FALLA]` por suite con los ejemplos inesperados, y sale con código 1 si algo falla. El reporte HTML queda en `great_expectations/gx/uncommitted/data_docs/local_site/index.html` (abrir con el navegador).
 
-Conviene correrlo después de regenerar silver (notebook 09 o `denguekay.pipelines.weekly_update`) o gold (notebook 10, `pipelines/notebooks/10_silver_to_gold.ipynb`). Los módulos de entrenamiento lo ejecutan solos antes de entrenar.
+Conviene correrlo después de regenerar silver (paso `10_silver_integrado` de la versión o `denguekay.pipelines.weekly_update`) o gold (paso `11_gold` de `pipelines/notebooks/<versión>/`). Los módulos de entrenamiento lo ejecutan solos antes de entrenar.
 
 ### 3.4 Por qué `great_expectations/gx/` no se versiona
 

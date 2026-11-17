@@ -8,9 +8,9 @@ Esta guía explica cómo está organizado el repo y **dónde va cada archivo nue
 
 ```mermaid
 flowchart LR
-  fuentes[Open-Meteo, censo,<br/>Excel epi, Sala MINSA] --> nb[pipelines/notebooks<br/>01–09]
+  fuentes[Open-Meteo, censo,<br/>Excel epi, Sala MINSA] --> nb[pipelines/notebooks<br/>V0–V4]
   nb --> silver[(data/silver/integrado)]
-  silver --> gold_nb[10_silver_to_gold] --> gold[(data/gold)]
+  silver --> gold_nb[11_gold] --> gold[(data/gold)]
   silver --> weekly[denguekay.pipelines<br/>weekly_update] --> silver
   gold --> model[denguekay.features / model / evaluation]
   model --> registry[models/registry<br/>v0 · v1 · v2 · v3]
@@ -82,7 +82,7 @@ Denguekay/
 │   │   └── tools/             # benchmark, export_openapi, smoke_test
 │   └── web/                   # SPA React + Vite (ver 3c)
 │
-├── pipelines/notebooks/       # pipeline 01–10 y recorrido V4 con paso 11; ambos en denguekay.pipelines.run_all
+├── pipelines/notebooks/       # un pipeline por versión (V0 a V4), una carpeta cada uno; los ejecuta denguekay.pipelines.run_all
 ├── research/                  # estudios congelados: 01_eda … 06_model_improvement (README y, si hace falta, manifiesto_datos.json por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
@@ -166,9 +166,9 @@ silver/
     ├── meteo_socio_epi_piura_2017_2025.csv               # + epi completado por el actualizador
     └── meteo_socio_epi_piura_2017_2025.coverage.csv      # cobertura de casos verificados
 ```
-**Por fuente (raíz de `silver/`):** ya pasaron por normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Es la salida de cualquier notebook `0X_bronze_to_silver_*`. Si agregas una fuente nueva (ej. datos de un hospital, otro sensor climático), su versión limpia va acá con su propio nombre de archivo.
+**Por fuente (raíz de `silver/`):** ya pasaron por normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Es la salida de cualquier paso `06_silver_*` a `08_silver_*` de `pipelines/notebooks/<versión>/`. Si agregas una fuente nueva (ej. datos de un hospital, otro sensor climático), su versión limpia va acá con su propio nombre de archivo.
 
-**`silver/integrado/`:** el resultado de cualquier merge entre fuentes silver (notebooks `08_silver_merge_*` y `09_silver_merge_*`, y el actualizador `src/denguekay/pipelines/weekly_update.py`). Siguen siendo datos limpios sin features derivadas, por eso **no van en gold**. Si agregas una versión nueva (ej. extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`meteo_socio_epi_piura_2017_2026.csv`) para poder comparar versiones.
+**`silver/integrado/`:** el resultado de cualquier merge entre fuentes silver (los pasos `09_silver_meteo_socio` y `10_silver_integrado` de cada versión, y el actualizador `src/denguekay/pipelines/weekly_update.py`). Siguen siendo datos limpios sin features derivadas, por eso **no van en gold**. Si agregas una versión nueva (ej. extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`meteo_socio_epi_piura_2017_2026.csv`) para poder comparar versiones.
 
 ### `data/gold/` — solo el dataset con feature engineering
 ```
@@ -182,15 +182,23 @@ gold/
 ```
 **Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
 
-Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
+Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el paso `11_gold` de cada versión genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
 
-El recorrido `run_all --version v4` llama al notebook 11 y a `features.gold_v4`. Escribe en
-`data/v4_fuentes/silver/`, `data/v4_fuentes/gold/` y `data/v4_fuentes/reference/`, fuera de Git.
-El paso 03d conserva la serie limpia de CHIRPS de cada sesión con descarga en `data/v4_fuentes/silver/chirps_capturas/`,
+El recorrido `run_all --version v4` ejecuta los notebooks de `pipelines/notebooks/V4/` (el 11 llama a `features.gold_v4`). Escribe en
+`data/silver/` y `data/gold/` con los nombres del Release (`data/silver/confirmados/`, etc.), fuera de Git; el corte de
+cada fuente es una constante de la versión en `pipelines/versions.py`.
+El paso 06 conserva la serie limpia de CHIRPS de cada sesión con descarga en `data/silver/chirps_capturas/`,
 con su hora de observación en UTC y SHA-256. Una consulta histórica exporta la captura aplicable a
-`data/v4_fuentes/silver/chirps_al_corte/`.
+`data/silver/chirps_al_corte/`.
 `data/bronze/` conserva las capturas. El gold de reproducción del Release se genera en `data/gold/`.
 Ambos recorridos y el paquete de servicio V4 usan la geografía exacta del Release.
+
+### `data_anteriores/<versión>/` — silver y gold de v0–v3 (fuera de Git)
+
+`data/silver/` y `data/gold/` son los de V4. Los de una versión anterior se extraen en
+`data_anteriores/<vN>/silver` y `data_anteriores/<vN>/gold` con `release_bundles --data-dir`, y el código los lee
+con la variable de entorno `DENGUEKAY_DATA_DIR=data_anteriores/<vN>`, que `config/paths.py` aplica a `SILVER` y `GOLD`
+(y a todo lo que cuelga de ellos). `data/bronze/` y `data/reference/` no se mueven. Ver `docs/reproducibilidad.md` §2.
 
 ### `data/reference/` — catálogos que casi no cambian
 ```
@@ -234,12 +242,13 @@ data/
 │   ├── chirps_prelim.py        # CHIRPS v3 preliminar (y final) del CHC por HTTPS o FTP: TIF global a carpeta temporal, verificación de tamaño, sha256 y grilla, y recorte de Piura
 │   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
 │   ├── release_bundles.py      # paquetes de datos del Release de una versión congelada (descarga, SHA-256 y extracción)
-│   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE
+│   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE: confirmados (V4) o notificados (v0-v3)
 ├── processing/
 │   ├── weekly_aggregation.py   # diario -> semanal por distrito
 │   ├── chirps_precipitation.py # CHIRPS -> lluvia semanal con fecha_disponible (media del polígono: final + preliminar, sin mezclar versiones por semana)
 │   ├── socio_interpolation.py  # interpolación 2017-2025
-│   ├── epi_cases.py            # Excel epidemiológico (un caso por fila) -> silver semanal
+│   ├── epi_cases.py            # CSV de notificaciones, casos confirmados (V4) -> silver semanal
+│   ├── epi_cases_legacy.py     # Excel de notificados de v0-v3 (restaurado de model/v3) -> silver semanal
 │   ├── epi_sala.py             # normalización y conciliación de la Sala
 │   └── merge.py                # merges meteo + socio + epi y relleno selectivo
 └── validation/
@@ -328,11 +337,11 @@ src/denguekay/serving/
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
-├── weekly_update.py          # actualización selectiva del integrado (notebook 09) y silver de la Sala (notebook 06b)
-├── run_all.py                # CLI: el pipeline completo en orden, desde las fuentes
-├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS por HTTPS (alternativa del 03c)
+├── weekly_update.py          # actualización selectiva del integrado y silver de la Sala (confirmados o notificados)
+├── run_all.py                # CLI: ejecuta en orden los notebooks de la carpeta de una versión (--version v0 a v4)
+├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS por HTTPS (alternativa a la descarga por FTP)
 ├── chirps_ee.py              # guarda de método y descarga mensual de CHIRPS v3 desde Earth Engine (solo para el snapshot; necesita cuenta)
-└── chirps_prelim.py          # preliminar y final de CHIRPS v3 por FTP anónimo (o HTTPS) y silver semanal (03c)
+└── chirps_prelim.py          # preliminar y final de CHIRPS v3 por FTP anónimo (o HTTPS) y silver semanal
 ```
 
 ## 3b. `apps/api/` — la API
@@ -469,22 +478,15 @@ independiente. Comandos, evidencia disponible y orden de PR en [frontend-ci.md](
 
 ```
 pipelines/notebooks/
-├── 01_ingesta_distritos.ipynb
-├── 02_ingesta_meteo.ipynb
-├── 03_bronze_to_silver_meteo.ipynb
-├── 03b_ingesta_enso.ipynb      # Niño 1+2 de NOAA CPC: bronze y silver (estudio 06, fase 4)
-├── 03c_ingesta_chirps.ipynb    # CHIRPS v3 diario (final sat): ventana de Piura a bronze; silver aparte (V3)
-├── 04_ingesta_socio.ipynb
-├── 05_bronze_to_silver_socio.ipynb
-├── 06_ingesta_epi.ipynb
-├── 07_bronze_to_silver_epi.ipynb
-├── 08_silver_merge_meteo_socio.ipynb
-├── 09_silver_merge_epi.ipynb
-└── 10_silver_to_gold.ipynb      # genera y valida gold (antes notebooks/22_fe_integracion.ipynb, D3)
+├── V0/ V1/ V2/ V3/             # casos notificados; 01_bronze_… → 11_gold, 99_verificacion y README.md
+└── V4/                         # casos confirmados; 01_bronze_geografia → 11_gold, 99_verificacion y README.md
 ```
 
-Los notebooks 01–09 escriben bronze, silver y el integrado; el 10 regenera gold. Importan el paquete
-instalado (`pip install -e .`), así que no dependen de la carpeta desde la que se abren. Los notebooks
+Cada carpeta es el pipeline de una versión y lleva su `README.md`. Los pasos son los mismos por capa (01–05 bronze,
+06–10 silver, 11 gold, 99 verificación); `run_all --version vN` los ejecuta en orden y guarda el notebook ejecutado en
+`pipelines/ejecuciones/` (ignorada por Git). V4 escribe en `data/`; v0 a v3 escriben su silver y gold en
+`data_anteriores/<vN>/` (`DENGUEKAY_DATA_DIR`) y leen el mismo `data/bronze/`. Los notebooks solo llaman funciones
+del paquete instalado (`pip install -e .`), así que no dependen de la carpeta desde la que se abren. Los notebooks
 de investigación (los antiguos 10–21 y 23–35) están en `research/<estudio>/notebooks/` con su
 numeración original:
 
@@ -508,7 +510,7 @@ Para actualizaciones incrementales del dataset ya consolidado, usar
 detecta componentes incompletos por `ubigeo`/año/semana y llama solo a las
 fuentes necesarias. El CSV lateral `<dataset>.coverage.csv` diferencia un
 cero epidemiológico ya verificado de un cero en una fila nueva sin cobertura.
-El notebook 09 reconstruye la base histórica y delega la salida final a este
+El paso `10_silver_integrado` reconstruye la base histórica y delega la salida final a este
 módulo.
 
 ---
