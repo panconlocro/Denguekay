@@ -198,6 +198,19 @@ da lo mismo que con los datos del Release (486 métricas numéricas distintas, l
 de arriba) más una diferencia de linaje, `sha256_manifest_gold`, por lo anterior. `reproduce v1` leía la regla de brote de
 `gold/manifest_fase6.json`, que el Release de v1 no trae; ahora usa el de `gold/respaldo_pre_b3/` si el otro no existe.
 
+`research/06_model_improvement/code/phase_v3_close.py verificar --semilla 17` (CPU con 2 hilos) sobre `DENGUEKAY_DATA_DIR`:
+
+| Carpeta de datos | Resultado |
+|---|---|
+| Datos exactos del Release (`release_bundles --version v3 --data-dir data_anteriores/v3_release`) | `VERIFICACION: PASA`: G41 con diferencia 0 y huella `7a46f4f2…` |
+| Pipeline de V3 regenerado desde las fuentes | `NO PASA`: G41 con diferencia máxima 0,52 en la probabilidad de brote y otra huella |
+| La anterior, con solo la Sala del Release puesta en su lugar | `VERIFICACION: PASA`, misma huella |
+
+Así que la única diferencia que cambia el modelo es la de la **Sala**: MINSA revisó 174 conteos de 2026 desde que se congeló
+la v3. ERA5-Land, Niño 1+2, el histórico, el integrado (ruido de punto flotante) y las 5 semanas de CHIRPS republicadas no
+alteran el resultado. La v3 no se reproduce desde las fuentes mientras la Sala no se pueda recortar a sus conteos de
+entonces; por eso su copia exacta es el Release.
+
 ### Casos de v0 a v3 (notificados)
 
 V4 cuenta casos **confirmados** (CSV `DatosDengueV2.csv` y gráfico `ten-fig02a-echart` de la Sala). v0 a v3 usan
