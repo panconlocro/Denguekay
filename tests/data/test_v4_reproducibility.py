@@ -1,6 +1,8 @@
 """The V4 audit distinguishes drift, missing inputs and obsolete gold lineage."""
 
+import contextlib
 import hashlib
+import io
 import json
 import lzma
 from pathlib import Path
@@ -123,6 +125,17 @@ class TestV4Reproducibility(unittest.TestCase):
             with patch.object(audit, "ROOT", root):
                 audit.compare_with_release(inputs, {"paquetes": []}, archive)
             self.assertEqual(inputs[1]["estado"], "difiere")
+
+    def test_report_prints_in_a_cp1252_console(self):
+        report = {"insumos": [], "geografia_consulta_nueva": {"estado": "falta"}, "exito": True,
+                  "diferencias_en_fuentes": [], "ruta_informe": "informe.json",
+                  "gold": {"estado": "dentro_tolerancia", "referencia_independiente": {
+                      "estado": "dentro_tolerancia",
+                      "columnas": {"semana_epi_seno": {"estado": "dentro_tolerancia", "diferencia_max_abs": 1e-16}}}}}
+        console = io.TextIOWrapper(io.BytesIO(), encoding="cp1252", errors="strict")
+        with contextlib.redirect_stdout(console):
+            audit.print_result(report)
+        console.flush()
 
     def test_reference_distinguishes_rounding_from_changes(self):
         with TemporaryDirectory() as temp:

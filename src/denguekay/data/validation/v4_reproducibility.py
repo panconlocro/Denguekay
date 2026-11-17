@@ -230,7 +230,7 @@ def print_result(report):
         else:
             for name, result in reference["columnas"].items():
                 if result["estado"] != "coincide":
-                    print(f"  {name}: {result['estado']} (Δ máx. {result.get('diferencia_max_abs', '-')})")
+                    print(f"  {name}: {result['estado']} (dif. máx. {result.get('diferencia_max_abs', '-')})")
     if report["exito"] and report["diferencias_en_fuentes"]:
         print("Verificación completada con diferencias en los insumos regenerados.")
     print(f"Informe: {report['ruta_informe']}")
