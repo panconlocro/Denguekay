@@ -5,10 +5,8 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 
-from denguekay.config.paths import (DISTRICT_COORDS, ROOT, SILVER_CHIRPS_PRECIP,
-                                    SILVER_ENSO, SILVER_METEO_ERA5_LAND_2000_2026, UBIGEO_CATALOG,
-                                    V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_HISTORY, V4_INTEGRATED,
-                                    V4_RELEASE_HISTORY, V4_RELEASE_INTEGRATED, V4_RELEASE_SALA, V4_SALA)
+from denguekay.config.paths import (DISTRICT_COORDS, ROOT, UBIGEO_CATALOG, V4_CHIRPS, V4_ENSO, V4_ERA5_LAND,
+                                    V4_HISTORY, V4_INTEGRATED, V4_SALA)
 from denguekay.data.processing.district_locations import read_v4_era5
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.data.validation.integrated_expectations import coverage_path, load_case_coverage
@@ -21,21 +19,20 @@ def _uses_sources(options):
     return options.get("perfil_datos", "release") == "fuentes"
 
 
-def _paths(options, *, medallion):
+def _paths(options):
+    # Both profiles read the same files (a run from the sources writes the Release names); they differ in the checks.
     return {
-        "sala": ROOT / options.get("sala", V4_SALA if medallion else V4_RELEASE_SALA),
-        "era5_land": ROOT / options.get("era5_land", V4_ERA5_LAND if medallion else SILVER_METEO_ERA5_LAND_2000_2026),
-        "chirps": ROOT / options.get("chirps", V4_CHIRPS if medallion else SILVER_CHIRPS_PRECIP),
-        "nino12": ROOT / options.get("nino12", V4_ENSO if medallion else SILVER_ENSO),
+        "sala": ROOT / options.get("sala", V4_SALA),
+        "era5_land": ROOT / options.get("era5_land", V4_ERA5_LAND),
+        "chirps": ROOT / options.get("chirps", V4_CHIRPS),
+        "nino12": ROOT / options.get("nino12", V4_ENSO),
     }
 
 
 def source_hashes(options):
     medallion = _uses_sources(options)
-    panel = V4_INTEGRATED if medallion else V4_RELEASE_INTEGRATED
-    history = V4_HISTORY if medallion else V4_RELEASE_HISTORY
-    paths = [UBIGEO_CATALOG, DISTRICT_COORDS, panel, history, coverage_path(panel),
-             *_paths(options, medallion=medallion).values()]
+    panel, history = V4_INTEGRATED, V4_HISTORY
+    paths = [UBIGEO_CATALOG, DISTRICT_COORDS, panel, history, coverage_path(panel), *_paths(options).values()]
     if not medallion:
         paths.extend([loader.GOLD_MANIFEST, loader.GOLD / f"{panel.stem}_h2_gold.csv"])
     return {path.relative_to(ROOT).as_posix(): sha256_bytes(path.read_bytes()) for path in paths}
@@ -88,9 +85,8 @@ def prepare_load(options):
 
     hashes = source_hashes(options)
     medallion = _uses_sources(options)
-    panel_path = V4_INTEGRATED if medallion else V4_RELEASE_INTEGRATED
-    history_path = V4_HISTORY if medallion else V4_RELEASE_HISTORY
-    paths = _paths(options, medallion=medallion)
+    panel_path, history_path = V4_INTEGRATED, V4_HISTORY
+    paths = _paths(options)
     panel = _read(panel_path, ("semana_inicio",))
     if medallion:
         validate_confirmed_panel(panel, load_case_coverage(coverage_path(panel_path)))

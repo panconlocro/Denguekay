@@ -182,8 +182,8 @@ y Niño 1+2. La geografía fija viene del paquete; la API consulta las observaci
    `python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip modelo_v4.zip`.
    Si ya hay archivos de otra versión, usa un clon dedicado para conservarlos.
 3. Prepara los silver operativos con el [pipeline de V4](../reproducibilidad.md#v4-con-confirmados).
-   Para cargar el panel y los silver de `data/v4_fuentes/`, fija `perfil_datos: fuentes` en
-   `serving.paquete.opciones`. El perfil por defecto, `release`, usa los archivos archivados.
+   Para cargar el panel y los silver de `data/silver/`, fija `perfil_datos: fuentes` en
+   `serving.paquete.opciones`. El perfil por defecto, `release`, lee los mismos archivos y valida su linaje con el gold h2 y su manifiesto.
    Las opciones `sala`, `era5_land`, `chirps` y `nino12` de
    `serving.paquete.opciones` permiten indicar otros archivos operativos dentro del repo.
    La carga excluye las últimas dos semanas publicadas en Sala por

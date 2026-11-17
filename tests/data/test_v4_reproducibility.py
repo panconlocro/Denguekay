@@ -7,6 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
+import zipfile
 
 from denguekay.data.validation.integrated_expectations import coverage_path
 from denguekay.data.validation import v4_gold_reference as reference
@@ -19,13 +20,12 @@ class TestV4Reproducibility(unittest.TestCase):
         with TemporaryDirectory() as temp:
             root = Path(temp)
             relative = lambda p: p.relative_to(root).as_posix()
-            frozen = GoldInputs(*(root / "archivado" / name for name in
+            frozen = GoldInputs(*(root / "datos" / name for name in
                                   ("panel.csv", "historia.csv", "sala.csv", "era5.csv", "chirps.csv", "enso.csv", "geo.csv")))
-            live = GoldInputs(*(root / "actual" / path.name for path in vars(frozen).values()))
+            live = frozen   # a run from the sources writes the same files as the Release
             catalog, h2, model = root / "catalogo.csv", root / "manifest_fase6.json", root / "modelo"
             hashes = {}
-            for path in (*vars(frozen).values(), *vars(live).values(), coverage_path(frozen.panel),
-                         coverage_path(live.panel), catalog, h2):
+            for path in (*vars(frozen).values(), coverage_path(frozen.panel), catalog, h2):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 payload = path.name.encode()
                 path.write_bytes(payload)
@@ -38,8 +38,7 @@ class TestV4Reproducibility(unittest.TestCase):
             sources.update({key: hashes[relative(path)] for key, path in
                             ((frozen.enso.name, frozen.enso), (frozen.chirps.name, frozen.chirps), ("geografia", frozen.geography))})
             study.write_text(json.dumps({"corte": "2026-10-17", "fuentes": sources, "archivos": {"test.ubj": "a"}}))
-            registered = {key: value for key, value in hashes.items()
-                          if not key.startswith("actual/") and key != relative(catalog)}
+            registered = {key: value for key, value in hashes.items() if key != relative(catalog)}
             registered["modelo/test.ubj"] = "a"
             registry.write_text(json.dumps({"version": "v4", "tag": "model/v4", "paquetes": [
                 {"archivos": [{"ruta": key, "sha256": value} for key, value in registered.items()]}]}))
@@ -55,8 +54,8 @@ class TestV4Reproducibility(unittest.TestCase):
 
             with patch.multiple(audit, ROOT=root, V4_STUDY_MANIFEST=study, V4_DATA_MANIFEST=registry, V4_FROZEN=model,
                                 V4_LIVE_GEOGRAPHY=root / "new_geo.csv", UBIGEO_CATALOG=catalog, GOLD_MANIFEST=h2,
-                                V4_SOURCE_GOLD=root, V4_VERIFICATION_REPORT=verify), \
-                    patch.object(audit, "input_paths", side_effect=lambda release: frozen if release else live), \
+                                V4_VERIFICATION_REPORT=verify), \
+                    patch.object(audit, "input_paths", return_value=frozen), \
                     patch.object(audit, "output_paths", return_value=(output, local)), \
                     patch.object(audit, "compare_gold_reference", return_value={"estado": "dentro_tolerancia"}) as compare:
                 write_local_manifest("release", frozen)
@@ -90,11 +89,40 @@ class TestV4Reproducibility(unittest.TestCase):
                 observed = {item["insumo"]: item["estado"] for item in report["insumos"]}
                 self.assertEqual(observed[relative(frozen.sala)], "difiere")
                 self.assertEqual(observed[frozen.enso.name], "falta")
-                self.assertEqual(observed[relative(h2)], "solo_referencia")
+                self.assertEqual(observed[relative(h2)], "coincide")
                 self.assertEqual(report["gold"]["estado"], "difiere")
                 self.assertFalse(report["exito"])
                 self.assertEqual(live.sala.read_bytes(), b"revised")
                 self.assertEqual(json.loads(verify.read_bytes()), report)
+
+    def test_regenerated_files_are_compared_with_the_release_zip(self):
+        release = ("ubigeo,anio,semana,casos_Dengue\n200101,2026,1,5\n200101,2026,2,7\n"
+                   "200102,2026,1,1\n").encode()
+        era = b"ubigeo,semana_inicio,temp\n200101,2026-01-04,25.0\n200101,2026-01-11,26.0\n"
+        names = ("data/silver/confirmados/epi_sala_semanal.csv", "data/silver/meteo_humedad_era5_land_2000_2026.csv")
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            archive = root / "datos_v4.zip"
+            with zipfile.ZipFile(archive, "w") as z:
+                z.writestr(names[0], release)
+                z.writestr(names[1], era)
+            sala, weather = root / names[0], root / names[1]
+            sala.parent.mkdir(parents=True)
+            sala.write_bytes(release.replace(b"2026,2,7", b"2026,2,9").replace(b"200102,2026,1,1\n", b""))
+            weather.write_bytes(era.replace(b"25.0", b"25.0000000000001"))
+            inputs = [{"insumo": name, "ruta": name, "ruta_release": name, "regenerado": True, "estado": "difiere"}
+                      for name in names]
+            with patch.object(audit, "ROOT", root):
+                result = audit.compare_with_release(inputs, {"paquetes": []}, archive)
+            self.assertEqual(result["estado"], "comparado")
+            self.assertEqual(inputs[0]["estado"], "difiere")
+            self.assertEqual(inputs[0]["diferencia"]["filas_distintas"], 2)
+            self.assertEqual(inputs[1]["estado"], "dentro_tolerancia")
+            weather.write_bytes(era.replace(b"25.0", b"25.5"))
+            inputs[1]["estado"] = "difiere"
+            with patch.object(audit, "ROOT", root):
+                audit.compare_with_release(inputs, {"paquetes": []}, archive)
+            self.assertEqual(inputs[1]["estado"], "difiere")
 
     def test_reference_distinguishes_rounding_from_changes(self):
         with TemporaryDirectory() as temp:

@@ -31,6 +31,7 @@ from denguekay.data.processing.weekly_aggregation import (
 from denguekay.data.validation.integrated_expectations import coverage_path, trusted_baseline_coverage
 from denguekay.data.validation.v4_panel import validate_confirmed_panel
 from denguekay.features.long_history import week_grid
+from denguekay.pipelines.versions import V4_CUTOFF, clip_enso, clip_sala, clip_weekly
 
 
 def write_silver(frame, output, *, line_ending="\r\n"):
@@ -69,7 +70,7 @@ def restore_published_bronze():
 def download_weather():
     districts = pd.read_csv(DISTRICT_COORDS, float_precision="round_trip")
     if openmeteo.download_all(districts, cache_dir=CACHE_METEO):
-        raise RuntimeError("Incomplete 2017–2025 weather cache; resume V4 at step 02b")
+        raise RuntimeError("Incomplete 2017–2025 weather cache; resume V4 at step 02")
     ranges = _weather_caches()
     end = openmeteo.era5_land_end_date()
     if end >= openmeteo.ERA5_LAND_RECENT_START:
@@ -78,11 +79,11 @@ def download_weather():
         pending = openmeteo.download_all(districts, start_date=first, end_date=last, models="era5_land",
                                          cache_dir=folder, daily_vars=openmeteo.ERA5_LAND_DAILY_VARS)
         if pending:
-            raise RuntimeError(f"Incomplete ERA5-Land cache {folder.name}; resume V4 at step 02b")
+            raise RuntimeError(f"Incomplete ERA5-Land cache {folder.name}; resume V4 at step 02")
     return {"distritos": len(districts), "caches": len(ranges)}
 
 
-def weather_silver():
+def weather_silver(*, cutoff=V4_CUTOFF):
     districts = pd.read_csv(DISTRICT_COORDS, float_precision="round_trip")
     daily_panel = load_daily_from_caches([CACHE_METEO], len(districts))
     panel_weekly = clean_names_for_join(aggregate_to_weekly(daily_panel, districts))
@@ -95,7 +96,7 @@ def weather_silver():
     if weekly.duplicated(["id_distrito", "semana_inicio"]).any() or weekly.empty:
         raise ValueError("ERA5-Land has duplicate or missing district-weeks")
     return [write_silver(panel_weekly, V4_PANEL_WEATHER, line_ending="\n"),
-            write_silver(weekly, V4_ERA5_LAND)]
+            write_silver(clip_weekly(weekly, cutoff), V4_ERA5_LAND)]
 
 
 def _download_chirps(ee_final):
@@ -127,7 +128,7 @@ def _download_chirps(ee_final):
                 raise RuntimeError(summary["error"])
 
 
-def climate_silver(*, offline=False):
+def climate_silver(*, offline=False, cutoff=V4_CUTOFF):
     enso_candidates = sorted(BRONZE_ENSO.glob("sstoi_????????.indices"))
     if offline:
         if not enso_candidates:
@@ -159,7 +160,8 @@ def climate_silver(*, offline=False):
     result = {"semanas_distritales_incompletas": len(discarded)}
     if not offline:
         result["captura_chirps"] = archive_snapshot(weekly, observed_at=datetime.now(timezone.utc)).name
-    result["series"] = [write_silver(enso, V4_ENSO), write_silver(weekly, V4_CHIRPS)]
+    result["series"] = [write_silver(clip_enso(enso, cutoff), V4_ENSO),
+                        write_silver(clip_weekly(weekly, cutoff), V4_CHIRPS)]
     return result
 
 
@@ -168,7 +170,7 @@ def replay_sala(folder, year, catalog):
     for entry in sorted(folder.glob("*.json")):
         record = json.loads(entry.read_bytes())
         if record["anio"] != year or record.get("tipo_dx") != "C":
-            raise ValueError(f"{entry.name} is not a confirmed Sala capture for {year}; rerun V4 step 06c with downloads")
+            raise ValueError(f"{entry.name} is not a confirmed Sala capture for {year}; rerun V4 step 05 with downloads")
         points = confirmed_weekly_points(record["chart"]["x"]["opts"], year)
         records.append({**record, "points": points})
     districts = [r for r in records if r["nivel"] == "distrito"]
@@ -179,7 +181,7 @@ def replay_sala(folder, year, catalog):
     return result.assign(tipo_dx="C")
 
 
-async def sala_silver(*, offline=False, year=None):
+async def sala_silver(*, offline=False, year=None, cutoff=V4_CUTOFF):
     """Capture or replay the confirmed Sala series under the caller's event loop."""
     catalog = load_ubigeo_catalog(UBIGEO_CATALOG)
     targets = set(zip(catalog.provincia_sala, catalog.distrito_sala))
@@ -195,7 +197,8 @@ async def sala_silver(*, offline=False, year=None):
             folder = BRONZE_SALA / f"{item}_{stamp}"
             await scrape_sala(item, targets, folder)
         frames.append(replay_sala(folder, item, catalog))
-    return write_silver(pd.concat(frames, ignore_index=True).sort_values(["ubigeo", "anio", "semana"]), V4_SALA)
+    sala = pd.concat(frames, ignore_index=True).sort_values(["ubigeo", "anio", "semana"])
+    return write_silver(clip_sala(sala, cutoff), V4_SALA)
 
 
 def historical_silver():

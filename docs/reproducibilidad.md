@@ -155,7 +155,7 @@ SHA-256 de lo que devolvió Drive el 2026-11-09:
 
 ### V4 con confirmados
 
-Ejecuta desde la raíz con el entorno de la sección 0. Las salidas regeneradas se guardan en `data/v4_fuentes/`.
+Ejecuta desde la raíz con el entorno de la sección 0. Las salidas se escriben en `data/` con los mismos nombres que tienen en `datos_v4.zip`, que es como los lee el modelo. Una corrida desde las fuentes reemplaza una copia exacta extraída antes; se recupera con `release_bundles --version v4 --solo datos_v4.zip --sobrescribir`.
 Para reproducir el ajuste del paper usa la [ruta exacta del Release](modeling/reproducir_v4.md#regenerar-el-gold-congelado-desde-el-release).
 
 ```powershell
@@ -165,7 +165,7 @@ Para reproducir el ajuste del paper usa la [ruta exacta del Release](modeling/re
 
 Con las capturas completas ya guardadas en `data/bronze/`, añade `--sin-descargas` al segundo comando. Usa
 `--desde <prefijo>` (por ejemplo `06`) para reanudar y `--solo-verificar` para cotejar archivos que ya existen sin ejecutar notebooks.
-El pipeline conserva el orden de los notebooks y guarda el informe en `data/v4_fuentes/gold/verificacion_v4.json`.
+El pipeline conserva el orden de los notebooks y guarda el informe en `data/gold/verificacion_v4.json`. Para cada archivo regenerado que difiere, el informe lo coteja con `datos_v4.zip` (descargado a una carpeta temporal): para la Sala lista las filas con conteo distinto; para ERA5-Land y el panel da la diferencia máxima por columna y los marca `dentro_tolerancia` si es menor que 1e-12.
 En un clon limpio, `--bronze-publicado` restaura las capturas climáticas históricas verificadas para reducir
 la descarga inicial. El [detalle de la opción](modeling/reproducir_v4.md#regenerar-desde-las-fuentes)
 describe los paquetes y las fuentes que se consultan en vivo.
@@ -176,12 +176,12 @@ paso falla. `--version` acepta `v0` a `v4` (por defecto `v4`); las carpetas de `
 
 | Paso | Fuentes y salidas V4 |
 |---|---|
-| 01 | Puntos distritales versionados y respuesta GLO-90 de Open-Meteo. Archiva la consulta en `data/bronze/geografia/` y guarda `data/v4_fuentes/reference/geografia_distritos_v4.csv` para el cotejo. B3 conserva la geografía verificada del Release. |
+| 01 | Puntos distritales versionados y respuesta GLO-90 de Open-Meteo. Archiva la consulta en `data/bronze/geografia/` y guarda `data/bronze/geografia/geografia_distritos_v4.csv` para el cotejo. B3 conserva la geografía verificada del Release. |
 | 02 → 06 | Open-Meteo para el panel 2017–2025 y ERA5-Land desde 2000. NOAA CPC para Niño 1+2. CHIRPS v3 por polígono desde bronze de Earth Engine y FTP, con una versión completa por semana y fecha de disponibilidad. |
-| 03 → 07 y 09 | Excel socio, limpieza y unión con el silver meteorológico del panel bajo `data/v4_fuentes/silver/`. |
+| 03 → 07 y 09 | Excel socio, limpieza y unión con el silver meteorológico del panel en `data/silver/`. |
 | 04 → 08 | `DatosDengueV2.csv` de Drive a bronze y agregado por distrito y semana con `tipo_dx=C`. V4 toma del CSV el tramo 2000–2024. |
 | 05 | Sala Situacional de 2025 en adelante. Guarda las capturas crudas, reconcilia totales y escribe el silver de confirmados. La extensión del ajuste congelado incluye la SE 53 de 2025 y acaba en la SE 41 de 2026. |
-| 10 → 11 | Panel y cobertura en `data/v4_fuentes/silver/integrado/`. La matriz B3 y su manifiesto quedan en `data/v4_fuentes/gold/`. El gold representa h2–h4 desde un mismo origen al corte congelado. |
+| 10 → 11 | Panel y cobertura en `data/silver/confirmados/`. La matriz B3 y su manifiesto quedan en `data/gold/`, junto con el gold h2 de confirmados y su `manifest_fase6.json`. El gold representa h2–h4 desde un mismo origen al corte congelado. |
 
 En el recorrido desde las fuentes, el código de salida `0` indica que la corrida produjo un gold válido con
 los insumos disponibles. El JSON registra los hashes y lista las diferencias de los insumos regenerados respecto

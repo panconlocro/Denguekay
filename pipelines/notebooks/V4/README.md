@@ -28,5 +28,10 @@ Notebooks del Medallion de la V4, numerados por paso. Se ejecutan en orden con
 Los datos exactos de V4 están en su Release (`docs/reproducibilidad.md`); una corrida desde las fuentes puede
 diferir en lo que las fuentes republican.
 
-*Pendiente de las etapas 2 y 6 del plan: la carpeta de salida pasará de `data/v4_fuentes/` a `data/`, y aquí se
-documentarán la captura de la Sala y el origen de la geografía.*
+Las salidas se escriben en `data/` con los nombres del Release (`data/silver/confirmados/…`, `data/gold/…`). Una
+corrida desde las fuentes reemplaza una copia exacta extraída antes: se recupera con
+`release_bundles --version v4 --solo datos_v4.zip --sobrescribir`. El corte de cada fuente (Sala hasta la SE 43 de
+2026, etiquetas hasta 2026-10-17, ERA5-Land y CHIRPS hasta la semana del 2026-10-25, Niño 1+2 hasta 2026-10) está en
+`src/denguekay/pipelines/versions.py`.
+
+*Pendiente de la etapa 6: documentar aquí la fecha de la captura de la Sala y el origen de la geografía.*
