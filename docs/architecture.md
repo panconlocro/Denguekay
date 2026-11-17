@@ -524,6 +524,7 @@ módulo.
 - **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
 - **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR): 0001, reestructuración en monorepo; 0002, ramas `develop` (integración) y `main` (producción).
 - **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`.
+- **`research/09_epidemics_revision/`**: conserva sus informes `RESULTS.md`, `RESULTS_TABLES.md` y `figures/`. Su carpeta `paper/` versiona una copia congelada de los insumos mínimos para cotejar las tablas del artículo: script, manifiesto, probabilidades agregadas comprimidas (4,3 MiB) y dos fuentes `.tex` de referencia. La procedencia está en `paper/README.md` y la ruta `PAPER_BUNDLE` en `config/paths.py`. Es una excepción acotada al archivo de predicciones; los ajustes y las demás salidas siguen en `models/experimentos/`, sin versionar.
 ---
 
 ## 6. `.gitignore` — qué NO se sube al repo

@@ -1,0 +1,457 @@
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{mathptmx}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{figures/}}
+\captionsetup{labelfont=bf,font=small}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\newcommand{\bthree}{\textit{b3}}
+\newcommand{\dthree}{\textit{d3}}
+\newcommand{\ra}{\,$\rightarrow$\,}
+\setlength{\parskip}{4pt}
+
+\begin{document}
+
+\begin{center}
+{\Large\itshape Supplementary Material}\\[4pt]
+{\large What Does Climate Add to Case History? A Multiseason Evaluation of District-Level Dengue Forecasts in Piura, Peru}\\[6pt]
+Nicol\'as Francisco Miranda Rafael and Rosa Mar\'ia Rodr\'iguez Valencia
+\end{center}
+
+This supplement accompanies the retrospective forecast evaluation in Piura. The climate-arm diagnostics in Tables S1--S8 and S11 and Figures S1--S2 use the equal-budget fits. The V4 dashboard demonstration uses a later fit of the fixed-hyperparameter specification. The supplement reports the distributional diagnostics behind Table III, calibration by horizon, the precision-matched operating points behind Figure 5, episode anticipation under the archived alert policies, and details of the transfer to Lambayeque and Tumbes.
+
+\section*{S1 Count distribution diagnostics}
+The retrospective count interval uses NB2 centered on the mean blended with persistence. Level-dependent recalibration uses earlier out-of-sample forecasts grouped by the count predicted at issuance. For the simple count-persistence reference, NB2 is centered on the last count with a floor of 0.5 cases and dispersion estimated on earlier blocks.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=0.95\textwidth]{figS1_pit.png}
+\caption{PIT mass in ten equal-width bins for \bthree{}, \dthree{} and history plus geography. For a discrete count, mass is spread uniformly over the CDF interval from the preceding integer to the observed count. Each seed pools all 20,410 district-weeks per horizon over six decision seasons. Lines average the five seed-level histograms.}
+\end{figure}
+
+\subsection*{Count interval coverage}
+Tables S1 and S2 show original\ra recalibrated values. Coverage percentages and scores use the median across seeds within each decision season, then an equal-weight average over six seasons. WIS is the weighted interval score. Lower WIS is better.
+
+\begin{table}[!h]
+\centering
+\caption{Coverage of central intervals across all district-weeks}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Model & Weeks & 50\% interval & 80\% interval & 95\% interval & WIS\\
+\midrule
+\bthree{} & 2 & 88.3\ra 88.0\% & 94.4\ra 94.4\% & 97.7\ra 98.0\% & 2.105\ra 1.944\\
+\bthree{} & 3 & 87.7\ra 87.7\% & 94.0\ra 94.3\% & 97.3\ra 97.8\% & 2.572\ra 2.412\\
+\bthree{} & 4 & 87.2\ra 87.3\% & 93.5\ra 93.9\% & 97.1\ra 97.7\% & 2.930\ra 2.768\\
+\dthree{} & 2 & 88.8\ra 88.0\% & 94.6\ra 94.6\% & 97.7\ra 98.0\% & 2.129\ra 1.972\\
+\dthree{} & 3 & 88.4\ra 88.0\% & 94.3\ra 94.4\% & 97.5\ra 97.8\% & 2.606\ra 2.449\\
+\dthree{} & 4 & 87.8\ra 87.5\% & 93.9\ra 94.0\% & 97.3\ra 97.7\% & 2.993\ra 2.831\\
+History + geography & 2 & 88.8\ra 87.6\% & 95.2\ra 94.4\% & 98.2\ra 97.9\% & 2.332\ra 1.995\\
+History + geography & 3 & 87.4\ra 87.6\% & 94.8\ra 94.1\% & 97.9\ra 97.6\% & 2.881\ra 2.482\\
+History + geography & 4 & 85.8\ra 86.9\% & 94.2\ra 93.6\% & 97.8\ra 97.5\% & 3.293\ra 2.864\\
+NB2 persistence & 2 & 77.0\ra 88.5\% & 92.4\ra 93.9\% & 99.6\ra 98.3\% & 4.045\ra 3.040\\
+NB2 persistence & 3 & 76.6\ra 87.9\% & 91.3\ra 92.8\% & 99.2\ra 97.8\% & 4.219\ra 3.379\\
+NB2 persistence & 4 & 76.3\ra 87.0\% & 90.3\ra 92.0\% & 98.7\ra 97.4\% & 4.386\ra 3.710\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\caption{Coverage and mean 80\% interval width during observed elevated weeks}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Model & Weeks & 50\% interval & 80\% interval & 95\% interval & 80\% width\\
+\midrule
+\bthree{} & 2 & 50.2\ra 49.7\% & 74.7\ra 75.5\% & 87.0\ra 89.2\% & 52.38\ra 52.32\\
+\bthree{} & 3 & 42.5\ra 43.6\% & 68.6\ra 71.5\% & 82.9\ra 86.6\% & 49.97\ra 53.28\\
+\bthree{} & 4 & 37.0\ra 38.9\% & 63.7\ra 66.6\% & 80.5\ra 84.5\% & 47.23\ra 52.78\\
+\dthree{} & 2 & 52.0\ra 50.3\% & 76.7\ra 77.2\% & 87.2\ra 89.2\% & 55.28\ra 54.09\\
+\dthree{} & 3 & 45.2\ra 45.3\% & 70.8\ra 72.3\% & 84.3\ra 86.9\% & 53.44\ra 53.64\\
+\dthree{} & 4 & 39.3\ra 40.2\% & 66.1\ra 67.4\% & 81.8\ra 85.1\% & 50.91\ra 51.80\\
+History + geography & 2 & 51.1\ra 49.0\% & 79.2\ra 76.5\% & 89.8\ra 89.0\% & 62.97\ra 51.05\\
+History + geography & 3 & 40.6\ra 45.7\% & 74.7\ra 71.9\% & 87.4\ra 86.3\% & 62.48\ra 52.17\\
+History + geography & 4 & 31.4\ra 40.6\% & 68.7\ra 67.1\% & 86.2\ra 84.3\% & 58.79\ra 52.49\\
+NB2 persistence & 2 & 5.0\ra 52.8\% & 58.2\ra 79.5\% & 97.6\ra 89.4\% & 53.60\ra 93.68\\
+NB2 persistence & 3 & 3.2\ra 49.4\% & 52.5\ra 74.4\% & 95.2\ra 87.2\% & 49.77\ra 95.89\\
+NB2 persistence & 4 & 2.3\ra 44.8\% & 47.9\ra 68.7\% & 91.1\ra 84.5\% & 45.42\ra 94.06\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.85\textwidth}{\footnotesize Width is in cases. Conditioning on observed elevated weeks diagnoses misses during high activity. It differs from the marginal coverage target for the full predictive distribution.}
+\end{table}
+
+\clearpage
+\section*{S2 Probability calibration by horizon}
+Calibration slope and intercept come from a diagnostic logistic regression of the observed label on the forecast logit in each evaluation block. An ideal pair is slope 1 and intercept 0. These fits diagnose calibration on evaluation blocks.
+
+\begin{table}[!h]
+\centering
+\caption{Calibration and high-probability forecasts}
+\small
+\begin{tabular}{@{}clrrrrr@{}}
+\toprule
+Weeks & Model & Slope & Intercept & $n$ at $p\geq 0.30$ & Observed & Expected\\
+\midrule
+2 & \bthree{} & 1.30 & $+0.46$ & 3,091 & 2,207 & 1,876.1\\
+2 & \dthree{} & 1.31 & $+0.42$ & 3,224 & 2,248 & 1,933.8\\
+2 & History + geography & 1.14 & $+0.23$ & 3,294 & 2,253 & 2,073.9\\
+2 & Probabilistic persistence & 1.01 & $+0.50$ & 2,441 & 1,967 & 1,833.7\\
+3 & \bthree{} & 1.35 & $+0.64$ & 3,031 & 2,080 & 1,622.8\\
+3 & \dthree{} & 1.34 & $+0.58$ & 3,158 & 2,128 & 1,690.5\\
+3 & History + geography & 1.15 & $+0.33$ & 3,236 & 2,138 & 1,881.8\\
+3 & Probabilistic persistence & 1.04 & $+0.63$ & 2,127 & 1,734 & 1,574.6\\
+4 & \bthree{} & 1.31 & $+0.64$ & 2,938 & 1,967 & 1,447.4\\
+4 & \dthree{} & 1.29 & $+0.60$ & 3,060 & 2,008 & 1,513.9\\
+4 & History + geography & 1.13 & $+0.36$ & 3,122 & 2,035 & 1,708.1\\
+4 & Probabilistic persistence & 1.01 & $+0.62$ & 1,991 & 1,562 & 1,410.6\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.85\textwidth}{\footnotesize Slope and intercept are means of the season-level seed medians. In the $p\geq 0.30$ subset, expected events are the sum of probabilities. Counts sum the seed medians across the same six seasons.}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\caption{Probability performance by episode phase and prior outbreak frequency}
+\small
+\begin{tabular}{@{}clrrrrrr@{}}
+\toprule
+Weeks & Stratum & Elevated weeks & \bthree{} Brier & PP Brier & \bthree{} AP & PP AP & \bthree{} BSS vs PP\\
+\midrule
+2 & First two episode weeks & 486 & 0.0313 & 0.0324 & 0.173 & 0.137 & $+1.37\%$\\
+2 & Continuation & 2,146 & 0.0293 & 0.0257 & 0.891 & 0.873 & $-16.85\%$\\
+2 & High prior frequency & 1,669 & 0.0825 & 0.0842 & 0.852 & 0.829 & $+0.05\%$\\
+2 & Low prior frequency & 813 & 0.0528 & 0.0536 & 0.776 & 0.718 & $+2.21\%$\\
+2 & No prior elevated week & 150 & 0.0096 & 0.0098 & 0.691 & 0.604 & $-13.84\%$\\
+3 & First two episode weeks & 486 & 0.0318 & 0.0324 & 0.143 & 0.114 & $-0.84\%$\\
+3 & Continuation & 2,146 & 0.0375 & 0.0332 & 0.843 & 0.827 & $-18.06\%$\\
+3 & High prior frequency & 1,669 & 0.0994 & 0.1003 & 0.809 & 0.790 & $-2.16\%$\\
+3 & Low prior frequency & 813 & 0.0625 & 0.0621 & 0.731 & 0.689 & $-2.95\%$\\
+3 & No prior elevated week & 150 & 0.0117 & 0.0117 & 0.618 & 0.529 & $-17.63\%$\\
+4 & First two episode weeks & 486 & 0.0316 & 0.0317 & 0.143 & 0.104 & $-2.74\%$\\
+4 & Continuation & 2,146 & 0.0449 & 0.0414 & 0.766 & 0.746 & $-13.04\%$\\
+4 & High prior frequency & 1,669 & 0.1136 & 0.1164 & 0.749 & 0.734 & $-1.24\%$\\
+4 & Low prior frequency & 813 & 0.0700 & 0.0701 & 0.665 & 0.603 & $-1.04\%$\\
+4 & No prior elevated week & 150 & 0.0132 & 0.0130 & 0.549 & 0.475 & $-15.35\%$\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.9\textwidth}{\footnotesize AP is average precision. PP is probabilistic persistence. BSS is Brier skill score. The phase strata share 17,778 negative weeks and use different positive weeks. Prior frequency uses observations before each season. High and low split at the median among districts with a prior elevated week. Season--stratum cells without both outcome classes are excluded from the affected metrics.}
+\end{table}
+
+\clearpage
+\section*{S3 Recall at the precision of deterministic persistence}
+For each model and seed, we report the greatest recall attained with precision at least as high as the deterministic persistence rule on the same evaluation rows. We keep ties in forecast scores together and summarize with the median across seeds. This comparison uses evaluation outcomes to locate points on the precision--recall curve.
+
+\begin{table}[!h]
+\centering
+\caption{Recall at matched precision in the six decision seasons}
+\small
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Horizon & Reference precision & Persistence recall & \bthree{} & \dthree{} & History + geography & PP\\
+\midrule
+2 weeks & 79.04\% & 76.22\% & 76.67\% & 76.86\% & 76.60\% & 76.41\%\\
+3 weeks & 75.33\% & 72.15\% & 72.49\% & 72.53\% & 73.40\% & 72.30\%\\
+4 weeks & 71.51\% & 67.82\% & 69.19\% & 69.07\% & 71.31\% & 67.48\%\\
+Pooled & 75.31\% & 72.06\% & 72.34\% & 72.80\% & 73.56\% & 72.11\%\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.85\textwidth}{\footnotesize The pooled row combines the three horizons and can include the same target week more than once. PP denotes probabilistic persistence. Persistence recall is the deterministic rule's recall.}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\caption{Four-week recall at matched precision by season}
+\small
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Season & Reference precision & Persistence recall & \bthree{} & \dthree{} & History + geography & PP & \bthree{} $\Delta$ recall (pp)\\
+\midrule
+2010 & 54.70\% & 54.70\% & 59.40\% & 60.26\% & 60.26\% & 54.70\% & $+4.70$\\
+2015 & 70.76\% & 66.80\% & 72.80\% & 74.40\% & 74.20\% & 66.80\% & $+6.00$\\
+2016 & 53.89\% & 57.91\% & 58.81\% & 60.30\% & 62.09\% & 58.21\% & $+0.90$\\
+2022 & 62.71\% & 66.37\% & 74.66\% & 73.77\% & 75.34\% & 66.37\% & $+8.30$\\
+2023 & 88.25\% & 75.75\% & 79.73\% & 78.95\% & 76.92\% & 76.24\% & $+3.98$\\
+2026 & 71.23\% & 60.47\% & 32.56\% & 41.86\% & 29.07\% & 60.47\% & $-27.91$\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.9\textwidth}{\footnotesize The reference precision is computed separately for each season. $\Delta$ is the difference between the recall of \bthree{} and that of deterministic persistence, in percentage points.}
+\end{table}
+
+At four weeks in the pooled comparison, \bthree{} reached 69.19\% recall at a reference precision of 71.51\%, compared with 67.82\% for deterministic persistence. In 2026, \bthree{}'s recall was 27.91 percentage points below deterministic persistence at the season's reference precision.
+
+\section*{S4 Episode anticipation and false-alert cost}
+The evaluation covers 102 eligible clean onsets in seasons 2022, 2023 and 2026. An onset qualifies for anticipation when an alert occurs at least two nominal weeks earlier. A false alert is an alert for a district-week without the elevated-week label.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=\textwidth]{figS2_onsets.png}
+\caption{Onsets anticipated and false-alert rates under the 0.50 cutoff and the three development-budget policies. Lines connect the four evaluated policies for each method. Horizontal scales differ by horizon.}
+\end{figure}
+
+\begin{table}[!h]
+\centering
+\caption{Four-week cutoff policies and their observed costs}
+\small
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Policy & \bthree{} cutoff & \bthree{} onsets / FP & \bthree{} rate & PP cutoff & PP onsets / FP & PP rate\\
+\midrule
+Fixed 0.50 & 0.5000 & 7 / 43 & 0.22 & 0.5000 & 8 / 83 & 0.42\\
+Target 0.5 & 0.3604 & 34 / 195 & 0.99 & 0.2640 & 20 / 213 & 1.09\\
+Target 1 & 0.2785 & 49 / 367 & 1.87 & 0.1316 & 29 / 411 & 2.09\\
+Target 2 & 0.1727 & 70 / 752 & 3.83 & 0.0243 & 74 / 957 & 4.88\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.85\textwidth}{\footnotesize Target values are development budgets in false alerts per district per 52 weeks. Rates are the observed evaluation costs in those units. Cutoffs for \bthree{} are medians across seeds and each seed uses its own selected cutoff. Counts sum season-level seed medians. FP denotes false alerts.}
+\end{table}
+
+The policy with a development target of one false alert anticipated 49 onsets for \bthree{} and 29 for probabilistic persistence. The observed rates were 1.87 and 2.09 per district per 52 weeks. The difference in detected onsets was concentrated in 2023. At the target of two, both methods achieved higher detection and generated more false alerts.
+
+\subsection*{Episode outcomes by season}
+\begin{table}[!h]
+\centering
+\caption{Anticipated onsets and false alerts at four weeks}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Method & 2022 (30 onsets) & 2023 (52 onsets) & 2026 (20 onsets) & Total (102 onsets)\\
+\midrule
+\bthree{} & 8 / 139 & 31 / 191 & 10 / 37 & 49 / 367\\
+\dthree{} & 12 / 229 & 32 / 189 & 9 / 32 & 53 / 450\\
+History + geography & 15 / 249 & 33 / 191 & 8 / 34 & 56 / 474\\
+Probabilistic persistence & 7 / 227 & 9 / 119 & 13 / 65 & 29 / 411\\
+Deterministic persistence & 7 / 176 & 7 / 104 & 8 / 21 & 22 / 301\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.85\textwidth}{\footnotesize Each cell gives anticipated onsets / false alerts. Probabilistic methods use the development target of one false alert per district per 52 weeks. Deterministic persistence keeps its original count rule.}
+\end{table}
+
+At those operating points, 11 onsets were detected exclusively by history and geography and three exclusively by \bthree{}, defining a detection as agreement across at least three seeds. Of the 11, ten had a last reported count below the threshold at the forecast origin for the onset week, including six with zero reported cases.
+
+\subsection*{Historical development experiments}
+\begin{table}[!h]
+\centering
+\caption{Strategies tested to improve anticipation}
+\small
+\begin{tabular}{@{}p{0.2\textwidth}p{0.33\textwidth}p{0.37\textwidth}@{}}
+\toprule
+Strategy & Change in anticipation & Other outcomes\\
+\midrule
+Fivefold weight near onsets & Increased by 7.8 pp at two weeks and 4.7 pp at three and four weeks. & AP decreased in all five evaluated seasons at each horizon.\\
+Weighting by season & Decreased by 2.6--3.6 pp. & F1 and AP remained within the historical tie tolerance.\\
+Separate models by regime & Decreased by 18.1 pp at three weeks. & Sensitivity for new-outbreak weeks was 0--6\%.\\
+Spatial context in a single model & Increased by 3.1 pp at two and four weeks and 1.6 pp at three weeks. & Four-week continuation sensitivity decreased in 2010 and 2015.\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.9\textwidth}{\footnotesize These are results of the original development study. None of the four strategies passed its historical adoption rule.}
+\end{table}
+
+\clearpage
+\section*{S5 Brier decomposition}
+CORP decomposes Brier into miscalibration minus discrimination plus uncertainty. Table S10 compares calibration windows for XGBoost with history and geography. The isotonic fit is a diagnostic on the observed evaluation block. Forecast probabilities for scoring come from the archived models and their chronological calibration.
+
+\begin{table}[!h]
+\centering
+\caption{Expanding versus two-season calibration at four weeks with expanding training held fixed}
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Season & Relative $\Delta$ Brier & $\Delta$ Brier & $\Delta$ Miscalibration & $\Delta$ Discrimination & $\Delta$ Uncertainty\\
+\midrule
+2010 & 0.00\% & 0.00000 & 0.00000 & 0.00000 & 0.00000\\
+2015 & $+4.77\%$ & $+0.00313$ & $+0.00313$ & 0.00000 & 0.00000\\
+2016 & $-16.53\%$ & $-0.01206$ & $-0.01206$ & 0.00000 & 0.00000\\
+2022 & $-9.56\%$ & $-0.00640$ & $-0.00640$ & 0.00000 & 0.00000\\
+2023 & $-1.96\%$ & $-0.00163$ & $-0.00163$ & 0.00000 & 0.00000\\
+2026 & $-4.42\%$ & $-0.00070$ & $-0.00070$ & 0.00000 & 0.00000\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.85\textwidth}{\footnotesize Each difference is the median of the five paired seed-level differences. Changes in the last four columns are absolute. The two calibration windows coincide in 2010, which is excluded from the five-season mean. Lower Brier is better.}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\caption{CORP components and log score on the common evaluation calendar}
+\small
+\begin{tabular}{@{}clrrrrr@{}}
+\toprule
+Weeks & Model & Brier & Miscalibration & Discrimination & Uncertainty & Log score\\
+\midrule
+2 & \bthree{} & 0.04309 & 0.00540 & 0.06709 & 0.10478 & 0.14594\\
+2 & \dthree{} & 0.04346 & 0.00534 & 0.06665 & 0.10478 & 0.14716\\
+2 & History and geography & 0.04274 & 0.00428 & 0.06632 & 0.10478 & 0.14564\\
+2 & Probabilistic persistence & 0.04420 & 0.00336 & 0.06394 & 0.10478 & 0.16373\\
+2 & Climatology & 0.11409 & 0.02756 & 0.01825 & 0.10478 & 0.68882\\
+3 & \bthree{} & 0.05170 & 0.00833 & 0.06141 & 0.10478 & 0.17133\\
+3 & \dthree{} & 0.05171 & 0.00780 & 0.06087 & 0.10478 & 0.17166\\
+3 & History and geography & 0.04938 & 0.00558 & 0.06098 & 0.10478 & 0.16650\\
+3 & Probabilistic persistence & 0.05201 & 0.00489 & 0.05766 & 0.10478 & 0.19278\\
+3 & Climatology & 0.11411 & 0.02754 & 0.01821 & 0.10478 & 0.69043\\
+4 & \bthree{} & 0.05869 & 0.01090 & 0.05699 & 0.10478 & 0.19163\\
+4 & \dthree{} & 0.05835 & 0.00999 & 0.05642 & 0.10478 & 0.19098\\
+4 & History and geography & 0.05489 & 0.00670 & 0.05659 & 0.10478 & 0.18381\\
+4 & Probabilistic persistence & 0.05950 & 0.00671 & 0.05199 & 0.10478 & 0.21891\\
+4 & Climatology & 0.11410 & 0.02752 & 0.01819 & 0.10478 & 0.69050\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.9\textwidth}{\footnotesize Each entry is the arithmetic mean across the six seasons and five seeds. This averaging preserves the Brier decomposition. The main tables summarize seed medians by season. The reported mean Brier skill score averages paired relative changes by season, so its sign can differ from the difference between the mean Brier scores in this table.}
+\end{table}
+
+\subsection*{Source records}
+Tables S1--S8 and Figures S1--S2 use the confirmed-case archives for count intervals, probability diagnostics, precision-matched alert evaluation and cutoff policies. Table S9 comes from the historical model-development study, stage 3. Tables S10--S11 use the archived paired calibration contrasts and the probability diagnostic archive on all district-weeks. Tables S12--S13 come from the archived transfer evaluation for Lambayeque and Tumbes.
+
+\clearpage
+\section*{S6 Transfer to Lambayeque and Tumbes}
+For retrospective transfer in 2025 and 2026, the fixed-hyperparameter package was fitted only on Piura with data closed by 7 December 2024 and applied without refitting to 37 districts of Lambayeque and 13 of Tumbes for target weeks 1--38. Trained arms used five seeds; the alert cutoff of the trained arms and of probabilistic persistence was 0.50, and deterministic persistence kept its count rule. Both arms and the persistence rules used the same 1,900 district-weeks per horizon. In 2025 the departments had 9 and 11 elevated weeks; in 2026, 136 and 13.
+
+\begin{table}[!h]
+\centering
+\caption{Alerts and count error in the 2025 transfer at the 0.50 cutoff}
+\small
+\begin{tabular}{@{}lclrrr@{}}
+\toprule
+Department & Weeks & Method & Elevated weeks detected & False alerts & MAE (cases)\\
+\midrule
+Lambayeque & 2 & \bthree{} & 3 & 15 & 0.552\\
+Lambayeque & 2 & History + geography & 3 & 17 & 0.548\\
+Lambayeque & 2 & Deterministic persistence & 1 & 9 & 0.424\\
+Lambayeque & 2 & Probabilistic persistence & 0 & 3 & 0.424\\
+Lambayeque & 3 & \bthree{} & 5 & 13 & 0.618\\
+Lambayeque & 3 & History + geography & 5 & 16 & 0.607\\
+Lambayeque & 3 & Deterministic persistence & 2 & 6 & 0.465\\
+Lambayeque & 3 & Probabilistic persistence & 0 & 2 & 0.465\\
+Lambayeque & 4 & \bthree{} & 3 & 21 & 0.735\\
+Lambayeque & 4 & History + geography & 3 & 23 & 0.710\\
+Lambayeque & 4 & Deterministic persistence & 3 & 9 & 0.513\\
+Lambayeque & 4 & Probabilistic persistence & 0 & 1 & 0.513\\
+Tumbes & 2 & \bthree{} & 6 & 13 & 2.254\\
+Tumbes & 2 & History + geography & 6 & 9 & 1.783\\
+Tumbes & 2 & Deterministic persistence & 5 & 3 & 1.617\\
+Tumbes & 2 & Probabilistic persistence & 3 & 2 & 1.617\\
+Tumbes & 3 & \bthree{} & 4 & 21 & 3.085\\
+Tumbes & 3 & History + geography & 4 & 15 & 2.044\\
+Tumbes & 3 & Deterministic persistence & 5 & 5 & 1.711\\
+Tumbes & 3 & Probabilistic persistence & 0 & 1 & 1.711\\
+Tumbes & 4 & \bthree{} & 2 & 25 & 4.109\\
+Tumbes & 4 & History + geography & 2 & 15 & 2.357\\
+Tumbes & 4 & Deterministic persistence & 2 & 3 & 1.864\\
+Tumbes & 4 & Probabilistic persistence & 0 & 1 & 1.864\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.85\textwidth}{\footnotesize Values for the trained arms are medians across five seeds. Persistence counts use the last reported count at the origin.}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\caption{Sensitivity of the transfer to removing latitude}
+\small
+\begin{tabular}{@{}clcrrrr@{}}
+\toprule
+Year & Department & Weeks & $\Delta$ Brier \bthree{} & $\Delta$ Brier H+G & Climate, with latitude & Climate, without latitude\\
+\midrule
+2025 & Lambayeque & 2 & $+0.000004$ & $+0.000011$ & $-6.13\%$ & $-6.69\%$\\
+2025 & Lambayeque & 3 & $+0.000017$ & $-0.000063$ & $-11.58\%$ & $-11.79\%$\\
+2025 & Lambayeque & 4 & $-0.000005$ & $+0.000083$ & $-12.07\%$ & $-11.93\%$\\
+2025 & Tumbes & 2 & $-0.000353$ & $-0.000281$ & $+22.46\%$ & $+22.72\%$\\
+2025 & Tumbes & 3 & $-0.000645$ & $-0.000580$ & $+30.28\%$ & $+31.42\%$\\
+2025 & Tumbes & 4 & $-0.001062$ & $-0.000984$ & $+33.50\%$ & $+36.73\%$\\
+2026 & Lambayeque & 2 & $-0.000125$ & $+0.000039$ & $-1.05\%$ & $-1.29\%$\\
+2026 & Lambayeque & 3 & $-0.000127$ & $-0.000113$ & $-0.21\%$ & $-0.45\%$\\
+2026 & Lambayeque & 4 & $-0.000355$ & $-0.000261$ & $+0.43\%$ & $+0.46\%$\\
+2026 & Tumbes & 2 & $-0.000039$ & $-0.000113$ & $+4.92\%$ & $+5.28\%$\\
+2026 & Tumbes & 3 & $-0.000204$ & $-0.000284$ & $+6.85\%$ & $+7.65\%$\\
+2026 & Tumbes & 4 & $-0.000477$ & $-0.000422$ & $+19.75\%$ & $+20.22\%$\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.9\textwidth}{\footnotesize $\Delta$ Brier is computed per seed as Brier without latitude minus Brier with latitude and summarized by the median; negative values favor the version without latitude. The models without latitude were refitted and recalibrated in Piura with the same data, cutoffs, seeds and hyperparameters. The climate columns give the median seed-level relative change in Brier of \bthree{} versus history and geography (H+G).}
+\end{table}
+
+\clearpage
+\section*{S7 Development history and comparative results}
+Table S14 documents the decisions made during development. The historical rule counted a horizon as a win if at least five of six decision seasons improved beyond the seed tolerance and none worsened. Adoption required wins at two or more horizons, no guardrail veto and improvement in at least 16 of 24 leave-one-season-out cells. Those eight seasons were 2010, 2015, 2016, 2017, 2022, 2023, 2024 and 2026. The historical Optuna search used the tree-structured Parzen estimator. The archive identifies 15 distinct configurations evaluated on the decision seasons, including the original reference, the 12 variants and the final tuned pair. Three additional pairwise comparisons reused existing predictions. Table S15 compares the separately tuned climate arms and the statistical baselines on the retrospective calendar. Table S16 reports the seasonal results underlying the primary fixed-hyperparameter comparison.
+
+\begin{table}[!h]
+\caption{Internal Development Decisions and Retrospective Evaluation}
+\label{tab:decisions}
+\centering
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.13\textwidth} p{0.24\textwidth} p{0.55\textwidth}@{}}
+\toprule
+2026 & Record & Decision\\
+\midrule
+Nov.\ 3 & 6a29a8e, ae762e7 & Five decision seasons were named and 2024 examined as a contrast.\\
+Nov.\ 6--8 & 658d0bd, e02ebe1 & Brier replaced F1 as primary and 2026 was added.\\
+Nov.\ 8 & 505b9b6, 87aa8d5 & The rule selected \bthree{}. The team advanced \dthree{} for further development after reviewing the results.\\
+Nov.\ 8--9 & b408371, 02d7275, 290dbaa, 6894012 & 255 development trials for \dthree{}. Trial 191 was compared on the decision seasons.\\
+Nov.\ 11 & 1147be8, 0aa5821, da63ba5, d9e7ee9 & The 2025 transfer design was fixed before scoring. The 2026 extension and the latitude and cutoff sensitivities were added after the 2025 results.\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!h]
+\caption{Secondary probabilistic comparison with equal-budget climate fits}
+\label{tab:prob}
+\centering
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Model & Brier h4 & AP h4 & PP h2 (\%) & PP h3 (\%) & PP h4 (\%) & Clim.\ h4 (\%)\\
+\midrule
+\bthree{} & 0.0586 & 0.714 & $+0.46$ & $-2.78$ & $-1.86$ & 43.7\\
+\dthree{} & 0.0584 & 0.709 & $+0.09$ & $-2.23$ & $-0.95$ & 44.1\\
+History + geography & 0.0549 & 0.714 & $+0.35$ & $+0.65$ & $+2.86$ & 46.2\\
+LightGBM & 0.0552 & 0.712 & $+0.63$ & $+0.18$ & $+2.08$ & 45.8\\
+Poisson GLM & 0.0560 & 0.708 & $-1.24$ & $-1.69$ & $+0.44$ & 44.6\\
+NB2, no climate & 0.0587 & 0.679 & $-3.58$ & $-5.46$ & $-3.41$ & 42.3\\
+NB2, climate & 0.0647 & 0.679 & $-8.97$ & $-13.32$ & $-12.40$ & 36.7\\
+Probabilistic persistence & 0.0595 & 0.673 & $+0.00$ & $+0.00$ & $+0.00$ & 44.8\\
+Climatology & 0.1141 & 0.266 & --- & --- & --- & 0.0\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.9\textwidth}{\footnotesize Mean of season summaries over six decision seasons. The climate arms use the equal-budget fits. PP and Clim.\ are average paired seasonal Brier skill relative to probabilistic persistence and climatology. Their signs can differ from skill calculated from the displayed mean Brier scores.}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\caption{Primary fixed-hyperparameter contrasts by season}
+\small
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+ & \multicolumn{3}{c}{Brier change vs.\ history + geography (\%)} & \multicolumn{3}{c}{Brier skill vs.\ PP (\%)}\\
+\cmidrule(lr){2-4}\cmidrule(l){5-7}
+Season & 2 wk & 3 wk & 4 wk & 2 wk & 3 wk & 4 wk\\
+\midrule
+2010 & $+0.47$ & $-0.25$ & $-0.49$ & $-5.28$ & $-3.39$ & $+0.35$\\
+2015 & $+0.73$ & $+1.55$ & $+1.12$ & $+2.31$ & $+1.67$ & $+4.20$\\
+2016 & $+0.11$ & $+0.69$ & $+0.79$ & $-4.82$ & $-5.50$ & $-3.87$\\
+2022 & $+0.27$ & $+1.70$ & $+3.09$ & $+7.68$ & $+7.93$ & $+10.04$\\
+2023 & $-0.53$ & $+0.68$ & $+2.95$ & $+10.96$ & $+14.74$ & $+16.76$\\
+2026 & $-1.88$ & $-1.91$ & $-1.98$ & $-7.87$ & $-13.90$ & $-14.84$\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.92\textwidth}{\footnotesize Values are medians of paired seed-level contrasts. PP is probabilistic persistence. Negative change versus history and geography and positive skill versus PP favor \bthree{}.}
+\end{table}
+
+\end{document}

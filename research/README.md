@@ -12,7 +12,8 @@ reestructuración ([ADR 0001](../docs/decisions/0001-repo-restructure.md)):
   Markdown sí apuntan a los archivos actuales.
 
 Para reproducir un estudio se parte de su tag (ver el README de cada uno). `pre-restructure`
-(`3ad8312`) es una alternativa válida para cualquiera de ellos.
+(`3ad8312`) es una alternativa para los estudios anteriores a la reestructuración. El estudio 09
+todavía no tiene tag de cierre; sus instrucciones corresponden a la revisión que contiene este README.
 
 | Estudio | Pregunta | Resultado | Tag |
 |---|---|---|---|
@@ -24,6 +25,7 @@ Para reproducir un estudio se parte de su tag (ver el README de cada uno). `pre-
 | [06_model_improvement](06_model_improvement/README.md) | ¿Hay una V3 que supere a la V2 con una regla preregistrada? | **V3** (la que publica el backend); b3 retadora | `study/model-improvement` |
 | [07_outbreak_label_sensitivity](07_outbreak_label_sensitivity/docs/informe.md) | ¿Cuánto cambian los resultados de la V3 con otra etiqueta de brote? | Sensibilidad de la etiqueta | — |
 | [08_v3_confirmed_cases](08_v3_confirmed_cases/README.md) | ¿Qué aporta el clima con casos confirmados, y transfiere a Lambayeque y Tumbes? | **V4** (`b3_obs`, congelada para el paper) | `model/v4` |
+| [09_epidemics_revision](09_epidemics_revision/README.md) | ¿Se mantiene el aporte del clima al respetar su disponibilidad y ampliar temporadas, horizontes y definiciones? | Reanálisis para *Epidemics*, E1–E13; [resultados](09_epidemics_revision/RESULTS.md) | Pendiente de cierre |
 
 ## Qué no está aquí
 
@@ -38,6 +40,6 @@ Para reproducir un estudio se parte de su tag (ver el README de cada uno). `pre-
 
 ## Estudios nuevos
 
-Un estudio nuevo va en `research/09_<nombre>/` (el siguiente número libre) con la misma forma (`README.md`, `notebooks/`,
+Un estudio nuevo va en `research/10_<nombre>/` (el siguiente número libre) con la misma forma (`README.md`, `notebooks/`,
 `code/`, `tests/`, `docs/`), importa el paquete `denguekay` y nunca al revés: el producto no
 importa `research/`. Al cerrarlo se crea el tag `study/<nombre>`.
