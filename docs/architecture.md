@@ -457,6 +457,7 @@ apps/web/
 ├── public/manual-usuario.pdf            # manual descargable desde Ayuda
 ├── tools/build_manual.py                # autoría del PDF; requiere reportlab y pypdf, revisión visual
 ├── tools/serve_demo.py                  # demo ya preparada, lectura en 127.0.0.1:18001
+├── tools/measure_load.mjs               # mide 20 cargas por vista sobre vite preview (HU0016-3); salida en docs/backend/
 ├── e2e/serve_api.py                      # API real sobre fixtures en 127.0.0.1:18000
 └── playwright.config.ts                 # escritorio/móvil, Vite 5174, trazas en fallos
 ```
