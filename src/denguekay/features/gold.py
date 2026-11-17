@@ -38,6 +38,10 @@ from denguekay.data.validation.integrated_expectations import (
 # Persisted gold: only h=2, the alignment of the v2 (one origin, targets t+2, t+3 and t+4). The other
 # EXPERIMENTAL_HORIZONS are built in memory with build_gold and are never written to data/.
 HORIZONS = (2,)
+# Column sets of ``generate_gold``: "v3" (base_6, A3, B3 and d3; the current gold), "v2" (without d3: the clean gold of the
+# v2, ``data_anteriores/v2``) and "candidatas" (every candidate with the label, h=2 and h=4: the gold before the cleanup
+# that the v0 and the v1 read, ``gold/respaldo_pre_b3``).
+GOLD_COLUMN_SETS = ("v3", "v2", "candidatas")
 SOCIO_2017_DATE = "2019-01-01"  # conservative barrier, not a verified date of the Excel file
 BASE = ["provincia", "distrito", "distrito_key", *KEY, "semana_inicio", "casos_Dengue"]
 # B3 at the origin of each row (features.onset_features.with_onset_columns).
@@ -73,22 +77,29 @@ def gold_columns(horizon: int, *, with_outbreak: bool = False) -> list[str]:
     return columns
 
 
-def persisted_predictors(horizon: int = 2) -> dict[str, list[str]]:
+def persisted_predictors(horizon: int = 2, *, columns: str = "v3",
+                         horizons: tuple[int, ...] = HORIZONS) -> dict[str, list[str]]:
     """Variables of the current configuration that gold persists, by family."""
-    if horizon not in HORIZONS:
-        raise ValueError(f"Gold solo persiste los horizontes {HORIZONS}")
-    return {
+    if horizon not in horizons:
+        raise ValueError(f"Gold solo persiste los horizontes {horizons}")
+    if columns not in ("v3", "v2"):
+        raise ValueError(f"Conjunto de columnas persistidas desconocido: {columns!r}")
+    families = {
         "base_6": [f"casos_lag_{horizon}", f"casos_lag_{horizon + 1}", f"casos_media_4_h{horizon}",
                    f"casos_semanas_positivas_4_h{horizon}", "semana_epi_seno", "semana_epi_coseno"],
         "a3": [f"hum_rel_media_media5_h{horizon}", f"precip_total_mm_media5_h{horizon}"],
         "b3": list(ONSET_COLUMNS),
         "d3": list(cl.D3_COLUMNS),
     }
+    if columns == "v2":
+        del families["d3"]
+    return families
 
 
-def persisted_columns(horizon: int = 2) -> list[str]:
+def persisted_columns(horizon: int = 2, *, columns: str = "v3", horizons: tuple[int, ...] = HORIZONS) -> list[str]:
     """Exact schema of the persisted gold."""
-    return [*PERSISTED_NON_PREDICTORS, *(c for cols in persisted_predictors(horizon).values() for c in cols)]
+    families = persisted_predictors(horizon, columns=columns, horizons=horizons)
+    return [*PERSISTED_NON_PREDICTORS, *(c for cols in families.values() for c in cols)]
 
 
 def _append(base: pd.DataFrame, fragment: pd.DataFrame) -> pd.DataFrame:
@@ -165,6 +176,7 @@ def build_gold(
 def validate_gold(
     gold: pd.DataFrame, silver: pd.DataFrame, horizon: int, *,
     with_outbreak: bool = False, min_outbreak_cases: int = 1, persisted: bool = False,
+    columns: str = "v3", horizons: tuple[int, ...] = HORIZONS,
 ) -> dict[str, int]:
     """Check keys, label, origin, start-up nulls and finiteness.
 
@@ -174,7 +186,8 @@ def validate_gold(
         raise ValueError("Horizonte inválido")
     if len(gold) != len(silver) or gold.duplicated(KEY).any() or silver.duplicated(KEY).any():
         raise ValueError("Gold debe conservar las llaves únicas y el número de filas de silver")
-    expected = set(persisted_columns(horizon) if persisted else gold_columns(horizon, with_outbreak=with_outbreak))
+    expected = set(persisted_columns(horizon, columns=columns, horizons=horizons) if persisted
+                   else gold_columns(horizon, with_outbreak=with_outbreak))
     if set(gold) != expected:
         raise ValueError(f"Esquema gold inesperado: faltan {sorted(expected - set(gold))}; sobran {sorted(set(gold) - expected)}")
     if gold.columns.duplicated().any() or any(c.endswith(("_x", "_y", "_familia")) for c in gold):
@@ -260,17 +273,28 @@ def generate_gold(
     catalog_path: Path = UBIGEO_CATALOG,
     *, outbreak: SeasonalOutbreakConfig,
     history_path: Path = SILVER_EPI_HISTORICAL, era5_land_path: Path | None = None,
+    horizons: tuple[int, ...] = HORIZONS, columns: str = "v3",
 ) -> dict[int, dict[str, object]]:
     """Validate silver, keep the persisted columns, B3 and d3 and write reproducible CSV/lineage files.
 
     d3 comes from the ERA5-Land weekly silver (``climate.era5_land_silver()`` by default), matched to each row's
-    origin week; it has no start-up nulls because that silver starts in 2000."""
+    origin week; it has no start-up nulls because that silver starts in 2000.
+
+    ``horizons`` and ``columns`` (``GOLD_COLUMN_SETS``) choose what an earlier version persisted: the default is the
+    current gold; ``v2`` leaves out d3 (and does not need ERA5-Land); ``candidatas`` writes every candidate with the
+    label, as the gold before the cleanup (``horizons=(2, 4)``)."""
+    if columns not in GOLD_COLUMN_SETS:
+        raise ValueError(f"Conjunto de columnas desconocido: {columns!r}; use uno de {GOLD_COLUMN_SETS}")
+    if columns == "candidatas" and not set(horizons) <= set(EXPERIMENTAL_HORIZONS):
+        raise ValueError("Horizonte inválido")
+    with_d3 = columns == "v3"
     from denguekay.features.onset_features import with_onset_columns  # it imports this module
 
     input_path, output_dir, history_path = Path(input_path), Path(output_dir), Path(history_path)
-    era5_land_path = Path(era5_land_path) if era5_land_path is not None else cl.era5_land_silver()
     panel = load_integrated(input_path)
-    d3 = cl.weather_windows(cl.era5_land_weekly(era5_land_path, panel))
+    if with_d3:
+        era5_land_path = Path(era5_land_path) if era5_land_path is not None else cl.era5_land_silver()
+        d3 = cl.weather_windows(cl.era5_land_weekly(era5_land_path, panel))
     coverage = load_case_coverage(coverage_path(input_path))
     if coverage is None:
         raise ValueError("Falta el archivo de cobertura epidemiológica del integrado")
@@ -278,16 +302,23 @@ def generate_gold(
     validate_geography(panel, catalog_path)
     labels = build_labels(panel, outbreak, history_path)
     history = pd.read_csv(history_path, dtype={"ubigeo": "string"})
-    check = {"with_outbreak": True, "min_outbreak_cases": outbreak.minimo_casos, "persisted": True}
-    outputs = {h: cl.add_weather_windows(
-                   with_onset_columns(build_gold(panel, h, labels, min_outbreak_cases=outbreak.minimo_casos),
-                                      panel, history), d3)[persisted_columns(h)]
-               for h in HORIZONS}
-    summary = {h: validate_gold(outputs[h], panel, h, **check) for h in HORIZONS}
+    check = {"with_outbreak": True, "min_outbreak_cases": outbreak.minimo_casos, "persisted": columns != "candidatas",
+             "columns": columns, "horizons": horizons}
+
+    def persisted(h):
+        gold = build_gold(panel, h, labels, min_outbreak_cases=outbreak.minimo_casos)
+        if columns == "candidatas":
+            return gold[gold_columns(h, with_outbreak=True)]
+        gold = with_onset_columns(gold, panel, history)
+        return (cl.add_weather_windows(gold, d3) if with_d3 else gold)[persisted_columns(h, columns=columns,
+                                                                                         horizons=horizons)]
+
+    outputs = {h: persisted(h) for h in horizons}
+    summary = {h: validate_gold(outputs[h], panel, h, **check) for h in horizons}
     output_dir.mkdir(parents=True, exist_ok=True)
     tmp_files: list[tuple[Path, Path]] = []
     try:
-        for h in HORIZONS:
+        for h in horizons:
             destination = output_dir / f"{input_path.stem}_h{h}_gold.csv"
             with tempfile.NamedTemporaryFile(dir=output_dir, suffix=".csv.tmp", delete=False) as temp:
                 tmp = Path(temp.name)
@@ -301,18 +332,23 @@ def generate_gold(
             summary[h]["archivo"] = destination.name
             summary[h]["sha256"] = _sha256(tmp)
             summary[h]["columnas"] = len(outputs[h].columns)
+        d3_lineage = ({"fuente_d3": era5_land_path.name, "sha256_fuente_d3": _sha256(era5_land_path)}
+                      if with_d3 else {})
+        if columns == "candidatas":
+            variables = {h: gold_columns(h, with_outbreak=True) for h in horizons}
+        else:
+            variables = {h: persisted_predictors(h, columns=columns, horizons=horizons) for h in horizons}
         manifest = {
             "fuente": input_path.name,
             "sha256_fuente": _sha256(input_path),
             "sha256_cobertura": _sha256(coverage_path(input_path)),
             "catalogo_geografico": Path(catalog_path).name,
             "sha256_catalogo_geografico": _sha256(Path(catalog_path)),
-            "fuente_d3": era5_land_path.name,
-            "sha256_fuente_d3": _sha256(era5_land_path),
+            **d3_lineage,
             "grano": KEY,
             "etiqueta": "brote (semana elevada; 0/1)",
             "columnas_no_predictoras": list(PERSISTED_NON_PREDICTORS),
-            "variables_vigentes": {h: persisted_predictors(h) for h in HORIZONS},
+            "variables_vigentes": variables,
             "regla_brote": {
                 "metodo": "misma semana epidemiológica de años previos; media + multiplicador * DE muestral; desigualdad estricta",
                 **asdict(outbreak), "fuente_historia": history_path.name,
@@ -321,13 +357,15 @@ def generate_gold(
                 "semana_53": "se suma a semana 52 para la referencia",
             },
             "limitaciones": [
-                "Solo las variables de las configuraciones servidas (v2 y v3); las demás candidatas se calculan en "
-                "memoria con build_gold. La v3 entrena con la historia desde 2000 (features.long_history), no con "
-                "gold: gold guarda su vector desde 2017 para la trazabilidad y las pruebas de paridad.",
+                ("Solo las variables de las configuraciones servidas (v2 y v3); las demás candidatas se calculan en "
+                 "memoria con build_gold. La v3 entrena con la historia desde 2000 (features.long_history), no con "
+                 "gold: gold guarda su vector desde 2017 para la trazabilidad y las pruebas de paridad.") if with_d3 else
+                "Solo las variables de la configuración vigente (v2); las demás candidatas se calculan en memoria "
+                "con build_gold.",
                 "Casos y clima semanal suponen disponibilidad al cierre de su semana; latencia no verificada.",
                 "No hay partición train/test final; brote y umbral son etiquetas/metadatos, no predictores.",
             ],
-            "horizontes": {str(h): summary[h] for h in HORIZONS},
+            "horizontes": {str(h): summary[h] for h in horizons},
         }
         manifest["positivos_brote_por_anio"] = {
             str(y): int(n) for y, n in labels.groupby("anio").brote.sum().items()
