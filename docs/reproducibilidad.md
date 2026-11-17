@@ -127,6 +127,11 @@ con `--raiz`. Los archivos de `models/experimentos/` (por ejemplo `predicciones_
 `--data-dir`. Verificado el 16/11/2026 en un clon con los datos de V4 en `data/`: `data/` quedó idéntico (hash por
 archivo), `reproduce v2` dio la huella registrada (`0fe5d107…`, CPU con 2 hilos) y `tests/test_equivalence.py` pasó.
 
+Los tests que necesitan el integrado, la historia y el gold de v1 a v3 se omiten con el `data/` de V4 (y en el CI, que no
+tiene `data/`): con la suite completa son 40 omitidos. Para correrlos se apunta a la carpeta de la versión, por ejemplo
+`DENGUEKAY_DATA_DIR=data_anteriores/v2` y `python -m unittest discover -s tests`: 640 tests OK y 6 omitidos (17/11/2026).
+Con el gold de la v2 (20 columnas) y con el de la v3 (24) los tests de esquema aceptan el que corresponde a la carpeta.
+
 **Búsquedas largas:** no se repiten. El ajuste de hiperparámetros del estudio 06 (`phase_hp_tuning.py`, tope de
 10 h) quedó en `optuna.db`, y el notebook 19 lee de ahí sus cifras. El estudio 05 publica sus resultados por fase.
 
