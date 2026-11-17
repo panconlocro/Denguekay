@@ -18,14 +18,19 @@ Cada versión tiene su pipeline de datos en `pipelines/notebooks/V0` … `V4` (`
 escribe en `data/`; v0 a v3, en `data_anteriores/vN/`. La copia exacta de cada una es su Release; qué difiere al
 regenerar desde las fuentes está en [docs/reproducibilidad.md](docs/reproducibilidad.md).
 
-- Ninguna versión se sirve como validada (`servir_no_validadas: true`). La HU0007-4 no se evaluó para la v3.
+- **Aceptación (HU0007-4, US v1.4).** Con los umbrales de la migración `0009_v4` (Recall ≥ 0,65, Precision ≥ 0,60, F1 ≥ 0,70, MAE y
+  RMSE ≤ 90 % de la persistencia, bloque agregado `temporadas_2022_2026`) las seis versiones de la V4 (clasificación y regresión en h2, h3 y h4) quedan `validado`, es decir, cumplen los
+  umbrales de forma retrospectiva y con una sola semilla
+  (h2: 0,769 / 0,824 / 0,795; h3: 0,723 / 0,827 / 0,772; h4: 0,666 / 0,820 / 0,735 en Recall / Precision / F1). Los umbrales
+  se revisaron el 17/11/2026, **después de ver los resultados**, así que la evaluación independiente es la prospectiva
+  2026-27. El agregado descansa en 2022–2024; 2025 y 2026 no cumplen por separado (ficha de la V4). La v3 y las anteriores no traen el bloque y quedan `experimental`; `servir_no_validadas: true` se mantiene.
 - La v4 no está en `denguekay.model.reproduce`; se reproduce con [reproducir_v4.md](docs/modeling/reproducir_v4.md)
   (`run_all --version v4 --verificar`) y [congelamiento_b3_v4.md](research/08_v3_confirmed_cases/congelamiento_b3_v4.md).
 - El scraper de la Sala Situacional toma casos confirmados (V4, por defecto) o notificados (v0 a v3).
 
 ## Producto
 
-- **API:** FastAPI, contrato `1.1.0` (`api/v1.1.0`). Esquema hasta la migración `0007_v3`.
+- **API:** FastAPI, contrato `1.1.0` (`api/v1.1.0`). Esquema hasta la migración `0009_v4`.
 - **Frontend:** `apps/web/` con las fases 1–7 cerradas (tablero, mapa y detalle, avisos, desempeño y ayuda,
   validación con auditorías de accesibilidad). Demos locales con v2, v3 y v4 (`npm run dev:demo` abre la v4).
 - **Despliegue:** el repo está preparado para Render, Supabase y Vercel; no hay nada desplegado.

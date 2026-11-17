@@ -343,7 +343,8 @@ INITIAL_PARAMETERS = (
      "valor": {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75},
      "descripcion": "Cortes de probabilidad para el nivel de riesgo"},
     {"clave": "umbrales_aceptacion",
-     "valor": {"recall": 0.80, "precision": 0.60, "f1": 0.70, "razon_error_base": 0.85,
-               "bloque": "temporada_2024"},
+     # Migration 0009_v4 sets the US v1.4 values (HU0007-4); the DDL seed of 0003_oe2 stays in that migration.
+     "valor": {"recall": 0.65, "precision": 0.60, "f1": 0.70, "razon_error_base": 0.90,
+               "bloque": "temporadas_2022_2026"},
      "descripcion": "Criterios para promover un modelo"},
 )

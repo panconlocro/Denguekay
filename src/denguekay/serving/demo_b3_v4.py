@@ -23,6 +23,9 @@ from denguekay.serving.publish import publish_to_db
 FIRST_WEEK = pd.Timestamp("2024-12-29")  # week 1 of MMWR 2025, covered by the Sala
 TASKS = {"clasificacion": "clf", "regresion": "reg"}
 ALGORITHM = "xgboost_multisalida_bn"
+SEASON_BLOCKS = tuple(f"temporada_{year}" for year in range(2018, 2027))
+ACCEPTANCE_SEASONS = tuple(f"temporada_{year}" for year in range(2022, 2027))
+ACCEPTANCE_BLOCK = "temporadas_2022_2026"
 
 
 def digest(content):
@@ -70,6 +73,20 @@ def prepare_observations(folder, config, manifest_hash):
     return load, data
 
 
+def block_metrics(block, group):
+    """Metrics of one block of archived predictions: the same calculation for a season and for the pooled block."""
+    y, p = group.brote, group.probabilidad_brote
+    scores = alert_metrics(y, p.ge(0.5), score=p)
+    return {
+        "bloque": block, "n": len(group), "positivos": int(y.sum()),
+        "clasificacion": {"umbral_probabilidad": 0.5, "alerta_directa": {
+            metric: scores[metric] for metric in ("precision", "recall", "f1")},
+            "auprc": scores["auprc"], "brier": float((p-y).pow(2).mean())},
+        "regresion": {"conteos": count_metrics(group.casos_Dengue, group.casos_estimados)},
+        "persistencia": {"conteos": count_metrics(group.casos_Dengue, group.persistencia)},
+    }
+
+
 def archived_predictions(folder, data, seed):
     prior = pd.read_csv(folder / f"oos_b3_s{seed}.csv.gz", dtype={"ubigeo": str},
                         parse_dates=["semana_inicio", "origen_cierre"])
@@ -82,19 +99,13 @@ def archived_predictions(folder, data, seed):
         columns={"casos_Dengue": "persistencia"}), on=["ubigeo", "origen_cierre"], validate="many_to_one")
     results = {}
     # Use the archived seasonal blocks within the validated observed panel.
-    for (h, block), group in table[table.bloque.isin(["temporada_2018", "temporada_2019", "temporada_2020",
-            "temporada_2021", "temporada_2022", "temporada_2023", "temporada_2024", "temporada_2025",
-            "temporada_2026"])].groupby(["horizonte", "bloque"]):
-        y, p = group.brote, group.probabilidad_brote
-        scores = alert_metrics(y, p.ge(0.5), score=p)
-        results.setdefault(int(h), {})[block] = {
-            "bloque": block, "n": len(group), "positivos": int(y.sum()),
-            "clasificacion": {"umbral_probabilidad": 0.5, "alerta_directa": {
-                metric: scores[metric] for metric in ("precision", "recall", "f1")},
-                "auprc": scores["auprc"], "brier": float((p-y).pow(2).mean())},
-            "regresion": {"conteos": count_metrics(group.casos_Dengue, group.casos_estimados)},
-            "persistencia": {"conteos": count_metrics(group.casos_Dengue, group.persistencia)},
-        }
+    seasons = table[table.bloque.isin(SEASON_BLOCKS)]
+    for (h, block), group in seasons.groupby(["horizonte", "bloque"]):
+        results.setdefault(int(h), {})[block] = block_metrics(block, group)
+    # HU0007-4 (US v1.4): out-of-sample district-weeks of the seasons 2022 to 2026 pooled in one block.
+    pooled = seasons[seasons.bloque.isin(ACCEPTANCE_SEASONS)]
+    for h, group in pooled.groupby("horizonte"):
+        results[int(h)][ACCEPTANCE_BLOCK] = block_metrics(ACCEPTANCE_BLOCK, group)
     return table.loc[table.semana_inicio.ge(FIRST_WEEK), OOS_COLUMNS], results
 
 

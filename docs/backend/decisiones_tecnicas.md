@@ -23,7 +23,7 @@ Las diferencias con el documento OE2 y su justificación están en
   distinto bloquea la inferencia (409).
 - **UPSERT de predicciones** por `(ubigeo, id_semana_corte, horizonte)`: el historial de un mismo
   corte no se conserva; queda la trazabilidad por `id_ejecucion` y `fecha_generacion`.
-- **Parámetros en la BD:** cortes de riesgo, umbrales (con bloque decisor `temporada_2024`) y
+- **Parámetros en la BD:** cortes de riesgo, umbrales (con bloque decisor `temporada_2024` al inicio; `temporadas_2022_2026` desde la migración `0009_v4`) y
   regla de brote viven en `parametro_sistema`; `config.yaml` solo siembra la selección experimental.
 
 ## Demo experimental (desviación temporal)

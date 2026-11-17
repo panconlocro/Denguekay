@@ -28,6 +28,7 @@ Tipos de desviación:
 | — | Persistencia | No es una `version_modelo` (el DDL solo admite `clasificacion` y `regresion`). La línea base se calcula al vuelo: casos de la semana de corte en `observacion_semanal` | Conforme al documento |
 | — | Idempotencia de cargas | La huella va en `ejecucion.detalle->>'huella'`. En PostgreSQL, índice por expresión sobre ese campo para `tipo = 'ingesta'` | Extensión |
 | — | Bloque de validación | La semilla `umbrales_aceptacion` incluye `"bloque": "temporada_2024"`; `cumple_umbrales` se calcula leyendo umbrales y bloque de la BD, no de `config.yaml` | Corrección del documento |
+| — | Umbrales de la US v1.4 (HU0007-4) | La migración `0009_v4` cambia los valores de `umbrales_aceptacion` a recall 0,65, precisión 0,60, F1 0,70, razón 0,90 y el bloque agregado `temporadas_2022_2026` (semanas distritales de las temporadas 2022 a 2026). Se fijaron el 17/11/2026, después de ver los resultados de la V4, por indicación de la US v1.4; la evaluación independiente es la prospectiva 2026-27. No cambia el esquema | Cambio de parámetro (US v1.4) |
 | — | `alerta.motivo` | Se mantiene como columna opcional (nullable) que explica el retiro | Extensión |
 | — | Reproducibilidad del modelo | Una sola columna opcional `version_modelo.reproducibilidad` jsonb con `device`, `version_xgboost`, `plataforma`, `particion_temporal` y fechas de entrenamiento | Extensión |
 | — | `GET /configuracion` (contrato v1, C2; aprobada por Rosa el 29/10/2026) | Extensión de lectura con horizontes disponibles y por defecto, cortes, niveles, leyenda, corte vigente y nota experimental. Nueva clave `parametro_sistema.horizonte_por_defecto` = `{"horizonte": 4}`, sembrada por la migración de solo datos `0004_v1`; si falta, 503 `parametros_no_configurados` | Extensión |
@@ -55,7 +56,7 @@ Tipos de desviación:
   (`research/02_feature_engineering/docs/fase5_sociodemografia.md`).
 - **Regla de brote, cortes y umbrales.** Los valores del manifiesto gold y de `config.yaml`
   (1,5 DE, 5 años, mínimo 2 casos; cortes 0,25/0,50/0,75; recall 0,80, precisión 0,60,
-  F1 0,70, razón 0,85) coinciden con las semillas del DDL.
+  F1 0,70, razón 0,85) coinciden con las semillas del DDL. La migración `0009_v4` reemplaza después los umbrales por los de la US v1.4 (recall 0,65, razón 0,90, bloque `temporadas_2022_2026`).
 - **Claves OOS.** En el CSV del protocolo no se repite ningún `(ubigeo, origen_cierre)` entre
   bloques del mismo horizonte y variante; las OOS caben en la clave única de `prediccion`.
 - **Variables de servicio.** Las variantes en uso (`base_6`, `base_6_poblacion_2017`) solo

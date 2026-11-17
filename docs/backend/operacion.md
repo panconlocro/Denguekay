@@ -220,6 +220,15 @@ reciente, otra corrida sigue en curso. Si Open-Meteo corta por cuota, la corrida
 - La `ejecucion` de tipo `reentrenamiento` que crea `publish` para la V4 es el **registro del paquete congelado**, no un
   ajuste.
 - Si cambian los umbrales de aceptación basta `python -m denguekay.serving.publish --seleccionar-experimental`.
+- **Umbrales de la HU0007-4 (US v1.4).** `alembic upgrade head` aplica la `0009_v4`: Recall ≥ 0,65, Precision ≥ 0,60,
+  F1 ≥ 0,70 (p ≥ 0,50) y MAE y RMSE ≤ 90 % de la persistencia, sobre el bloque `temporadas_2022_2026` (las semanas
+  distritales de las temporadas 2022 a 2026 agregadas). En una BD que ya tenía la V4 publicada, después de migrar hay
+  que republicar (`publish --seleccionar-experimental`) para recalcular `cumple_umbrales`: con las métricas del paquete
+  congelado las seis versiones V4 (clasificación y regresión en h2, h3 y h4) cumplen los umbrales y la API deja de
+  marcarlas `experimental`. «Validado» significa aquí cumplimiento retrospectivo con una semilla; el agregado descansa
+  en 2022–2024 ([ficha](../../models/registry/v4/ficha.md)). Una BD que tuviera v0–v3 publicadas las vería
+  `experimental` al republicar, porque sus métricas no traen el bloque agregado. Se revisaron el
+  17/11/2026, después de ver los resultados; la evaluación independiente es la prospectiva 2026-27.
 - Un año calendario nuevo sin semanas publicadas en la Sala se omite durante su primer mes; cualquier otro año vacío es
   un error. (Cómo se manifiesta ese caso en la Sala no se observó: el comportamiento se basa en el código del scraper.)
 

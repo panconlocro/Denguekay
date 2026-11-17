@@ -22,5 +22,43 @@
     "constante": null,
     "manifiesto": "research/08_v3_confirmed_cases/manifiesto_b3_v4.json"
   },
-  "reproduccion": "research/08_v3_confirmed_cases/congelamiento_b3_v4.md"
+  "reproduccion": "research/08_v3_confirmed_cases/congelamiento_b3_v4.md",
+  "aceptacion": {
+    "criterio": "HU0007-4 (US v1.4)",
+    "bloque": "temporadas_2022_2026",
+    "semilla": 17,
+    "umbrales": {
+      "recall": 0.65,
+      "precision": 0.6,
+      "f1": 0.7,
+      "razon_error_base": 0.9,
+      "umbral_probabilidad": 0.5
+    },
+    "umbrales_revisados": "2026-11-17 (después de ver los resultados)",
+    "evaluacion_independiente": "prospectiva 2026-27",
+    "por_horizonte": {
+      "2": {
+        "recall": 0.769,
+        "precision": 0.824,
+        "f1": 0.795,
+        "mae_sobre_persistencia": 0.868,
+        "rmse_sobre_persistencia": 0.861
+      },
+      "3": {
+        "recall": 0.723,
+        "precision": 0.827,
+        "f1": 0.772,
+        "mae_sobre_persistencia": 0.824,
+        "rmse_sobre_persistencia": 0.819
+      },
+      "4": {
+        "recall": 0.666,
+        "precision": 0.82,
+        "f1": 0.735,
+        "mae_sobre_persistencia": 0.806,
+        "rmse_sobre_persistencia": 0.787
+      }
+    },
+    "alcance": "retrospectivo, una semilla (17); el agregado descansa en 2022-2024 (94 % de las semanas elevadas); 2025 y 2026 no cumplen por separado"
+  }
 }

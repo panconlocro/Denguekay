@@ -115,10 +115,12 @@ class TestPublicacion(unittest.TestCase):
         alerta = metricas["bloques"]["temporada_2024"]["clasificacion"]["alerta_directa"]
         with transaction(self.motor) as s:
             criterios = parametros.acceptance_criteria(s)
-            self.assertEqual(criterios["bloques"], ["temporada_2024"])
+            # Umbrales de la US v1.4 (0009_v4): la v0 no trae el bloque agregado y queda experimental.
+            self.assertEqual(criterios["bloques"], ["temporadas_2022_2026"])
             self.assertFalse(meets_thresholds("clasificacion", metricas, criterios))
             p = s.get(SystemParameter, "umbrales_aceptacion")
-            p.valor = {**p.valor, "recall": alerta["recall"], "precision": alerta["precision"], "f1": alerta["f1"]}
+            p.valor = {**p.valor, "bloque": "temporada_2024", "recall": alerta["recall"],
+                       "precision": alerta["precision"], "f1": alerta["f1"]}
             s.flush()
             self.assertTrue(meets_thresholds("clasificacion", metricas, parametros.acceptance_criteria(s)))
 
