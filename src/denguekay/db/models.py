@@ -116,6 +116,8 @@ class District(WithUbigeo, Base):
     longitud: Mapped[float] = mapped_column(Numeric(9, 6, asdecimal=False))
     poblacion_censo_2017: Mapped[int | None] = mapped_column(Integer)
     activo: Mapped[bool] = mapped_column(Boolean, default=True, server_default=text("true"))
+    # Extension (0010_v4, HU0014-1): simplified Polygon or MultiPolygon of the district; NULL falls back to the centroid.
+    geometria: Mapped[dict | None] = mapped_column(JSONB_PORTABLE, nullable=True)
     provincia: Mapped[Province] = relationship()
 
 

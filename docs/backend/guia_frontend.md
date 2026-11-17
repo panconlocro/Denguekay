@@ -85,6 +85,6 @@ Regenera los tipos cada vez que cambie la minor del contrato (el changelog está
 - **Intervalos de casos** (`casos_intervalo_inferior`, `casos_intervalo_superior`, `nivel_intervalo` = 0,80):
   con la v2 vienen con valor; con un modelo que no los estima (la v0) son `null` con `motivo_intervalo`.
   Con la v2 son el intervalo central de la binomial negativa NB2(μ, α) de cada horizonte (cuantiles 0,10 y 0,90). **El intervalo no está calibrado:** Platt corrige la probabilidad de brote, no la distribución de los casos, así que su cobertura real puede apartarse del 80 %. La interfaz debe decirlo junto al intervalo (por ejemplo, «rango orientativo, no calibrado»).
-- **Mapa:** `features[].geometry` puede ser `Point` (hoy, centroides), `Polygon` o `MultiPolygon` (cuando
-  haya límites con licencia). Las coordenadas son `[longitud, latitud]`.
+- **Mapa:** `features[].geometry` puede ser `Polygon` o `MultiPolygon` (límites distritales) o `Point` (centroide,
+  respaldo si falta el límite de un distrito). Las coordenadas son `[longitud, latitud]`.
 - Textos en español y unidades en los gráficos (casos, casos por 100 000 hab.).

@@ -5,6 +5,7 @@ import { GeoJSON, MapContainer, TileLayer, useMap } from 'react-leaflet';
 import type { RiskMapData } from '../api/types';
 import { percent, riskRange } from '../lib/format';
 import { RiskChip } from './ui';
+import { mapCopy } from '../lib/district';
 import { riskColors } from '../lib/risk';
 
 type Feature = RiskMapData['features'][number];
@@ -135,11 +136,7 @@ export function RiskMap({
             }}
           />
         </MapContainer>
-        <span className="map-note">
-          {data.features.some((f) => f.geometry.type === 'Point')
-            ? 'Centroides distritales · no son límites territoriales'
-            : 'Límites distritales'}
-        </span>
+        <span className="map-note">{mapCopy(data).note}</span>
       </div>
       <div className="map-legend" role="group" aria-label="Leyenda de riesgo">
         {data.leyenda.map((l) => (

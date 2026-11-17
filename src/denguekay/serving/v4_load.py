@@ -5,7 +5,7 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 
-from denguekay.config.paths import (DISTRICT_COORDS, ROOT, UBIGEO_CATALOG, V4_CHIRPS, V4_ENSO, V4_ERA5_LAND,
+from denguekay.config.paths import (DISTRICT_BOUNDARIES, DISTRICT_COORDS, ROOT, UBIGEO_CATALOG, V4_CHIRPS, V4_ENSO, V4_ERA5_LAND,
                                     V4_HISTORY, V4_INTEGRATED, V4_SALA)
 from denguekay.data.processing.district_locations import read_v4_era5
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
@@ -14,6 +14,7 @@ from denguekay.data.validation.v4_panel import validate_confirmed_panel
 from denguekay.features.long_history import long_case_series, long_labels, sala_after_panel
 from denguekay.serving import load_data as loader
 from denguekay.serving.artifacts import sha256_bytes
+from denguekay.serving.geometries import read_boundaries
 
 def _uses_sources(options):
     return options.get("perfil_datos", "release") == "fuentes"
@@ -32,7 +33,7 @@ def _paths(options):
 def source_hashes(options):
     medallion = _uses_sources(options)
     panel, history = V4_INTEGRATED, V4_HISTORY
-    paths = [UBIGEO_CATALOG, DISTRICT_COORDS, panel, history, coverage_path(panel), *_paths(options).values()]
+    paths = [UBIGEO_CATALOG, DISTRICT_COORDS, DISTRICT_BOUNDARIES, panel, history, coverage_path(panel), *_paths(options).values()]
     if not medallion:
         paths.extend([loader.GOLD_MANIFEST, loader.GOLD / f"{panel.stem}_h2_gold.csv"])
     return {path.relative_to(ROOT).as_posix(): sha256_bytes(path.read_bytes()) for path in paths}
@@ -117,7 +118,7 @@ def prepare_load(options):
     observed = observed.merge(_weekly_climate(paths, panel), on=["ubigeo", "semana_inicio"],
                               how="left", validate="one_to_one")
     provinces, districts = loader.prepare_districts(
-        catalog, pd.read_csv(DISTRICT_COORDS), loader.census_population_2017(panel))
+        catalog, pd.read_csv(DISTRICT_COORDS), loader.census_population_2017(panel), read_boundaries())
     cutoff = observed.semana_inicio.max().date() + timedelta(days=6)
     weeks = loader.prepare_weeks(date(2017, 1, 1), cutoff + timedelta(days=371))
     records = []

@@ -38,7 +38,7 @@ Tipos de desviación:
 | f′ | Permisos de `rol_pipeline` (D2; aprobada por Rosa el 29/10/2026) | Amplía la decisión f: `rol_pipeline` recibe además INSERT y UPDATE en `prediccion` (migración `0005_v1`) para las predicciones OOS de cada paquete. La inferencia vigente la hace la API (`rol_api`), no la publicación | Corrección del documento |
 | — | Paquete de modelo (M2; aprobada por Rosa el 29/10/2026) | `version_modelo.ruta_artefacto` apunta al manifiesto `modelos/<codigo_paquete>/manifest.json` y `sha256_artefacto` es su SHA-256. El manifiesto declara el tipo de predictor, horizontes, variables, nivel del intervalo y el SHA-256 de cada archivo; la inferencia verifica todos al cargar (409 `artefacto_invalido`). Sin columnas nuevas | Extensión (uso) |
 | — | Versión del contrato (C5) | `info.version` del OpenAPI = versión del contrato (semver; `1.1.0` desde la fase 4), cabecera `X-Version-Contrato` en todas las respuestas; `version_api` de `/salud` sigue siendo la versión de la aplicación | Extensión |
-| — | Geometría del mapa (C4) | El contrato admite `Point`, `Polygon` y `MultiPolygon`; hoy se sirven centroides (`Point`) | Conforme al documento |
+| — | Geometría del mapa (C4, HU0014-1) | El contrato admite `Point`, `Polygon` y `MultiPolygon`. Desde la migración `0010_v4` el endpoint sirve el `Polygon` o `MultiPolygon` de cada distrito y, si falta, su centroide (`Point`). Columna nueva `distrito.geometria` (JSON anulable; JSONB en PostgreSQL), cargada por `--inicial` y `load_data` desde `data/reference/distritos_piura_limites.geojson` con una simplificación de Douglas-Peucker de 0,0005° y 5 decimales (de unos 2,4 MB a unos 0,2 MB; no sirve para medir áreas). **Fuente y licencia:** Instituto Geográfico Nacional (IGN) del Perú, publicado por OCHA en HDX (COD-AB de Perú, https://data.humdata.org/dataset/cod-ab-per), CC BY-IGO 3.0: permite redistribuir con atribución, que el mapa muestra. La licencia se comprueba contra el paquete de HDX al descargar (`district_boundaries.py`); GADM no se usa porque no permite redistribuir. **Riesgo:** su publicación en un servicio desplegado se decide antes del despliegue; no se desplegó nada. El OpenAPI exportado no cambia | Extensión |
 
 ## 2. Observaciones de datos (no son desviaciones de diseño)
 
@@ -190,8 +190,8 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
 - **h=3** (nota histórica de TB1; desviación retirada en la fase 4 de la API v1, cuando la v2 sirve h=3):
   las lecturas respondían 200 con `disponible: false` y motivo «sin modelo para h=3» (listas vacías; en el mapa,
   todos los distritos «Sin datos»); `POST /admin/inferencias` con h=3 respondía 409.
-- **`/mapa-riesgo`:** GeoJSON `FeatureCollection` con un `Point` (centroide) por distrito; la
-  referencia del proyecto no tiene polígonos, así que el bucket `geodatos` no se usa en TB1.
+- **`/mapa-riesgo`:** GeoJSON `FeatureCollection` con un `Point` (centroide) por distrito en TB1; desde la `0010_v4`
+  devuelve el polígono si el distrito lo tiene (ver la fila «Geometría del mapa»). El bucket `geodatos` sigue sin usarse.
   Metadatos (horizonte, cortes, leyenda, `experimental`) van como miembros extra (RFC 7946).
 - **`/modelos/activo`:** devuelve la versión en uso por tarea y horizonte: la `activa` o, en su
   defecto, la de `seleccion_experimental`, con `seleccion` y `experimental`.
@@ -260,8 +260,8 @@ API (Tabla 2):
 11. Campo calculado `experimental` en predicciones, alertas, tablero y modelos. Un horizonte sin modelo
     responde `no_disponible` («sin modelo para h=N») en lecturas y 409 en la inferencia; con la v2 los tres
     horizontes del documento tienen modelo (la desviación de h=3 se retiró en la fase 4).
-12. `/mapa-riesgo` devuelve centroides (`Point`), no polígonos; el contrato admite `Point`, `Polygon` y
-    `MultiPolygon` (C4).
+12. `/mapa-riesgo` devolvía centroides (`Point`); desde la `0010_v4` devuelve el polígono de cada distrito y, si falta,
+    el centroide; el contrato admite `Point`, `Polygon` y `MultiPolygon` (C4).
 12b. **Endpoint `GET /configuracion`** (C2): horizontes disponibles (leídos de la BD) y por defecto, cortes y
     niveles de riesgo, leyenda, corte vigente y nota experimental; 503 `parametros_no_configurados` si falta
     `horizonte_por_defecto`.

@@ -14,6 +14,7 @@ from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.db.session import transaction
 from denguekay.evaluation.metrics import alert_metrics, count_metrics
 from denguekay.model.tracking import log_report
+from denguekay.serving.geometries import read_boundaries
 from denguekay.serving.load_data import LoadBatch, persist_load, prepare_districts, prepare_weeks, week_id
 from denguekay.serving.package import package_code
 from denguekay.serving.predictors import v4_b3_obs as v4
@@ -58,7 +59,7 @@ def prepare_observations(folder, config, manifest_hash):
             or not visible.brote.isin((0, 1)).all()
             or not visible.casos_Dengue.ge(0).all() or not visible.umbral_brote_casos.ge(0).all()):
         raise ValueError("El panel confirmado de la demo V4 no cubre todas las semanas distritales")
-    provinces, district_records = prepare_districts(districts, pd.read_csv(DISTRICT_COORDS), {})
+    provinces, district_records = prepare_districts(districts, pd.read_csv(DISTRICT_COORDS), {}, read_boundaries())
     weeks = prepare_weeks(date(2017, 1, 1), cutoff + pd.Timedelta(weeks=52))
     rows = [{
         "ubigeo": row.ubigeo, "id_semana": week_id(row.anio, row.semana), "casos_dengue": int(row.casos_Dengue),
