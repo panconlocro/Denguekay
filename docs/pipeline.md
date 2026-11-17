@@ -2,8 +2,13 @@
 
 Cómo se construye el panel distrito × semana: los notebooks de `pipelines/notebooks/<versión>/` (01–05: bronze;
 06–10: silver → integrado; `11_gold`: gold; `99_verificacion`) y el actualizador semanal
-`denguekay.pipelines.weekly_update`. Los de V4 escriben en `data/`; los de v0 a v3, en `data_anteriores/<versión>/`
-(`DENGUEKAY_DATA_DIR`). Se ejecutan a propósito con `run_all`, nunca como parte de los tests.
+`denguekay.pipelines.weekly_update` (actualizador selectivo del integrado). Los de V4 escriben en `data/`; los de v0 a v3,
+en `data_anteriores/<versión>/` (`DENGUEKAY_DATA_DIR`). Se ejecutan a propósito con `run_all`, nunca como parte de los tests.
+
+> **Dos «semanales» distintos.** `weekly_update` completa filas faltantes del integrado y de la Sala dentro de estos
+> pipelines por versión. La **operación del servicio con la V4** (bajar Sala, ERA5-Land, CHIRPS y Niño 1+2 sin el corte
+> congelado, cargar la BD y emitir h2–h4 con archivo de cada emisión) es `python -m denguekay.pipelines.v4_weekly`, y no
+> pasa por estos notebooks: ver [operación](backend/operacion.md#actualización-semanal-v4).
 
 ## Un pipeline por versión
 

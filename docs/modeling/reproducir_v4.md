@@ -103,6 +103,10 @@ al congelar V4. El ajuste de los boosters se reproduce por separado con el proto
 
 ## Regenerar desde las fuentes
 
+> La actualización semanal del servicio (`python -m denguekay.pipelines.v4_weekly`) no pasa por estos notebooks ni cambia
+> sus salidas: escribe sus propios silver, sin el corte de la V4, en `data/silver/operativo/`
+> ([operación](../backend/operacion.md#actualización-semanal-v4)).
+
 Usa el mismo entorno. Los resultados de este recorrido se escriben en `data/` con los mismos nombres que los del Release, que es como
 los leen el estudio 08 y el servicio. Por eso una corrida desde las fuentes **reemplaza** una copia exacta extraída
 antes; para recuperarla: `release_bundles --version v4 --solo datos_v4.zip --sobrescribir`.
