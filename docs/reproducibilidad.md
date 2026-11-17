@@ -111,6 +111,22 @@ git worktree add ..\denguekay-horizontes study/horizon-architecture
 
 Cada README de `research/` dice qué bajar y en qué orden.
 
+**Una versión anterior sin pisar V4.** `data/silver/` y `data/gold/` son los de V4. Para trabajar con v0 a v3 se
+extraen aparte, en una carpeta dentro del repositorio (la convención es `data_anteriores/<versión>/`, ignorada por Git),
+y se le dice al código que lea de ahí con `DENGUEKAY_DATA_DIR`. `BRONZE` y `REFERENCE` no se mueven.
+
+```powershell
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v2 --data-dir data_anteriores/v2 --solo datos_v2.zip
+$env:DENGUEKAY_DATA_DIR = "data_anteriores/v2"
+.\.venv\Scripts\python -m denguekay.model.reproduce v2
+```
+
+`--data-dir` (relativa a la raíz del repo) extrae solo los archivos `data/silver/…` y `data/gold/…` del zip en
+`<carpeta>/silver` y `<carpeta>/gold`; el resto de sus miembros se omite y se cuenta como `omitidos`. No se combina
+con `--raiz`. Los archivos de `models/experimentos/` (por ejemplo `predicciones_v2.zip`) se extraen como siempre, sin
+`--data-dir`. Verificado el 16/11/2026 en un clon con los datos de V4 en `data/`: `data/` quedó idéntico (hash por
+archivo), `reproduce v2` dio la huella registrada (`0fe5d107…`, CPU con 2 hilos) y `tests/test_equivalence.py` pasó.
+
 **Búsquedas largas:** no se repiten. El ajuste de hiperparámetros del estudio 06 (`phase_hp_tuning.py`, tope de
 10 h) quedó en `optuna.db`, y el notebook 19 lee de ahí sus cifras. El estudio 05 publica sus resultados por fase.
 

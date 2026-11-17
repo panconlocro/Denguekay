@@ -193,6 +193,13 @@ con su hora de observación en UTC y SHA-256. Una consulta histórica exporta la
 `data/bronze/` conserva las capturas. El gold de reproducción del Release se genera en `data/gold/`.
 Ambos recorridos y el paquete de servicio V4 usan la geografía exacta del Release.
 
+### `data_anteriores/<versión>/` — silver y gold de v0–v3 (fuera de Git)
+
+`data/silver/` y `data/gold/` son los de V4. Los de una versión anterior se extraen en
+`data_anteriores/<vN>/silver` y `data_anteriores/<vN>/gold` con `release_bundles --data-dir`, y el código los lee
+con la variable de entorno `DENGUEKAY_DATA_DIR=data_anteriores/<vN>`, que `config/paths.py` aplica a `SILVER` y `GOLD`
+(y a todo lo que cuelga de ellos). `data/bronze/` y `data/reference/` no se mueven. Ver `docs/reproducibilidad.md` §2.
+
 ### `data/reference/` — catálogos que casi no cambian
 ```
 reference/
