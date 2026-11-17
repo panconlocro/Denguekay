@@ -1,14 +1,14 @@
 # Pipeline de datos
 
-Cómo se construye el panel distrito × semana: los notebooks de `pipelines/notebooks/` (01–09: bronze →
-silver → integrado; `10_silver_to_gold`: gold) y el actualizador semanal
-`denguekay.pipelines.weekly_update`. Los notebooks escriben en `data/`: se ejecutan a propósito, nunca
-como parte de los tests.
+Cómo se construye el panel distrito × semana: los notebooks de `pipelines/notebooks/<versión>/` (01–05: bronze;
+06–10: silver → integrado; `11_gold`: gold; `99_verificacion`) y el actualizador semanal
+`denguekay.pipelines.weekly_update`. Los de V4 escriben en `data/`; los de v0 a v3, en `data_anteriores/<versión>/`
+(`DENGUEKAY_DATA_DIR`). Se ejecutan a propósito con `run_all`, nunca como parte de los tests.
 
-Para regenerar el CSV de `data/gold/` desde el silver completo:
+Para regenerar el gold de una versión desde su silver completo (en V4, `11_gold`):
 
 ```powershell
-.\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace pipelines/notebooks/10_silver_to_gold.ipynb
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v2 --desde 11 --hasta 11
 ```
 
 El gold conserva `casos_Dengue` como conteo junto a la etiqueta `brote` (semana distrital con casos por

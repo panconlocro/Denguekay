@@ -8,9 +8,9 @@ Esta guía explica cómo está organizado el repo y **dónde va cada archivo nue
 
 ```mermaid
 flowchart LR
-  fuentes[Open-Meteo, censo,<br/>Excel epi, Sala MINSA] --> nb[pipelines/notebooks<br/>01–09]
+  fuentes[Open-Meteo, censo,<br/>Excel epi, Sala MINSA] --> nb[pipelines/notebooks<br/>V0–V4]
   nb --> silver[(data/silver/integrado)]
-  silver --> gold_nb[10_silver_to_gold] --> gold[(data/gold)]
+  silver --> gold_nb[11_gold] --> gold[(data/gold)]
   silver --> weekly[denguekay.pipelines<br/>weekly_update] --> silver
   gold --> model[denguekay.features / model / evaluation]
   model --> registry[models/registry<br/>v0 · v1 · v2 · v3]
@@ -82,7 +82,7 @@ Denguekay/
 │   │   └── tools/             # benchmark, export_openapi, smoke_test
 │   └── web/                   # SPA React + Vite (ver 3c)
 │
-├── pipelines/notebooks/       # pipeline 01–10 y recorrido V4 con paso 11; ambos en denguekay.pipelines.run_all
+├── pipelines/notebooks/       # un pipeline por versión (V0 a V4), una carpeta cada uno; los ejecuta denguekay.pipelines.run_all
 ├── research/                  # estudios congelados: 01_eda … 06_model_improvement (README y, si hace falta, manifiesto_datos.json por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
@@ -337,11 +337,11 @@ src/denguekay/serving/
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
-├── weekly_update.py          # actualización selectiva del integrado (notebook 09) y silver de la Sala (notebook 06b)
-├── run_all.py                # CLI: el pipeline completo en orden, desde las fuentes
-├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS por HTTPS (alternativa del 03c)
+├── weekly_update.py          # actualización selectiva del integrado y silver de la Sala (confirmados o notificados)
+├── run_all.py                # CLI: ejecuta en orden los notebooks de la carpeta de una versión (--version v0 a v4)
+├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS por HTTPS (alternativa a la descarga por FTP)
 ├── chirps_ee.py              # guarda de método y descarga mensual de CHIRPS v3 desde Earth Engine (solo para el snapshot; necesita cuenta)
-└── chirps_prelim.py          # preliminar y final de CHIRPS v3 por FTP anónimo (o HTTPS) y silver semanal (03c)
+└── chirps_prelim.py          # preliminar y final de CHIRPS v3 por FTP anónimo (o HTTPS) y silver semanal
 ```
 
 ## 3b. `apps/api/` — la API
@@ -478,22 +478,15 @@ independiente. Comandos, evidencia disponible y orden de PR en [frontend-ci.md](
 
 ```
 pipelines/notebooks/
-├── 01_ingesta_distritos.ipynb
-├── 02_ingesta_meteo.ipynb
-├── 03_bronze_to_silver_meteo.ipynb
-├── 03b_ingesta_enso.ipynb      # Niño 1+2 de NOAA CPC: bronze y silver (estudio 06, fase 4)
-├── 03c_ingesta_chirps.ipynb    # CHIRPS v3 diario (final sat): ventana de Piura a bronze; silver aparte (V3)
-├── 04_ingesta_socio.ipynb
-├── 05_bronze_to_silver_socio.ipynb
-├── 06_ingesta_epi.ipynb
-├── 07_bronze_to_silver_epi.ipynb
-├── 08_silver_merge_meteo_socio.ipynb
-├── 09_silver_merge_epi.ipynb
-└── 10_silver_to_gold.ipynb      # genera y valida gold (antes notebooks/22_fe_integracion.ipynb, D3)
+├── V0/ V1/ V2/ V3/             # casos notificados; 01_bronze_… → 11_gold, 99_verificacion y README.md
+└── V4/                         # casos confirmados; 01_bronze_geografia → 11_gold, 99_verificacion y README.md
 ```
 
-Los notebooks 01–09 escriben bronze, silver y el integrado; el 10 regenera gold. Importan el paquete
-instalado (`pip install -e .`), así que no dependen de la carpeta desde la que se abren. Los notebooks
+Cada carpeta es el pipeline de una versión y lleva su `README.md`. Los pasos son los mismos por capa (01–05 bronze,
+06–10 silver, 11 gold, 99 verificación); `run_all --version vN` los ejecuta en orden y guarda el notebook ejecutado en
+`pipelines/ejecuciones/` (ignorada por Git). V4 escribe en `data/`; v0 a v3 escriben su silver y gold en
+`data_anteriores/<vN>/` (`DENGUEKAY_DATA_DIR`) y leen el mismo `data/bronze/`. Los notebooks solo llaman funciones
+del paquete instalado (`pip install -e .`), así que no dependen de la carpeta desde la que se abren. Los notebooks
 de investigación (los antiguos 10–21 y 23–35) están en `research/<estudio>/notebooks/` con su
 numeración original:
 

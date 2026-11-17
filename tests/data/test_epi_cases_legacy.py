@@ -30,6 +30,24 @@ class TestLegacyCases(unittest.TestCase):
         self.assertEqual(len(total), 1)
         self.assertEqual(int(total.casos_Dengue.iloc[0]), 5)
 
+    def test_blank_rows_at_the_end_of_the_drive_excel_do_not_turn_the_keys_into_floats(self):
+        clean = pd.DataFrame({"ubigeo": [200101, 200101, 200104], "distrito": ["Piura", "Piura", "Castilla"],
+                              "ano": [2020, 2020, 2020], "semana": [1, 1, 2]})
+        blanks = pd.DataFrame({column: [None, None] for column in clean.columns})
+        as_read_today = pd.concat([clean.astype({"ubigeo": float, "ano": float, "semana": float}), blanks],
+                                  ignore_index=True)
+        expected = deduplicate_cases(build_weekly_cases(clean))
+        result = deduplicate_cases(build_weekly_cases(as_read_today))
+        pd.testing.assert_frame_equal(result, expected)
+        self.assertEqual(result.ubigeo.tolist(), ["200101", "200104"])
+        self.assertEqual({str(dtype) for dtype in result[["anio", "semana"]].dtypes}, {"int64"})
+
+    def test_a_non_numeric_ubigeo_is_rejected_not_dropped(self):
+        raw = pd.DataFrame({"ubigeo": ["200101", "sin dato"], "distrito": ["A", "B"], "ano": [2020, 2020],
+                            "semana": [1, 1]})
+        with self.assertRaises(ValueError):
+            build_weekly_cases(raw)
+
     @unittest.skipUnless(os.getenv("DENGUEKAY_TEST_LEGACY_EXCEL") == "1" and BRONZE_EPI_EXCEL.is_file(),
                          "Requires data/bronze/epi/PiuraDengue.xlsx and DENGUEKAY_TEST_LEGACY_EXCEL=1 (about 1 minute)")
     def test_excel_gives_the_historical_silver_of_v1_to_v3(self):

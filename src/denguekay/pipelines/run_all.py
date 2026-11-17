@@ -67,6 +67,12 @@ def available_steps(first: str | None = None, last: str | None = None, *, versio
     return ordered[index(first, 0): index(last, len(ordered) - 1) + 1]
 
 
+def _say(text: str) -> None:
+    """Print without failing on characters the console cannot show (a log can hold anything)."""
+    encoding = sys.stdout.encoding or "utf-8"
+    print(text.encode(encoding, errors="replace").decode(encoding), flush=True)
+
+
 def _report_failure(executed: Path, log: str) -> None:
     """Print the failing cell and the error of an executed notebook (the log tail if it was not written)."""
     try:
@@ -74,12 +80,12 @@ def _report_failure(executed: Path, log: str) -> None:
         for number, cell in enumerate(notebook["cells"], 1):
             for output in cell.get("outputs", []):
                 if output.get("output_type") == "error":
-                    print(f"  celda {number}:\n" + "".join(cell["source"])[:1500], flush=True)
-                    print(f"  {output['ename']}: {output['evalue']}", flush=True)
+                    _say(f"  celda {number}:\n" + "".join(cell["source"])[:1500])
+                    _say(f"  {output['ename']}: {output['evalue']}")
                     return
     except (OSError, ValueError, KeyError):
         pass
-    print("  " + "\n  ".join(log.strip().splitlines()[-15:]), flush=True)
+    _say("  " + "\n  ".join(log.strip().splitlines()[-15:]))
 
 
 def run(steps: list[str], timeout: int = -1, *, version: str = "v4", offline: bool = False,

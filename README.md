@@ -37,7 +37,7 @@ Monorepo ([ADR 0001](docs/decisions/0001-repo-restructure.md)); el mapa completo
 | `src/denguekay/` | Paquete instalable: `config`, `data`, `features`, `model`, `evaluation`, `db`, `serving`, `pipelines` |
 | `apps/api/` | API FastAPI; `apps/api/tools/` con el benchmark, la exportación OpenAPI y la prueba de humo |
 | `apps/web/` | Frontend React (tablero, mapa, detalle distrital, avisos, desempeño y ayuda) |
-| `pipelines/notebooks/` | Notebooks del pipeline de datos: 01–09 (bronze → silver) y `10_silver_to_gold` |
+| `pipelines/notebooks/` | Un pipeline de datos por versión (`V0` a `V4`): bronze → silver → gold y su verificación |
 | `models/registry/` | Ficha de cada versión de modelo (v0–v4) y `CHANGELOG.md` |
 | `research/` | Estudios congelados (01–08); el producto no los importa. Índice en [research/README.md](research/README.md) |
 | `configs/`, `scripts/` | `config.yaml` del proyecto; scripts de instalación (`setup.ps1`, `setup.sh`) |
@@ -66,17 +66,15 @@ define `DATABASE_URL` (PostgreSQL local) y `API_KEY`. Los comandos de abajo usan
 
 ## Pipeline de datos
 
-Todo `data/` se regenera desde las fuentes públicas con:
+El pipeline de cada versión se regenera desde las fuentes públicas con (V4 es la versión por defecto):
 
 ```powershell
-.\.venv\Scripts\python -m denguekay.pipelines.run_all
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --lista
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v4 --bronze-publicado --verificar
 ```
 
-Los notebooks de `pipelines/notebooks/` también se pueden ejecutar uno por uno, en orden; el 10 regenera gold:
-
-```powershell
-.\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace pipelines/notebooks/10_silver_to_gold.ipynb
-```
+V4 escribe en `data/`; v0 a v3 escriben su silver y gold en `data_anteriores/<versión>/`, sin tocar `data/`. Cada
+carpeta de `pipelines/notebooks/` tiene su README; `docs/reproducibilidad.md` es la entrada única.
 
 Para completar semanas nuevas del integrado sin rehacer todo existe el actualizador selectivo
 (`python -m denguekay.pipelines.weekly_update`, con `--dry-run` para ver qué consultaría). Detalle del pipeline,

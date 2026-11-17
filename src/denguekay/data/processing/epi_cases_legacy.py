@@ -13,12 +13,21 @@ def load_raw(excel_path) -> pd.DataFrame:
 
 
 def build_weekly_cases(df_epi_raw: pd.DataFrame) -> pd.DataFrame:
-    """Format the keys and count the cases per district/year/week."""
-    df_epi_raw = df_epi_raw.copy()
+    """Format the keys and count the cases per district/year/week.
+
+    Restored from model/v3 with one fix: the Excel that Drive serves now ends with blank rows (no ubigeo, year or week),
+    which make pandas read those columns as float (``100101.0``). Rows without keys are ignored and the keys are
+    integers again; with an Excel without blank rows the result is the same as in model/v3."""
+    df_epi_raw = df_epi_raw.dropna(subset=["ubigeo", "ano", "semana"]).copy()
     # Same rule as in epi_sala.py / fill_component(): ubigeo as a 6-digit
     # string, never an int.
-    df_epi_raw["ubigeo"] = df_epi_raw["ubigeo"].astype("string").str.zfill(6)
+    numeric_ubigeo = pd.to_numeric(df_epi_raw["ubigeo"], errors="coerce")
+    if numeric_ubigeo.isna().any():
+        raise ValueError("The epidemiological Excel has a non-numeric ubigeo")
+    df_epi_raw["ubigeo"] = numeric_ubigeo.astype("int64").astype("string").str.zfill(6)
     df_epi_raw["ano"] = pd.to_numeric(df_epi_raw["ano"], errors="coerce")
+    df_epi_raw["semana"] = pd.to_numeric(df_epi_raw["semana"], errors="coerce")
+    df_epi_raw = df_epi_raw.dropna(subset=["ano", "semana"]).astype({"ano": "int64", "semana": "int64"})
 
     df_cases = (
         df_epi_raw.groupby(["ubigeo", "distrito", "ano", "semana"])
