@@ -1,7 +1,12 @@
 """Comparison helpers of denguekay.model.reproduce (no data needed)."""
 
+import json
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
+from denguekay.config import paths
 from denguekay.model import reproduce as rp
 
 
@@ -23,6 +28,35 @@ class TestJsonDifferences(unittest.TestCase):
     def test_largest_first(self):
         diffs = rp._json_differences({"x": 1.0, "y": 1.0}, {"x": 1.5, "y": 4.0})
         self.assertEqual(diffs[0][0], "/y")
+
+
+class TestFrozenBruteRule(unittest.TestCase):
+    """v1 ships only the manifest of the gold before the cleanup (gold/respaldo_pre_b3)."""
+
+    def read_rule(self, with_clean_manifest):
+        seen = {}
+
+        def stop(panel, rule):
+            seen["rule"] = rule
+            raise RuntimeError("stop")
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "backup").mkdir()
+            (root / "backup" / "manifest_fase6.json").write_text(json.dumps({"regla_brote": {"origen": "respaldo"}}))
+            clean = root / "manifest_fase6.json"
+            if with_clean_manifest:
+                clean.write_text(json.dumps({"regla_brote": {"origen": "limpio"}}))
+            with patch.object(paths, "GOLD_MANIFEST", clean), patch.object(paths, "GOLD_BACKUP", root / "backup"),                     patch("denguekay.data.loading.load_integrated", return_value=None),                     patch("denguekay.evaluation.variants.inputs", side_effect=stop):
+                with self.assertRaises(RuntimeError):
+                    rp.frozen("V1")
+        return seen["rule"]
+
+    def test_uses_the_clean_gold_manifest_when_present(self):
+        self.assertEqual(self.read_rule(True), {"origen": "limpio"})
+
+    def test_falls_back_to_the_manifest_of_the_gold_before_the_cleanup(self):
+        self.assertEqual(self.read_rule(False), {"origen": "respaldo"})
 
 
 if __name__ == "__main__":
