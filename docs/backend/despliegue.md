@@ -177,7 +177,7 @@ y Niño 1+2. La geografía fija viene del paquete; la API consulta las observaci
 
 1. Antes de desplegar el código, el dueño del esquema aplica `alembic upgrade head` a la BD de
    producción. La migración `0008_v4` agrega datos crudos y fechas de disponibilidad de B3,
-   además de la serie mensual Niño 1+2. La `0009_v4` solo cambia los valores de `umbrales_aceptacion` (US v1.4);
+   además de la serie mensual Niño 1+2. La `0010_v4` agrega `distrito.geometria` (los polígonos se llenan en la siguiente carga) y la `0009_v4` solo cambia los valores de `umbrales_aceptacion` (US v1.4);
    después de migrar, republica el paquete (`publish --seleccionar-experimental`) para recalcular `cumple_umbrales`.
 2. En la PC de publicación, instala las dependencias y descarga
    `python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip modelo_v4.zip`.

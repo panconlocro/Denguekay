@@ -242,6 +242,11 @@ reciente, otra corrida sigue en curso. Si Open-Meteo corta por cuota, la corrida
 - La `ejecucion` de tipo `reentrenamiento` que crea `publish` para la V4 es el **registro del paquete congelado**, no un
   ajuste.
 - Si cambian los umbrales de aceptación basta `python -m denguekay.serving.publish --seleccionar-experimental`.
+- **Polígonos del mapa (`0010_v4`).** Tras `alembic upgrade head`, `/mapa-riesgo` sigue devolviendo centroides hasta la
+  siguiente carga de datos (`v4_weekly`, `v4_weekly --inicial` o `load_data`): esa carga lee
+  `data/reference/distritos_piura_limites.geojson`, lo simplifica y guarda la geometría de cada distrito (el hash del
+  archivo entra en la huella de la ingesta, así que una BD existente vuelve a cargar los distritos). El mapa muestra «Límites
+  distritales» con la atribución del IGN, OCHA/HDX (CC BY-IGO 3.0) cuando todos los distritos tienen polígono.
 - **Umbrales de la HU0007-4 (US v1.4).** `alembic upgrade head` aplica la `0009_v4`: Recall ≥ 0,65, Precision ≥ 0,60,
   F1 ≥ 0,70 (p ≥ 0,50) y MAE y RMSE ≤ 90 % de la persistencia, sobre el bloque `temporadas_2022_2026` (las semanas
   distritales de las temporadas 2022 a 2026 agregadas). En una BD que ya tenía la V4 publicada, después de migrar hay
