@@ -242,12 +242,13 @@ data/
 │   ├── chirps_prelim.py        # CHIRPS v3 preliminar (y final) del CHC por HTTPS o FTP: TIF global a carpeta temporal, verificación de tamaño, sha256 y grilla, y recorte de Piura
 │   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
 │   ├── release_bundles.py      # paquetes de datos del Release de una versión congelada (descarga, SHA-256 y extracción)
-│   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE
+│   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE: confirmados (V4) o notificados (v0-v3)
 ├── processing/
 │   ├── weekly_aggregation.py   # diario -> semanal por distrito
 │   ├── chirps_precipitation.py # CHIRPS -> lluvia semanal con fecha_disponible (media del polígono: final + preliminar, sin mezclar versiones por semana)
 │   ├── socio_interpolation.py  # interpolación 2017-2025
-│   ├── epi_cases.py            # Excel epidemiológico (un caso por fila) -> silver semanal
+│   ├── epi_cases.py            # CSV de notificaciones, casos confirmados (V4) -> silver semanal
+│   ├── epi_cases_legacy.py     # Excel de notificados de v0-v3 (restaurado de model/v3) -> silver semanal
 │   ├── epi_sala.py             # normalización y conciliación de la Sala
 │   └── merge.py                # merges meteo + socio + epi y relleno selectivo
 └── validation/

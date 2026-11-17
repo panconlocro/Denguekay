@@ -47,6 +47,8 @@ CACHE_METEO_ERA5_LAND_RECENT = BRONZE_METEO / "cache_meteo_era5_land_reciente"
 BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
 BRONZE_EPI_CSV = BRONZE_EPI / "DatosDengueV2.csv"
+# Notified-case Excel of v0-v3 (PiuraDengue.xlsx of the Release datos_v1/datos_v2 sources); V4 uses the CSV above.
+BRONZE_EPI_EXCEL = BRONZE_EPI / "PiuraDengue.xlsx"
 BRONZE_SALA = BRONZE_EPI / "sala"
 BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per download date
 # CHIRPS v3 daily, sat disaggregation: one GeoTIFF per day with the Piura window, plus the run manifests

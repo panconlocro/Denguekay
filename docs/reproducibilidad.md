@@ -169,6 +169,21 @@ SHA-256 de lo que devolvió Drive el 2026-11-09:
   diarias por polígono difieren como máximo 0,15 mm (media 0,003 mm) y las sumas semanales, como máximo 0,34 mm.
 - `silver-ftp --con-earth-engine` reconstruye el silver congelado. La v3 no usa lluvia.
 
+### Casos de v0 a v3 (notificados)
+
+V4 cuenta casos **confirmados** (CSV `DatosDengueV2.csv` y gráfico `ten-fig02a-echart` de la Sala). v0 a v3 usan
+**notificados**, y las dos definiciones nunca se mezclan en un mismo archivo. Para regenerar los de v0–v3 están
+restaurados desde `model/v3`: `data/processing/epi_cases_legacy.py` (Excel `PiuraDengue.xlsx`, ID en
+`drive.epi_excel_file_id` de `config.yaml`, descarga con `drive_download.download_epi_excel`) y la Sala con
+`scrape_sala(..., case_definition="notificados")` (gráfico `ten-fig02b-echart`) o
+`weekly_update --casos notificados`. El paso de la Sala se puede esperar con `await refresh_sala_silver_async(...)`
+desde un notebook; la versión síncrona `refresh_sala_silver(...)` también funciona dentro de un kernel.
+
+Comprobado el 16/11/2026 sobre el `PiuraDengue.xlsx` local (1 029 421 filas): el histórico semanal da 81 196 filas
+y, escrito con fin de línea CRLF como lo hacía el notebook 07, `c4b67ce03d6915d4…`, el de `datos_v1` a `datos_v3`. El
+Excel no está en ningún Release; si Drive entrega otro (hoy trae 4 filas más), el informe lo mostrará como cambio de
+la fuente. Si el sitio de la Sala ya no sirve el gráfico anterior, v0–v3 toman la Sala de su Release.
+
 ### V4 con confirmados
 
 Ejecuta desde la raíz con el entorno de la sección 0. Las salidas se escriben en `data/` con los mismos nombres que tienen en `datos_v4.zip`, que es como los lee el modelo. Una corrida desde las fuentes reemplaza una copia exacta extraída antes; se recupera con `release_bundles --version v4 --solo datos_v4.zip --sobrescribir`.

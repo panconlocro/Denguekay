@@ -10,6 +10,7 @@ import logging
 import os
 import tempfile
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta, timezone, datetime
 from pathlib import Path
 from typing import Callable
@@ -17,7 +18,7 @@ from typing import Callable
 import pandas as pd
 
 from denguekay.data.ingestion.openmeteo import DAILY_VARS, fetch_district
-from denguekay.data.ingestion.minsa_sala_scraper import scrape_sala
+from denguekay.data.ingestion.minsa_sala_scraper import CHARTS, scrape_sala
 from denguekay.data.processing.weekly_aggregation import aggregate_to_weekly
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog, normalize_sala_records, upsert_sala_silver
 from denguekay.data.processing.merge import fill_component
@@ -40,8 +41,34 @@ def _rows_for_keys(frame: pd.DataFrame, keys: set[DistrictWeek]) -> pd.DataFrame
     return selected
 
 
-def run_epidemiological(frame: pd.DataFrame, keys: set[DistrictWeek]) -> pd.DataFrame:
+def run_sync(coroutine):
+    """Run a coroutine from synchronous code, also when an event loop is already running (a notebook kernel).
+
+    Notebooks can instead ``await`` the ``*_async`` functions directly."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coroutine)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        return pool.submit(asyncio.run, coroutine).result()
+
+
+def _tagged(normalized: pd.DataFrame, case_definition: str) -> pd.DataFrame:
+    """Confirmed series carry ``tipo_dx = C``; notified series (v0-v3) have no such column."""
+    return normalized.assign(tipo_dx="C") if case_definition == "confirmados" else normalized
+
+
+def run_epidemiological(frame: pd.DataFrame, keys: set[DistrictWeek], *,
+                        case_definition: str = "confirmados") -> pd.DataFrame:
+    """Synchronous entry of :func:`run_epidemiological_async` (command line, providers of ``update_dataset``)."""
+    return run_sync(run_epidemiological_async(frame, keys, case_definition=case_definition))
+
+
+async def run_epidemiological_async(frame: pd.DataFrame, keys: set[DistrictWeek], *,
+                                    case_definition: str = "confirmados") -> pd.DataFrame:
     """Scrape only requested district-years and return their weekly case rows."""
+    if case_definition not in CHARTS:
+        raise ValueError(f"Unknown case definition {case_definition!r}; use one of {sorted(CHARTS)}")
     catalog = load_ubigeo_catalog(UBIGEO_CATALOG)
     by_code = catalog.set_index("ubigeo")
     unknown = {key[0] for key in keys} - set(by_code.index)
@@ -59,32 +86,39 @@ def run_epidemiological(frame: pd.DataFrame, keys: set[DistrictWeek]) -> pd.Data
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
         artifact_dir = BRONZE_SALA / f"{year}_{stamp}"
         logging.info("Sala: %s, %s requested districts", year, len(codes))
-        records, controls = asyncio.run(scrape_sala(year, labels, artifact_dir))
-        normalized = normalize_sala_records(records, controls, catalog)
-        batches.append(normalized.assign(tipo_dx="C"))
+        records, controls = await scrape_sala(year, labels, artifact_dir, case_definition=case_definition)
+        batches.append(_tagged(normalize_sala_records(records, controls, catalog), case_definition))
     result = pd.concat(batches, ignore_index=True)
     requested = _rows_for_keys(result, keys)
-    upsert_sala_silver(SILVER_SALA, result)
+    upsert_sala_silver(SILVER_SALA, result, case_definition=case_definition)
     extra = len(result) - len(requested)
     if extra:
         logging.info("Sala returned %s additional district-weeks; retained in %s", extra, SILVER_SALA)
     return requested[KEY + ["casos_Dengue"]]
 
 
-def refresh_sala_silver(years: list[int]) -> pd.DataFrame:
-    """Pipeline step (notebook 06b): scrape every district of the catalogue for ``years`` from the public Sala
-    Situacional and upsert ``data/silver/epi_sala_semanal.csv``. Each run keeps its raw responses in
-    ``data/bronze/epi/sala/<year>_<UTC stamp>/``."""
+def refresh_sala_silver(years: list[int], *, case_definition: str = "confirmados") -> pd.DataFrame:
+    """Synchronous entry of :func:`refresh_sala_silver_async`."""
+    return run_sync(refresh_sala_silver_async(years, case_definition=case_definition))
+
+
+async def refresh_sala_silver_async(years: list[int], *, case_definition: str = "confirmados") -> pd.DataFrame:
+    """Pipeline step: scrape every district of the catalogue for ``years`` from the public Sala Situacional and
+    upsert ``data/silver/epi_sala_semanal.csv``. Each run keeps its raw responses in
+    ``data/bronze/epi/sala/<year>_<UTC stamp>/``. ``await`` it from a notebook."""
+    if case_definition not in CHARTS:
+        raise ValueError(f"Unknown case definition {case_definition!r}; use one of {sorted(CHARTS)}")
     catalog = load_ubigeo_catalog(UBIGEO_CATALOG)
     labels = set(zip(catalog["provincia_sala"], catalog["distrito_sala"]))
     batches = []
     for year in sorted(set(years)):
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
         logging.info("Sala: %s, %s districts", year, len(labels))
-        records, controls = asyncio.run(scrape_sala(year, labels, BRONZE_SALA / f"{year}_{stamp}"))
-        batches.append(normalize_sala_records(records, controls, catalog).assign(tipo_dx="C"))
+        records, controls = await scrape_sala(year, labels, BRONZE_SALA / f"{year}_{stamp}",
+                                              case_definition=case_definition)
+        batches.append(_tagged(normalize_sala_records(records, controls, catalog), case_definition))
     result = pd.concat(batches, ignore_index=True)
-    upsert_sala_silver(SILVER_SALA, result, replace_legacy=True)
+    upsert_sala_silver(SILVER_SALA, result, replace_legacy=True, case_definition=case_definition)
     return result
 
 
@@ -189,7 +223,7 @@ def _write_outputs(
 def update_dataset(
     input_path: Path, output_path: Path, *, dry_run: bool = False,
     force: set[str] | None = None, start_date: str | None = None, end_date: str | None = None,
-    providers: dict[str, Provider] | None = None,
+    providers: dict[str, Provider] | None = None, case_definition: str = "confirmados",
 ) -> dict[str, set[DistrictWeek]]:
     """Inspect, selectively fetch, validate, and write one model dataset update."""
     if not input_path.exists():
@@ -217,7 +251,7 @@ def update_dataset(
         return missing
 
     providers = providers or {
-        "epidemiological": run_epidemiological,
+        "epidemiological": lambda dataset, keys: run_epidemiological(dataset, keys, case_definition=case_definition),
         "weather": run_weather,
         "demographic": lambda dataset, keys: run_demographic(
             dataset, keys, rebuild="demographic" in force,
@@ -269,6 +303,8 @@ def main() -> None:
     parser.add_argument("--force-epidemiological", action="store_true")
     parser.add_argument("--force-weather", action="store_true")
     parser.add_argument("--force-demographic", action="store_true")
+    parser.add_argument("--casos", choices=sorted(CHARTS), default="confirmados",
+                        help="definición de caso de la Sala: confirmados (V4) o notificados (v0 a v3)")
     parser.add_argument("--start-date", help="First Sunday week start for a forced refresh")
     parser.add_argument("--end-date", help="Last Sunday week start for a forced refresh")
     args = parser.parse_args()
@@ -283,7 +319,7 @@ def main() -> None:
     try:
         update_dataset(
             args.input, args.output, dry_run=args.dry_run, force=force,
-            start_date=args.start_date, end_date=args.end_date,
+            start_date=args.start_date, end_date=args.end_date, case_definition=args.casos,
         )
     except (ValueError, RuntimeError, FileNotFoundError) as exc:
         parser.exit(1, f"Update failed: {exc}\n")
