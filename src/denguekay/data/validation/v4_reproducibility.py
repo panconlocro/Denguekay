@@ -23,7 +23,9 @@ from denguekay.features.gold_v4 import input_paths, output_paths
 
 ATOL = 1e-12   # floating-point tolerance for ERA5-Land and the panel (the sources recompute them)
 MAX_LISTED_ROWS = 500
-SALA_NAME, TOLERANT = "epi_sala_semanal.csv", ("meteo_humedad_era5_land_2000_2026.csv", "meteo_socio_epi_piura_2017_2025.csv")
+SALA_NAME = "epi_sala_semanal.csv"
+TOLERANT = ("meteo_humedad_era5_land_2000_2026.csv", "meteo_socio_epi_piura_2017_2025.csv",
+            "meteo_socio_epi_base_piura_2017_2025.csv")
 
 
 def _relative(path):
