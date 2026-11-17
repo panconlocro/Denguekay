@@ -184,7 +184,7 @@ y, escrito con fin de línea CRLF como lo hacía el notebook 07, `c4b67ce03d6915
 Excel no está en ningún Release; si Drive entrega otro (hoy trae 4 filas más), el informe lo mostrará como cambio de
 la fuente. El sitio de la Sala sigue sirviendo ambos gráficos (comprobado el 16/11/2026 para Piura 2025 con
 `case_definition` en cada valor). Observación: para 2025 las dos definiciones dan los mismos números (221 casos en
-el distrito de Piura y 1 117 en el departamento), y los silver congelados de v2 y V4 coinciden en las 3 120 filas
+el distrito de Piura y 1 117 en el departamento), y los silver congelados de v2 y V4 coinciden en las 3 445 filas
 de 2025. En 2026 difieren 421 filas entre esos dos silver; con lo calculado no se puede decir si es por la
 definición o por la fecha de captura. Si el sitio dejara de servir el gráfico anterior, v0–v3 toman la Sala de su Release.
 
