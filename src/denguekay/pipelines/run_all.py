@@ -29,6 +29,14 @@ NOTEBOOKS = ROOT / "pipelines" / "notebooks"
 EXECUTIONS = ROOT / "pipelines" / "ejecuciones"
 VERSIONS = ("v0", "v1", "v2", "v3", "v4")
 V4_DOWNLOAD_STEPS = {"02_bronze_clima", "03_bronze_socio", "04_bronze_casos"}
+# v0 to v3 capture the Sala with the case-count step itself, so it is a download too.
+DOWNLOAD_STEPS = {"v4": V4_DOWNLOAD_STEPS}
+OLDER_DOWNLOAD_STEPS = V4_DOWNLOAD_STEPS | {"05_bronze_sala"}
+
+
+def data_dir_for(version: str) -> str | None:
+    """The silver and gold of v0 to v3 are written apart (``DENGUEKAY_DATA_DIR``); V4 owns ``data/``."""
+    return None if version == "v4" else f"data_anteriores/{version}"
 _STEP = re.compile(r"^(\d{2})_.+\.ipynb$")
 
 
@@ -87,6 +95,9 @@ def run(steps: list[str], timeout: int = -1, *, version: str = "v4", offline: bo
                    f"--ExecutePreprocessor.timeout={timeout}", str(source)]
         print(f"-> {step}", flush=True)
         env = dict(os.environ, DENGUEKAY_V4_OFFLINE="1" if offline else "0")
+        env.pop("DENGUEKAY_DATA_DIR", None)
+        if data_dir_for(version):
+            env["DENGUEKAY_DATA_DIR"] = data_dir_for(version)
         done = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8",
                               errors="replace")
         log = (done.stdout or "") + (done.stderr or "")
@@ -106,16 +117,17 @@ def main(argv=None) -> int:
     parser.add_argument("--hasta", help="último paso (prefijo)")
     parser.add_argument("--lista", action="store_true", help="solo muestra los pasos")
     parser.add_argument("--version", choices=VERSIONS, default="v4")
-    parser.add_argument("--sin-descargas", action="store_true", help="V4: usa el bronze disponible")
-    parser.add_argument("--bronze-publicado", action="store_true", help="V4: restaura el bronze climático publicado")
+    parser.add_argument("--sin-descargas", action="store_true", help="usa el bronze disponible")
+    parser.add_argument("--bronze-publicado", action="store_true", help="restaura el bronze climático publicado")
     checks = parser.add_mutually_exclusive_group()
     checks.add_argument("--verificar", action="store_true", help="V4: coteja los SHA-256 después de ejecutar")
     checks.add_argument("--solo-verificar", action="store_true", help="V4: coteja los archivos locales sin descargarlos")
     parser.add_argument("--desde-release", action="store_true", help="con --solo-verificar, coteja los insumos del Release")
     args = parser.parse_args(argv)
-    v4_options = (args.sin_descargas, args.bronze_publicado, args.verificar, args.solo_verificar, args.desde_release)
+    v4_options = (args.verificar, args.solo_verificar, args.desde_release)
     if args.version != "v4" and any(v4_options):
-        parser.error("Las opciones de fuentes y verificación requieren --version v4")
+        parser.error("--verificar, --solo-verificar y --desde-release requieren --version v4; "
+                     "las versiones anteriores se verifican con su notebook 99_verificacion")
     if args.bronze_publicado and (args.sin_descargas or args.solo_verificar):
         parser.error("--bronze-publicado requiere una ejecución con descargas")
     if args.desde_release and not args.solo_verificar:
@@ -130,7 +142,8 @@ def main(argv=None) -> int:
         print(error, file=sys.stderr)
         return 2
     if args.sin_descargas:
-        steps = [step for step in steps if step not in V4_DOWNLOAD_STEPS]
+        skipped = DOWNLOAD_STEPS.get(args.version, OLDER_DOWNLOAD_STEPS)
+        steps = [step for step in steps if step not in skipped]
     if args.lista:
         print("\n".join(steps))
         return 0

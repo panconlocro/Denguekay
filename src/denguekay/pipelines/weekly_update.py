@@ -23,7 +23,8 @@ from denguekay.data.processing.weekly_aggregation import aggregate_to_weekly
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog, normalize_sala_records, upsert_sala_silver
 from denguekay.data.processing.merge import fill_component
 from denguekay.data.processing.socio_interpolation import SOCIO_COLUMNS, socio_for_keys
-from denguekay.config.paths import BRONZE_SALA, BRONZE_SOCIO, REFERENCE, SILVER, SILVER_SALA, UBIGEO_CATALOG
+from denguekay.config.paths import BRONZE_SALA, BRONZE_SALA_NOTIFIED, BRONZE_SOCIO, REFERENCE, SILVER, SILVER_SALA, UBIGEO_CATALOG
+from denguekay.pipelines.versions import VersionCutoff, clip_sala
 from denguekay.data.validation.integrated_expectations import (
     KEY, WEATHER_COLUMNS, coverage_path, detect_missing_components,
     load_case_coverage, prepare_dataset, trusted_baseline_coverage,
@@ -51,6 +52,11 @@ def run_sync(coroutine):
         return asyncio.run(coroutine)
     with ThreadPoolExecutor(max_workers=1) as pool:
         return pool.submit(asyncio.run, coroutine).result()
+
+
+def _capture_folder(case_definition: str) -> Path:
+    """Raw captures of each case definition live apart: the replay of V4 takes the newest folder of ``BRONZE_SALA``."""
+    return BRONZE_SALA if case_definition == "confirmados" else BRONZE_SALA_NOTIFIED
 
 
 def _tagged(normalized: pd.DataFrame, case_definition: str) -> pd.DataFrame:
@@ -84,7 +90,7 @@ async def run_epidemiological_async(frame: pd.DataFrame, keys: set[DistrictWeek]
             for code in codes
         }
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-        artifact_dir = BRONZE_SALA / f"{year}_{stamp}"
+        artifact_dir = _capture_folder(case_definition) / f"{year}_{stamp}"
         logging.info("Sala: %s, %s requested districts", year, len(codes))
         records, controls = await scrape_sala(year, labels, artifact_dir, case_definition=case_definition)
         batches.append(_tagged(normalize_sala_records(records, controls, catalog), case_definition))
@@ -97,15 +103,19 @@ async def run_epidemiological_async(frame: pd.DataFrame, keys: set[DistrictWeek]
     return requested[KEY + ["casos_Dengue"]]
 
 
-def refresh_sala_silver(years: list[int], *, case_definition: str = "confirmados") -> pd.DataFrame:
+def refresh_sala_silver(years: list[int], *, case_definition: str = "confirmados",
+                        cutoff: VersionCutoff | None = None) -> pd.DataFrame:
     """Synchronous entry of :func:`refresh_sala_silver_async`."""
-    return run_sync(refresh_sala_silver_async(years, case_definition=case_definition))
+    return run_sync(refresh_sala_silver_async(years, case_definition=case_definition, cutoff=cutoff))
 
 
-async def refresh_sala_silver_async(years: list[int], *, case_definition: str = "confirmados") -> pd.DataFrame:
+async def refresh_sala_silver_async(years: list[int], *, case_definition: str = "confirmados",
+                                    cutoff: VersionCutoff | None = None) -> pd.DataFrame:
     """Pipeline step: scrape every district of the catalogue for ``years`` from the public Sala Situacional and
     upsert ``data/silver/epi_sala_semanal.csv``. Each run keeps its raw responses in
-    ``data/bronze/epi/sala/<year>_<UTC stamp>/``. ``await`` it from a notebook."""
+    ``data/bronze/epi/sala/<year>_<UTC stamp>/`` (``sala_notificados`` for notified cases). With a ``cutoff`` the weeks
+    after it are not kept, so that a frozen version is reproduced with the extent of its Release. ``await`` it from a
+    notebook."""
     if case_definition not in CHARTS:
         raise ValueError(f"Unknown case definition {case_definition!r}; use one of {sorted(CHARTS)}")
     catalog = load_ubigeo_catalog(UBIGEO_CATALOG)
@@ -114,10 +124,10 @@ async def refresh_sala_silver_async(years: list[int], *, case_definition: str = 
     for year in sorted(set(years)):
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
         logging.info("Sala: %s, %s districts", year, len(labels))
-        records, controls = await scrape_sala(year, labels, BRONZE_SALA / f"{year}_{stamp}",
+        records, controls = await scrape_sala(year, labels, _capture_folder(case_definition) / f"{year}_{stamp}",
                                               case_definition=case_definition)
         batches.append(_tagged(normalize_sala_records(records, controls, catalog), case_definition))
-    result = pd.concat(batches, ignore_index=True)
+    result = clip_sala(pd.concat(batches, ignore_index=True), cutoff)
     upsert_sala_silver(SILVER_SALA, result, replace_legacy=True, case_definition=case_definition)
     return result
 

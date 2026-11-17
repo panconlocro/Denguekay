@@ -49,7 +49,9 @@ BRONZE_EPI = BRONZE / "epi"
 BRONZE_EPI_CSV = BRONZE_EPI / "DatosDengueV2.csv"
 # Notified-case Excel of v0-v3 (PiuraDengue.xlsx of the Release datos_v1/datos_v2 sources); V4 uses the CSV above.
 BRONZE_EPI_EXCEL = BRONZE_EPI / "PiuraDengue.xlsx"
-BRONZE_SALA = BRONZE_EPI / "sala"
+BRONZE_SALA = BRONZE_EPI / "sala"   # confirmed-case captures (V4); the offline replay takes the newest one per year
+# Notified-case captures of v0-v3, apart from the confirmed ones so that a replay of V4 never reads them.
+BRONZE_SALA_NOTIFIED = BRONZE_EPI / "sala_notificados"
 BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per download date
 # CHIRPS v3 daily, sat disaggregation: one GeoTIFF per day with the Piura window, plus the run manifests
 BRONZE_CHIRPS = BRONZE / "chirps" / "v3_sat"

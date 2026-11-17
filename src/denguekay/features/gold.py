@@ -367,6 +367,27 @@ def generate_gold(
             ],
             "horizontes": {str(h): summary[h] for h in horizons},
         }
+        if columns == "candidatas":  # the manifest of the generator that wrote this gold (model/v0, features.py)
+            manifest = {
+                **{key: manifest[key] for key in ("fuente", "sha256_fuente", "sha256_cobertura", "catalogo_geografico",
+                                                  "sha256_catalogo_geografico", "grano", "etiqueta")},
+                "columnas_no_predictoras": [
+                    "casos_Dengue", "brote", "umbral_brote_casos", "ubigeo", "anio", "semana",
+                    "provincia", "distrito", "distrito_key", "semana_inicio",
+                    "origen_inicio", "origen_cierre", "socio_2017_disponible_al_origen",
+                    "socio_fracciones_interpoladas_con_2025",
+                ],
+                "regla_brote": manifest["regla_brote"],
+                "fecha_disponibilidad_socio_2017_supuesta": SOCIO_2017_DATE,
+                "limitaciones": [
+                    "Fracciones 2018-2024 interpoladas con 2025: reconstrucción retrospectiva.",
+                    "Población anual proyectada: fecha/version de publicación no comprobada.",
+                    "Casos y clima semanal suponen disponibilidad al cierre de su semana; latencia no verificada.",
+                    "No incluye anomalías climáticas ni PCA globales: ajustar por fold de entrenamiento.",
+                    "No hay partición train/test final; brote y umbral son etiquetas/metadatos, no predictores.",
+                ],
+                "horizontes": manifest["horizontes"],
+            }
         manifest["positivos_brote_por_anio"] = {
             str(y): int(n) for y, n in labels.groupby("anio").brote.sum().items()
         }

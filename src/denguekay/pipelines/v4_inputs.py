@@ -67,10 +67,13 @@ def restore_published_bronze():
         print(f"{name}: {report['extraidos']} extraídos y {report['ya_estaban']} ya verificados", flush=True)
 
 
-def download_weather():
+def download_weather(*, era5_land=True):
+    """Open-Meteo caches of the 2017–2025 panel and, with ``era5_land`` (v3 and V4), the ERA5-Land ones from 2000."""
     districts = pd.read_csv(DISTRICT_COORDS, float_precision="round_trip")
     if openmeteo.download_all(districts, cache_dir=CACHE_METEO):
-        raise RuntimeError("Incomplete 2017–2025 weather cache; resume V4 at step 02")
+        raise RuntimeError("Incomplete 2017–2025 weather cache; resume at the weather download step")
+    if not era5_land:
+        return {"distritos": len(districts), "caches": 1}
     ranges = _weather_caches()
     end = openmeteo.era5_land_end_date()
     if end >= openmeteo.ERA5_LAND_RECENT_START:
@@ -92,10 +95,13 @@ def read_district_coords():
     return pd.read_csv(DISTRICT_COORDS)
 
 
-def weather_silver(*, cutoff=V4_CUTOFF):
+def weather_silver(*, cutoff=V4_CUTOFF, era5_land=True):
+    """Weekly Open-Meteo panel and, with ``era5_land`` (v3 and V4), the ERA5-Land weekly silver trimmed to ``cutoff``."""
     districts = read_district_coords()
     daily_panel = load_daily_from_caches([CACHE_METEO], len(districts))
     panel_weekly = clean_names_for_join(aggregate_to_weekly(daily_panel, districts))
+    if not era5_land:
+        return [write_silver(panel_weekly, V4_PANEL_WEATHER, line_ending="\n")]
     folders = [folder for _, _, folder in _weather_caches()]
     if recent := latest_snapshot(CACHE_METEO_ERA5_LAND_RECENT):
         folders.append(recent)
