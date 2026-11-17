@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-*Actualizado: 16/11/2026. Se actualiza en cada release `develop → main`.*
+*Actualizado: 17/11/2026. Se actualiza en cada release `develop → main`.*
 
 ## Etapa
 
@@ -37,6 +37,9 @@ la congelación de la v4 y la transferencia a Lambayeque y Tumbes.
 
 ## Pendiente
 
-- Evaluación prospectiva 2026–27 de la v3 y de b3 con datos publicados después del 09/11/2026.
-- Actualización semanal automática (Sala Situacional, ERA5-Land y la serie desde 2000 que usa la v3).
+- Evaluación prospectiva 2026–27 de la v3 y de b3 con datos publicados después del 09/11/2026. La V4 archiva cada
+  emisión semanal (fecha, insumos, pronósticos y vectores) en `models/serving/actualizacion_semanal/emisiones/`
+  ([operación](docs/backend/operacion.md#actualización-semanal-v4)).
+- Reentrenamiento anual de la V4 al cierre de la temporada 2027 ([política](docs/modeling/reentrenamiento.md)).
+- Registrar la tarea programada de la actualización semanal (`scripts\register_weekly_v4_task.ps1`) en la BD que se use.
 - Despliegue.

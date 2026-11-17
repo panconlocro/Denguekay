@@ -142,6 +142,87 @@ otros horizontes u otro algoritmo) se agrega así, sin cambiar `apps/api/`, sus 
 Las guardas del contrato v1 (`tests/test_contract_v1_guards.py`) no deben cambiar con un modelo nuevo; si
 un test de datos necesita otro modelo, va con fixtures nuevos y aparte de los del smoke.
 
+## Actualización semanal (V4)
+
+`python -m denguekay.pipelines.v4_weekly` es la operación de la V4: trae los datos nuevos de las fuentes que cambian
+(Sala Situacional, ERA5-Land, CHIRPS y Niño 1+2), los carga en la BD y emite el pronóstico de h2, h3 y h4 con el paquete
+**congelado** `v4_b3_live` (los boosters del Release `model/v4`), dejando archivada cada emisión. No entrena nunca: la
+política de reentrenamiento (anual, a mano) está en [reentrenamiento.md](../modeling/reentrenamiento.md). No es
+`weekly_update`, que completa el integrado y la Sala de los pipelines por versión y no cambia. Corre local; no despliega
+nada.
+
+**Arranque en una BD nueva y vacía** (recomendado, para no mezclar las series de la v3 con las de la V4). Desde la raíz,
+con `DATABASE_URL` apuntando a esa BD y `DENGUEKAY_DATA_DIR` sin definir:
+
+```powershell
+.\.venv\Scripts\python -m alembic upgrade head
+.\.venv\Scripts\python -m denguekay.pipelines.v4_weekly --inicial
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\register_weekly_v4_task.ps1
+```
+
+`--inicial` extrae del Release `model/v4` solo lo que falte (panel, cobertura, histórico, geografía y boosters;
+nunca sobrescribe un archivo y no toca `data/gold/`), restaura los cachés climáticos históricos si faltan, publica el
+paquete V4 como selección experimental y emite el primer corte. La tarea programada corre
+`scripts\weekly_v4.ps1` los lunes y jueves a las 07:00 (no se sabe qué día publica el MINSA: dos corridas acotan la
+espera a cuatro días, y la segunda no hace nada si no hay semana nueva). El script agrega la salida a
+`models\serving\actualizacion_semanal\logs\<aaaammdd>.log`. Registrar la tarea es decisión de quien opera.
+
+**Uso semanal:** nada. Para probar a mano: `python -m denguekay.pipelines.v4_weekly`.
+
+| Bandera | Efecto |
+|---|---|
+| `--dry-run` | Muestra el estado (último corte emitido, última captura de la Sala, archivos presentes) y los pasos que correría. Sin red ni escrituras. |
+| `--sin-descargas` | Reanuda desde los cachés de `data/bronze/`, sin red. |
+| `--forzar` | Carga aunque el corte ya esté emitido, sin emitir de nuevo. |
+| `--reemitir` | Emite otra vez un corte ya emitido (implica `--forzar`). |
+| `--inicial` | Primera corrida en una BD nueva (extrae lo que falte y publica el paquete). |
+
+**Qué hace.** (1) Comprueba el entorno y toma un candado. (2) Descarga la Sala (el año actual y el anterior; los
+demás se reproducen de su última captura) y calcula el corte esperado: la última semana publicada menos las dos
+provisionales. (3) Si ese corte ya está emitido, termina con `sin_novedad` sin tocar clima ni BD. (4) Si no, baja
+ERA5-Land, CHIRPS y Niño 1+2. (5) Carga y emite en **una sola transacción**: si algo falla no queda ninguna predicción
+ni observación nuevas, el pronóstico anterior sigue vigente y el fallo queda en `ejecucion`. La excepción es la primera
+corrida con `--inicial`: `publish` registra el paquete y confirma su propia carga de datos antes, así que si la emisión
+falla esa carga y el paquete quedan (en una BD nueva), pero no se publica ningún pronóstico. Hay una emisión por semana
+de corte: la primera es la que vale para la evaluación prospectiva.
+
+| Estado | Significa | Salida |
+|---|---|---|
+| `emitida` | Cargó y emitió los tres horizontes (con `parcial: true` y los motivos si algún distrito quedó `no_disponible`) | 0 |
+| `sin_novedad` | El corte ya estaba emitido | 0 |
+| `cargada_sin_emitir` | Corrida con `--forzar` sobre un corte ya emitido | 0 |
+| `dry_run` | Solo informó | 0 |
+| `fallida` | Un paso falló; no se publicó nada nuevo | 1 |
+
+**Qué queda en disco.**
+
+- `data/silver/operativo/`: los cuatro silver de las fuentes que cambian (`epi_sala_semanal.csv`,
+  `meteo_humedad_era5_land_desde_2000.csv`, `precip_chirps_v3_semanal_desde_2000.csv` y `enso_nino12_mensual.csv`), **sin
+  el recorte de la V4 congelada**. `configs/config.yaml` ya apunta a ellos (`perfil_datos: fuentes`). La copia congelada
+  de `data/silver/` y `data/gold/` (los nombres del Release) no cambia nunca. Las capturas nuevas de la Sala, de ERA5-Land,
+  CHIRPS y NOAA se suman a `data/bronze/` y a `data/silver/chirps_capturas/`.
+- `models/serving/actualizacion_semanal/`: `emisiones/<id_semana_corte>/<UTC>/` (`emision.json`, `predicciones.csv` y
+  `vectores.csv` de cada emisión: fecha efectiva, insumos con sus SHA-256, capturas usadas, versiones, ejecuciones y
+  qué objetivos ya tenían un conteo provisional en la Sala), `ejecuciones/<UTC>.json` (informe de cada corrida, con el
+  seguimiento prospectivo y el aviso de reentrenamiento), `logs/` y `en_curso.lock`. Nada de esto se versiona.
+
+**Seguimiento prospectivo.** El informe trae, por horizonte, `n`, brotes observados, suma de probabilidades, Brier y MAE
+de los casos de las emisiones cuya semana objetivo ya está cargada. No lleva interpretación ni umbrales: con pocos
+brotes no se concluye nada.
+
+**Si falla.** El informe y la `ejecucion` (`tipo` `ingesta` o `inferencia`, `estado` `fallida`, `detalle.etapa`) dicen en
+qué paso. No hay reintentos automáticos: las descargas reanudan desde sus cachés en la corrida siguiente
+(`--sin-descargas` para no usar la red). Un candado de más de 12 horas se considera huérfano y se reemplaza; si hay uno
+reciente, otra corrida sigue en curso. Si Open-Meteo corta por cuota, la corrida falla y reanuda desde el caché.
+
+**Notas.**
+
+- La `ejecucion` de tipo `reentrenamiento` que crea `publish` para la V4 es el **registro del paquete congelado**, no un
+  ajuste.
+- Si cambian los umbrales de aceptación basta `python -m denguekay.serving.publish --seleccionar-experimental`.
+- Un año calendario nuevo sin semanas publicadas en la Sala se omite durante su primer mes; cualquier otro año vacío es
+  un error. (Cómo se manifiesta ese caso en la Sala no se observó: el comportamiento se basa en el código del scraper.)
+
 ## Nivel del intervalo de casos
 
 `parametro_sistema.nivel_intervalo_casos` (0,80, sembrado por la 0005) es la probabilidad nominal de los

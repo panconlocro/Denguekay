@@ -34,6 +34,12 @@ corrida desde las fuentes reemplaza una copia exacta extraída antes: se recuper
 2026, etiquetas hasta 2026-10-17, ERA5-Land y CHIRPS hasta la semana del 2026-10-25, Niño 1+2 hasta 2026-10) está en
 `src/denguekay/pipelines/versions.py`.
 
+## Operación semanal
+
+La actualización semanal del servicio (`python -m denguekay.pipelines.v4_weekly`) no pasa por estos notebooks ni cambia sus
+salidas: escribe sus propios silver, sin el corte de la V4, en `data/silver/operativo/`. Ver
+[operación](../../../docs/backend/operacion.md#actualización-semanal-v4).
+
 ## Sala Situacional
 
 El paso 05 captura la serie CONFIRMADO de 2025 (completo, SE 53) y de 2026, y `versions.py` la recorta a la SE 43 de 2026

@@ -77,7 +77,9 @@ V4 escribe en `data/`; v0 a v3 escriben su silver y gold en `data_anteriores/<ve
 carpeta de `pipelines/notebooks/` tiene su README; `docs/reproducibilidad.md` es la entrada única.
 
 Para completar semanas nuevas del integrado sin rehacer todo existe el actualizador selectivo
-(`python -m denguekay.pipelines.weekly_update`, con `--dry-run` para ver qué consultaría). Detalle del pipeline,
+(`python -m denguekay.pipelines.weekly_update`, con `--dry-run` para ver qué consultaría). No es la operación del
+servicio: la actualización semanal con la V4 congelada (fuentes nuevas, carga en la BD y pronóstico h2–h4 archivado) es
+`python -m denguekay.pipelines.v4_weekly` ([operación](docs/backend/operacion.md#actualización-semanal-v4)). Detalle del pipeline,
 la cobertura de casos y la procedencia de los datos: [docs/pipeline.md](docs/pipeline.md). Calidad de datos con
 Great Expectations: [docs/modeling/mlflow_great_expectations.md](docs/modeling/mlflow_great_expectations.md).
 

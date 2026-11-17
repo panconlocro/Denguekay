@@ -13,6 +13,16 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
 
+## 2026-11-17 · Actualización semanal de la V4
+
+- `python -m denguekay.pipelines.v4_weekly` actualiza cada semana las fuentes que cambian (Sala Situacional, ERA5-Land,
+  CHIRPS y Niño 1+2) en `data/silver/operativo/`, sin el corte congelado, las carga en la BD y emite h2, h3 y h4 con el
+  paquete **congelado** `v4_b3_live`, archivando cada emisión (fecha, insumos, pronósticos y vectores). **No cambia el
+  modelo ni se reentrena**: la V4 sigue siendo la del tag `model/v4`.
+- Política de reentrenamiento: anual, por temporada, a mano ([reentrenamiento.md](../../docs/modeling/reentrenamiento.md)).
+  Es un criterio operativo; no se evaluó reentrenar con mayor frecuencia.
+- Operación y programación: [docs/backend/operacion.md](../../docs/backend/operacion.md#actualización-semanal-v4).
+
 ## 2026-11-15 · Pipeline de datos V4
 
 - `run_all --version v4 --verificar` construye el integrado de confirmados y el gold B3 de h2–h4, y coteja

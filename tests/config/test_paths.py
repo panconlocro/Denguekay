@@ -45,6 +45,24 @@ class TestPaths(unittest.TestCase):
         self.assertEqual(v4_gold.parent, base / "gold")
         self.assertEqual((bronze, reference), (paths.ROOT / "data" / "bronze", paths.ROOT / "data" / "reference"))
 
+    def test_operational_silver_hangs_from_silver_with_the_release_names(self):
+        self.assertEqual(paths.SILVER_OPERATIONAL, paths.SILVER / "operativo")
+        expected = {
+            "OPERATIONAL_SALA": "epi_sala_semanal.csv",
+            "OPERATIONAL_ERA5_LAND": "meteo_humedad_era5_land_desde_2000.csv",
+            "OPERATIONAL_CHIRPS": "precip_chirps_v3_semanal_desde_2000.csv",
+            "OPERATIONAL_ENSO": "enso_nino12_mensual.csv",
+        }
+        for constant, name in expected.items():
+            with self.subTest(constant=constant):
+                self.assertEqual(getattr(paths, constant), paths.SILVER_OPERATIONAL / name)
+        # They never coincide with a file of the frozen copy that carries a Release name.
+        frozen = {paths.V4_SALA, paths.V4_ERA5_LAND, paths.V4_CHIRPS, paths.V4_ENSO}
+        self.assertFalse(frozen & {getattr(paths, constant) for constant in expected})
+
+    def test_weekly_folder_is_under_serving(self):
+        self.assertEqual(paths.SERVING_WEEKLY, paths.SERVING_MODELS / "actualizacion_semanal")
+
 
 if __name__ == "__main__":
     unittest.main()

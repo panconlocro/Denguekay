@@ -12,6 +12,8 @@ flowchart LR
   nb --> silver[(data/silver/integrado)]
   silver --> gold_nb[11_gold] --> gold[(data/gold)]
   silver --> weekly[denguekay.pipelines<br/>weekly_update] --> silver
+  fuentes -. Sala, ERA5-Land,<br/>CHIRPS, Niño 1+2 .-> v4w[denguekay.pipelines<br/>v4_weekly] --> operativo[(data/silver/operativo)]
+  v4w --> db
   gold --> model[denguekay.features / model / evaluation]
   model --> registry[models/registry<br/>v0 · v1 · v2 · v3]
   gold --> serving[denguekay.serving<br/>load_data, publish]
@@ -52,7 +54,7 @@ Denguekay/
 ├── constraints.txt            # versiones exactas del entorno de la V3 (pip install -r requirements.txt -c constraints.txt)
 ├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
 ├── render.yaml                # Blueprint de Render para la API (docs/backend/despliegue.md); no despliega por sí solo
-├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan)
+├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan); weekly_v4.ps1 y register_weekly_v4_task.ps1 (programan la actualización semanal de la V4)
 ├── configs/
 │   └── config.yaml
 │
@@ -160,6 +162,7 @@ silver/
 ├── epi_piura_semanal.csv
 ├── epi_sala_semanal.csv            # exportación normalizada por ejecución
 ├── confirmados/                    # entradas archivadas del Release V4
+├── operativo/                      # las 4 fuentes que cambian (Sala, ERA5-Land, CHIRPS, Niño 1+2) sin el corte de la V4; las escribe v4_weekly y las lee el servicio. La copia congelada (nombres del Release) no cambia nunca
 └── integrado/                      # fuentes silver unidas entre sí
     ├── meteo_socio_piura_2017_2025.csv                   # meteo + socio
     ├── meteo_socio_epi_base_piura_2017_2025.csv          # + epi histórico (entrada del actualizador)
@@ -335,9 +338,11 @@ src/denguekay/serving/
 ├── risk.py                   # nivel de riesgo y cambio de alerta
 ├── inference.py              # paquete -> predictor -> UPSERT de predicciones y alertas; OOS
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
+├── emissions.py              # actualización semanal de la V4: emisión ya hecha, archivo de cada emisión, puntajes prospectivos y aviso de reentrenamiento
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
 ├── weekly_update.py          # actualización selectiva del integrado y silver de la Sala (confirmados o notificados)
+├── v4_weekly.py              # operación de la V4: silver operativos sin corte, carga + inferencia h2–h4 con el paquete congelado y archivo de cada emisión (no es weekly_update)
 ├── run_all.py                # CLI: ejecuta en orden los notebooks de la carpeta de una versión (--version v0 a v4)
 ├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS por HTTPS (alternativa a la descarga por FTP)
 ├── chirps_ee.py              # guarda de método y descarga mensual de CHIRPS v3 desde Earth Engine (solo para el snapshot; necesita cuenta)
@@ -373,6 +378,7 @@ docs/backend/                 # especificación OE2, desviaciones, operación, d
 └── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
 models/serving/               # BD SQLite y ejecuciones locales; no se versionan
+├── actualizacion_semanal/    # v4_weekly: emisiones/<corte>/<UTC>/ (emision.json, predicciones.csv, vectores.csv), ejecuciones/, logs/ y en_curso.lock
 └── demo/                     # BD de demostración (D1), su storage y su MLflow; se comparte fuera de Git
 ```
 
@@ -506,7 +512,10 @@ desde el que se reproduce. No se vuelven a correr en `develop`, en `main` ni en 
 Cada notebook debería poder leerse como una bitácora corta: "cargo tal cosa → llamo tal función de `denguekay` → guardo el resultado → imprimo una verificación". Si un notebook empieza a crecer con lógica pesada pegada en las celdas, esa lógica probablemente debería moverse a `src/denguekay/`.
 
 Para actualizaciones incrementales del dataset ya consolidado, usar
-`python -m denguekay.pipelines.weekly_update --input ... --output ...`. El módulo
+`python -m denguekay.pipelines.weekly_update --input ... --output ...` (es el actualizador del integrado y de la Sala
+de los pipelines por versión; la operación del servicio con la V4, que baja las fuentes sin el corte congelado a
+`data/silver/operativo/`, carga la BD y emite h2–h4, es `python -m denguekay.pipelines.v4_weekly`, ver
+[operación](backend/operacion.md#actualización-semanal-v4)). El módulo
 detecta componentes incompletos por `ubigeo`/año/semana y llama solo a las
 fuentes necesarias. El CSV lateral `<dataset>.coverage.csv` diferencia un
 cero epidemiológico ya verificado de un cero en una fila nueva sin cobertura.
