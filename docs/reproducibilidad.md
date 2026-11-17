@@ -54,7 +54,7 @@ guardan por entorno.
 | v3 | `python research/06_model_improvement/code/phase_v3_close.py verificar --semilla 17` | `VERIFICACION: PASA`: G41, huella y métricas | 6 min en GPU, 5,3 min en CPU con 2 hilos | no | exacto en CUDA (referencia oficial) y en CPU con 2 hilos (referencia CPU, `--solo predicciones_v3_cpu.zip`) |
 | Métricas de la v3 sin reentrenar | `python research/06_model_improvement/code/phase_v3_close.py metricas` | Brier y AUPRC de 570 celdas iguales al JSON | 15 s | no | exacto |
 | Estudios 01–06 | ver el README de cada estudio (`research/<estudio>/README.md`) | sus cifras desde su tag y los Releases | según el estudio | los estudios 03–06 se grabaron en GPU | exacto con los datos del Release; las búsquedas largas no se repiten (abajo) |
-| Pipeline de V0–V3 | `python -m denguekay.pipelines.run_all` | recorrido 01–10 y gold h2 | días (ERA5-Land 4–5 días por el tope diario; CHIRPS por FTP unas 10 h) | no | desde las fuentes |
+| Pipeline de V0–V3 | `python -m denguekay.pipelines.run_all --version v0` (… `v3`) | recorrido 01–11 de `pipelines/notebooks/<VERSIÓN>/`, su gold y la verificación 99 | días (ERA5-Land 4–5 días por el tope diario; CHIRPS por FTP unas 10 h) | no | desde las fuentes |
 | Pipeline de V4 | `python -m denguekay.pipelines.run_all --version v4 --verificar` | silver e integrado de confirmados, gold B3 y cotejo de SHA-256 | depende del caché y de los límites de descarga | no | desde las fuentes |
 | Gold congelado de V4 | `python -m denguekay.features.gold_v4 --desde-release` tras extraer `datos_v4.zip` | 73 775 filas de 65 distritos al corte de la SE 41 de 2026 | segundos con los insumos extraídos | no | llaves y etiquetas exactas, flotantes con tolerancia de `1e-12` entre plataformas |
 | API con la v3 | `docs/modeling/reproducir_v3.md`, «Ruta del producto» | `GET /api/v1/salud` → 200 | minutos | no (la inferencia es en CPU) | — |
@@ -135,24 +135,26 @@ archivo), `reproduce v2` dio la huella registrada (`0fe5d107…`, CPU con 2 hilo
 ### V0–V3
 
 ```powershell
-.\.venv\Scripts\python -m denguekay.pipelines.run_all --lista
-.\.venv\Scripts\python -m denguekay.pipelines.run_all
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v2 --lista
+.\.venv\Scripts\python -m denguekay.pipelines.run_all --version v2 --bronze-publicado
 ```
 
-Corre los notebooks de `pipelines/notebooks/` en orden (01 → 10, con 03b, 03c y 06b) y deja `data/` como lo usan
-las versiones. Las descargas se reanudan desde sus cachés: si una se corta por un límite del API, se vuelve a
-correr el comando (o `--desde <paso>`).
+Corre los notebooks de `pipelines/notebooks/V2/` (o `V0`, `V1`, `V3`) en orden, del 01 al 11 y el 99. Cada versión
+escribe su silver y su gold en `data_anteriores/<versión>/` (`run_all` fija `DENGUEKAY_DATA_DIR`), nunca en `data/`, que
+es de V4; el bronze es el caché común. Las descargas se reanudan desde sus cachés: si una se corta por un límite del
+API, se vuelve a correr el comando (o `--desde <paso>`). Cada carpeta tiene su README. v0 y v1 comparten silver y gold
+anterior; v2 añade la Sala y su gold limpio; v3 añade ERA5-Land desde 2000, CHIRPS y Niño 1+2 (los mismos archivos que V4).
 
 | Fuente | Paso | ¿Cuenta? | Tiempo | Muestra comparada con el silver del Release (2026-11-09) |
 |---|---|---|---|---|
-| Open-Meteo, modelo por defecto (2017–2025) | 02 → 03 | no | horas (límite por hora) | Ayabaca 2024, 51 semanas: diferencia máxima 2e-15 °C |
-| ERA5-Land (2000 → hoy − 5 días) | 02 (A3, B2, C1, C2) → 03 | no | 4–5 días por el tope diario; una actualización semanal, minutos | Ayabaca 2024: 4e-15 °C |
-| NOAA Niño 1+2 | 03b | no | segundos | 538 meses idénticos (último 2026-10) |
-| CHIRPS v3 final por FTP (2000 → hoy) y preliminar | 03c | no (FTP anónimo) | unas 10 h (unos 9 500 archivos globales de unos 11 MB) | 2024-03-15, 65 distritos: 0,008 mm frente al snapshot de Earth Engine |
-| Excel de casos (Drive) | 06 → 07 | no (`gdown`, sin sesión) | 1 min (60 MB) | la hoja principal trae **4 filas más** que el bronze del Release: la fuente cambió |
-| Excel socio (Drive) | 04 → 05 | no | segundos | contenido idéntico (los bytes del xlsx difieren por sus metadatos) |
-| Sala Situacional | 06b | no | minutos | Piura (200101) 2025, 53 semanas: idénticas (221 casos) |
-| Integrado y gold | 08, 09 y 10 | no | minutos | — |
+| Open-Meteo, modelo por defecto (2017–2025) | 02 → 06 | no | horas (límite por hora) | Ayabaca 2024, 51 semanas: diferencia máxima 2e-15 °C |
+| ERA5-Land (2000 → hoy − 5 días; solo v3) | 02 → 06 | no | 4–5 días por el tope diario; una actualización semanal, minutos | Ayabaca 2024: 4e-15 °C |
+| NOAA Niño 1+2 (solo v3) | 06 | no | segundos | 538 meses idénticos (último 2026-10) |
+| CHIRPS v3 final por FTP (2000 → hoy) y preliminar (solo v3) | 06 | no (FTP anónimo) | unas 10 h (unos 9 500 archivos globales de unos 11 MB) | 2024-03-15, 65 distritos: 0,008 mm frente al snapshot de Earth Engine |
+| Excel de casos (Drive) | 04 → 08 | no (`gdown`, sin sesión) | 1 min (60 MB) | la hoja principal trae **4 filas más** que el bronze del Release: son filas en blanco (sin `ubigeo`, año ni semana; comprobado el 16/11/2026) y el silver da lo mismo |
+| Excel socio (Drive) | 03 → 07 | no | segundos | contenido idéntico (los bytes del xlsx difieren por sus metadatos) |
+| Sala Situacional | 05 | no | minutos | Piura (200101) 2025, 53 semanas: idénticas (221 casos) |
+| Integrado y gold | 09, 10 y 11 | no | minutos | — |
 
 SHA-256 de lo que devolvió Drive el 2026-11-09:
 
@@ -168,6 +170,33 @@ SHA-256 de lo que devolvió Drive el 2026-11-09:
 - El pipeline usa el FTP anónimo. En los 240 días que se solapan (enero a abril de 2025 y 2026), las medias
   diarias por polígono difieren como máximo 0,15 mm (media 0,003 mm) y las sumas semanales, como máximo 0,34 mm.
 - `silver-ftp --con-earth-engine` reconstruye el silver congelado. La v3 no usa lluvia.
+
+**Cotejo del 16 de noviembre de 2026 (Windows, v0 a v3).** En un clon aparte se ejecutaron los 12 pasos de cada
+carpeta con descargas reales (código de salida `0` en las cuatro). Cada versión escribió solo en
+`data_anteriores/<versión>/`: tras correr las cuatro, el hash de los 18 archivos de `data/silver` y `data/gold` del
+clon no cambió. El paso 99 compara con el manifiesto del Release:
+
+| Archivo | v0 | v1 | v2 | v3 |
+|---|---|---|---|---|
+| `epi_piura_semanal.csv` (81 196 filas, `c4b67ce0…`) | — | idéntico | idéntico | idéntico |
+| Integrado de notificados | — | dentro de tolerancia (3,6 × 10⁻¹⁵) | dentro de tolerancia (3,6 × 10⁻¹⁵) | dentro de tolerancia (3,6 × 10⁻¹⁵) |
+| Cobertura del integrado | — | idéntica | idéntica | — |
+| Gold h2 y h4 anterior (`respaldo_pre_b3`) | idénticos (`0ff49650…`, `f9fbed66…`) | idénticos | — | — |
+| Gold h2 limpio de 20 columnas (`a5d16663…`) | — | — | idéntico | — |
+| Manifiesto del gold y `SHA256SUMS.txt` | difieren solo en `sha256_fuente` | ídem | difiere solo en `sha256_fuente` | — |
+| Sala Situacional | — | — | 174 filas con conteo distinto | 174 filas con conteo distinto |
+| ERA5-Land y Niño 1+2 | — | — | — | idénticos |
+| CHIRPS | — | — | — | 325 filas distintas: 5 semanas (2026-09-27 a 2026-10-25) pasaron de `prelim` a `final` |
+
+`sha256_fuente` es el hash del integrado, que difiere en bytes por ese ruido de punto flotante; el gold que se
+calcula desde él es idéntico. El gold de v0 a v2 se reproduce con `features.gold.generate_gold` (`columns="candidatas"` con
+`horizons=(2, 4)`, o `columns="v2"`); el de la v3 no tiene referencia en un Release (es de 24 columnas, solo para
+trazabilidad).
+
+Con esos datos regenerados: `model.reproduce v2` y `v1` dan la huella registrada (CPU con 2 hilos); `reproduce v0`
+da lo mismo que con los datos del Release (486 métricas numéricas distintas, la diferencia CPU frente a GPU de la tabla
+de arriba) más una diferencia de linaje, `sha256_manifest_gold`, por lo anterior. `reproduce v1` leía la regla de brote de
+`gold/manifest_fase6.json`, que el Release de v1 no trae; ahora usa el de `gold/respaldo_pre_b3/` si el otro no existe.
 
 ### Casos de v0 a v3 (notificados)
 
