@@ -83,8 +83,17 @@ def download_weather():
     return {"distritos": len(districts), "caches": len(ranges)}
 
 
+def read_district_coords():
+    """The district coordinates as the frozen silver files carry them.
+
+    The Release (datos_v4.zip) was written from the coordinates read with the default pandas float parser; the exact
+    ``round_trip`` parser differs by one ulp in two districts (Arenal and Miguel Checa), which breaks the match of
+    the ERA5-Land centroids with the panel (``features.climate.era5_land_weekly``) and the byte equality."""
+    return pd.read_csv(DISTRICT_COORDS)
+
+
 def weather_silver(*, cutoff=V4_CUTOFF):
-    districts = pd.read_csv(DISTRICT_COORDS, float_precision="round_trip")
+    districts = read_district_coords()
     daily_panel = load_daily_from_caches([CACHE_METEO], len(districts))
     panel_weekly = clean_names_for_join(aggregate_to_weekly(daily_panel, districts))
     folders = [folder for _, _, folder in _weather_caches()]

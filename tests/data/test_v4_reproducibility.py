@@ -126,6 +126,18 @@ class TestV4Reproducibility(unittest.TestCase):
                 audit.compare_with_release(inputs, {"paquetes": []}, archive)
             self.assertEqual(inputs[1]["estado"], "difiere")
 
+    def test_republished_weeks_are_explained(self):
+        head = "ubigeo,semana_inicio,precip_total_mm,version"
+        release = "\n".join([head, "200101,2026-10-11,1.0,final", "200101,2026-10-18,5.0,prelim", ""]).encode()
+        local = "\n".join([head, "200101,2026-10-11,1.0,final", "200101,2026-10-18,9.5,final", ""]).encode()
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "chirps.csv"
+            path.write_bytes(local)
+            detail = audit.describe_difference("chirps.csv", release, path)
+        self.assertEqual(detail["filas_cambiadas"], 1)
+        self.assertEqual(detail["cambios_de_version"], {"prelim->final": 1})
+        self.assertEqual(detail["semanas_cambiadas"], ["2026-10-18", "2026-10-18", 1])
+
     def test_report_prints_in_a_cp1252_console(self):
         report = {"insumos": [], "geografia_consulta_nueva": {"estado": "falta"}, "exito": True,
                   "diferencias_en_fuentes": [], "ruta_informe": "informe.json",

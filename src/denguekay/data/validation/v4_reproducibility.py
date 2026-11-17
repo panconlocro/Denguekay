@@ -95,13 +95,22 @@ def describe_difference(name, release_bytes, local_path):
         return {"filas_distintas": len(changed), "filas_listadas": json.loads(rows.to_json(orient="records"))}
     if list(frozen.columns) != list(local.columns) or len(frozen) != len(local):
         return {"misma_estructura": False}
+    detail = {}
+    if len(frozen) == len(local) and {"semana_inicio", "version"} <= set(frozen.columns):
+        changed = frozen.ne(local) & ~(frozen.isna() & local.isna())
+        rows = changed.any(axis=1)
+        if rows.any():
+            weeks = sorted(frozen.loc[rows, "semana_inicio"].unique())
+            moves = (frozen.loc[rows, "version"] + "->" + local.loc[rows, "version"]).value_counts()
+            detail = {"filas_cambiadas": int(rows.sum()), "semanas_cambiadas": [weeks[0], weeks[-1], len(weeks)],
+                      "cambios_de_version": {key: int(value) for key, value in moves.items()}}
     numeric = frozen.select_dtypes("number").columns
     others = [column for column in frozen.columns if column not in numeric]
     gaps = {column: float(np.nanmax(np.abs(frozen[column].to_numpy(float) - local[column].to_numpy(float))))
             for column in numeric if len(frozen)}
     same_text = bool(frozen[others].equals(local[others]))
     same_nulls = all((frozen[column].isna() == local[column].isna()).all() for column in numeric)
-    return {"misma_estructura": True, "texto_igual": same_text, "nulos_iguales": same_nulls,
+    return {**detail, "misma_estructura": True, "texto_igual": same_text, "nulos_iguales": same_nulls,
             "diferencia_max_por_columna": gaps,
             "diferencia_max": max(gaps.values(), default=0.0)}
 
@@ -217,6 +226,10 @@ def print_result(report):
             print(f"  {entry['insumo']}: {detail['filas_distintas']} filas con conteo distinto del Release")
         elif detail.get("misma_estructura"):
             print(f"  {entry['insumo']}: diferencia máxima {detail['diferencia_max']:.3g} ({entry['estado']})")
+            if "cambios_de_version" in detail:
+                first, last, count = detail["semanas_cambiadas"]
+                print(f"    {detail['filas_cambiadas']} filas en {count} semanas ({first} a {last}); la fuente "
+                      f"republicó: {detail['cambios_de_version']}")
     comparison = report.get("cotejo_con_release", {})
     if comparison.get("estado") == "no_disponible":
         print(f"No se pudo cotejar con datos_v4.zip: {comparison['motivo']}")
