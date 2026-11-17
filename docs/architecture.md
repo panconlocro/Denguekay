@@ -339,6 +339,7 @@ src/denguekay/serving/
 ├── inference.py              # paquete -> predictor -> UPSERT de predicciones y alertas; OOS
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 ├── emissions.py              # actualización semanal de la V4: emisión ya hecha, archivo de cada emisión, puntajes prospectivos y aviso de reentrenamiento
+├── drift.py                  # monitoreo de deriva (HU0009-2): semanas cerradas de las emisiones frente a la referencia de la HU0007-4; CLI mensual a mano; solo registra
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
 ├── weekly_update.py          # actualización selectiva del integrado y silver de la Sala (confirmados o notificados)

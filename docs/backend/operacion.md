@@ -210,6 +210,24 @@ de corte: la primera es la que vale para la evaluación prospectiva.
 de los casos de las emisiones cuya semana objetivo ya está cargada. No lleva interpretación ni umbrales: con pocos
 brotes no se concluye nada.
 
+**Monitoreo de deriva (HU0009-2).** El informe trae también `monitoreo_deriva`: para cada horizonte compara las
+semanas cerradas de las emisiones archivadas con las métricas de referencia del mismo horizonte (el bloque agregado de
+la HU0007-4, `temporadas_2022_2026`, de las versiones servidas). Calcula Precision, Recall y F1 (alerta con p ≥ 0,50) y
+MAE y RMSE de los casos. Degradación relativa: Recall y F1, (referencia − periodo) / referencia; MAE y RMSE,
+(periodo − referencia) / referencia. Con **8 semanas cerradas o más** (por horizonte) se marcan las métricas con
+degradación > 10 %; con menos solo se registran, sin decisiones. Si la referencia es 0 no se calcula la degradación
+relativa. Precision se informa con su referencia pero el criterio no define su degradación, así que no se marca.
+El resultado es un registro para revisión del Ingeniero de Datos / ML: **no reentrena ni cambia la versión en uso**.
+Para correrlo a mano (mensual, desde la raíz y con `DATABASE_URL` apuntando a la BD que se use):
+
+```powershell
+.\.venv\Scripts\python -m denguekay.serving.drift                  # calcula y registra una ejecución de mantenimiento
+.\.venv\Scripts\python -m denguekay.serving.drift --sin-registrar  # solo muestra el resultado
+```
+
+El registro es una fila de `ejecucion` con `tipo = mantenimiento` y `detalle.origen = monitoreo_deriva`. Programar la
+corrida mensual y revisar sus marcas corresponde al OE4; aquí solo queda el código y no se muestra en el frontend.
+
 **Si falla.** El informe y la `ejecucion` (`tipo` `ingesta` o `inferencia`, `estado` `fallida`, `detalle.etapa`) dicen en
 qué paso. No hay reintentos automáticos: las descargas reanudan desde sus cachés en la corrida siguiente
 (`--sin-descargas` para no usar la red). Un candado de más de 12 horas se considera huérfano y se reemplaza; si hay uno

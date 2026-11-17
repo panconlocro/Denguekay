@@ -41,7 +41,7 @@ from denguekay.db.models import Run
 from denguekay.db.session import make_engine, transaction
 from denguekay.pipelines import v4_inputs
 from denguekay.pipelines.weekly_update import run_sync
-from denguekay.serving import emissions
+from denguekay.serving import drift, emissions
 from denguekay.serving.emissions import HORIZONS, ORIGIN
 
 LOCK_STALE_HOURS = 12
@@ -484,6 +484,10 @@ def finish(report, motor, base, cutoff, timer):
         try:
             with transaction(motor) as sesion:
                 report["seguimiento_prospectivo"] = emissions.prospective_scores(sesion)
+                try:   # the review is a record: a failure in it must never lose the follow-up or the weekly report
+                    report["monitoreo_deriva"] = drift.drift_report(sesion)
+                except Exception as error:   # noqa: BLE001
+                    report["monitoreo_deriva"] = f"no disponible: {type(error).__name__}"
                 notice = emissions.retraining_due(sesion, cutoff)
             report.update(notice)
             if notice["reentrenamiento_anual_pendiente"]:

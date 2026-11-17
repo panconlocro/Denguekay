@@ -60,6 +60,8 @@ class TestFullRuns(LiveCase):
         self.assertFalse((self.base / "en_curso.lock").exists())
         self.assertIs(report["reentrenamiento_anual_pendiente"], False)
         self.assertEqual(report["seguimiento_prospectivo"]["2"]["n"], 0)
+        self.assertEqual(report["monitoreo_deriva"]["horizontes"]["2"]["estado"], "sin_datos")   # nothing closed yet
+        self.assertFalse(report["monitoreo_deriva"]["requiere_revision"])
 
     def test_the_second_run_with_the_same_data_is_without_news_and_creates_nothing(self):
         self.run_weekly(Options(inicial=True))
