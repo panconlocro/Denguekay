@@ -113,6 +113,55 @@ en `data/bronze/epi/sala/` y `data/silver/epi_sala_semanal.csv`; ninguno es
 necesario en Git para ejecutar el actualizador. El catálogo pequeño de UBIGEO
 vive en `data/reference/` y sí se versiona.
 
+## Fuentes climáticas de la V4: producto, rezago y disponibilidad al origen (HU0002-4)
+
+La V4 (B3) usa tres entradas de clima, siempre en la ventana de las semanas o−6 a o−2 y en el promedio de los últimos
+tres meses consecutivos de Niño 1+2 (`features/b3.py`, `climate_vector`). Cada una lleva una fecha desde la que se
+puede usar, y el vector de un origen solo toma lo que esa fecha deja usar al cierre del origen.
+
+| Fuente | Producto | Cómo llega | Rezago de publicación y regla de disponibilidad |
+|---|---|---|---|
+| ERA5-Land | Temperatura media y humedad relativa media diarias (`temperature_2m_mean`, `relative_humidity_2m_mean`), agregadas por semana MMWR en el punto del distrito | API de archivo de Open-Meteo (`data/ingestion/openmeteo.py`, `models=era5_land`, celda de 0,1°); caché en `data/bronze/meteo/` | Open-Meteo lo actualiza a diario con unos 5 días de retraso (`ERA5_LAND_DELAY_DAYS = 5`, tomado de su documentación y registrado por el estudio 06). La semana se usa desde su inicio + 13 días, es decir, 7 días después de cerrar (`district_locations.read_v4_era5`) |
+| CHIRPS v3 | Precipitación diaria `sat`, media del polígono distrital; semanal con la versión `final` (Earth Engine) o `prelim` (CHC) | `data/ingestion/chirps_ee.py` y `chirps_prelim.py`; silver con `version` y `fecha_disponible` | El CHC publica pentadas preliminares 2 días después de cada pentada (`OFFICIAL_LAG_DAYS = 2`); se usa el fin de la pentada + 5 días (`PUBLICATION_LAG_DAYS`, que cubrió el 94 % de las 130 pentadas de 2025-2026 que se midieron: mediana 2, p90 4, máximo 18 días) |
+| Niño 1+2 | Anomalía mensual de la TSM (`sstoi.indices`, NOAA CPC) | `data/ingestion/enso.py`; silver `enso_nino12_mensual.csv` con `fecha_disponible` | CPC actualiza «cerca del día 10»: el mes M se usa desde el día 10 del mes M + 1 (`enso_index.PUBLICATION_DAY = 10`) |
+| Open-Meteo (clima del panel) | Temperatura, precipitación y humedad diarias del panel 2017-2025 | Misma API, sin `models` | **No es una entrada de la V4.** Alimenta el panel integrado de las versiones anteriores y el EDA; B3 toma el clima de ERA5-Land y CHIRPS |
+
+**Cómo se garantiza que solo se usan datos publicados al origen.** (1) `climate_vector` descarta la semana cuya fecha de
+disponibilidad es posterior al cierre del origen y deja el promedio en `NaN` si falta alguna de las 5 semanas;
+con Niño 1+2 exige tres meses consecutivos ya disponibles. (2) En el entrenamiento, `features/gold_v4.py` alinea Niño
+con `merge_asof` sobre `fecha_disponible` y usa las fechas de ERA5-Land y CHIRPS. (3) Hay pruebas de no fuga por
+perturbación (`tests/serving/test_v4_live.py`, `TestB3Availability`): cambiar un valor no publicado o publicar un mes
+futuro de Niño no cambia el vector.
+
+**Lo que esas reglas no garantizan (se reporta, no se corrige aquí).**
+
+- Las fechas de ERA5-Land (+13 días) y de Niño 1+2 (día 10) son reglas conservadoras: **no se registró la fecha real en
+  que se publicó cada dato pasado**. CHIRPS lleva su `fecha_disponible` por pentada con la misma convención.
+- El entrenamiento usa los valores archivados al momento de descargarlos. Si una fuente revisa valores ya publicados
+  (la Sala lo hizo, ver «Alcance y procedencia»; ERA5-Land y CHIRPS tienen versiones preliminar y final), un valor
+  reciente puede cambiar después. **No se verificó** cuánto difieren los valores de las semanas recientes de los
+  definitivos: es una hipótesis de riesgo, no una medición.
+- En ERA5-Land, la columna `fecha_disponible` no está en el silver operativo; `read_v4_era5` la calcula con la regla de
+  +13 días al leerlo.
+
+## Sociodemografía: año de referencia y regla temporal (HU0003-4)
+
+Fuente: el Excel del censo y las proyecciones del INEI (`data/bronze/socio/`), con una fila por distrito. El silver
+`socio_anual.csv` (paso `07_silver_socio`, `data/processing/socio_interpolation.py`) tiene una fila por distrito y año
+de 2017 a 2025.
+
+| Variable | Año de referencia | Regla temporal |
+|---|---|---|
+| `poblacion` | 2017 (censo, `pob_censada_2017`) y 2018-2025 (proyección, `pob_proyectada_<año>`) | Valor del año de cada semana, sin interpolar. Desde 2026: se prolonga la pendiente 2017-2025 (`(valor 2025 − valor 2017) / 8` por año), redondeada y siempre positiva |
+| Las 15 fracciones (`fraccion_rural`, `fraccion_mujeres`, `fraccion_menores_15`, `fraccion_sin_seguro`, `fraccion_analfabeta_15_mas`, `fraccion_pared_precaria`, `fraccion_piso_tierra`, `fraccion_agua_red`, `fraccion_agua_cisterna`, `fraccion_desague_red`, `fraccion_sin_saneamiento`, `fraccion_alumbrado_red`, `fraccion_hogares_refrigeradora`, `fraccion_hogares_celular`, `fraccion_hogares_lena`; columnas `<base>_2017` y `<base>_2025` del Excel) | Extremos 2017 y 2025 | Interpolación lineal año a año entre 2017 y 2025; desde 2026, extrapolación de la misma pendiente acotada a `[0, 1]`, con un registro de cada ajuste |
+| Variables con un solo año (p. ej. `fraccion_menores_5`, solo 2017; `fraccion_60_mas`, solo 2025) | 2017 o 2025 | Se excluyen del dataset: no hay cómo interpolarlas ni suponerlas constantes |
+
+La población censal de 2017 también está en `distrito.poblacion_censo_2017` (tasas y mapa). **Lo que la regla temporal no
+garantiza:** la interpolación de los años 2018-2024 usa el extremo de 2025, que no estaba disponible en esos años, así
+que un valor intermedio no es lo que se habría podido calcular en ese momento. **La V4 no usa variables
+sociodemográficas** (sus 16 columnas son historia de casos, calendario, geografía, clima y Niño 1+2), por lo que esto no
+afecta su pronóstico; sí afectaría a una versión que las incorporara.
+
 ## Alcance y procedencia
 
 El paso `05_bronze_sala` de V4 usa la serie `CONFIRMADO` del gráfico semanal por tipo de diagnóstico y marca

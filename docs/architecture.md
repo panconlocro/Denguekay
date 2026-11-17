@@ -15,7 +15,7 @@ flowchart LR
   fuentes -. Sala, ERA5-Land,<br/>CHIRPS, Niño 1+2 .-> v4w[denguekay.pipelines<br/>v4_weekly] --> operativo[(data/silver/operativo)]
   v4w --> db
   gold --> model[denguekay.features / model / evaluation]
-  model --> registry[models/registry<br/>v0 · v1 · v2 · v3]
+  model --> registry[models/registry<br/>v0 · v1 · v2 · v3 · v4]
   gold --> serving[denguekay.serving<br/>load_data, publish]
   registry -. v3 .-> serving
   serving --> db[(PostgreSQL OE2<br/>denguekay.db)]
@@ -30,7 +30,7 @@ flowchart LR
 - **Modelado** (`denguekay.features`, `model`, `evaluation`): variables, entrenamiento, protocolos y las
   configuraciones congeladas; cada versión tiene su ficha en `models/registry/`.
 - **Backend** (`denguekay.serving`, `denguekay.db`, `apps/api`): carga validada, ajuste de servicio, Storage,
-  inferencia y la API del documento OE2. La configuración de servicio vigente es la v3.
+  inferencia y la API del documento OE2. La configuración de servicio vigente es la V4 (`v4_b3_live`).
 - **Frontend** (`apps/web/`): SPA React + Vite + TypeScript que consume lecturas de `/api/v1`.
 - **Investigación** (`research/`): congelada; puede importar el paquete, nunca al revés.
 
@@ -88,7 +88,7 @@ Denguekay/
 ├── research/                  # estudios congelados: 01_eda … 06_model_improvement (README y, si hace falta, manifiesto_datos.json por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
-│   └── registry/              # fichas de v0 … v3, CHANGELOG.md y <versión>/manifiesto_datos.json (datos del Release de cada tag)
+│   └── registry/              # fichas de v0 … v4, CHANGELOG.md y <versión>/manifiesto_datos.json (datos del Release de cada tag)
 ├── tests/                     # misma estructura que el paquete: tests/<subpaquete>/ y tests/api/
 │   ├── fixtures/backend/      # muestra agregada real, pequeña y versionada
 │   └── fixtures/equivalence/  # línea base de las guardas de la reestructuración (no se regenera)

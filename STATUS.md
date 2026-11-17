@@ -30,9 +30,15 @@ regenerar desde las fuentes está en [docs/reproducibilidad.md](docs/reproducibi
 
 ## Producto
 
-- **API:** FastAPI, contrato `1.1.0` (`api/v1.1.0`). Esquema hasta la migración `0009_v4`.
+- **API:** FastAPI, contrato `1.1.0` (`api/v1.1.0`). Esquema hasta la migración `0010_v4` (`0009` fija los umbrales de la US v1.4; `0010` guarda la geometría de cada distrito).
 - **Frontend:** `apps/web/` con las fases 1–7 cerradas (tablero, mapa y detalle, avisos, desempeño y ayuda,
-  validación con auditorías de accesibilidad). Demos locales con v2, v3 y v4 (`npm run dev:demo` abre la v4).
+  validación con auditorías de accesibilidad). Demos locales con v2, v3 y v4 (`npm run dev:demo` abre la v4). El mapa
+  muestra los límites distritales (COD-AB de Perú, IGN, OCHA/HDX, CC BY-IGO 3.0) con el centroide como respaldo.
+- **Calidad de datos:** `python -m denguekay.data.validation.quality_report` (solo lectura) genera
+  `docs/backend/evidencia/calidad_datos_v4.md`: completitud 100 % y 3 de 171 569 registros descartados (HU0005-4 y -5).
+- **Deriva:** `python -m denguekay.serving.drift` y el informe semanal registran la degradación frente a la referencia de la
+  HU0007-4; no reentrenan (HU0009-2). La ejecución mensual es del OE4.
+- **Trazabilidad:** [trazabilidad_hu.md](docs/backend/trazabilidad_hu.md) (HU0001 a HU0020, US v1.4).
 - **Despliegue:** el repo está preparado para Render, Supabase y Vercel; no hay nada desplegado.
 
 ## Investigación
@@ -47,4 +53,9 @@ la congelación de la v4 y la transferencia a Lambayeque y Tumbes.
   ([operación](docs/backend/operacion.md#actualización-semanal-v4)).
 - Reentrenamiento anual de la V4 al cierre de la temporada 2027 ([política](docs/modeling/reentrenamiento.md)).
 - Registrar la tarea programada de la actualización semanal (`scripts\register_weekly_v4_task.ps1`) en la BD que se use.
+- Canal de soporte de la ayuda (figura como «[canal de soporte por confirmar]») y decisión sobre publicar los polígonos
+  distritales (CC BY-IGO 3.0) antes del despliegue.
+- Grabar las líneas base de las guardas del contrato para las migraciones `0009_v4` y `0010_v4`
+  (`python tests/contract_v1_support.py record`).
+- Se cumplen en el OE4: la ejecución mensual de la deriva, la HU0019 y la medición desplegada del SLA.
 - Despliegue.
