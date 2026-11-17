@@ -3,6 +3,7 @@
 from datetime import date, datetime, timedelta, timezone
 import json
 from pathlib import Path
+import shutil
 from tempfile import TemporaryDirectory
 
 import pandas as pd
@@ -11,12 +12,12 @@ from denguekay.config.paths import (
     BRONZE_CHIRPS_EE_FINAL, BRONZE_CHIRPS_FINAL, BRONZE_CHIRPS_FINAL_FTP, BRONZE_CHIRPS_PRELIM, BRONZE_ENSO, BRONZE_EPI_CSV,
     BRONZE_SALA, BRONZE_SOCIO, CACHE_METEO, CACHE_METEO_ERA5_LAND_2000_2016, CACHE_METEO_ERA5_LAND_2017_2025,
     CACHE_METEO_ERA5_LAND_2026, CACHE_METEO_ERA5_LAND_RECENT, DISTRICT_COORDS, ROOT, UBIGEO_CATALOG,
-    V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_HISTORY, V4_INTEGRATED, V4_PANEL_WEATHER, V4_SALA, V4_SOCIO,
-    V4_WEATHER_SOCIO,
+    V4_CHIRPS, V4_ENSO, V4_ERA5_LAND, V4_FROZEN, V4_GEOGRAPHY, V4_HISTORY, V4_INTEGRATED, V4_PANEL_WEATHER, V4_SALA,
+    V4_SOCIO, V4_WEATHER_SOCIO,
 )
 from denguekay.data.ingestion import chirps, chirps_ee, chirps_prelim, openmeteo, release_bundles
 from denguekay.data.ingestion.enso import download_sstoi
-from denguekay.data.ingestion.minsa_sala_scraper import confirmed_weekly_points, scrape_sala
+from denguekay.data.ingestion.minsa_sala_scraper import SalaYearWithoutWeeks, confirmed_weekly_points, scrape_sala
 from denguekay.data.keys import normalize
 from denguekay.data.processing import chirps_precipitation as rain
 from denguekay.data.processing import socio_interpolation as socio
@@ -67,6 +68,25 @@ def restore_published_bronze():
         print(f"{name}: {report['extraidos']} extraídos y {report['ya_estaban']} ya verificados", flush=True)
 
 
+def download_era5_land(*, max_hourly_waits=None):
+    """ERA5-Land caches from 2000 to the latest available day (the weekly operation calls only this part).
+
+    ``max_hourly_waits`` limits the waits after Open-Meteo's hourly limit; ``None`` keeps the downloader's default.
+    A run that stops resumes from the caches on the next call."""
+    districts = pd.read_csv(DISTRICT_COORDS, float_precision="round_trip")
+    ranges = _weather_caches()
+    end = openmeteo.era5_land_end_date()
+    if end >= openmeteo.ERA5_LAND_RECENT_START:
+        ranges.append((openmeteo.ERA5_LAND_RECENT_START, end, CACHE_METEO_ERA5_LAND_RECENT / end))
+    limit = {} if max_hourly_waits is None else {"max_hourly_waits": max_hourly_waits}
+    for first, last, folder in ranges:
+        pending = openmeteo.download_all(districts, start_date=first, end_date=last, models="era5_land",
+                                         cache_dir=folder, daily_vars=openmeteo.ERA5_LAND_DAILY_VARS, **limit)
+        if pending:
+            raise RuntimeError(f"Incomplete ERA5-Land cache {folder.name}; resume V4 at step 02")
+    return {"distritos": len(districts), "caches": len(ranges)}
+
+
 def download_weather(*, era5_land=True):
     """Open-Meteo caches of the 2017–2025 panel and, with ``era5_land`` (v3 and V4), the ERA5-Land ones from 2000."""
     districts = pd.read_csv(DISTRICT_COORDS, float_precision="round_trip")
@@ -74,16 +94,7 @@ def download_weather(*, era5_land=True):
         raise RuntimeError("Incomplete 2017–2025 weather cache; resume at the weather download step")
     if not era5_land:
         return {"distritos": len(districts), "caches": 1}
-    ranges = _weather_caches()
-    end = openmeteo.era5_land_end_date()
-    if end >= openmeteo.ERA5_LAND_RECENT_START:
-        ranges.append((openmeteo.ERA5_LAND_RECENT_START, end, CACHE_METEO_ERA5_LAND_RECENT / end))
-    for first, last, folder in ranges:
-        pending = openmeteo.download_all(districts, start_date=first, end_date=last, models="era5_land",
-                                         cache_dir=folder, daily_vars=openmeteo.ERA5_LAND_DAILY_VARS)
-        if pending:
-            raise RuntimeError(f"Incomplete ERA5-Land cache {folder.name}; resume V4 at step 02")
-    return {"distritos": len(districts), "caches": len(ranges)}
+    return download_era5_land()
 
 
 def read_district_coords():
@@ -99,13 +110,8 @@ def read_district_coords():
     return pd.read_csv(DISTRICT_COORDS)
 
 
-def weather_silver(*, cutoff=V4_CUTOFF, era5_land=True):
-    """Weekly Open-Meteo panel and, with ``era5_land`` (v3 and V4), the ERA5-Land weekly silver trimmed to ``cutoff``."""
-    districts = read_district_coords()
-    daily_panel = load_daily_from_caches([CACHE_METEO], len(districts))
-    panel_weekly = clean_names_for_join(aggregate_to_weekly(daily_panel, districts))
-    if not era5_land:
-        return [write_silver(panel_weekly, V4_PANEL_WEATHER, line_ending="\n")]
+def _era5_land_weekly(districts):
+    """Weekly ERA5-Land of every cache and of the latest recent snapshot, with every day available."""
     folders = [folder for _, _, folder in _weather_caches()]
     if recent := latest_snapshot(CACHE_METEO_ERA5_LAND_RECENT):
         folders.append(recent)
@@ -114,6 +120,25 @@ def weather_silver(*, cutoff=V4_CUTOFF, era5_land=True):
                                                                openmeteo.ERA5_LAND_DAILY_VARS))
     if weekly.duplicated(["id_distrito", "semana_inicio"]).any() or weekly.empty:
         raise ValueError("ERA5-Land has duplicate or missing district-weeks")
+    return weekly
+
+
+def era5_land_silver(*, cutoff=V4_CUTOFF, output=None):
+    """ERA5-Land weekly silver trimmed to ``cutoff`` (``None`` keeps every week) and written to ``output``.
+
+    The default output is the V4 silver of the Release; the weekly operation passes its own, without cutoff."""
+    weekly = _era5_land_weekly(read_district_coords())
+    return write_silver(clip_weekly(weekly, cutoff), output or V4_ERA5_LAND)
+
+
+def weather_silver(*, cutoff=V4_CUTOFF, era5_land=True):
+    """Weekly Open-Meteo panel and, with ``era5_land`` (v3 and V4), the ERA5-Land weekly silver trimmed to ``cutoff``."""
+    districts = read_district_coords()
+    daily_panel = load_daily_from_caches([CACHE_METEO], len(districts))
+    panel_weekly = clean_names_for_join(aggregate_to_weekly(daily_panel, districts))
+    if not era5_land:
+        return [write_silver(panel_weekly, V4_PANEL_WEATHER, line_ending="\n")]
+    weekly = _era5_land_weekly(districts)   # validated before anything is written
     return [write_silver(panel_weekly, V4_PANEL_WEATHER, line_ending="\n"),
             write_silver(clip_weekly(weekly, cutoff), V4_ERA5_LAND)]
 
@@ -147,7 +172,9 @@ def _download_chirps(ee_final):
                 raise RuntimeError(summary["error"])
 
 
-def climate_silver(*, offline=False, cutoff=V4_CUTOFF):
+def climate_silver(*, offline=False, cutoff=V4_CUTOFF, enso_output=None, chirps_output=None):
+    """Niño 1+2 and CHIRPS silver trimmed to ``cutoff`` (``None`` keeps everything), written to the V4 files of the
+    Release unless the caller names its own outputs."""
     enso_candidates = sorted(BRONZE_ENSO.glob("sstoi_????????.indices"))
     if offline:
         if not enso_candidates:
@@ -179,8 +206,8 @@ def climate_silver(*, offline=False, cutoff=V4_CUTOFF):
     result = {"semanas_distritales_incompletas": len(discarded)}
     if not offline:
         result["captura_chirps"] = archive_snapshot(weekly, observed_at=datetime.now(timezone.utc)).name
-    result["series"] = [write_silver(clip_enso(enso, cutoff), V4_ENSO),
-                        write_silver(clip_weekly(weekly, cutoff), V4_CHIRPS)]
+    result["series"] = [write_silver(clip_enso(enso, cutoff), enso_output or V4_ENSO),
+                        write_silver(clip_weekly(weekly, cutoff), chirps_output or V4_CHIRPS)]
     return result
 
 
@@ -200,24 +227,84 @@ def replay_sala(folder, year, catalog):
     return result.assign(tipo_dx="C")
 
 
-async def sala_silver(*, offline=False, year=None, cutoff=V4_CUTOFF):
-    """Capture or replay the confirmed Sala series under the caller's event loop."""
+NEW_YEAR_GRACE_DAYS = 31   # a calendar year with no published week is tolerated only during its first month
+
+
+def _latest_capture(year):
+    folders = sorted(BRONZE_SALA.glob(f"{year}_*"))
+    if not folders:
+        raise FileNotFoundError(f"No Sala bronze snapshot for {year}")
+    return folders[-1]
+
+
+def _without_weeks(error):
+    while error is not None:
+        if isinstance(error, SalaYearWithoutWeeks):
+            return True
+        error = error.__cause__
+    return False
+
+
+async def sala_silver(*, offline=False, year=None, cutoff=V4_CUTOFF, refresh_years=None, output=None):
+    """Capture or replay the confirmed Sala series under the caller's event loop.
+
+    By default every year is scraped (or, with ``offline``, replayed from its newest capture). With ``refresh_years``
+    only those years are scraped and the others are replayed from their newest capture, falling back to a live
+    scrape of that year when there is none (or it does not replay). ``output`` replaces the V4 silver of the Release.
+
+    During the first month of a calendar year the Sala may not have published any week of it yet; that last year is
+    then skipped, provided the previous one was captured. Any other year without weeks is an error."""
     catalog = load_ubigeo_catalog(UBIGEO_CATALOG)
     targets = set(zip(catalog.provincia_sala, catalog.distrito_sala))
+    last = year or date.today().year
     frames = []
-    for item in range(SALA_FIRST_YEAR, (year or date.today().year) + 1):
-        if offline:
-            folders = sorted(BRONZE_SALA.glob(f"{item}_*"))
-            if not folders:
-                raise FileNotFoundError(f"No Sala bronze snapshot for {item}")
-            folder = folders[-1]
-        else:
+    for item in range(SALA_FIRST_YEAR, last + 1):
+        may_be_empty = (year is None and item == last and item > SALA_FIRST_YEAR and bool(frames)
+                        and date.today() < date(item, 1, 1) + timedelta(days=NEW_YEAR_GRACE_DAYS))
+        frame = None
+        if offline or (refresh_years is not None and item not in refresh_years):
+            try:
+                frame = replay_sala(_latest_capture(item), item, catalog)
+            except (FileNotFoundError, ValueError) as error:
+                if offline:
+                    if may_be_empty and isinstance(error, FileNotFoundError):
+                        continue
+                    raise
+        if frame is None:
             stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
             folder = BRONZE_SALA / f"{item}_{stamp}"
-            await scrape_sala(item, targets, folder)
-        frames.append(replay_sala(folder, item, catalog))
+            try:
+                await scrape_sala(item, targets, folder)
+            except RuntimeError as error:
+                if not (may_be_empty and _without_weeks(error)):
+                    raise
+                if folder.is_dir() and not any(folder.glob("*.json")):
+                    shutil.rmtree(folder)
+                continue
+            frame = replay_sala(folder, item, catalog)
+        frames.append(frame)
     sala = pd.concat(frames, ignore_index=True).sort_values(["ubigeo", "anio", "semana"])
-    return write_silver(clip_sala(sala, cutoff), V4_SALA)
+    return write_silver(clip_sala(sala, cutoff), output or V4_SALA)
+
+
+def ensure_operational_release():
+    """Extract from the Releases of the V4 only what the weekly operation reads and is still missing.
+
+    The panel with its coverage file, the history and the district geography come from ``datos_v4.zip``; the frozen
+    boosters from ``modelo_v4.zip``. A file that already exists is neither downloaded nor touched, and one that
+    exists with other content stops the run (nothing is ever overwritten). The frozen silver of the sources that
+    keep moving and ``data/gold/`` are not extracted: the operation writes its own sources apart."""
+    manifest = release_bundles.manifest_path(version="v4")
+    relative = lambda path: path.relative_to(ROOT).as_posix()
+    data = [path for path in (V4_INTEGRATED, coverage_path(V4_INTEGRATED), V4_HISTORY, V4_GEOGRAPHY)
+            if not path.is_file()]
+    report = {}
+    if data:
+        report.update(release_bundles.fetch(manifest, only=["datos_v4.zip"],
+                                            prefixes=tuple(relative(path) for path in data)))
+    if not (V4_FROZEN / "paquete.json").is_file():
+        report.update(release_bundles.fetch(manifest, only=["modelo_v4.zip"], prefixes=(relative(V4_FROZEN),)))
+    return report
 
 
 def historical_silver():

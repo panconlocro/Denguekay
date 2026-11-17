@@ -23,6 +23,10 @@ CHARTS = {"confirmados": "ten-fig02a-echart", "notificados": "ten-fig02b-echart"
 CHART = CHARTS["confirmados"]
 
 
+class SalaYearWithoutWeeks(RuntimeError):
+    """The Sala has no published week for the year yet (the first days of a new year)."""
+
+
 def check_case_definition(case_definition: str) -> str:
     if case_definition not in CHARTS:
         raise ValueError(f"Unknown case definition {case_definition!r}; use one of {sorted(CHARTS)}")
@@ -39,7 +43,9 @@ def observed_weekly_points(raw_points: list, year: int) -> list[list[int]]:
     if any(value is not None for _, value in points[first_unobserved:]):
         raise RuntimeError(f"Sala weekly series for {year} contains an internal missing week")
     observed = points[:first_unobserved]
-    if not observed or any(not isinstance(value, (int, float)) or value < 0 or int(value) != value for _, value in observed):
+    if not observed:
+        raise SalaYearWithoutWeeks(f"Sala case counts for {year} are malformed: no week is observed yet")
+    if any(not isinstance(value, (int, float)) or value < 0 or int(value) != value for _, value in observed):
         raise RuntimeError(f"Sala case counts for {year} are malformed")
     return observed
 
@@ -55,8 +61,10 @@ def confirmed_weekly_points(chart: dict, year: int) -> list[list[int]]:
     prefix = f"{year}-"
     weeks = [label for label in chart["xAxis"][0]["data"] if label.startswith(prefix)]
     points = [point["value"] for point in confirmed[0]["data"] if point["value"][0].startswith(prefix)]
+    if not weeks:
+        raise SalaYearWithoutWeeks(f"Sala CONFIRMADO does not match the weekly axis for {year}: the axis has no weeks")
     if (
-        not weeks or len(weeks) > 53
+        len(weeks) > 53
         or weeks != [f"{year}-{week:02d}" for week in range(1, len(weeks) + 1)]
         or [label for label, _ in points] != weeks
     ):
