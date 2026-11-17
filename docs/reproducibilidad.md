@@ -205,6 +205,25 @@ El gold de la corrida desde bronze tuvo las mismas 73 775 llaves del gold congel
 cambiaron dos etiquetas de brote por horizonte. Con los archivos del Release se verificaron los diez hashes
 de los insumos y el CSV congelado se regeneró byte por byte. La guía de V4 explica ambas rutas y sus salidas.
 
+**Cotejo del 16 de noviembre de 2026 (Windows, ruta completa).** En un clon aparte se ejecutaron los 12 pasos
+de `pipelines/notebooks/V4/` con `--bronze-publicado` y descargas reales (Open-Meteo, Drive, Sala, NOAA, CHC), sin
+extraer antes `datos_v4.zip`. Código de salida `0`. Lo que escribió el pipeline en `data/` se comparó con el Release:
+
+| Archivo | Comparación con el Release |
+|---|---|
+| Histórico confirmado, cobertura, Niño 1+2, ERA5-Land, UBIGEO y geografía de B3 | SHA-256 idénticos. Para ERA5-Land hace falta leer `distritos_piura_coords.csv` con el lector de pandas por defecto (con `round_trip` Arenal y Miguel Checa cambian 1 ulp). |
+| Integrado de confirmados | Mismas llaves y textos. Diferencia numérica máxima 5,7 × 10⁻¹⁴ (dentro de 1 × 10⁻¹²). |
+| Sala Situacional | 102 filas con conteo distinto del Release (MINSA revisó conteos de semanas ya publicadas). |
+| CHIRPS | 325 filas distintas, que son 5 semanas (2026-09-27 a 2026-10-25) × 65 distritos: pasaron de `prelim` a `final` porque el CHC publicó el dato final después de congelar V4. Las demás filas, versiones y fechas son idénticas. |
+| Consulta nueva de elevación | Difiere de la geografía del Release; B3 usa la del Release. |
+| Gold h2 de confirmados (`11_gold`) | Mismas 30 485 filas y 24 columnas que el del Release. Idéntico salvo 1 × 10⁻¹⁶ en `semana_epi_seno` y `semana_epi_coseno` (diferencia entre plataformas ya conocida). En `manifest_fase6.json` solo cambia `sha256_fuente`, por el integrado. |
+| Gold B3 (`11_gold`) | Mismas 73 775 filas y llaves. Contra el gold generado con los insumos del Release cambian 500 celdas, todas en columnas derivadas de casos (rezagos históricos, pendiente, casos y etiquetas de brote por horizonte; 2 etiquetas por horizonte). Clima, geografía y estacionalidad son idénticos: las 5 semanas de CHIRPS republicadas no entran al entrenamiento. |
+
+Con los archivos del Release en `data/`, el gold B3 en Windows queda dentro de tolerancia frente a la referencia
+independiente y `research/08_v3_confirmed_cases/code/freeze_v4.py` corre de principio a fin (10 boosters, 73 775
+filas). Sobre los archivos regenerados el script se detiene en su propia guarda («Changed epidemiological input»),
+porque exige los hashes exactos de los insumos del estudio; esos hashes cambian cuando las fuentes republican.
+
 ## 4. Límites conocidos
 
 - **Las fuentes republican:** las semanas recientes de la Sala, el Excel de casos y CHIRPS preliminar cambian.
