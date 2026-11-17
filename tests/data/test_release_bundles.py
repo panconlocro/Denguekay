@@ -72,6 +72,21 @@ class TestReleaseBundles(unittest.TestCase):
         with self.assertRaises(rb.BundleError):
             rb.verify_bundle(zip_path, {**entry, "destino": "data"})
 
+    def test_data_dir_receives_only_silver_and_gold(self):
+        gold = self.root / "data" / "gold" / "g.csv"
+        reference = self.root / "data" / "reference" / "r.csv"
+        for path in (gold, reference):
+            path.parent.mkdir(parents=True)
+            path.write_text("x\n1\n", encoding="utf-8")
+        entry = rb.build_bundle([self.csv, gold, reference], self.zip, "data", self.root)
+        folder = Path(self.tmp.name) / "data_anteriores" / "v2"
+        report = rb.extract_bundle(self.zip, entry, self.destination, data_dir=folder)
+        self.assertEqual((report["extraidos"], report["omitidos"]), (2, 1))
+        self.assertEqual((folder / "silver" / "a.csv").read_bytes(), self.csv.read_bytes())
+        self.assertTrue((folder / "gold" / "g.csv").is_file())
+        self.assertFalse(self.destination.exists())   # nothing under data/ of the checkout
+        self.assertEqual(rb.extract_bundle(self.zip, entry, self.destination, data_dir=folder)["ya_estaban"], 2)
+
     def test_selects_bronze_without_extracting_silver(self):
         raw = self.root / "data" / "bronze" / "raw.txt"
         raw.parent.mkdir()

@@ -9,6 +9,7 @@ Any notebook or script that needs a data path must import it from here
 instead of hardcoding new paths.
 """
 
+import os
 from pathlib import Path
 
 # Repository root (this file lives in src/denguekay/config/paths.py -> go up 3 levels)
@@ -18,11 +19,16 @@ SRC = ROOT / "src"
 CONFIG = ROOT / "configs" / "config.yaml"
 
 DATA = ROOT / "data"
+# Silver and gold of an older version live apart from the V4 ones in data/: with DENGUEKAY_DATA_DIR set (relative to
+# the repository root, e.g. data_anteriores/v2), SILVER and GOLD hang from that folder, and everything derived from
+# them (SILVER_*, GOLD_*, GOLD_MANIFEST, ...) follows. BRONZE (the common cache) and REFERENCE never move. The folder
+# should be inside the repository: several modules report their files relative to ROOT.
+DATA_DIR = ROOT / os.environ["DENGUEKAY_DATA_DIR"] if os.environ.get("DENGUEKAY_DATA_DIR") else DATA
 
 BRONZE = DATA / "bronze"
-SILVER = DATA / "silver"
+SILVER = DATA_DIR / "silver"
 SILVER_EPI_HISTORICAL = SILVER / "epi_piura_semanal.csv"
-GOLD = DATA / "gold"   # datasets derived per horizon and the lineage manifest
+GOLD = DATA_DIR / "gold"   # datasets derived per horizon and the lineage manifest
 REFERENCE = DATA / "reference"
 
 # Bronze subfolders per source

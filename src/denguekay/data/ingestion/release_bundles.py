@@ -108,21 +108,35 @@ def verify_bundle(zip_path: Path, entry: dict) -> None:
                           f"(sobran {sorted(set(members) - expected)}, faltan {sorted(expected - set(members))})")
 
 
+DATA_DIR_FOLDERS = (("data", "silver"), ("data", "gold"))
+
+
 def extract_bundle(zip_path: Path, entry: dict, root: Path = ROOT, overwrite: bool = False, *,
-                   prefixes: tuple[str, ...] = ()) -> dict:
+                   prefixes: tuple[str, ...] = (), data_dir: Path | None = None) -> dict:
     """Verify the zip and extract it under ``root``, checking each extracted file's SHA-256.
 
     A file already present with the same SHA-256 is left alone; with a different one it is an error unless
     ``overwrite``. When prefixes are given, verify the complete zip and extract only those directories.
+    With ``data_dir`` the files of ``data/silver`` and ``data/gold`` go to ``<data_dir>/silver`` and
+    ``<data_dir>/gold`` (an older version apart from the V4 data); the other members are not extracted (they are
+    shared and stay where they are), and the report counts them as ``omitidos``.
     """
     verify_bundle(zip_path, entry)
     report = {"extraidos": 0, "ya_estaban": 0, "sobrescritos": 0}
+    if data_dir is not None:
+        report["omitidos"] = 0
     with zipfile.ZipFile(zip_path) as z:
         for f in entry["archivos"]:
             member = PurePosixPath(f["ruta"])
             if prefixes and not any(member.is_relative_to(prefix) for prefix in prefixes):
                 continue
-            target = root / Path(*member.parts)
+            if data_dir is None:
+                target = root / Path(*member.parts)
+            elif member.parts[:2] in DATA_DIR_FOLDERS:
+                target = Path(data_dir) / Path(*member.parts[1:])
+            else:
+                report["omitidos"] += 1
+                continue
             if target.exists():
                 if sha256_file(target) == f["sha256"]:
                     report["ya_estaban"] += 1
@@ -176,7 +190,8 @@ def load_manifest(path: Path = V3_DATA_MANIFEST) -> dict:
 
 
 def fetch(manifest_path: Path = V3_DATA_MANIFEST, root: Path = ROOT, only: list[str] | None = None,
-          overwrite: bool = False, folder: Path | None = None, *, prefixes: tuple[str, ...] = ()) -> dict:
+          overwrite: bool = False, folder: Path | None = None, *, prefixes: tuple[str, ...] = (),
+          data_dir: Path | None = None) -> dict:
     """Download the manifest's zips from its Release, verify them and extract them under ``root``.
 
     ``folder`` keeps the downloaded zips (and reuses a zip already there if its SHA-256 matches); without it they
@@ -192,7 +207,7 @@ def fetch(manifest_path: Path = V3_DATA_MANIFEST, root: Path = ROOT, only: list[
             zip_path = where / entry["nombre"]
             if not (zip_path.exists() and sha256_file(zip_path) == entry["sha256"]):
                 download(release_url(manifest["repositorio"], manifest["tag"], entry["nombre"]), zip_path)
-            reports[entry["nombre"]] = extract_bundle(zip_path, entry, root, overwrite, prefixes=prefixes)
+            reports[entry["nombre"]] = extract_bundle(zip_path, entry, root, overwrite, prefixes=prefixes, data_dir=data_dir)
     return reports
 
 
@@ -202,12 +217,18 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--estudio", help="carpeta del estudio en research/ (p. ej. 05_fe_hyperparameters)")
     parser.add_argument("--manifiesto", type=Path, help="ruta de un manifiesto (en lugar de --version o --estudio)")
     parser.add_argument("--raiz", type=Path, default=ROOT, help="carpeta donde extraer (por defecto, este repo)")
+    parser.add_argument("--data-dir", type=Path, help="extrae solo data/silver y data/gold en <carpeta>/silver y "
+                        "<carpeta>/gold (relativa a la raíz del repo), sin tocar data/; no combina con --raiz")
     parser.add_argument("--solo", nargs="*", help="nombres de los zips a descargar (por defecto, todos)")
     parser.add_argument("--carpeta", type=Path, help="carpeta donde guardar los zips descargados")
     parser.add_argument("--sobrescribir", action="store_true", help="reemplaza archivos existentes distintos")
     args = parser.parse_args(argv)
+    if args.data_dir and args.raiz != ROOT:
+        parser.error("--data-dir no se combina con --raiz")
     path = args.manifiesto or manifest_path(args.version, args.estudio)
-    reports = fetch(path, root=args.raiz, only=args.solo, overwrite=args.sobrescribir, folder=args.carpeta)
+    data_dir = ROOT / args.data_dir if args.data_dir else None
+    reports = fetch(path, root=args.raiz, only=args.solo, overwrite=args.sobrescribir, folder=args.carpeta,
+                    data_dir=data_dir)
     for name, report in reports.items():
         print(f"{name}: verificado; {report}")
 
