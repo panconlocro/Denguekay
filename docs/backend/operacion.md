@@ -178,8 +178,8 @@ espera a cuatro días, y la segunda no hace nada si no hay semana nueva). El scr
 | `--inicial` | Primera corrida en una BD nueva (extrae lo que falte y publica el paquete). |
 
 **Qué hace.** (1) Comprueba el entorno y toma un candado. (2) Descarga la Sala (el año actual y el anterior; los
-demás se reproducen de su última captura) y calcula el corte esperado: la última semana publicada menos las dos
-provisionales. (3) Si ese corte ya está emitido, termina con `sin_novedad` sin tocar clima ni BD. (4) Si no, baja
+demás se reproducen de su última captura) y calcula el corte esperado: la última semana publicada menos las
+semanas provisionales (`semanas_provisionales` de `config.yaml`; 0 en la operación: se usa la última semana publicada). (3) Si ese corte ya está emitido, termina con `sin_novedad` sin tocar clima ni BD. (4) Si no, baja
 ERA5-Land, CHIRPS y Niño 1+2. (5) Carga y emite en **una sola transacción**: si algo falla no queda ninguna predicción
 ni observación nuevas, el pronóstico anterior sigue vigente y el fallo queda en `ejecucion`. La excepción es la primera
 corrida con `--inicial`: `publish` registra el paquete y confirma su propia carga de datos antes, así que si la emisión

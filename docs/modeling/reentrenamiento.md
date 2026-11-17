@@ -13,11 +13,11 @@ reentrenamiento y el siguiente el paquete queda fijo. No hay reentrenamiento aut
 
 Cuando el corte no provisional alcanza el cierre de la SE 34 (la temporada va de la SE 35 a la SE 34). La V4 tiene
 etiquetas hasta la SE 41 de 2026 (17/10/2026), así que el próximo reentrenamiento corresponde al cierre de la temporada
-2027: SE 34 de 2027, que cierra el 28/08/2027 según el calendario MMWR del repo. Como el corte es la última semana que
-publica la Sala menos las dos provisionales, el corte llega a esa SE cuando la Sala publica la SE 36; por el rezago
+2027: SE 34 de 2027, que cierra el 28/08/2027 según el calendario MMWR del repo. Como la operación usa la última semana
+publicada (`semanas_provisionales: 0`), el corte llega a esa SE cuando la Sala publica la SE 34; por el rezago
 con que la Sala traía sus semanas (el 15/11/2026 ya publicaba la SE 44, que cerró el 07/11, y el 12/11 ya tenía la
-SE 43, que cerró el 31/10: hasta 8 y 12 días de rezago), la SE 36 de 2027 (cierra el 11/09/2027) estaría entre el 17 y el
-23 de setiembre de 2027. Es una estimación con dos observaciones, no una serie. El informe de cada corrida semanal lo avisa con `reentrenamiento_anual_pendiente`
+SE 43, que cerró el 31/10: hasta 8 y 12 días de rezago), la SE 34 de 2027 (cierra el 28/08/2027) estaría entre el 5 y el
+9 de setiembre de 2027. Es una estimación con dos observaciones, no una serie. El informe de cada corrida semanal lo avisa con `reentrenamiento_anual_pendiente`
 (`denguekay.serving.emissions.retraining_due`, que lee `corte_etiquetas` de la
 [ficha de la V4](../../models/registry/v4/ficha.json)).
 
@@ -41,8 +41,8 @@ SE 43, que cerró el 31/10: hasta 8 y 12 días de rezago), la SE 36 de 2027 (cie
 4. **La Sala revisa semanas ya publicadas.** En el cotejo del 15/11/2026 cambiaron 102 conteos de 2026, 61 de ellos en
    la SE 41 o anteriores ([reproducibilidad](../reproducibilidad.md)). Eso sustenta no reentrenar cada semana; la misma
    fuente indica que esas revisiones cambiaron solo dos etiquetas de brote por horizonte, y que el cotejo no las
-   desglosa por antigüedad de la semana. Cortar al cierre de la SE 34 con dos semanas provisionales excluidas no evita
-   por completo las revisiones de semanas ya no provisionales.
+   desglosa por antigüedad de la semana. Cortar al cierre de la SE 34 no evita las revisiones: con
+   `semanas_provisionales: 0` el corte incluye las semanas más recientes, cuyo conteo aún puede cambiar.
 5. **La evaluación prospectiva archiva la fecha de emisión, los insumos y los pronósticos antes de conocer los
    desenlaces** ([congelamiento de la V4](../../research/08_v3_confirmed_cases/congelamiento_b3_v4.md)). Mantener el
    mismo modelo durante toda la temporada es una decisión del equipo para que esos pronósticos sean comparables; esa
