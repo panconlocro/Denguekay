@@ -87,6 +87,19 @@ class TestReleaseBundles(unittest.TestCase):
         self.assertFalse(self.destination.exists())   # nothing under data/ of the checkout
         self.assertEqual(rb.extract_bundle(self.zip, entry, self.destination, data_dir=folder)["ya_estaban"], 2)
 
+    def test_command_line_passes_prefixes_and_data_dir_to_fetch(self):
+        from unittest.mock import patch
+
+        with patch.object(rb, "fetch", return_value={}) as fetch, patch.object(rb, "manifest_path", return_value="m.json"):
+            rb.main(["--version", "v3", "--solo", "datos_v3.zip", "--prefijo", "models/experimentos"])
+            self.assertEqual(fetch.call_args.kwargs["prefixes"], ("models/experimentos",))
+            self.assertIsNone(fetch.call_args.kwargs["data_dir"])
+            rb.main(["--version", "v2", "--data-dir", "data_anteriores/v2"])
+            self.assertEqual(fetch.call_args.kwargs["prefixes"], ())
+            self.assertEqual(fetch.call_args.kwargs["data_dir"], rb.ROOT / "data_anteriores" / "v2")
+        with self.assertRaises(SystemExit):
+            rb.main(["--version", "v2", "--data-dir", "d", "--raiz", "otra"])
+
     def test_selects_bronze_without_extracting_silver(self):
         raw = self.root / "data" / "bronze" / "raw.txt"
         raw.parent.mkdir()

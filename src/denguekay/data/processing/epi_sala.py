@@ -142,7 +142,7 @@ def upsert_sala_silver(path: Path, fresh: pd.DataFrame, *, replace_legacy: bool 
         elif replace_legacy:
             logging.warning("Replacing legacy Sala silver with confirmed cases: %s", path)
         else:
-            raise ValueError("Sala silver predates confirmed-only extraction; run notebook 06b first")
+            raise ValueError("Sala silver predates confirmed-only extraction; run step 05_bronze_sala of pipelines/notebooks/V4 first")
     if fresh.duplicated(KEY).any():
         raise ValueError("Sala silver contains duplicate district-weeks")
     temporary = None

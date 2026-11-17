@@ -36,12 +36,20 @@ py -3.12 -m venv .venv
 
 ## 3. Descargar y verificar los datos
 
+`data/silver/` y `data/gold/` son los de V4. Los de la v3 se extraen aparte, en `data_anteriores/v3/`, y el código los
+lee con `DENGUEKAY_DATA_DIR` (ver [reproducibilidad §2](../reproducibilidad.md)):
+
 ```powershell
-.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v3 --data-dir data_anteriores/v3 --solo datos_v3.zip
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v3 --solo datos_v3.zip --prefijo models/experimentos
+.\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v3 --solo predicciones_v3.zip comparadores_v3.zip
+$env:DENGUEKAY_DATA_DIR = "data_anteriores/v3"
 ```
 
 El módulo descarga los zips del Release y comprueba el SHA-256 de cada zip y de cada archivo contra el
-manifiesto. Después los descomprime en la raíz del repo:
+manifiesto. La primera orden deja los archivos de `data/silver` y `data/gold` del zip de datos en
+`data_anteriores/v3/`; la segunda, su parte de `models/experimentos/`; la tercera, las predicciones. Sin `--data-dir`,
+los zips se descomprimen en la raíz del repo, que es lo que usan los de `models/`:
 
 | Zip | Contenido | Destino |
 |---|---|---|
@@ -58,6 +66,7 @@ manifiesto. Después los descomprime en la raíz del repo:
 ## 4. Reentrenar la V3 y comprobar la huella
 
 ```powershell
+$env:DENGUEKAY_DATA_DIR = "data_anteriores/v3"
 .\.venv\Scripts\python research/06_model_improvement/code/phase_v3_close.py verificar --semilla 17
 ```
 
@@ -136,8 +145,8 @@ son los archivos del Release**, con los SHA-256 del manifiesto, no una descarga 
 
 Lo que necesita **PostgreSQL** está marcado. Lo demás corre con SQLite o sin BD.
 
-1. **Instalar** (sección 2) y **descargar los datos** de la v3:
-   `python -m denguekay.data.ingestion.release_bundles --version v3`.
+1. **Instalar** (sección 2) y **descargar los datos** de la v3 en `data_anteriores/v3` (sección 3), con
+   `DENGUEKAY_DATA_DIR` definida en cada terminal.
 2. **Migrar** (crea `temp_media_era5_land_c`, migración `0007_v3`). Con SQLite local alcanza para probar; en
    PostgreSQL usa `MIGRATION_DATABASE_URL` (ver `docs/backend/despliegue.md`):
 
@@ -145,11 +154,12 @@ Lo que necesita **PostgreSQL** está marcado. Lo demás corre con SQLite o sin B
    .\.venv\Scripts\python -m alembic upgrade head
    ```
 
-3. **Regenerar gold** con d3. Escribe en `data/gold/`. Necesita el integrado y su cobertura, que bajan con
-   `--version v2`:
+3. **Regenerar gold** con d3. Escribe en `data_anteriores/v3/gold/`. Necesita el integrado (viene en `datos_v3.zip`) y su
+   cobertura, que baja con `datos_v2.zip`:
 
    ```powershell
-   .\.venv\Scripts\python -m jupyter nbconvert --to notebook --execute --inplace pipelines/notebooks/10_silver_to_gold.ipynb
+   .\.venv\Scripts\python -m denguekay.data.ingestion.release_bundles --version v2 --data-dir data_anteriores/v3 --solo datos_v2.zip
+   .\.venv\Scripts\python -m denguekay.pipelines.run_all --version v3 --desde 11 --hasta 11
    ```
 
 4. **Construir el paquete servido sin BD**: booster, α, Platt y la `w` de 5a. Imprime la paridad con la v3

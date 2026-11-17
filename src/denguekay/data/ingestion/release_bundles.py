@@ -217,6 +217,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--estudio", help="carpeta del estudio en research/ (p. ej. 05_fe_hyperparameters)")
     parser.add_argument("--manifiesto", type=Path, help="ruta de un manifiesto (en lugar de --version o --estudio)")
     parser.add_argument("--raiz", type=Path, default=ROOT, help="carpeta donde extraer (por defecto, este repo)")
+    parser.add_argument("--prefijo", nargs="+", metavar="CARPETA",
+                        help="extrae solo los miembros bajo estas carpetas del zip (p. ej. models/experimentos); "
+                             "el zip se verifica completo")
     parser.add_argument("--data-dir", type=Path, help="extrae solo data/silver y data/gold en <carpeta>/silver y "
                         "<carpeta>/gold (relativa a la raíz del repo), sin tocar data/; no combina con --raiz")
     parser.add_argument("--solo", nargs="*", help="nombres de los zips a descargar (por defecto, todos)")
@@ -228,7 +231,7 @@ def main(argv: list[str] | None = None) -> None:
     path = args.manifiesto or manifest_path(args.version, args.estudio)
     data_dir = ROOT / args.data_dir if args.data_dir else None
     reports = fetch(path, root=args.raiz, only=args.solo, overwrite=args.sobrescribir, folder=args.carpeta,
-                    data_dir=data_dir)
+                    prefixes=tuple(args.prefijo or ()), data_dir=data_dir)
     for name, report in reports.items():
         print(f"{name}: verificado; {report}")
 

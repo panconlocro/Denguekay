@@ -59,7 +59,7 @@ def merge_with_epi(
 
     if sala_cases is not None:
         if "tipo_dx" not in sala_cases or not sala_cases["tipo_dx"].isin(["C"]).all():
-            raise ValueError("Run notebook 06b to build the confirmed Sala silver before integrating")
+            raise ValueError("Run step 05_bronze_sala of pipelines/notebooks/V4 to build the confirmed Sala silver before integrating")
         df_cases = df_cases.loc[df_cases["anio"].lt(SALA_FIRST_YEAR)]
     covered_years = set(pd.to_numeric(df_cases["anio"], errors="raise").astype(int))
     if sala_cases is not None:

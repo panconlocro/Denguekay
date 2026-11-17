@@ -34,4 +34,17 @@ corrida desde las fuentes reemplaza una copia exacta extraída antes: se recuper
 2026, etiquetas hasta 2026-10-17, ERA5-Land y CHIRPS hasta la semana del 2026-10-25, Niño 1+2 hasta 2026-10) está en
 `src/denguekay/pipelines/versions.py`.
 
-*Pendiente de la etapa 6: documentar aquí la fecha de la captura de la Sala y el origen de la geografía.*
+## Sala Situacional
+
+El paso 05 captura la serie CONFIRMADO de 2025 (completo, SE 53) y de 2026, y `versions.py` la recorta a la SE 43 de 2026
+(6 240 filas, 2 semanas provisionales). El Release no registra la fecha de su captura. Una corrida nueva captura el
+día en que se ejecuta: la del 16/11/2026 difirió en 102 filas con conteo distinto, que MINSA revisó. Las respuestas
+crudas quedan en `data/bronze/epi/sala/<año>_<fecha UTC>/`.
+
+## Geografía
+
+Los centroides del catálogo (`data/reference/distritos_piura_coords.csv`, versionado) salen de GADM 4.1 nivel 3
+(`geodata.ucdavis.edu/gadm/gadm4.1/json/gadm41_PER_3.json.zip`). La elevación fija de B3 es el DEM Copernicus GLO-90 en esos
+puntos, según el [resultado del estudio 08](../../../research/08_v3_confirmed_cases/resultado_resolucion_chirts.md). El
+paso 01 vuelve a consultar la elevación en la API de Open-Meteo y la guarda en `data/bronze/geografia/` solo para
+cotejarla: **la geografía que usa el modelo es la archivada en el Release** (`geografia_distritos.csv`).

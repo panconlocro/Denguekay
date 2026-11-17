@@ -1,5 +1,5 @@
 """
-Detached run of the CHIRPS v3 download (cells A and B of pipelines/notebooks/03c_ingesta_chirps.ipynb).
+Detached run of the CHIRPS v3 download (cells A and B of the former notebook 03c_ingesta_chirps; the tag model/v3 keeps it).
 
 From the repository (or worktree) root, with its .venv:
 

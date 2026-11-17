@@ -166,9 +166,9 @@ silver/
     ├── meteo_socio_epi_piura_2017_2025.csv               # + epi completado por el actualizador
     └── meteo_socio_epi_piura_2017_2025.coverage.csv      # cobertura de casos verificados
 ```
-**Por fuente (raíz de `silver/`):** ya pasaron por normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Es la salida de cualquier notebook `0X_bronze_to_silver_*`. Si agregas una fuente nueva (ej. datos de un hospital, otro sensor climático), su versión limpia va acá con su propio nombre de archivo.
+**Por fuente (raíz de `silver/`):** ya pasaron por normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Es la salida de cualquier paso `06_silver_*` a `08_silver_*` de `pipelines/notebooks/<versión>/`. Si agregas una fuente nueva (ej. datos de un hospital, otro sensor climático), su versión limpia va acá con su propio nombre de archivo.
 
-**`silver/integrado/`:** el resultado de cualquier merge entre fuentes silver (notebooks `08_silver_merge_*` y `09_silver_merge_*`, y el actualizador `src/denguekay/pipelines/weekly_update.py`). Siguen siendo datos limpios sin features derivadas, por eso **no van en gold**. Si agregas una versión nueva (ej. extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`meteo_socio_epi_piura_2017_2026.csv`) para poder comparar versiones.
+**`silver/integrado/`:** el resultado de cualquier merge entre fuentes silver (los pasos `09_silver_meteo_socio` y `10_silver_integrado` de cada versión, y el actualizador `src/denguekay/pipelines/weekly_update.py`). Siguen siendo datos limpios sin features derivadas, por eso **no van en gold**. Si agregas una versión nueva (ej. extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`meteo_socio_epi_piura_2017_2026.csv`) para poder comparar versiones.
 
 ### `data/gold/` — solo el dataset con feature engineering
 ```
@@ -182,7 +182,7 @@ gold/
 ```
 **Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
 
-Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
+Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el paso `11_gold` de cada versión genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
 
 El recorrido `run_all --version v4` ejecuta los notebooks de `pipelines/notebooks/V4/` (el 11 llama a `features.gold_v4`). Escribe en
 `data/silver/` y `data/gold/` con los nombres del Release (`data/silver/confirmados/`, etc.), fuera de Git; el corte de
@@ -510,7 +510,7 @@ Para actualizaciones incrementales del dataset ya consolidado, usar
 detecta componentes incompletos por `ubigeo`/año/semana y llama solo a las
 fuentes necesarias. El CSV lateral `<dataset>.coverage.csv` diferencia un
 cero epidemiológico ya verificado de un cero en una fila nueva sin cobertura.
-El notebook 09 reconstruye la base histórica y delega la salida final a este
+El paso `10_silver_integrado` reconstruye la base histórica y delega la salida final a este
 módulo.
 
 ---
