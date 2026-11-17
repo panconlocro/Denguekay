@@ -122,6 +122,13 @@ V4_CHIRPS_SNAPSHOTS = SILVER / "chirps_capturas"
 V4_CHIRPS_CUTOFFS = SILVER / "chirps_al_corte"
 V4_ENSO = SILVER_ENSO
 V4_ERA5_LAND = SILVER_METEO_ERA5_LAND_2000_2026
+# Weekly operation of the V4 (denguekay.pipelines.v4_weekly): the four sources that keep moving, WITHOUT the frozen
+# cutoff, apart from the Release copy above (which never changes). The package reads them through configs/config.yaml.
+SILVER_OPERATIONAL = SILVER / "operativo"
+OPERATIONAL_SALA = SILVER_OPERATIONAL / SILVER_SALA.name
+OPERATIONAL_ERA5_LAND = SILVER_OPERATIONAL / SILVER_METEO_ERA5_LAND.name
+OPERATIONAL_CHIRPS = SILVER_OPERATIONAL / SILVER_CHIRPS_PRECIP.name
+OPERATIONAL_ENSO = SILVER_OPERATIONAL / SILVER_ENSO.name
 V4_ELEVATION_RAW = BRONZE / "geografia" / "open_meteo_elevation"
 # New elevation query, kept in bronze only for comparison with the Release geography (V4_GEOGRAPHY, the one the model uses).
 V4_LIVE_GEOGRAPHY = BRONZE / "geografia" / "geografia_distritos_v4.csv"
@@ -180,6 +187,8 @@ FE_HYPERPARAMETERS_FIGURES = RESEARCH / "05_fe_hyperparameters" / "docs" / "figu
 FE_HYPERPARAMETERS_EXPERIMENTS = MODELS / "experimentos" / "fe_hiperparametros"
 VARIABLE_DICTIONARY = DOCS / "modeling" / "diccionario_variables.md"
 SERVING_RUNS =SERVING_MODELS / "ejecuciones"
+# Weekly V4 update: lock, run reports, archived emissions and logs (not versioned).
+SERVING_WEEKLY = SERVING_MODELS / "actualizacion_semanal"
 SERVING_REGENERATED_PROTOCOL = SERVING_MODELS / "protocolo_regenerado"
 EDA_DOCS = RESEARCH / "01_eda" / "docs"
 EDA_FIGURES = EDA_DOCS / "figuras"
