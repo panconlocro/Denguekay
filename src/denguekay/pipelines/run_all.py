@@ -40,6 +40,10 @@ def data_dir_for(version: str) -> str | None:
 _STEP = re.compile(r"^(\d{2})_.+\.ipynb$")
 
 
+def _shown(path: Path) -> Path:
+    return path.relative_to(ROOT) if path.is_relative_to(ROOT) else path
+
+
 def version_folder(version: str) -> Path:
     return NOTEBOOKS / version.upper()
 
@@ -48,7 +52,7 @@ def all_steps(version: str) -> list[str]:
     """Every step of ``version`` (notebook names without extension) in order; raises if the version has no folder."""
     folder = version_folder(version)
     if not folder.is_dir():
-        raise FileNotFoundError(f"La versión {version} no tiene carpeta de notebooks ({folder.relative_to(ROOT)})")
+        raise FileNotFoundError(f"La versión {version} no tiene carpeta de notebooks ({_shown(folder)})")
     return sorted(path.stem for path in folder.iterdir() if _STEP.match(path.name))
 
 
@@ -111,7 +115,7 @@ def run(steps: list[str], timeout: int = -1, *, version: str = "v4", offline: bo
         results.append({"paso": step, "codigo": done.returncode, "segundos": round(time.perf_counter() - start, 1)})
         if done.returncode != 0:
             _report_failure(destination / f"{step}.ipynb", log)
-            print(f"x {step} falló (registro en {destination.relative_to(ROOT)}); corrija y vuelva a correr desde "
+            print(f"x {step} falló (registro en {_shown(destination)}); corrija y vuelva a correr desde "
                   f"--desde {step.split('_')[0]}", flush=True)
             break
     return results
