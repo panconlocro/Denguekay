@@ -5,8 +5,10 @@ de un estudio propio.*
 
 ## Decisión
 
-La V4 se reentrena **una vez por temporada epidemiológica, al cerrarla**, y da lugar a una **versión nueva**. Entre un
-reentrenamiento y el siguiente el paquete queda fijo. No hay reentrenamiento automático: la actualización semanal
+La V4 se reentrena **una vez por temporada epidemiológica, al cerrarla**. Reentrenar es **volver a ajustar el mismo
+modelo** (misma configuración e hiperparámetros) con los datos nuevos: no es un modelo nuevo ni cambia de versión. La V4
+sigue siendo la V4 hasta que se desarrolle otro modelo (otras variables, otra estrategia). Entre un reentrenamiento y el
+siguiente el paquete queda fijo. No hay reentrenamiento automático: la actualización semanal
 ([operación](../backend/operacion.md#actualización-semanal-v4)) nunca ajusta un modelo.
 
 ## Cuándo
@@ -47,8 +49,8 @@ SE 43, que cerró el 31/10: hasta 8 y 12 días de rezago), la SE 34 de 2027 (cie
    desenlaces** ([congelamiento de la V4](../../research/08_v3_confirmed_cases/congelamiento_b3_v4.md)). Mantener el
    mismo modelo durante toda la temporada es una decisión del equipo para que esos pronósticos sean comparables; esa
    fuente no lo afirma.
-6. **Cada reentrenamiento es una versión:** ficha, Release de datos con manifiesto, entrada en el
-   [CHANGELOG](../../models/registry/CHANGELOG.md) y tag `model/vN`.
+6. **Un reentrenamiento no cambia de versión, pero debe quedar trazable:** con qué datos (corte y hashes de los insumos) y
+   qué boosters resultaron, para que las emisiones archivadas indiquen con qué ajuste se hicieron.
 
 ## Alcance de la evidencia
 
@@ -73,5 +75,13 @@ con pocos brotes no dispara nada por sí solo ni se interpreta como una conclusi
 
 ## Cómo
 
-Con el protocolo de congelamiento del estudio 08 ([congelamiento de la V4](../../research/08_v3_confirmed_cases/congelamiento_b3_v4.md)),
-con un corte nuevo, su ficha, su Release y su tag. Ese trabajo queda fuera de la actualización semanal.
+Re-ajustando la configuración congelada de la V4 con los datos hasta el nuevo corte (el protocolo del estudio 08 es la
+referencia: [congelamiento de la V4](../../research/08_v3_confirmed_cases/congelamiento_b3_v4.md)). **El procedimiento
+aún no está implementado como código** y queda fuera de la actualización semanal. Puntos abiertos para cuando se
+implemente:
+
+- El predictor `v4_b3_live` comprueba los boosters contra el manifiesto del Release `model/v4`; los boosters re-ajustados
+  necesitan otra forma de registrarse y verificarse.
+- El aviso de reentrenamiento lee `corte_etiquetas` de la ficha de la V4; tras re-ajustar, ese corte debe actualizarse o el
+  aviso seguiría activo.
+- Si se automatiza (por ejemplo, un workflow lanzado a mano) o se deja manual.
