@@ -52,6 +52,16 @@ son públicas y se incorporan al build: nunca colocar API_KEY ni credenciales de
 Configurar CORS en la API para el origen del frontend y el hosting de la SPA para devolver index.html
 al abrir rutas internas.
 
+### Desplegar en Vercel
+
+Configurar el proyecto con `apps/web` como **Root Directory**, `main` como rama de producción
+y el preset **Vite**. El comando de build es `npm run build` y la carpeta de salida es `dist`.
+Definir `VITE_API_BASE_URL=https://<api>.onrender.com/api/v1` y `VITE_DATA_SOURCE=api`
+antes del build. En Render, agregar el dominio exacto de Vercel a `CORS_ORIGINS`.
+
+`vercel.json` permite abrir y recargar rutas como `/mapa` y `/distritos/200101`.
+Tras desplegar, comprobar ambas rutas, el manual PDF y las consultas a la API.
+
 ### Demo local V4 con b3
 
 La demo V4 publica la semilla 17 del paquete congelado del paper, con origen en la SE 41 de 2026.

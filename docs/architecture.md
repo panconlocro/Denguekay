@@ -449,6 +449,7 @@ El frontend usa el mismo contrato de lectura para las versiones publicadas por l
 ```text
 apps/web/
 ├── package.json, package-lock.json       # scripts y dependencias npm
+├── vercel.json                          # reescritura de rutas de la SPA para Vercel
 ├── src/
 │   ├── api/                             # cliente HTTP, TanStack Query y schema.d.ts generado
 │   ├── components/                      # filtros, estados, mapa Leaflet y series Recharts
