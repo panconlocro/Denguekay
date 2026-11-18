@@ -171,6 +171,7 @@ BD, su Storage y sus claves. **No verificado:** cuántos proyectos gratuitos per
    ```
 
    `DATABASE_URL` de Render usa `denguekay_api`. Las cargas y publicaciones desde la PC usan `denguekay_pipeline`.
+   La migración `0011_v4` habilita a `rol_pipeline` para insertar y actualizar alertas durante la emisión semanal.
    Las migraciones las corre Rosa desde la PC con el dueño del esquema (sección 3). `rol_api` no puede ejecutar DDL
    ni leer `alembic_version`, y Render no tiene otra credencial.
 3. **API REST automática de Supabase (hipótesis D2, verificada en parte):**

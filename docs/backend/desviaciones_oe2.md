@@ -347,3 +347,7 @@ semanales de humedad ERA5-Land y precipitación CHIRPS a precisión completa. Gu
 disponibilidad de ERA5-Land y CHIRPS. `observacion_nino12` contiene la anomalía regional mensual
 y su fecha de disponibilidad. En PostgreSQL, la API tiene acceso de lectura y el pipeline
 puede insertar y actualizar los registros. El cálculo de las ventanas se hace en memoria.
+
+La migración `0011_v4` concede `INSERT` y `UPDATE` en `alerta` a `rol_pipeline` en PostgreSQL.
+La actualización semanal usa ese rol para generar y retirar alertas en la misma transacción que
+la carga y la inferencia. La política RLS `servicio_alerta` ya incluye a ambos roles de servicio.
