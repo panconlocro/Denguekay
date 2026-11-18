@@ -10,6 +10,8 @@ from denguekay.data.keys import normalize_sala
 
 KEY = ["ubigeo", "anio", "semana"]
 SALA_FIRST_YEAR = 2025
+DUPLICATE_RULE = ("La Sala no admite claves repetidas: normalize_sala_records y el silver se detienen con error si "
+                  "un distrito o una llave (ubigeo, anio, semana) se repite; nada se suma ni se descarta")
 
 
 def load_ubigeo_catalog(path: Path) -> pd.DataFrame:

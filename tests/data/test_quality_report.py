@@ -47,7 +47,11 @@ class Inputs:
 
     def report(self):
         return qr.build_report(self.folder / "panel.csv", self.folder / "notificaciones.csv", self.folder / "sala.csv",
-                               history_path=self.folder / "historia.csv")
+                               history_path=self.folder / "historia.csv", meteo_path=self.folder / "no_hay_meteo.csv",
+                               socio_path=self.folder / "no_hay_socio.csv",
+                               climate={"enso": self.folder / "a", "chirps_ee": self.folder / "b",
+                                        "chirps_final": self.folder / "c", "chirps_prelim": self.folder / "d",
+                                        "era5_recent": self.folder / "e", "historical": {}, "frozen": "2026-11-12"})
 
 
 class TestCompleteness(unittest.TestCase):
@@ -98,6 +102,64 @@ class TestCompleteness(unittest.TestCase):
         self.assertEqual(coverage["200101"]["semanas_presentes"], 4)
         self.assertEqual(coverage["200101"]["completitud"], 1.0)
         self.assertEqual(coverage["200101"]["casos_verificados"], 1.0)
+
+
+class TestTraceability(unittest.TestCase):
+    """HU0001-3 (repeated keys), HU0003-2 (territorial correspondence) and HU0002-1 (climate sources)."""
+
+    def test_the_report_records_the_duplicate_control_of_each_epidemiological_source(self):
+        with TemporaryDirectory() as directory:
+            report = Inputs(directory, panel()).report()
+        controls = {c["fuente"]: c for c in report["control_duplicados_fuente_epidemiologica"]}
+        self.assertEqual(len(controls), 3)
+        self.assertTrue(all(c["resultado"] == "sin duplicados" and c["regla_aplicada"] for c in controls.values()))
+        self.assertIn("se suman", controls["Histórico confirmado (CSV epidemiológico, hasta 2024)"]["regla_aplicada"])
+        self.assertIn("se detienen", controls["Sala Situacional confirmada (desde 2025)"]["regla_aplicada"])
+
+    def test_repeated_keys_of_the_history_are_added_up_and_repeated_keys_of_the_sala_are_a_nonconformity(self):
+        with TemporaryDirectory() as directory:
+            inputs = Inputs(directory, panel())
+            pd.DataFrame({"ubigeo": ["200101", "200101"], "anio": [2024, 2024], "semana": [1, 1],
+                          "casos_Dengue": [1, 2]}).to_csv(Path(directory) / "historia.csv", index=False)
+            pd.DataFrame({"ubigeo": ["200101"] * 2, "anio": [2025, 2025], "semana": [1, 1], "casos_Dengue": [1, 1],
+                          "tipo_dx": ["C", "C"]}).to_csv(Path(directory) / "sala.csv", index=False)
+            report = inputs.report()
+        history, sala, _ = report["control_duplicados_fuente_epidemiologica"]
+        self.assertEqual((history["claves_repetidas"], history["filas_con_llave_repetida"]), (1, 2))
+        self.assertEqual(history["ejemplos"], [{"ubigeo": "200101", "anio": 2024, "semana": 1, "filas": 2}])
+        self.assertEqual(sala["resultado"], "con duplicados")
+        self.assertEqual(report["estado"], "no conforme")
+        self.assertTrue(any("HU0001-3" in n["criterio"] and "Sala" in n["criterio"] for n in report["no_conformidades"]))
+        self.assertIn("Ejemplos de claves repetidas en Sala", qr.to_markdown(report))
+
+    def test_the_territorial_section_names_the_districts_without_correspondence(self):
+        meteo = pd.DataFrame({"provincia": ["Piura", "Piura"], "distrito": ["Piura", "Catacaos"],
+                              "distrito_key": ["PIURA", "CATACAOS"]})
+        socio = pd.DataFrame({"ubigeo": ["200101", "200104"], "distrito_key": ["PIURA", "CASTILLA"]})
+        result = qr.territorial_correspondence(panel(), DISTRICTS, meteo, socio)
+        self.assertFalse(result["cumple"])
+        self.assertEqual(result["meteo_vs_socio"]["solo_en_meteo"], ["CATACAOS"])
+        self.assertEqual(result["meteo_vs_socio"]["solo_en_socio"], ["CASTILLA"])
+        self.assertTrue(qr.territorial_correspondence(panel(), DISTRICTS)["cumple"])
+        unknown = panel().assign(ubigeo="209999")
+        self.assertEqual(qr.territorial_correspondence(unknown, DISTRICTS)["en_panel_sin_catalogo"], ["209999"])
+
+    def test_a_panel_district_outside_the_catalogue_is_a_nonconformity_with_the_district(self):
+        with TemporaryDirectory() as directory:
+            frame = panel()
+            frame.loc[frame.ubigeo.eq("200101"), "ubigeo"] = "209999"
+            report = Inputs(directory, frame).report()
+        item = next(n for n in report["no_conformidades"] if "HU0003-2" in n["criterio"])
+        self.assertEqual(item["valor"]["en_panel_sin_catalogo"], ["209999"])
+        self.assertIn("209999", qr.to_markdown(report))
+
+    def test_the_markdown_has_the_three_sections(self):
+        with TemporaryDirectory() as directory:
+            text = qr.to_markdown(Inputs(directory, panel()).report())
+        for title in ("## Control de duplicados de la fuente epidemiológica (HU0001-3)",
+                      "## Correspondencia territorial (HU0003-2)",
+                      "## Fuentes climáticas: producto y fecha de extracción (HU0002-1)"):
+            self.assertIn(title, text)
 
 
 class TestDiscards(unittest.TestCase):

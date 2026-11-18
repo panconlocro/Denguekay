@@ -259,6 +259,8 @@ data/
     ├── gold_expectations.py        # suite GX gold_h2 (esquema, llave, rangos, sin fuga temporal)
     ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
     ├── quality_report.py           # reporte de calidad y completitud de la V4 (HU0005-4/5), solo lectura; escribe en docs/backend/evidencia/
+    ├── duplicates.py               # resultado del control de llaves repetidas de la fuente epidemiológica (HU0001-3)
+    ├── climate_provenance.py       # fuente, producto y fecha de extracción de cada fuente climática (HU0002-1)
     └── forecast_contract.py        # origen temporal y disponibilidad al pronosticar
 ```
 **Va acá:** una función que hable con una API o haga scraping (`ingestion/`); limpieza, agregación, interpolación o joins (`processing/`); cualquier comprobación de rangos, nulos, duplicados o conteos (`validation/`, un archivo por dataset: `<dataset>_expectations.py`). Las suites de GX se definen en código; `great_expectations/gx/` lo regenera GX y no se versiona. Guía: `docs/modeling/mlflow_great_expectations.md`.

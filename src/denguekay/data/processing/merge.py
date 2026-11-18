@@ -10,16 +10,42 @@ from denguekay.data.keys import normalize
 from denguekay.data.processing.epi_sala import SALA_FIRST_YEAR
 
 
-def diagnose_unmatched_districts(meteo: pd.DataFrame, annual_socio: pd.DataFrame) -> None:
-    """Print which distrito_key values are in one source and not in the other (before merging)."""
-    meteo_only = set(meteo["distrito_key"]) - set(annual_socio["distrito_key"])
-    socio_only = set(annual_socio["distrito_key"]) - set(meteo["distrito_key"])
-    print("En meteo pero no en socio:", meteo_only)
-    print("En socio pero no en meteo:", socio_only)
+# Names the weather source spells differently from the census, fixed before the merge (V4).
+V4_NAME_ALIASES = {"El Carmendela Frontera": "El Carmen de la Frontera",
+                   "San Miguelde El Faique": "San Miguel de el Faique"}
+
+
+def diagnose_unmatched_districts(meteo: pd.DataFrame, annual_socio: pd.DataFrame, *, echo: bool = True) -> dict:
+    """Which distrito_key values are in one source and not in the other, or ambiguous (before merging).
+
+    It prints them as before and returns ``{"solo_en_meteo", "solo_en_socio", "ambiguos"}`` (sorted lists).
+    A key is ambiguous when it points to more than one UBIGEO in the census, or to more than one province in
+    the weather source (the merge joins by ``distrito_key`` only)."""
+    meteo_only = sorted(set(meteo["distrito_key"]) - set(annual_socio["distrito_key"]))
+    socio_only = sorted(set(annual_socio["distrito_key"]) - set(meteo["distrito_key"]))
+    ambiguous = set()
+    if "ubigeo" in annual_socio:
+        by_key = annual_socio.groupby("distrito_key")["ubigeo"].nunique()
+        ambiguous |= set(by_key[by_key > 1].index)
+    if "provincia" in meteo:
+        by_key = meteo.groupby("distrito_key")["provincia"].nunique()
+        ambiguous |= set(by_key[by_key > 1].index)
+    if echo:
+        print("En meteo pero no en socio:", set(meteo_only))
+        print("En socio pero no en meteo:", set(socio_only))
+    return {"solo_en_meteo": meteo_only, "solo_en_socio": socio_only, "ambiguos": sorted(ambiguous)}
 
 
 def merge_meteo_socio(meteo: pd.DataFrame, annual_socio: pd.DataFrame) -> pd.DataFrame:
-    """Join weekly weather with yearly sociodemographic variables by distrito_key + year."""
+    """Join weekly weather with yearly sociodemographic variables by distrito_key + year.
+
+    It stops, naming the districts, if one has no match in the other source or is ambiguous (HU0003-2)."""
+    found = diagnose_unmatched_districts(meteo, annual_socio)
+    if any(found.values()):
+        raise ValueError(
+            "Homologación de distritos incompleta: "
+            f"sin correspondencia en socio {found['solo_en_meteo']}; sin correspondencia en meteo "
+            f"{found['solo_en_socio']}; ambiguos {found['ambiguos']}")
     final = meteo.merge(
         annual_socio.drop(columns=["departamento", "provincia", "distrito"]),
         on=["distrito_key", "anio"],
