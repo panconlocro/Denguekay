@@ -247,12 +247,12 @@ y Niño 1+2. La geografía fija viene del paquete; la API consulta las observaci
 
 ## 5. Vercel (frontend)
 
-El frontend (`apps/web/`) todavía es un plan, así que estos pasos son para cuando exista:
+El frontend React y Vite vive en `apps/web/`. Su `vercel.json` permite abrir y recargar las rutas de la SPA.
 
-1. *New Project* → el repositorio → **Root Directory** `apps/web` → variables de entorno con la URL de la API de
-   Render (el nombre de la variable lo define Nicolás en `apps/web`).
-2. Rama de producción: Vercel elige `main` por defecto. Cada push a otra rama crea un *preview deployment* con su
-   propio dominio.
+1. *New Project* → el repositorio → **Root Directory** `apps/web` → preset **Vite**, build `npm run build`
+   y salida `dist`. Definir `VITE_API_BASE_URL=https://<api>.onrender.com/api/v1` y `VITE_DATA_SOURCE=api`.
+2. Seleccionar explícitamente `main` como rama de producción. Las demás ramas generan *preview deployments*
+   con sus propios dominios.
 3. `CORS_ORIGINS` en Render debe incluir el dominio de producción de Vercel, exacto y sin barra final. Los dominios
    de *preview* cambian por rama y no tienen comodín en la API (`*` se rechaza). Para probar un *preview* contra la
    API de producción, hay que agregar su dominio a mano. Otra opción: un *preview* apunta a una API local.
