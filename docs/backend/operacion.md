@@ -169,6 +169,41 @@ espera a cuatro días, y la segunda no hace nada si no hay semana nueva). El scr
 
 **Uso semanal:** nada. Para probar a mano: `python -m denguekay.pipelines.v4_weekly`.
 
+### En GitHub Actions (HU0019-1 y HU0009-2)
+
+Dos workflows hacen lo mismo que la tarea del Programador de tareas, sin depender del PC. Los `.ps1`
+(`scripts\weekly_v4.ps1`, `scripts\register_weekly_v4_task.ps1`) quedan para correrlo en local.
+
+| Workflow | Cuándo | Qué hace |
+|---|---|---|
+| `.github/workflows/weekly_v4.yml` | lunes y jueves a las 07:00 de Lima (12:00 UTC) y a mano (`workflow_dispatch`, con la opción `dry_run`) | instala el entorno, trae `datos_v4.zip` y `modelo_v4.zip` del Release `model/v4` con `data/ingestion/release_bundles.py` (verifica el SHA-256 de cada archivo) y corre `python -m denguekay.pipelines.v4_weekly --preparar` contra la BD de los secrets |
+| `.github/workflows/drift_monthly.yml` | el día 1 de cada mes a las 07:00 de Lima y a mano | corre `python -m denguekay.serving.drift` contra la misma BD y registra la revisión como ejecución de mantenimiento |
+
+**Secrets del repositorio** (Settings → Secrets and variables → Actions): `DATABASE_URL` (el usuario
+`denguekay_pipeline`, que carga y publica), `SUPABASE_URL` y `SUPABASE_SECRET_KEY` (el Storage donde está el paquete
+publicado). `STORAGE_BACKEND=supabase` lo fija el propio workflow. **Ninguna de las cuatro fuentes pide clave**: la Sala
+(websocket público de MINSA), ERA5-Land (API gratuita de Open-Meteo), CHIRPS (FTP anónimo del CHC) y Niño 1+2 (NOAA CPC)
+se consultan sin credenciales. **Sin los secrets** (antes del despliegue) ambos workflows terminan con un aviso
+(`::notice::` y el resumen de la corrida), sin fallar y sin tocar nada.
+
+**Un equipo vacío.** Cada corrida parte sin `data/`. Lo que importa (cortes emitidos, cargas, versiones) está en la BD;
+lo demás se reconstruye: `--preparar` extrae del Release lo que falte y restaura el bronce climático histórico verificado
+(sin publicar el paquete: eso es `--inicial`, una vez, desde el PC); el bronce descargado se guarda con `actions/cache`
+para no bajar de nuevo todo el FTP de CHIRPS. La Sala del año en curso y del anterior se vuelve a raspar completa.
+Riesgo conocido: Open-Meteo gratuito limita por IP y los runners de GitHub comparten IP, así que una corrida puede esperar
+o fallar por el límite horario (la siguiente la retoma desde los cachés).
+
+**Archivo de emisiones (HU0019-5).** Con `STORAGE_BACKEND=supabase`, tras confirmar la transacción cada emisión se copia al
+Storage en `reportes/emisiones/<corte>/<sello>/` (`emision.json`, `predicciones.csv`, `vectores.csv`; clave
+`archivo_en_storage` del informe). Si esa copia falla, la emisión ya está en la BD: queda una advertencia en el informe
+y el artefacto del workflow (`actualizacion-semanal-<id>`, 90 días) conserva la carpeta. Con el Storage local no se copia:
+la carpeta de `models/serving/actualizacion_semanal/emisiones/` ya es el archivo.
+
+**Paquete servido.** Hoy `config.yaml` no define `paquete_dir`, así que el runner sirve el paquete congelado del Release
+`model/v4`. Si un reajuste (`refit_v4`) se sirve con `serving.paquete.opciones.paquete_dir`, esa carpeta está fuera de
+Git y el runner no la tiene: la corrida se detiene en `preflight` con un mensaje que lo dice. Mientras no se agregue la
+descarga de esa carpeta desde el Storage al workflow, un reajuste se opera desde el PC con los `.ps1`.
+
 | Bandera | Efecto |
 |---|---|
 | `--dry-run` | Muestra el estado (último corte emitido, última captura de la Sala, archivos presentes) y los pasos que correría. Sin red ni escrituras. |
@@ -230,7 +265,8 @@ brotes observados, Recall y F1 quedan en `null`. Para correrlo a mano (mensual, 
 ```
 
 El registro es una fila de `ejecucion` con `tipo = mantenimiento` y `detalle.origen = monitoreo_deriva`. Programar la
-corrida mensual y revisar sus marcas corresponde al OE4; aquí solo queda el código y no se muestra en el frontend.
+corrida mensual en GitHub Actions es `.github/workflows/drift_monthly.yml` (ver «En GitHub Actions» más arriba); revisar
+sus marcas queda a quien opera, y no se muestra en el frontend.
 
 **Si falla.** El informe y la `ejecucion` (`tipo` `ingesta` o `inferencia`, `estado` `fallida`, `detalle.etapa`) dicen en
 qué paso. No hay reintentos automáticos: las descargas reanudan desde sus cachés en la corrida siguiente

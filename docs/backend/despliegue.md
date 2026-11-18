@@ -42,6 +42,20 @@ variable vacía se ignora. Plantilla sin secretos: `.env.example`.
 | `DENGUEKAY_XGB_DEVICE`, `DENGUEKAY_XGB_NJOBS` | XGBoost en CPU con un hilo | `cpu`, `1` |
 | `PYTHON_VERSION` | Versión de Python en Render (debe ser completa, p. ej. `3.12.10`) | `3.12.10` |
 
+### Secrets de GitHub Actions (actualización semanal y deriva mensual)
+
+Los workflows `.github/workflows/weekly_v4.yml` y `drift_monthly.yml` leen estos secrets del repositorio (Settings →
+Secrets and variables → Actions). Sin ellos terminan con un aviso, sin fallar; se cargan al desplegar.
+
+| Secret | Uso | Quién lo usa |
+|---|---|---|
+| `DATABASE_URL` | Conexión de la BD de producción con el usuario `denguekay_pipeline` (carga y publica; no es el de la API) | actualización semanal y deriva |
+| `SUPABASE_URL` | `https://<ref>.supabase.co` del Storage donde está el paquete publicado y donde se archivan las emisiones | actualización semanal |
+| `SUPABASE_SECRET_KEY` | Clave secreta del proyecto | actualización semanal |
+
+`STORAGE_BACKEND=supabase` no es secreto: lo fija el workflow. Ninguna fuente de datos pide clave. Detalle en
+`docs/backend/operacion.md`.
+
 ## 3. Render (API)
 
 ### Lo que permite el plan gratuito (verificado)

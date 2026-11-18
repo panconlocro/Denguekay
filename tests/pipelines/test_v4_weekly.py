@@ -138,6 +138,69 @@ class TestFullRuns(LiveCase):
         self.assertEqual(len(weekly_inferences(self.motor)), 3)
 
 
+class TestRunnerWithoutState(LiveCase):
+    """GitHub Actions starts with an empty machine: it prepares itself, keeps the archive in the Storage and says
+    clearly when the refit package it is asked to serve is not there."""
+
+    def test_the_prepare_flag_extracts_the_release_and_restores_the_bronze_without_publishing(self):
+        self.run_weekly(Options(inicial=True))   # the package is published once, by the initial run
+        self.calls.clear()
+        present = iter([[v4_weekly.ROOT / "data" / "falta.csv"], []])
+        published = []
+        report = self.run_weekly(Options(preparar=True, reemitir=True), missing_files=lambda: next(present, []),
+                                 publish=lambda *args: published.append(1))
+        self.assertEqual(report["estado"], "emitida", report)
+        self.assertEqual([name for name, _, _ in self.calls][0], "release")
+        self.assertEqual(self.calls[-1][:2], ("clima", (False, True)))   # the bronze is restored when it is missing
+        self.assertEqual(published, [])
+
+    def test_without_the_prepare_or_initial_flag_missing_files_still_fail(self):
+        report = self.run_weekly(Options(), missing_files=lambda: [v4_weekly.ROOT / "data" / "falta.csv"])
+        self.assertEqual(report["estado"], "fallida")
+
+    def test_the_prepare_flag_restores_the_missing_historical_bronze(self):
+        with patch.object(v4_inputs, "download_era5_land"), patch.object(v4_inputs, "era5_land_silver"), \
+                patch.object(v4_inputs, "climate_silver"), \
+                patch.object(v4_inputs, "restore_published_bronze") as restore, \
+                patch.object(v4_weekly, "historical_bronze_missing", return_value=[self.root / "falta"]):
+            v4_weekly.step_climate(True, True)
+            restore.assert_called_once_with()
+
+    def test_the_emission_is_copied_to_the_storage_when_the_backend_is_not_local(self):
+        self.cfg = replace(self.cfg, almacenamiento="supabase")
+        report = self.run_weekly(Options(inicial=True))
+        self.assertEqual(report["estado"], "emitida", report)
+        relative = report["emision"].split("/", 1)[1]   # emisiones/<cutoff>/<stamp>
+        self.assertEqual(sorted(report["archivo_en_storage"]),
+                         sorted(f"reportes/emisiones/{relative}/{name}" for name in emissions.ARCHIVE_FILES))
+        for path in report["archivo_en_storage"]:
+            self.assertTrue(self.storage.exists(path))
+        stored = json.loads(self.storage.read(f"reportes/emisiones/{relative}/emision.json"))
+        self.assertEqual(stored["id_semana_corte"], self.cutoff)
+
+    def test_with_the_local_backend_the_archive_is_not_duplicated_in_the_storage(self):
+        report = self.run_weekly(Options(inicial=True))
+        self.assertNotIn("archivo_en_storage", report)
+
+    def test_a_storage_failure_after_the_commit_is_a_warning_not_a_failed_emission(self):
+        self.cfg = replace(self.cfg, almacenamiento="supabase")
+        with patch.object(emissions, "upload_archive", side_effect=OSError("sin red")):
+            report = self.run_weekly(Options(inicial=True))
+        self.assertEqual(report["estado"], "emitida", report)
+        self.assertTrue(report["archivo_en_storage"].startswith("fallido"))
+        self.assertTrue(any("Storage" in w for w in report["advertencias"]))
+        self.assertEqual(len(weekly_inferences(self.motor)), 3)   # the forecast stays published
+
+    def test_a_refit_package_that_is_not_on_the_machine_is_rejected_with_a_clear_message(self):
+        options = {**self.cfg.opciones, "paquete_dir": "models/experimentos/mejora_modelo/v4_reajuste/no_existe"}
+        self.cfg = replace(self.cfg, paquete={**self.cfg.paquete, "opciones": options})
+        report = self.run_weekly(Options(inicial=True))
+        self.assertEqual((report["estado"], report["etapa"]), ("fallida", "preflight"))
+        self.assertIn("paquete_dir", report["error"])
+        self.assertIn("Release model/v4", report["error"])
+        self.assertEqual(self.calls, [])
+
+
 class TestFailures(LiveCase):
     def failures(self):
         with transaction(self.motor) as session:

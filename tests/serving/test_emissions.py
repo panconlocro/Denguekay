@@ -2,6 +2,7 @@
 
 from datetime import date
 import json
+from pathlib import Path
 from types import SimpleNamespace
 import unittest
 
@@ -172,6 +173,23 @@ class TestRetrainingNotice(unittest.TestCase):
 
     def test_the_labels_of_the_card_are_the_frozen_ones(self):
         self.assertEqual(emissions.labels_cutoff_of_v4(), date(2026, 10, 17))
+
+    def test_the_archive_of_an_emission_is_uploaded_with_its_cutoff_and_stamp(self):
+        from tempfile import TemporaryDirectory
+
+        from denguekay.serving.storage import LocalStorage
+
+        with TemporaryDirectory() as directory:
+            base = Path(directory) / "emisiones"
+            folder = base / "202643" / "20261118T000000000000Z"
+            folder.mkdir(parents=True)
+            for name in emissions.ARCHIVE_FILES:
+                (folder / name).write_bytes(name.encode())
+            storage = LocalStorage(Path(directory) / "storage")
+            paths = emissions.upload_archive(storage, folder, base)
+            self.assertEqual(paths, [f"reportes/emisiones/202643/20261118T000000000000Z/{n}"
+                                     for n in emissions.ARCHIVE_FILES])
+            self.assertEqual(storage.read(paths[0]), b"emision.json")
 
     def test_a_refit_package_moves_the_labels_cutoff_and_switches_the_notice_off(self):
         from tempfile import TemporaryDirectory

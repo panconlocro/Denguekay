@@ -1,0 +1,107 @@
+name: Actualización semanal V4
+
+# Trae las fuentes que cambian, carga la BD y emite h2, h3 y h4 con el paquete V4 (python -m denguekay.pipelines.v4_weekly).
+# Antes del despliegue no hay secrets: el trabajo termina con un aviso, sin fallar. Los .ps1 del Programador de tareas de
+# Windows (scripts/weekly_v4.ps1) siguen sirviendo para correrlo en el PC. Detalle: docs/backend/operacion.md.
+
+on:
+  schedule:
+    # Lunes y jueves a las 07:00 de Lima (UTC-5) = 12:00 UTC.
+    - cron: "0 12 * * 1,4"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Solo mostrar el estado y los pasos (--dry-run): sin descargas ni escrituras"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-v4
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    name: Actualización semanal
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      STORAGE_BACKEND: supabase
+      DENGUEKAY_XGB_DEVICE: cpu
+      DENGUEKAY_XGB_NJOBS: "2"
+      MPLBACKEND: Agg
+    steps:
+      - name: Comprobar los secrets
+        id: secretos
+        shell: bash
+        run: |
+          faltan=""
+          for nombre in DATABASE_URL SUPABASE_URL SUPABASE_SECRET_KEY; do
+            if [ -z "${!nombre}" ]; then faltan="$faltan $nombre"; fi
+          done
+          if [ -n "$faltan" ]; then
+            echo "configurados=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Actualización semanal omitida: faltan los secrets$faltan. Se configuran al desplegar (docs/backend/despliegue.md)."
+            echo "Actualización semanal OMITIDA: faltan los secrets$faltan. No se descargó, cargó ni emitió nada." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "configurados=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v7
+        if: steps.secretos.outputs.configurados == 'true'
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        if: steps.secretos.outputs.configurados == 'true'
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
+      - name: Instalar el entorno
+        if: steps.secretos.outputs.configurados == 'true'
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install -e . --no-deps
+      - name: Restaurar el bronce descargado antes
+        if: steps.secretos.outputs.configurados == 'true'
+        uses: actions/cache@v4
+        with:
+          path: data/bronze
+          key: bronce-v4-${{ github.run_id }}
+          restore-keys: bronce-v4-
+      - name: Traer los insumos congelados del Release model/v4 (SHA-256 verificado)
+        if: steps.secretos.outputs.configurados == 'true'
+        run: python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip modelo_v4.zip
+      - name: Actualizar, cargar la BD y emitir h2, h3 y h4
+        if: steps.secretos.outputs.configurados == 'true'
+        shell: bash
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          banderas="--preparar"
+          if [ "$DRY_RUN" = "true" ]; then banderas="--dry-run"; fi
+          python -m denguekay.pipelines.v4_weekly $banderas
+      - name: Resumen de la ejecución
+        if: always() && steps.secretos.outputs.configurados == 'true'
+        shell: bash
+        run: |
+          ultimo=$(ls -1 models/serving/actualizacion_semanal/ejecuciones/*.json 2>/dev/null | tail -n 1 || true)
+          if [ -n "$ultimo" ]; then
+            { echo "### Informe de la ejecución"; echo '```json'; cat "$ultimo"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Conservar el archivo de emisiones y los informes
+        if: always() && steps.secretos.outputs.configurados == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: actualizacion-semanal-${{ github.run_id }}
+          path: |
+            models/serving/actualizacion_semanal/emisiones
+            models/serving/actualizacion_semanal/ejecuciones
+          if-no-files-found: ignore
+          retention-days: 90

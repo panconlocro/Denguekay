@@ -49,7 +49,7 @@ Denguekay/
 ├── alembic.ini                # migraciones del backend, sin credenciales
 ├── pyproject.toml             # paquete instalable denguekay (pip install -e .); dependencias = requirements.txt
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
-├── .github/workflows/         # backend.yml: SQLite/PostgreSQL; frontend.yml: Node, contrato y E2E fixtures
+├── .github/workflows/         # backend.yml: SQLite/PostgreSQL; frontend.yml: Node, contrato y E2E fixtures; weekly_v4.yml y drift_monthly.yml: actualización semanal y deriva mensual (con secrets)
 ├── requirements.txt
 ├── constraints.txt            # versiones exactas del entorno de la V3 (pip install -r requirements.txt -c constraints.txt)
 ├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
@@ -373,6 +373,7 @@ tests/
 ├── test_equivalence.py       # guardas de la reestructuración (V1/V2 bit a bit, esquema en 0003_oe2)
 ├── test_contract_v1_guards.py # guardas del contrato v1: OpenAPI, esquema por migración y smoke v1
 ├── test_layout.py            # sin restos del paquete src y dependencias en un solo sentido
+├── test_workflows.py         # cron, comandos, permisos mínimos y salto sin secrets de weekly_v4.yml y drift_monthly.yml
 └── fixtures/
     ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
     ├── equivalence/          # línea base del ADR 0001 (no se regenera; smoke.json es historia)
