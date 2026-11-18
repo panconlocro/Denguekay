@@ -295,7 +295,7 @@ model/
 ├── frozen_configs.py        # configuraciones congeladas V1/V2/V3 y su fingerprint() de comportamiento (D1)
 ├── reproduce.py             # CLI: reentrena v0/v1/v2 con los datos de su Release y compara huella o métricas
 ├── refit_v4.py              # CLI: reajusta la V4 (mismo modelo) con datos nuevos y deja un paquete en una carpeta nueva (docs/modeling/reentrenamiento.md)
-└── variable_dictionary.py   # diccionario de las variables finales (genera docs/modeling/diccionario_variables.md)
+└── variable_dictionary.py   # diccionario de las variables de la V4 (genera docs/modeling/diccionario_variables.md)
 ```
 
 ### `evaluation/` — métricas y protocolos
@@ -535,7 +535,7 @@ módulo.
 - **`models/`**: modelos entrenados serializados; `models/experimentos/` guarda JSON de XGBoost y predicciones por fold. Los artefactos generados no se suben a Git.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
 - **`docs/pipeline.md`**: cómo se corre el pipeline de datos, el actualizador selectivo y la procedencia de los datos de 2025.
-- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
+- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (V4 vigente, generado por `python -m denguekay.model.variable_dictionary`; la v2 queda como histórico en `diccionario_variables_v2.md`). Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
 - **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR): 0001, reestructuración en monorepo; 0002, ramas `develop` (integración) y `main` (producción).
 - **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`.
 - **`research/09_epidemics_revision/`**: conserva sus informes `RESULTS.md`, `RESULTS_TABLES.md` y `figures/`. Su carpeta `paper/` versiona una copia congelada de los insumos mínimos para cotejar las tablas del artículo: script, manifiesto, probabilidades agregadas comprimidas (4,3 MiB) y dos fuentes `.tex` de referencia. La procedencia está en `paper/README.md` y la ruta `PAPER_BUNDLE` en `config/paths.py`. Es una excepción acotada al archivo de predicciones; los ajustes y las demás salidas siguen en `models/experimentos/`, sin versionar.

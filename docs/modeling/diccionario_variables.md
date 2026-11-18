@@ -1,292 +1,200 @@
-# Diccionario de variables de la configuración final (HU0006-3)
+# Diccionario de variables
 
 > Generado por `python -m denguekay.model.variable_dictionary`; no editar a mano.
 
-Configuración: C3 + A3 = base_6 + B3 + clima de gold (humedad y precipitación, media de 5 semanas hasta o) · E3 (un regresor multi-salida, multi_output_tree, t+2/t+3/t+4 desde el origen o = t − 2) · S4_s3 · α dentro_muestra. El origen es `o = t − 2` (fila h=2); las tres salidas (t+2, t+3, t+4) usan las mismas variables.
+La configuración vigente es la **V4**. La v2 queda como histórico al final; su diccionario completo, con rangos por temporada, está en [`diccionario_variables_v2.md`](diccionario_variables_v2.md).
 
-## `hist_lag_a`
+## V4 vigente (b3_obs, casos confirmados)
 
-- **Etiqueta:** casos de dengue de la semana de origen o
-- **Columna en gold h=2:** `casos_lag_2`
-- **Fuente:** epidemiológica (casos de dengue, silver integrado)
-- **Definición:** casos de dengue de la semana de origen o
-- **Ventana:** semana o
-- **Transformación:** ninguna (conteo)
-- **Tipo:** entero ≥ 0
-- **Nulos:** en gold, las 2 primeras semanas de cada distrito; esas filas no entran a la tabla de orígenes
-- **Por qué está:** persistencia: el mejor predictor simple del encargo de arquitectura (base_6)
-- **Evidencia:** base_6, referencia B (fase 0)
-- **Test de no fuga:** tests/test_historia_calendario.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 2084, mediana 0; 0 nulos
+Configuración: matriz `b3_obs` (16 columnas) · formulación S4_s3 · horizontes 2, 3, 4 semanas · etiquetas hasta el 2026-10-17. Es el modelo que sirve el predictor `v4_b3_live` (ficha en `models/registry/v4/`).
 
-## `hist_lag_b`
+**Convención de tiempo.** El origen `o` es la semana de corte: la semana epidemiológica (domingo a sábado) cuyo cierre es la fecha de corte de los datos. La semana objetivo es `t = o + h` con h = 2, 3 o 4. El modelo calcula **un solo vector de 16 columnas en `o`** y lo usa para los tres horizontes, así que ninguna variable mira después de `o`: «rezago respecto de `t − h`» significa que la semana `o` es la última que se observa para el objetivo `t = o + h`. Las variables de clima y Niño 1+2 respetan además la fecha de publicación de su fuente.
 
-- **Etiqueta:** casos de dengue de la semana o − 1
-- **Columna en gold h=2:** `casos_lag_3`
-- **Fuente:** epidemiológica
-- **Definición:** casos de dengue de la semana o − 1
-- **Ventana:** semana o − 1
-- **Transformación:** ninguna (conteo)
-- **Tipo:** entero ≥ 0
-- **Nulos:** en gold, las 3 primeras semanas de cada distrito; no entran a la tabla de orígenes
-- **Por qué está:** tendencia inmediata junto con hist_lag_a
-- **Evidencia:** base_6, referencia B (fase 0)
-- **Test de no fuga:** tests/test_historia_calendario.py · test_cambios_despues_del_origen_no_alteran_ningun_horizonte
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 2084, mediana 0; 0 nulos
+Las columnas salen de `research/08_v3_confirmed_cases/manifiesto_b3_v4.json`, igual que en el paquete congelado y en `features/gold_v4.py`; una prueba falla si una columna no tiene entrada completa (`tests/model/test_variable_dictionary_v4.py`).
 
-## `hist_media_4`
+| # | Variable | Grupo | Unidad | Ventana temporal |
+|---|---|---|---|---|
+| 1 | `hist_lag_a` | historia y calendario | casos por semana | semana o |
+| 2 | `hist_lag_b` | historia y calendario | casos por semana | semana o − 1 |
+| 3 | `hist_media_4` | historia y calendario | casos por semana | 4 semanas: o − 3, o − 2, o − 1 y o |
+| 4 | `hist_semanas_pos_4` | historia y calendario | semanas (0 a 4) | 4 semanas: o − 3, o − 2, o − 1 y o |
+| 5 | `semana_epi_seno` | historia y calendario | adimensional (−1 a 1) | semana o + 2 (la semana objetivo de la fila del horizonte 2; el vector del origen es el mismo para h = 2, 3 y 4) |
+| 6 | `semana_epi_coseno` | historia y calendario | adimensional (−1 a 1) | semana o + 2 (la semana objetivo de la fila del horizonte 2; el vector del origen es el mismo para h = 2, 3 y 4) |
+| 7 | `propia_semanas_desde_ultimo_caso` | historia propia | semanas (0 a 52) | todas las semanas hasta o, incluida o |
+| 8 | `propia_pendiente_4` | historia propia | log(1 + casos) por semana | 4 semanas: o − 3, o − 2, o − 1 y o |
+| 9 | `propia_log_casos_temporada_anterior` | historia propia | log(1 + casos de la temporada) | temporada anterior a la del origen, cerrada antes de o (la temporada empieza en la semana 35) |
+| 10 | `lat` | geografía | grados decimales | estática (no varía en el tiempo) |
+| 11 | `lon` | geografía | grados decimales | estática (no varía en el tiempo) |
+| 12 | `elevacion_dem90` | geografía | metros sobre el nivel del mar | estática (no varía en el tiempo) |
+| 13 | `hum_rel_media_media5_h2_obs` | clima, Niño 1+2 y disponibilidad | % (0 a 100) | 5 semanas epidemiológicas: o − 6, o − 5, o − 4, o − 3 y o − 2 |
+| 14 | `precip_total_mm_media5_h2_obs` | clima, Niño 1+2 y disponibilidad | mm por semana | 5 semanas epidemiológicas: o − 6, o − 5, o − 4, o − 3 y o − 2 |
+| 15 | `temp_media_media5_h2_obs` | clima, Niño 1+2 y disponibilidad | °C | 5 semanas epidemiológicas: o − 6, o − 5, o − 4, o − 3 y o − 2 |
+| 16 | `nino12_anom_media3_obs` | clima, Niño 1+2 y disponibilidad | °C (anomalía) | los 3 últimos meses consecutivos publicados al cierre del origen |
 
-- **Etiqueta:** media de casos de las semanas o − 3 a o
-- **Columna en gold h=2:** `casos_media_4_h2`
-- **Fuente:** epidemiológica
-- **Definición:** media de casos de las semanas o − 3 a o
-- **Ventana:** semanas o − 3..o
-- **Transformación:** media móvil de 4 semanas
-- **Tipo:** real ≥ 0
-- **Nulos:** en gold, las 5 primeras semanas de cada distrito; no entran a la tabla de orígenes
-- **Por qué está:** nivel reciente menos ruidoso que un rezago
-- **Evidencia:** base_6, referencia B (fase 0)
-- **Test de no fuga:** tests/test_historia_calendario.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 1772, mediana 0; 0 nulos
+### `hist_lag_a`
 
-## `hist_semanas_pos_4`
+- **Descripción:** Casos confirmados del distrito en la semana de origen.
+- **Fuente:** epidemiológica: casos confirmados de dengue de Piura (CSV epidemiológico confirmado hasta 2024 y Sala Situacional del MINSA desde 2025), con la historia desde 2000 para completar las ventanas
+- **Unidad:** casos por semana
+- **Ventana temporal:** semana o
+- **Regla de cálculo:** valor de casos_Dengue de la semana o, sin transformación
+- **Rezago respecto del origen:** 0 semanas respecto del origen; para el objetivo t = o + h equivale a t − h
 
-- **Etiqueta:** número de semanas con al menos 1 caso entre o − 3 y o
-- **Columna en gold h=2:** `casos_semanas_positivas_4_h2`
-- **Fuente:** epidemiológica
-- **Definición:** número de semanas con al menos 1 caso entre o − 3 y o
-- **Ventana:** semanas o − 3..o
-- **Transformación:** conteo de semanas positivas (0–4)
-- **Tipo:** entero 0–4
-- **Nulos:** en gold, las 5 primeras semanas de cada distrito; no entran a la tabla de orígenes
-- **Por qué está:** persistencia de la transmisión
-- **Evidencia:** base_6, referencia B (fase 0)
-- **Test de no fuga:** tests/test_historia_calendario.py · test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 4, mediana 0; 0 nulos
+### `hist_lag_b`
 
-## `semana_epi_seno`
+- **Descripción:** Casos confirmados del distrito en la semana anterior al origen.
+- **Fuente:** epidemiológica: casos confirmados de dengue de Piura (CSV epidemiológico confirmado hasta 2024 y Sala Situacional del MINSA desde 2025), con la historia desde 2000 para completar las ventanas
+- **Unidad:** casos por semana
+- **Ventana temporal:** semana o − 1
+- **Regla de cálculo:** valor de casos_Dengue de la semana o − 1, sin transformación
+- **Rezago respecto del origen:** 1 semana respecto del origen; para el objetivo t = o + h equivale a t − h − 1
 
-- **Etiqueta:** sen(2π · ((semana epi de t) − 1) mód 52 / 52)
-- **Columna en gold h=2:** `semana_epi_seno`
-- **Fuente:** calendario
-- **Definición:** sen(2π · ((semana epi de t) − 1) mód 52 / 52)
-- **Ventana:** semana objetivo t (conocida de antemano)
-- **Transformación:** codificación cíclica
-- **Tipo:** real −1..1
-- **Nulos:** ninguno
-- **Por qué está:** estacionalidad sin inventar un corte de temporada
-- **Evidencia:** base_6, referencia B (fase 0)
-- **Test de no fuga:** tests/test_historia_calendario.py · test_calendario_conocido_y_semana_53
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** -1 a 1, mediana 0; 0 nulos
+### `hist_media_4`
 
-## `semana_epi_coseno`
+- **Descripción:** Nivel reciente de casos: media de las últimas 4 semanas hasta el origen.
+- **Fuente:** epidemiológica: casos confirmados de dengue de Piura (CSV epidemiológico confirmado hasta 2024 y Sala Situacional del MINSA desde 2025), con la historia desde 2000 para completar las ventanas
+- **Unidad:** casos por semana
+- **Ventana temporal:** 4 semanas: o − 3, o − 2, o − 1 y o
+- **Regla de cálculo:** media aritmética de casos_Dengue en la ventana; se exigen las 4 semanas (sin completar con ceros)
+- **Rezago respecto del origen:** la ventana termina en el origen (rezago 0); equivale a las 4 semanas que terminan en t − h
 
-- **Etiqueta:** cos(2π · ((semana epi de t) − 1) mód 52 / 52)
-- **Columna en gold h=2:** `semana_epi_coseno`
-- **Fuente:** calendario
-- **Definición:** cos(2π · ((semana epi de t) − 1) mód 52 / 52)
-- **Ventana:** semana objetivo t (conocida de antemano)
-- **Transformación:** codificación cíclica
-- **Tipo:** real −1..1
-- **Nulos:** ninguno
-- **Por qué está:** pareja del seno: ubica la semana en el círculo
-- **Evidencia:** base_6, referencia B (fase 0)
-- **Test de no fuga:** tests/test_historia_calendario.py · test_calendario_conocido_y_semana_53
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** -1 a 1, mediana 0; 0 nulos
+### `hist_semanas_pos_4`
 
-## `propia_semanas_desde_ultimo_caso`
+- **Descripción:** Persistencia de la transmisión: semanas con casos entre las últimas 4 hasta el origen.
+- **Fuente:** epidemiológica: casos confirmados de dengue de Piura (CSV epidemiológico confirmado hasta 2024 y Sala Situacional del MINSA desde 2025), con la historia desde 2000 para completar las ventanas
+- **Unidad:** semanas (0 a 4)
+- **Ventana temporal:** 4 semanas: o − 3, o − 2, o − 1 y o
+- **Regla de cálculo:** número de semanas de la ventana con casos_Dengue mayor que 0; se exigen las 4 semanas
+- **Rezago respecto del origen:** la ventana termina en el origen (rezago 0); equivale a las 4 semanas que terminan en t − h
 
-- **Etiqueta:** Propio: semanas desde el último caso (tope 52)
-- **Columna en gold h=2:** `no está en gold (propuesta)`
-- **Fuente:** epidemiológica (en memoria, features_inicio)
-- **Definición:** semanas transcurridas desde la última semana con casos del distrito, hasta o
-- **Ventana:** semanas ≤ o
-- **Transformación:** tope 52 semanas
-- **Tipo:** entero 0–52
-- **Nulos:** ninguno (sin caso previo = tope)
-- **Por qué está:** cuánto lleva el distrito sin transmisión antes de un inicio
-- **Evidencia:** B3: gana a B en h2 y h3 (fase 2b); C3 elegida (fase 2c); 3.ª por SHAP
-- **Test de no fuga:** tests/test_features_inicio.py · test_no_fuga_por_perturbacion y test_no_fuga_por_perturbacion_en_origenes
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 52, mediana 21; 0 nulos
+### `semana_epi_seno`
 
-## `propia_pendiente_4`
+- **Descripción:** Posición estacional de la semana objetivo del horizonte 2, parte seno.
+- **Fuente:** calendario epidemiológico MMWR (no usa observaciones)
+- **Unidad:** adimensional (−1 a 1)
+- **Ventana temporal:** semana o + 2 (la semana objetivo de la fila del horizonte 2; el vector del origen es el mismo para h = 2, 3 y 4)
+- **Regla de cálculo:** sen(2π · ((semana epidemiológica de o + 2) − 1) mód 52 / 52); la semana 53 ocupa la misma posición que la semana 1
+- **Rezago respecto del origen:** ninguno: el calendario de la semana objetivo se conoce de antemano
 
-- **Etiqueta:** Propio: pendiente 4 semanas (log)
-- **Columna en gold h=2:** `no está en gold (propuesta)`
-- **Fuente:** epidemiológica (en memoria, features_inicio)
-- **Definición:** pendiente MCO de log(1 + casos) en las semanas o − 3..o
-- **Ventana:** semanas o − 3..o
-- **Transformación:** log1p y pendiente lineal de 4 puntos
-- **Tipo:** real
-- **Nulos:** nulo si faltan semanas de historia; ver el conteo de nulos en la tabla de orígenes
-- **Por qué está:** dirección del cambio reciente (a priori; no observada en la fase 1)
-- **Evidencia:** B3 (fase 2b), C3 (fase 2c)
-- **Test de no fuga:** tests/test_features_inicio.py · test_no_fuga_por_perturbacion
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** -1,171 a 1,346, mediana 0; 0 nulos
+### `semana_epi_coseno`
 
-## `propia_log_casos_temporada_anterior`
+- **Descripción:** Posición estacional de la semana objetivo del horizonte 2, parte coseno.
+- **Fuente:** calendario epidemiológico MMWR (no usa observaciones)
+- **Unidad:** adimensional (−1 a 1)
+- **Ventana temporal:** semana o + 2 (la semana objetivo de la fila del horizonte 2; el vector del origen es el mismo para h = 2, 3 y 4)
+- **Regla de cálculo:** cos(2π · ((semana epidemiológica de o + 2) − 1) mód 52 / 52); la semana 53 ocupa la misma posición que la semana 1
+- **Rezago respecto del origen:** ninguno: el calendario de la semana objetivo se conoce de antemano
 
-- **Etiqueta:** Propio: log(1 + casos de la temporada anterior)
-- **Columna en gold h=2:** `no está en gold (propuesta)`
-- **Fuente:** epidemiológica (en memoria; para 2017, histórico epi previo al panel)
-- **Definición:** log(1 + casos de la temporada anterior completa del distrito)
-- **Ventana:** temporada anterior, cerrada antes de o
-- **Transformación:** suma de la temporada y log1p
-- **Tipo:** real ≥ 0
-- **Nulos:** nulo solo si falta en la historia un año necesario; la fila no se excluye
-- **Por qué está:** nivel previo del distrito (memoria de una temporada)
-- **Evidencia:** B3 (fase 2b), C3 (fase 2c)
-- **Test de no fuga:** tests/test_features_inicio.py · test_temporada_2017_usa_la_historia y test_no_fuga_por_perturbacion
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 9,47, mediana 1,386; 0 nulos
+### `propia_semanas_desde_ultimo_caso`
 
-## `hum_rel_media_media5_h2`
+- **Descripción:** Cuánto lleva el distrito sin transmisión: semanas desde la última semana con casos.
+- **Fuente:** epidemiológica: casos confirmados de dengue de Piura (CSV epidemiológico confirmado hasta 2024 y Sala Situacional del MINSA desde 2025), con la historia desde 2000 para completar las ventanas; calculada en memoria
+- **Unidad:** semanas (0 a 52)
+- **Ventana temporal:** todas las semanas hasta o, incluida o
+- **Regla de cálculo:** o menos la posición de la última semana con casos_Dengue mayor que 0 (0 si o tiene casos); tope de 52 semanas, que también se usa si el distrito no tiene caso previo
+- **Rezago respecto del origen:** usa solo semanas hasta el origen (rezago 0); no ve nada posterior a o
 
-- **Etiqueta:** media de la humedad relativa media semanal (%) de las semanas o − 4 a o
-- **Columna en gold h=2:** `no está en gold (propuesta)`
-- **Fuente:** meteorológica (Open-Meteo, archive API; diario agregado a semana MMWR; silver integrado)
-- **Definición:** media de la humedad relativa media semanal (%) de las semanas o − 4 a o
-- **Ventana:** semanas o − 4..o (5 semanas observadas hasta el origen)
-- **Transformación:** media móvil de 5 semanas, sin climatología ni anomalía
-- **Tipo:** real 0–100 (%)
-- **Nulos:** en gold, las 6 primeras semanas de cada distrito; en la tabla de orígenes, la primera semana de 2017 (65 filas), que la configuración excluye
-- **Por qué está:** clima reciente; bajó las razones MAE y RMSE del conteo
-- **Evidencia:** A3 (fase 2a, lectura de conteo); complemento de clima: F+A3 mejora el conteo en h2, h3 y h4
-- **Test de no fuga:** tests/test_clima_features.py · test_ventana_h4_y_h2_acaba_en_origen y test_cambio_posterior_al_origen_no_altera_feature
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 47,14 a 95,17, mediana 71; 0 nulos
+### `propia_pendiente_4`
 
-## `precip_total_mm_media5_h2`
+- **Descripción:** Dirección del cambio reciente de los casos: pendiente de log(1 + casos) en 4 semanas.
+- **Fuente:** epidemiológica: casos confirmados de dengue de Piura (CSV epidemiológico confirmado hasta 2024 y Sala Situacional del MINSA desde 2025), con la historia desde 2000 para completar las ventanas; calculada en memoria
+- **Unidad:** log(1 + casos) por semana
+- **Ventana temporal:** 4 semanas: o − 3, o − 2, o − 1 y o
+- **Regla de cálculo:** pendiente de mínimos cuadrados de log(1 + casos_Dengue) contra el tiempo (4 puntos equiespaciados); nula si falta alguna de las 4 semanas
+- **Rezago respecto del origen:** la ventana termina en el origen (rezago 0)
 
-- **Etiqueta:** media de la precipitación total semanal (mm) de las semanas o − 4 a o
-- **Columna en gold h=2:** `no está en gold (propuesta)`
-- **Fuente:** meteorológica (Open-Meteo, archive API; diario agregado a semana MMWR; silver integrado)
-- **Definición:** media de la precipitación total semanal (mm) de las semanas o − 4 a o
-- **Ventana:** semanas o − 4..o (5 semanas observadas hasta el origen)
-- **Transformación:** media móvil de 5 semanas, sin climatología ni anomalía
-- **Tipo:** real ≥ 0 (mm por semana)
-- **Nulos:** en gold, las 6 primeras semanas de cada distrito; en la tabla de orígenes, la primera semana de 2017 (65 filas), que la configuración excluye
-- **Por qué está:** clima reciente; bajó las razones MAE y RMSE del conteo
-- **Evidencia:** A3 (fase 2a, lectura de conteo); complemento de clima: F+A3 mejora el conteo en h2, h3 y h4
-- **Test de no fuga:** tests/test_clima_features.py · test_ventana_h4_y_h2_acaba_en_origen y test_cambio_posterior_al_origen_no_altera_feature
-- **Rango observado (orígenes 2017-02-04 a 2025-12-13, 30095 filas):** 0 a 480,8, mediana 3,08; 0 nulos
+### `propia_log_casos_temporada_anterior`
 
-## Insumo de inferencia: margen de persistencia
+- **Descripción:** Nivel previo del distrito: casos de la temporada anterior completa.
+- **Fuente:** epidemiológica: casos confirmados de dengue de Piura (CSV epidemiológico confirmado hasta 2024 y Sala Situacional del MINSA desde 2025), con la historia desde 2000 para completar las ventanas; calculada en memoria
+- **Unidad:** log(1 + casos de la temporada)
+- **Ventana temporal:** temporada anterior a la del origen, cerrada antes de o (la temporada empieza en la semana 35)
+- **Regla de cálculo:** log(1 + suma de casos_Dengue de la temporada anterior del distrito); nula solo si falta de la historia un año necesario
+- **Rezago respecto del origen:** temporada completa y cerrada antes del origen; no usa semanas posteriores a o
 
-- **Nombre:** margen_persistencia (no es columna del modelo)
-- **Definición:** log(casos de la semana de origen + 0,5); base_margin de las tres salidas en S4_s3
-- **Uso:** obligatorio en entrenamiento e inferencia: sin los casos del origen no se puede predecir
-- **Test de no fuga:** tests/test_salida_probabilistica.py · test_s4_y_s3_sin_fuga_por_perturbacion_del_futuro
+### `lat`
 
-## Rango por temporada del origen
+- **Descripción:** Latitud del punto del distrito.
+- **Fuente:** geográfica: coordenadas del punto del distrito de las consultas climáticas (data/reference/distritos_piura_coords.csv), en el archivo geografia_distritos.csv del paquete
+- **Unidad:** grados decimales
+- **Ventana temporal:** estática (no varía en el tiempo)
+- **Regla de cálculo:** se toma tal cual del archivo de geografía congelado (65 distritos); su SHA-256 está en la ficha de la V4
+- **Rezago respecto del origen:** no aplica: constante del distrito
 
-| Variable | Temporada | Mínimo | Mediana | Máximo | Nulos |
+### `lon`
+
+- **Descripción:** Longitud del punto del distrito.
+- **Fuente:** geográfica: coordenadas del punto del distrito de las consultas climáticas (data/reference/distritos_piura_coords.csv), en el archivo geografia_distritos.csv del paquete
+- **Unidad:** grados decimales
+- **Ventana temporal:** estática (no varía en el tiempo)
+- **Regla de cálculo:** se toma tal cual del archivo de geografía congelado (65 distritos); su SHA-256 está en la ficha de la V4
+- **Rezago respecto del origen:** no aplica: constante del distrito
+
+### `elevacion_dem90`
+
+- **Descripción:** Elevación del punto del distrito.
+- **Fuente:** geográfica: modelo digital de elevación GLO-90 (90 m) consultado con la API de elevación de Open-Meteo en el punto del distrito
+- **Unidad:** metros sobre el nivel del mar
+- **Ventana temporal:** estática (no varía en el tiempo)
+- **Regla de cálculo:** se toma tal cual del archivo de geografía congelado (65 distritos); su SHA-256 está en la ficha de la V4
+- **Rezago respecto del origen:** no aplica: constante del distrito
+
+### `hum_rel_media_media5_h2_obs`
+
+- **Descripción:** Humedad relativa reciente: media de 5 semanas que terminan 2 semanas antes del origen.
+- **Fuente:** meteorológica: ERA5-Land (0,1°) vía la API de archivo de Open-Meteo, valor diario en el punto del distrito, agregado a semana epidemiológica (domingo a sábado); variable relative_humidity_2m_mean
+- **Unidad:** % (0 a 100)
+- **Ventana temporal:** 5 semanas epidemiológicas: o − 6, o − 5, o − 4, o − 3 y o − 2
+- **Regla de cálculo:** media aritmética de hum_rel_media semanal de las 5 semanas; solo cuenta una semana si su fecha de disponibilidad es anterior o igual al cierre del origen (ERA5-Land: fecha_era5_land_disponible de la BD, o el domingo de la semana más 13 días en el silver sin esa fecha); si falta alguna de las 5, el valor es nulo y el distrito no se pronostica, con el motivo registrado
+- **Rezago respecto del origen:** la ventana termina 2 semanas antes del origen (o − 2): la última semana climática que ya está publicada al cierre del origen; no es el rezago de un horizonte
+
+### `precip_total_mm_media5_h2_obs`
+
+- **Descripción:** Lluvia reciente: media de 5 semanas que terminan 2 semanas antes del origen.
+- **Fuente:** precipitación: CHIRPS v3 (final y preliminar) agregada por distrito, diaria, a semana epidemiológica (domingo a sábado)
+- **Unidad:** mm por semana
+- **Ventana temporal:** 5 semanas epidemiológicas: o − 6, o − 5, o − 4, o − 3 y o − 2
+- **Regla de cálculo:** media aritmética de precip_total_mm semanal de las 5 semanas; solo cuenta una semana si su fecha de disponibilidad es anterior o igual al cierre del origen (CHIRPS: fecha_chirps_disponible, el cierre del pentad que contiene el sábado más 5 días); si falta alguna de las 5, el valor es nulo y el distrito no se pronostica, con el motivo registrado
+- **Rezago respecto del origen:** la ventana termina 2 semanas antes del origen (o − 2): la última semana climática que ya está publicada al cierre del origen; no es el rezago de un horizonte
+
+### `temp_media_media5_h2_obs`
+
+- **Descripción:** Temperatura reciente: media de 5 semanas que terminan 2 semanas antes del origen.
+- **Fuente:** meteorológica: ERA5-Land (0,1°) vía la API de archivo de Open-Meteo, valor diario en el punto del distrito, agregado a semana epidemiológica (domingo a sábado); variable temperature_2m_mean
+- **Unidad:** °C
+- **Ventana temporal:** 5 semanas epidemiológicas: o − 6, o − 5, o − 4, o − 3 y o − 2
+- **Regla de cálculo:** media aritmética de temp_media semanal de las 5 semanas; solo cuenta una semana si su fecha de disponibilidad es anterior o igual al cierre del origen (ERA5-Land: fecha_era5_land_disponible de la BD, o el domingo de la semana más 13 días en el silver sin esa fecha); si falta alguna de las 5, el valor es nulo y el distrito no se pronostica, con el motivo registrado
+- **Rezago respecto del origen:** la ventana termina 2 semanas antes del origen (o − 2): la última semana climática que ya está publicada al cierre del origen; no es el rezago de un horizonte
+
+### `nino12_anom_media3_obs`
+
+- **Descripción:** Anomalía reciente del océano frente a Piura: media de los 3 últimos meses publicados del Niño 1+2.
+- **Fuente:** oceánica: anomalía mensual Niño 1+2 del índice OISST v2.1 de NOAA CPC (sstoi.indices); un solo valor para todos los distritos
+- **Unidad:** °C (anomalía)
+- **Ventana temporal:** los 3 últimos meses consecutivos publicados al cierre del origen
+- **Regla de cálculo:** media aritmética de la anomalía mensual de esos 3 meses; un mes está publicado desde el día 10 del mes siguiente; si no hay 3 meses consecutivos, el valor es nulo
+- **Rezago respecto del origen:** entre 1 y 3 meses de retraso por la publicación del índice; usa solo meses ya publicados al cierre del origen
+
+### Pruebas de no fuga
+
+- historia y calendario: `tests/features/test_history_calendar.py`
+- historia propia: `tests/features/test_onset_features.py`
+- clima, Niño 1+2 y disponibilidad: `tests/features/test_gold_v4.py · test_uses_only_the_five_eligible_weeks_and_three_published_months`
+
+## Histórico: v2 (HU0006-3, congelada antes de la V3)
+
+Tabla resumida de las 11 columnas de la configuración v2 (`CONFIG_2026`), que ya no se sirve.
+
+| Columna | Definición | Unidades | Ventana | Transformación | Faltantes |
 |---|---|---|---|---|---|
-| `hist_lag_a` | 2017 | 0 | 0 | 2084 | 0 |
-| `hist_lag_a` | 2018 | 0 | 0 | 26 | 0 |
-| `hist_lag_a` | 2019 | 0 | 0 | 4 | 0 |
-| `hist_lag_a` | 2020 | 0 | 0 | 6 | 0 |
-| `hist_lag_a` | 2021 | 0 | 0 | 154 | 0 |
-| `hist_lag_a` | 2022 | 0 | 0 | 161 | 0 |
-| `hist_lag_a` | 2023 | 0 | 0 | 1527 | 0 |
-| `hist_lag_a` | 2024 | 0 | 1 | 482 | 0 |
-| `hist_lag_a` | 2025 | 0 | 0 | 41 | 0 |
-| `hist_lag_a` | 2026 | 0 | 0 | 8 | 0 |
-| `hist_lag_b` | 2017 | 0 | 0 | 2084 | 0 |
-| `hist_lag_b` | 2018 | 0 | 0 | 26 | 0 |
-| `hist_lag_b` | 2019 | 0 | 0 | 4 | 0 |
-| `hist_lag_b` | 2020 | 0 | 0 | 6 | 0 |
-| `hist_lag_b` | 2021 | 0 | 0 | 154 | 0 |
-| `hist_lag_b` | 2022 | 0 | 0 | 161 | 0 |
-| `hist_lag_b` | 2023 | 0 | 0 | 1527 | 0 |
-| `hist_lag_b` | 2024 | 0 | 1 | 482 | 0 |
-| `hist_lag_b` | 2025 | 0 | 0 | 41 | 0 |
-| `hist_lag_b` | 2026 | 0 | 0 | 8 | 0 |
-| `hist_media_4` | 2017 | 0 | 0,5 | 1772 | 0 |
-| `hist_media_4` | 2018 | 0 | 0 | 21,75 | 0 |
-| `hist_media_4` | 2019 | 0 | 0 | 2,25 | 0 |
-| `hist_media_4` | 2020 | 0 | 0 | 2,5 | 0 |
-| `hist_media_4` | 2021 | 0 | 0 | 125 | 0 |
-| `hist_media_4` | 2022 | 0 | 0 | 125,8 | 0 |
-| `hist_media_4` | 2023 | 0 | 0,25 | 1319 | 0 |
-| `hist_media_4` | 2024 | 0 | 1 | 411,2 | 0 |
-| `hist_media_4` | 2025 | 0 | 0 | 28,5 | 0 |
-| `hist_media_4` | 2026 | 0 | 0 | 5 | 0 |
-| `hist_semanas_pos_4` | 2017 | 0 | 2 | 4 | 0 |
-| `hist_semanas_pos_4` | 2018 | 0 | 0 | 4 | 0 |
-| `hist_semanas_pos_4` | 2019 | 0 | 0 | 4 | 0 |
-| `hist_semanas_pos_4` | 2020 | 0 | 0 | 4 | 0 |
-| `hist_semanas_pos_4` | 2021 | 0 | 0 | 4 | 0 |
-| `hist_semanas_pos_4` | 2022 | 0 | 0 | 4 | 0 |
-| `hist_semanas_pos_4` | 2023 | 0 | 1 | 4 | 0 |
-| `hist_semanas_pos_4` | 2024 | 0 | 2 | 4 | 0 |
-| `hist_semanas_pos_4` | 2025 | 0 | 0 | 4 | 0 |
-| `hist_semanas_pos_4` | 2026 | 0 | 0 | 4 | 0 |
-| `hum_rel_media_media5_h2` | 2017 | 52,97 | 79,84 | 94,2 | 0 |
-| `hum_rel_media_media5_h2` | 2018 | 54 | 71,86 | 93,6 | 0 |
-| `hum_rel_media_media5_h2` | 2019 | 53,37 | 71,93 | 94,89 | 0 |
-| `hum_rel_media_media5_h2` | 2020 | 53,31 | 69,09 | 93,49 | 0 |
-| `hum_rel_media_media5_h2` | 2021 | 53,14 | 69,09 | 93,23 | 0 |
-| `hum_rel_media_media5_h2` | 2022 | 54 | 69,94 | 94,17 | 0 |
-| `hum_rel_media_media5_h2` | 2023 | 50,23 | 72,23 | 93,57 | 0 |
-| `hum_rel_media_media5_h2` | 2024 | 50,4 | 70,6 | 93,77 | 0 |
-| `hum_rel_media_media5_h2` | 2025 | 47,14 | 70,26 | 95,17 | 0 |
-| `hum_rel_media_media5_h2` | 2026 | 53,66 | 70,67 | 90,8 | 0 |
-| `precip_total_mm_media5_h2` | 2017 | 0 | 31,15 | 480,8 | 0 |
-| `precip_total_mm_media5_h2` | 2018 | 0 | 2,98 | 136,2 | 0 |
-| `precip_total_mm_media5_h2` | 2019 | 0 | 3,62 | 291,1 | 0 |
-| `precip_total_mm_media5_h2` | 2020 | 0 | 2,54 | 140,3 | 0 |
-| `precip_total_mm_media5_h2` | 2021 | 0 | 2,34 | 151,8 | 0 |
-| `precip_total_mm_media5_h2` | 2022 | 0 | 2,5 | 160,7 | 0 |
-| `precip_total_mm_media5_h2` | 2023 | 0 | 2,9 | 327 | 0 |
-| `precip_total_mm_media5_h2` | 2024 | 0 | 3,78 | 198 | 0 |
-| `precip_total_mm_media5_h2` | 2025 | 0 | 3,3 | 207,8 | 0 |
-| `precip_total_mm_media5_h2` | 2026 | 0 | 1,75 | 64,62 | 0 |
-| `propia_log_casos_temporada_anterior` | 2017 | 0 | 3,135 | 7,084 | 0 |
-| `propia_log_casos_temporada_anterior` | 2018 | 0 | 3,332 | 9,47 | 0 |
-| `propia_log_casos_temporada_anterior` | 2019 | 0 | 0,6931 | 9,47 | 0 |
-| `propia_log_casos_temporada_anterior` | 2020 | 0 | 0 | 5,283 | 0 |
-| `propia_log_casos_temporada_anterior` | 2021 | 0 | 0 | 3,738 | 0 |
-| `propia_log_casos_temporada_anterior` | 2022 | 0 | 0,6931 | 7,319 | 0 |
-| `propia_log_casos_temporada_anterior` | 2023 | 0 | 2,639 | 7,446 | 0 |
-| `propia_log_casos_temporada_anterior` | 2024 | 0 | 5,159 | 9,38 | 0 |
-| `propia_log_casos_temporada_anterior` | 2025 | 0 | 4,673 | 9,38 | 0 |
-| `propia_log_casos_temporada_anterior` | 2026 | 0 | 1,609 | 8,526 | 0 |
-| `propia_pendiente_4` | 2017 | -1,074 | 0 | 0,9531 | 0 |
-| `propia_pendiente_4` | 2018 | -0,7749 | 0 | 0,6628 | 0 |
-| `propia_pendiente_4` | 2019 | -0,5545 | 0 | 0,4852 | 0 |
-| `propia_pendiente_4` | 2020 | -0,5521 | 0 | 0,6531 | 0 |
-| `propia_pendiente_4` | 2021 | -0,9757 | 0 | 1,346 | 0 |
-| `propia_pendiente_4` | 2022 | -1,022 | 0 | 1,212 | 0 |
-| `propia_pendiente_4` | 2023 | -1,165 | 0 | 1,308 | 0 |
-| `propia_pendiente_4` | 2024 | -1,171 | 0 | 1,037 | 0 |
-| `propia_pendiente_4` | 2025 | -0,861 | 0 | 0,9016 | 0 |
-| `propia_pendiente_4` | 2026 | -0,7026 | 0 | 0,4852 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2017 | 0 | 1 | 52 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2018 | 0 | 17 | 52 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2019 | 0 | 52 | 52 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2020 | 0 | 52 | 52 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2021 | 0 | 52 | 52 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2022 | 0 | 8 | 52 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2023 | 0 | 3 | 52 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2024 | 0 | 0 | 52 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2025 | 0 | 10 | 52 | 0 |
-| `propia_semanas_desde_ultimo_caso` | 2026 | 0 | 26 | 52 | 0 |
-| `semana_epi_coseno` | 2017 | -1 | -0,6631 | 0,7485 | 0 |
-| `semana_epi_coseno` | 2018 | -1 | 0 | 1 | 0 |
-| `semana_epi_coseno` | 2019 | -1 | 0 | 1 | 0 |
-| `semana_epi_coseno` | 2020 | -1 | 0 | 1 | 0 |
-| `semana_epi_coseno` | 2021 | -1 | 0 | 1 | 0 |
-| `semana_epi_coseno` | 2022 | -1 | 0 | 1 | 0 |
-| `semana_epi_coseno` | 2023 | -1 | 0 | 1 | 0 |
-| `semana_epi_coseno` | 2024 | -1 | 0 | 1 | 0 |
-| `semana_epi_coseno` | 2025 | -1 | 0 | 1 | 0 |
-| `semana_epi_coseno` | 2026 | -0,5681 | 0,4097 | 0,9927 | 0 |
-| `semana_epi_seno` | 2017 | -0,7485 | 0,6631 | 1 | 0 |
-| `semana_epi_seno` | 2018 | -1 | 0 | 1 | 0 |
-| `semana_epi_seno` | 2019 | -1 | 0 | 1 | 0 |
-| `semana_epi_seno` | 2020 | -1 | 0 | 1 | 0 |
-| `semana_epi_seno` | 2021 | -1 | 0 | 1 | 0 |
-| `semana_epi_seno` | 2022 | -1 | 0 | 1 | 0 |
-| `semana_epi_seno` | 2023 | -1 | 0 | 1 | 0 |
-| `semana_epi_seno` | 2024 | -1 | 0 | 1 | 0 |
-| `semana_epi_seno` | 2025 | -1 | 0 | 1 | 0 |
-| `semana_epi_seno` | 2026 | -1 | -0,8542 | -0,1205 | 0 |
+| `hist_lag_a` | casos de dengue de la semana de origen o | casos | semana o | ninguna (conteo) | en gold, las 2 primeras semanas de cada distrito; esas filas no entran a la tabla de orígenes |
+| `hist_lag_b` | casos de dengue de la semana o − 1 | casos | semana o − 1 | ninguna (conteo) | en gold, las 3 primeras semanas de cada distrito; no entran a la tabla de orígenes |
+| `hist_media_4` | media de casos de las semanas o − 3 a o | casos por semana | semanas o − 3..o | media móvil de 4 semanas | en gold, las 5 primeras semanas de cada distrito; no entran a la tabla de orígenes |
+| `hist_semanas_pos_4` | número de semanas con al menos 1 caso entre o − 3 y o | semanas (0–4) | semanas o − 3..o | conteo de semanas positivas (0–4) | en gold, las 5 primeras semanas de cada distrito; no entran a la tabla de orígenes |
+| `semana_epi_seno` | sen(2π · ((semana epi de t) − 1) mód 52 / 52) | adimensional (−1 a 1) | semana objetivo t (conocida de antemano) | codificación cíclica | ninguno |
+| `semana_epi_coseno` | cos(2π · ((semana epi de t) − 1) mód 52 / 52) | adimensional (−1 a 1) | semana objetivo t (conocida de antemano) | codificación cíclica | ninguno |
+| `propia_semanas_desde_ultimo_caso` | semanas transcurridas desde la última semana con casos del distrito, hasta o | semanas (0–52) | semanas ≤ o | tope 52 semanas | ninguno (sin caso previo = tope) |
+| `propia_pendiente_4` | pendiente MCO de log(1 + casos) en las semanas o − 3..o | log(1 + casos) por semana | semanas o − 3..o | log1p y pendiente lineal de 4 puntos | nulo si faltan semanas de historia; ver el conteo de nulos en la tabla de orígenes |
+| `propia_log_casos_temporada_anterior` | log(1 + casos de la temporada anterior completa del distrito) | log(1 + casos) | temporada anterior, cerrada antes de o | suma de la temporada y log1p | nulo solo si falta en la historia un año necesario; la fila no se excluye |
+| `hum_rel_media_media5_h2` | media de la humedad relativa media semanal (%) de las semanas o − 4 a o | % | semanas o − 4..o (5 semanas observadas hasta el origen) | media móvil de 5 semanas, sin climatología ni anomalía | en gold, las 6 primeras semanas de cada distrito; en la tabla de orígenes, la primera semana de 2017 (65 filas), que la configuración excluye |
+| `precip_total_mm_media5_h2` | media de la precipitación total semanal (mm) de las semanas o − 4 a o | mm por semana | semanas o − 4..o (5 semanas observadas hasta el origen) | media móvil de 5 semanas, sin climatología ni anomalía | en gold, las 6 primeras semanas de cada distrito; en la tabla de orígenes, la primera semana de 2017 (65 filas), que la configuración excluye |

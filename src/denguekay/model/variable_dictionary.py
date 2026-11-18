@@ -1,5 +1,7 @@
-"""Dictionary of the variables of the final configuration (HU0006-3).
+"""Dictionary of the variables of the current configuration, the V4 (HU0006-1 and HU0006-3).
 
+The V4 section (``v4_document``) is generated from the code: the 16 columns come from the versioned V4
+specification and every one needs a complete entry (``v4_dictionary``). The v2 part below is kept as history.
 It is generated from the code: the columns come from ``frozen_configs``, the gold
 names from ``horizon_strategies.model_columns(2)``, the labels from
 ``diagnostico_inicios.ETIQUETAS`` and the ranges are computed in memory on the
@@ -229,7 +231,234 @@ def to_markdown(table: pd.DataFrame, by_season: pd.DataFrame | None, configurati
     return "\n".join(lines)
 
 
-def main() -> None:
+# --- V4 (current configuration: b3_obs with confirmed cases) -------------------------------------------------
+
+V4_FIELDS = ("descripcion", "fuente", "unidad", "ventana", "regla", "rezago")
+V4_FIELD_LABELS = {"descripcion": "Descripción", "fuente": "Fuente", "unidad": "Unidad", "ventana": "Ventana temporal",
+                   "regla": "Regla de cálculo", "rezago": "Rezago respecto del origen"}
+
+_V4_CASES = ("epidemiológica: casos confirmados de dengue de Piura (CSV epidemiológico confirmado hasta 2024 y "
+             "Sala Situacional del MINSA desde 2025), con la historia desde 2000 para completar las ventanas")
+_V4_ERA5 = ("meteorológica: ERA5-Land (0,1°) vía la API de archivo de Open-Meteo, valor diario en el punto del "
+            "distrito, agregado a semana epidemiológica (domingo a sábado)")
+_V4_LAG_5 = ("la ventana termina 2 semanas antes del origen (o − 2): la última semana climática que ya está publicada "
+             "al cierre del origen; no es el rezago de un horizonte")
+
+
+def _v4_climate(variable, source, unit, availability):
+    return {
+        "fuente": source, "unidad": unit,
+        "ventana": "5 semanas epidemiológicas: o − 6, o − 5, o − 4, o − 3 y o − 2",
+        "regla": (f"media aritmética de {variable} semanal de las 5 semanas; solo cuenta una semana si su fecha de "
+                  f"disponibilidad es anterior o igual al cierre del origen ({availability}); si falta alguna de las "
+                  "5, el valor es nulo y el distrito no se pronostica, con el motivo registrado"),
+        "rezago": _V4_LAG_5,
+    }
+
+
+V4_DEFINITIONS = {
+    "hist_lag_a": {
+        "descripcion": "Casos confirmados del distrito en la semana de origen.", "fuente": _V4_CASES,
+        "unidad": "casos por semana", "ventana": "semana o",
+        "regla": "valor de casos_Dengue de la semana o, sin transformación",
+        "rezago": "0 semanas respecto del origen; para el objetivo t = o + h equivale a t − h"},
+    "hist_lag_b": {
+        "descripcion": "Casos confirmados del distrito en la semana anterior al origen.", "fuente": _V4_CASES,
+        "unidad": "casos por semana", "ventana": "semana o − 1",
+        "regla": "valor de casos_Dengue de la semana o − 1, sin transformación",
+        "rezago": "1 semana respecto del origen; para el objetivo t = o + h equivale a t − h − 1"},
+    "hist_media_4": {
+        "descripcion": "Nivel reciente de casos: media de las últimas 4 semanas hasta el origen.", "fuente": _V4_CASES,
+        "unidad": "casos por semana", "ventana": "4 semanas: o − 3, o − 2, o − 1 y o",
+        "regla": "media aritmética de casos_Dengue en la ventana; se exigen las 4 semanas (sin completar con ceros)",
+        "rezago": "la ventana termina en el origen (rezago 0); equivale a las 4 semanas que terminan en t − h"},
+    "hist_semanas_pos_4": {
+        "descripcion": "Persistencia de la transmisión: semanas con casos entre las últimas 4 hasta el origen.",
+        "fuente": _V4_CASES, "unidad": "semanas (0 a 4)", "ventana": "4 semanas: o − 3, o − 2, o − 1 y o",
+        "regla": "número de semanas de la ventana con casos_Dengue mayor que 0; se exigen las 4 semanas",
+        "rezago": "la ventana termina en el origen (rezago 0); equivale a las 4 semanas que terminan en t − h"},
+    "semana_epi_seno": {
+        "descripcion": "Posición estacional de la semana objetivo del horizonte 2, parte seno.",
+        "fuente": "calendario epidemiológico MMWR (no usa observaciones)", "unidad": "adimensional (−1 a 1)",
+        "ventana": "semana o + 2 (la semana objetivo de la fila del horizonte 2; el vector del origen es el mismo "
+                   "para h = 2, 3 y 4)",
+        "regla": "sen(2π · ((semana epidemiológica de o + 2) − 1) mód 52 / 52); la semana 53 ocupa la misma posición "
+                 "que la semana 1",
+        "rezago": "ninguno: el calendario de la semana objetivo se conoce de antemano"},
+    "semana_epi_coseno": {
+        "descripcion": "Posición estacional de la semana objetivo del horizonte 2, parte coseno.",
+        "fuente": "calendario epidemiológico MMWR (no usa observaciones)", "unidad": "adimensional (−1 a 1)",
+        "ventana": "semana o + 2 (la semana objetivo de la fila del horizonte 2; el vector del origen es el mismo "
+                   "para h = 2, 3 y 4)",
+        "regla": "cos(2π · ((semana epidemiológica de o + 2) − 1) mód 52 / 52); la semana 53 ocupa la misma posición "
+                 "que la semana 1",
+        "rezago": "ninguno: el calendario de la semana objetivo se conoce de antemano"},
+    "propia_semanas_desde_ultimo_caso": {
+        "descripcion": "Cuánto lleva el distrito sin transmisión: semanas desde la última semana con casos.",
+        "fuente": _V4_CASES + "; calculada en memoria",
+        "unidad": "semanas (0 a 52)", "ventana": "todas las semanas hasta o, incluida o",
+        "regla": f"o menos la posición de la última semana con casos_Dengue mayor que 0 (0 si o tiene casos); "
+                 f"tope de {di.MAX_WEEKS_WITHOUT_CASE} semanas, que también se usa si el distrito no tiene caso previo",
+        "rezago": "usa solo semanas hasta el origen (rezago 0); no ve nada posterior a o"},
+    "propia_pendiente_4": {
+        "descripcion": "Dirección del cambio reciente de los casos: pendiente de log(1 + casos) en 4 semanas.",
+        "fuente": _V4_CASES + "; calculada en memoria",
+        "unidad": "log(1 + casos) por semana", "ventana": "4 semanas: o − 3, o − 2, o − 1 y o",
+        "regla": "pendiente de mínimos cuadrados de log(1 + casos_Dengue) contra el tiempo (4 puntos equiespaciados); "
+                 "nula si falta alguna de las 4 semanas",
+        "rezago": "la ventana termina en el origen (rezago 0)"},
+    "propia_log_casos_temporada_anterior": {
+        "descripcion": "Nivel previo del distrito: casos de la temporada anterior completa.",
+        "fuente": _V4_CASES + "; calculada en memoria",
+        "unidad": "log(1 + casos de la temporada)",
+        "ventana": "temporada anterior a la del origen, cerrada antes de o (la temporada empieza en la semana 35)",
+        "regla": "log(1 + suma de casos_Dengue de la temporada anterior del distrito); nula solo si falta de la "
+                 "historia un año necesario",
+        "rezago": "temporada completa y cerrada antes del origen; no usa semanas posteriores a o"},
+    "lat": {
+        "descripcion": "Latitud del punto del distrito.",
+        "fuente": "geográfica: coordenadas del punto del distrito de las consultas climáticas "
+                  "(data/reference/distritos_piura_coords.csv), en el archivo geografia_distritos.csv del paquete",
+        "unidad": "grados decimales", "ventana": "estática (no varía en el tiempo)",
+        "regla": "se toma tal cual del archivo de geografía congelado (65 distritos); su SHA-256 está en la ficha de la V4",
+        "rezago": "no aplica: constante del distrito"},
+    "lon": {
+        "descripcion": "Longitud del punto del distrito.",
+        "fuente": "geográfica: coordenadas del punto del distrito de las consultas climáticas "
+                  "(data/reference/distritos_piura_coords.csv), en el archivo geografia_distritos.csv del paquete",
+        "unidad": "grados decimales", "ventana": "estática (no varía en el tiempo)",
+        "regla": "se toma tal cual del archivo de geografía congelado (65 distritos); su SHA-256 está en la ficha de la V4",
+        "rezago": "no aplica: constante del distrito"},
+    "elevacion_dem90": {
+        "descripcion": "Elevación del punto del distrito.",
+        "fuente": "geográfica: modelo digital de elevación GLO-90 (90 m) consultado con la API de elevación de "
+                  "Open-Meteo en el punto del distrito",
+        "unidad": "metros sobre el nivel del mar", "ventana": "estática (no varía en el tiempo)",
+        "regla": "se toma tal cual del archivo de geografía congelado (65 distritos); su SHA-256 está en la ficha de la V4",
+        "rezago": "no aplica: constante del distrito"},
+    "hum_rel_media_media5_h2_obs": {
+        "descripcion": "Humedad relativa reciente: media de 5 semanas que terminan 2 semanas antes del origen.",
+        **_v4_climate("hum_rel_media", _V4_ERA5 + "; variable relative_humidity_2m_mean", "% (0 a 100)",
+                      "ERA5-Land: fecha_era5_land_disponible de la BD, o el domingo de la semana más 13 días en "
+                      "el silver sin esa fecha")},
+    "precip_total_mm_media5_h2_obs": {
+        "descripcion": "Lluvia reciente: media de 5 semanas que terminan 2 semanas antes del origen.",
+        **_v4_climate("precip_total_mm", "precipitación: CHIRPS v3 (final y preliminar) agregada por distrito, "
+                      "diaria, a semana epidemiológica (domingo a sábado)", "mm por semana",
+                      "CHIRPS: fecha_chirps_disponible, el cierre del pentad que contiene el sábado más 5 días")},
+    "temp_media_media5_h2_obs": {
+        "descripcion": "Temperatura reciente: media de 5 semanas que terminan 2 semanas antes del origen.",
+        **_v4_climate("temp_media", _V4_ERA5 + "; variable temperature_2m_mean", "°C",
+                      "ERA5-Land: fecha_era5_land_disponible de la BD, o el domingo de la semana más 13 días en "
+                      "el silver sin esa fecha")},
+    "nino12_anom_media3_obs": {
+        "descripcion": "Anomalía reciente del océano frente a Piura: media de los 3 últimos meses publicados del "
+                       "Niño 1+2.",
+        "fuente": "oceánica: anomalía mensual Niño 1+2 del índice OISST v2.1 de NOAA CPC (sstoi.indices); un solo "
+                  "valor para todos los distritos",
+        "unidad": "°C (anomalía)", "ventana": "los 3 últimos meses consecutivos publicados al cierre del origen",
+        "regla": "media aritmética de la anomalía mensual de esos 3 meses; un mes está publicado desde el día 10 del "
+                 "mes siguiente; si no hay 3 meses consecutivos, el valor es nulo",
+        "rezago": "entre 1 y 3 meses de retraso por la publicación del índice; usa solo meses ya publicados al "
+                  "cierre del origen"},
+}
+
+V4_NO_LEAK_TESTS = {
+    "historia y calendario": "tests/features/test_history_calendar.py",
+    "historia propia": "tests/features/test_onset_features.py",
+    "clima, Niño 1+2 y disponibilidad": "tests/features/test_gold_v4.py · "
+                                         "test_uses_only_the_five_eligible_weeks_and_three_published_months",
+}
+V4_GROUPS = (
+    ("historia y calendario", ("hist_lag_a", "hist_lag_b", "hist_media_4", "hist_semanas_pos_4", "semana_epi_seno",
+                               "semana_epi_coseno")),
+    ("historia propia", ("propia_semanas_desde_ultimo_caso", "propia_pendiente_4",
+                         "propia_log_casos_temporada_anterior")),
+    ("geografía", ("lat", "lon", "elevacion_dem90")),
+    ("clima, Niño 1+2 y disponibilidad", ("hum_rel_media_media5_h2_obs", "precip_total_mm_media5_h2_obs",
+                                           "temp_media_media5_h2_obs", "nino12_anom_media3_obs")),
+)
+
+
+def v4_spec() -> dict:
+    """Specification of the frozen V4 (versioned in ``research/08``): columns, cutoff, horizons and rule."""
+    from denguekay.config.paths import V4_STUDY_MANIFEST
+
+    return json.loads(V4_STUDY_MANIFEST.read_text(encoding="utf-8"))
+
+
+def v4_columns() -> list[str]:
+    """The 16 columns of the V4 (b3_obs), in the order of the frozen package and of ``features/gold_v4.py``."""
+    return list(v4_spec()["columnas"]["b3_obs"])
+
+
+def v4_dictionary(columns: list[str] | None = None) -> pd.DataFrame:
+    """One row per V4 column with name, description, source, unit, window, rule and lag.
+
+    It fails if a column has no entry, if an entry misses a field or is empty, or if the dictionary has an entry
+    that is not a column of the V4 (so a column cannot be added or removed without updating the dictionary)."""
+    columns = v4_columns() if columns is None else list(columns)
+    missing = [c for c in columns if c not in V4_DEFINITIONS]
+    if missing:
+        raise ValueError(f"Columnas de la V4 sin entrada en el diccionario: {missing}")
+    extra = sorted(set(V4_DEFINITIONS) - set(columns))
+    if extra:
+        raise ValueError(f"Entradas del diccionario que no son columnas de la V4: {extra}")
+    incomplete = [f"{c}.{f}" for c in columns for f in V4_FIELDS
+                  if not (isinstance(V4_DEFINITIONS[c].get(f), str) and V4_DEFINITIONS[c][f].strip())]
+    if incomplete:
+        raise ValueError(f"Entradas incompletas del diccionario de la V4: {incomplete}")
+    return pd.DataFrame([{"variable": c, **{f: V4_DEFINITIONS[c][f] for f in V4_FIELDS}} for c in columns])
+
+
+def v4_markdown(spec: dict | None = None, columns: list[str] | None = None) -> str:
+    """V4 section of the dictionary document (main section)."""
+    spec = v4_spec() if spec is None else spec
+    table = v4_dictionary(columns)
+    group_of = {c: name for name, members in V4_GROUPS for c in members}
+    lines = ["## V4 vigente (b3_obs, casos confirmados)", "",
+             f"Configuración: matriz `b3_obs` ({len(table)} columnas) · formulación {spec['formulacion']} · "
+             f"horizontes {', '.join(map(str, spec['horizontes']))} semanas · etiquetas hasta el {spec['corte']}. "
+             "Es el modelo que sirve el predictor `v4_b3_live` (ficha en `models/registry/v4/`).", "",
+             "**Convención de tiempo.** El origen `o` es la semana de corte: la semana epidemiológica (domingo a "
+             "sábado) cuyo cierre es la fecha de corte de los datos. La semana objetivo es `t = o + h` con "
+             "h = 2, 3 o 4. El modelo calcula **un solo vector de 16 columnas en `o`** y lo usa para los tres "
+             "horizontes, así que ninguna variable mira después de `o`: «rezago respecto de `t − h`» significa que "
+             "la semana `o` es la última que se observa para el objetivo `t = o + h`. Las variables de clima y "
+             "Niño 1+2 respetan además la fecha de publicación de su fuente.", "",
+             "Las columnas salen de `research/08_v3_confirmed_cases/manifiesto_b3_v4.json`, igual que en el paquete "
+             "congelado y en `features/gold_v4.py`; una prueba falla si una columna no tiene entrada completa "
+             "(`tests/model/test_variable_dictionary_v4.py`).", ""]
+    lines += ["| # | Variable | Grupo | Unidad | Ventana temporal |", "|---|---|---|---|---|"]
+    for i, row in enumerate(table.itertuples(), 1):
+        lines.append(f"| {i} | `{row.variable}` | {group_of[row.variable]} | {row.unidad} | {row.ventana} |")
+    lines.append("")
+    for row in table.itertuples():
+        lines += [f"### `{row.variable}`", ""]
+        lines += [f"- **{V4_FIELD_LABELS[f]}:** {getattr(row, f)}" for f in V4_FIELDS]
+        lines.append("")
+    lines += ["### Pruebas de no fuga", ""]
+    lines += [f"- {group}: `{test}`" for group, test in V4_NO_LEAK_TESTS.items()]
+    lines.append("")
+    return "\n".join(lines)
+
+
+def v4_document() -> str:
+    """Whole document: V4 first, then the v2 as history (compact table, generated from the v2 definitions)."""
+    from denguekay.model import frozen_configs as cf
+
+    lines = ["# Diccionario de variables", "",
+             "> Generado por `python -m denguekay.model.variable_dictionary`; no editar a mano.", "",
+             "La configuración vigente es la **V4**. La v2 queda como histórico al final; su diccionario completo, "
+             "con rangos por temporada, está en [`diccionario_variables_v2.md`](diccionario_variables_v2.md).", "",
+             v4_markdown(), "## Histórico: v2 (HU0006-3, congelada antes de la V3)", "",
+             "Tabla resumida de las 11 columnas de la configuración v2 (`CONFIG_2026`), que ya no se sirve.", "",
+             compact_markdown(cf.CONFIG_2026["columnas"]), ""]
+    return "\n".join(lines)
+
+
+def main_v2() -> None:
+    """Regenerate the full v2 document (history). It needs the v2 integrated panel, so it runs from the v2 tag."""
     from denguekay.data.loading import load_integrated
     from denguekay.model import frozen_configs as cf
     from denguekay.evaluation import episodes as d
@@ -249,6 +478,14 @@ def main() -> None:
                                {"variables": d.to_json(table), "por_temporada": d.to_json(by_season),
                                 "insumo_inferencia": INFERENCE_INPUT})
     print(f"{VARIABLE_DICTIONARY} ({len(table)} variables)")
+
+
+def main() -> None:
+    from denguekay.config.paths import VARIABLE_DICTIONARY
+
+    text = v4_document()
+    VARIABLE_DICTIONARY.write_bytes(text.replace("\n", "\r\n").encode("utf-8"))
+    print(f"{VARIABLE_DICTIONARY} ({len(v4_columns())} variables de la V4)")
 
 
 if __name__ == "__main__":
