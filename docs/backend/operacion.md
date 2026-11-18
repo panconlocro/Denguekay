@@ -377,6 +377,21 @@ con `--incluir-escrituras` agrega ejecuciones: úselo sobre una copia o la BD de
 - **Sin medir:** 2 casos, igual que antes: no hay alertas guardadas para medir un detalle, y la activación se prueba
   en los tests.
 
+## Monitoreo, versiones y responsabilidades de soporte (HU0018-4)
+
+- **Monitoreo.** La actualización semanal informa el seguimiento prospectivo y la deriva en su informe, y
+  `drift_monthly.yml` (o `python -m denguekay.serving.drift`) registra la revisión mensual (ver «Actualización semanal (V4)»).
+  Es un registro para revisión: no reentrena ni cambia la versión en uso.
+- **Reentrenamiento.** Anual, por temporada y a mano; la actualización semanal solo avisa
+  ([reentrenamiento.md](../modeling/reentrenamiento.md)).
+- **Versionamiento.** Cada versión lleva su ficha, su Release de datos con manifiesto y su entrada en
+  `models/registry/CHANGELOG.md`; las versiones anteriores no se borran ni se modifican.
+- **Retorno a una versión validada.** `POST /admin/modelos/{version}/activar` la activa y archiva la anterior, sin eliminar
+  versiones (ver «Inferencia y activación desde la API»).
+- **Soporte.** Está a cargo del equipo desarrollador, Nicolás Miranda y Rosa Rodríguez (correos en la ayuda de la
+  aplicación). Quien opera revisa los informes y la deriva y decide el reentrenamiento; los releases a `main` y el
+  despliegue los decide y hace Rosa, y los merges también.
+
 ## Respaldo, reversión y mantenimiento
 
 - **Respaldo:** `pg_dump` de la BD y copia de `models/storage/` (los paquetes no están en la BD).

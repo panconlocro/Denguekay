@@ -175,6 +175,14 @@ de 2017 a 2025.
 | Las 15 fracciones (`fraccion_rural`, `fraccion_mujeres`, `fraccion_menores_15`, `fraccion_sin_seguro`, `fraccion_analfabeta_15_mas`, `fraccion_pared_precaria`, `fraccion_piso_tierra`, `fraccion_agua_red`, `fraccion_agua_cisterna`, `fraccion_desague_red`, `fraccion_sin_saneamiento`, `fraccion_alumbrado_red`, `fraccion_hogares_refrigeradora`, `fraccion_hogares_celular`, `fraccion_hogares_lena`; columnas `<base>_2017` y `<base>_2025` del Excel) | Extremos 2017 y 2025 | Interpolación lineal año a año entre 2017 y 2025; desde 2026, extrapolación de la misma pendiente acotada a `[0, 1]`, con un registro de cada ajuste |
 | Variables con un solo año (p. ej. `fraccion_menores_5`, solo 2017; `fraccion_60_mas`, solo 2025) | 2017 o 2025 | Se excluyen del dataset: no hay cómo interpolarlas ni suponerlas constantes |
 
+**Unidad y procedencia (HU0003-1).** Cada fila de `socio_anual.csv` conserva `ubigeo`, `departamento`, `provincia`,
+`distrito` y `anio`. Todas las variables vienen del mismo Excel del INEI (`data/bronze/socio/data_socio_2017_2025.xlsx`):
+
+| Variable | Unidad |
+|---|---|
+| `poblacion` | personas (habitantes del distrito) |
+| Las 15 fracciones de la fila anterior | fracción entre 0 y 1 (de la población o de los hogares del distrito, según la variable) |
+
 La población censal de 2017 también está en `distrito.poblacion_censo_2017` (tasas y mapa). **Lo que la regla temporal no
 garantiza:** la interpolación de los años 2018-2024 usa el extremo de 2025, que no estaba disponible en esos años, así
 que un valor intermedio no es lo que se habría podido calcular en ese momento. **La V4 no usa variables
