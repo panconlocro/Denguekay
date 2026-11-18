@@ -239,6 +239,8 @@ reciente, otra corrida sigue en curso. Si Open-Meteo corta por cuota, la corrida
 
 **Notas.**
 
+- Tras un reentrenamiento (`python -m denguekay.model.refit_v4`, ver [reentrenamiento.md](../modeling/reentrenamiento.md)),
+  se sirve el paquete nuevo con la opción `paquete_dir` de `serving.paquete.opciones` y `publish --seleccionar-experimental`.
 - La `ejecucion` de tipo `reentrenamiento` que crea `publish` para la V4 es el **registro del paquete congelado**, no un
   ajuste.
 - Si cambian los umbrales de aceptación basta `python -m denguekay.serving.publish --seleccionar-experimental`.

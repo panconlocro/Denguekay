@@ -294,6 +294,7 @@ model/
 ├── future_rows.py           # filas futuras en memoria, sin fuga ni escritura en data/
 ├── frozen_configs.py        # configuraciones congeladas V1/V2/V3 y su fingerprint() de comportamiento (D1)
 ├── reproduce.py             # CLI: reentrena v0/v1/v2 con los datos de su Release y compara huella o métricas
+├── refit_v4.py              # CLI: reajusta la V4 (mismo modelo) con datos nuevos y deja un paquete en una carpeta nueva (docs/modeling/reentrenamiento.md)
 └── variable_dictionary.py   # diccionario de las variables finales (genera docs/modeling/diccionario_variables.md)
 ```
 
