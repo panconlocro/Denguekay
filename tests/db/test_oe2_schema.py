@@ -26,6 +26,7 @@ from denguekay.db.models import (Alert, Base, District, Run, VariableImportance,
                             WeeklyObservation, SystemParameter, Prediction, Province,
                             EpiWeek, ModelVersion)
 from denguekay.db.session import make_engine, transaction
+from denguekay.serving.inference import update_alerts
 
 TABLAS_OE2 = {"provincia", "distrito", "semana_epidemiologica", "observacion_semanal",
               "version_modelo", "ejecucion", "prediccion", "alerta", "parametro_sistema"}
@@ -492,6 +493,24 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
             return self.consulta(f"SELECT has_column_privilege('{rol}', 'parametro_sistema', '{columna}', 'UPDATE')")[0][0]
         self.assertEqual((tiene("rol_pipeline", "valor"), tiene("rol_pipeline", "clave"), tiene("rol_api", "valor")),
                          (True, False, False))
+
+    def test_pipeline_creates_and_withdraws_alerts(self):
+        with transaction(self.motor) as session:
+            session.execute(text("SET LOCAL ROLE rol_pipeline"))
+            prediction = Prediction(**self.fila_prediccion())
+            session.add(prediction)
+            session.flush()
+
+            self.assertEqual(update_alerts(session, 2, 202551), {"nuevas_o_actualizadas": 1, "retiradas": 0})
+            alert = session.scalars(select(Alert)).one()
+            self.assertEqual((alert.nivel, alert.estado), ("alto", "activa"))
+
+            prediction.probabilidad_brote, prediction.nivel_riesgo = 0.3, "medio"
+            session.flush()
+            self.assertEqual(update_alerts(session, 2, 202551), {"nuevas_o_actualizadas": 0, "retiradas": 1})
+            self.assertEqual(alert.estado, "retirada")
+            self.assertIsNotNone(alert.fecha_retiro)
+            self.assertFalse(session.scalar(text("SELECT has_table_privilege(current_user, 'alerta', 'DELETE')")))
 
     def test_huella_de_ingesta_unica(self):
         # setUp ya creó una ingesta exitosa con huella h1.
