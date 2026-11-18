@@ -179,6 +179,9 @@ Dos workflows hacen lo mismo que la tarea del Programador de tareas, sin depende
 | `.github/workflows/weekly_v4.yml` | lunes y jueves a las 07:00 de Lima (12:00 UTC) y a mano (`workflow_dispatch`, con la opción `dry_run`) | instala el entorno, trae `datos_v4.zip` y `modelo_v4.zip` del Release `model/v4` con `data/ingestion/release_bundles.py` (verifica el SHA-256 de cada archivo) y corre `python -m denguekay.pipelines.v4_weekly --preparar` contra la BD de los secrets |
 | `.github/workflows/drift_monthly.yml` | el día 1 de cada mes a las 07:00 de Lima y a mano | corre `python -m denguekay.serving.drift` contra la misma BD y registra la revisión como ejecución de mantenimiento |
 
+Ambos workflows descargan el código de `main` para operar sobre la BD de producción. La definición programada
+se toma de la rama predeterminada de GitHub (`develop`). Configurar los secrets después del release de V4 a `main`.
+
 **Secrets del repositorio** (Settings → Secrets and variables → Actions): `DATABASE_URL` (el usuario
 `denguekay_pipeline`, que carga y publica), `SUPABASE_URL` y `SUPABASE_SECRET_KEY` (el Storage donde está el paquete
 publicado). `STORAGE_BACKEND=supabase` lo fija el propio workflow. **Ninguna de las cuatro fuentes pide clave**: la Sala
