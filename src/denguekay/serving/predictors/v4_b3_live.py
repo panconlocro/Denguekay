@@ -3,7 +3,7 @@
 from dataclasses import dataclass, replace
 from io import BytesIO
 import json
-from pathlib import Path
+from pathlib import PurePosixPath, PureWindowsPath
 
 import numpy as np
 import pandas as pd
@@ -83,8 +83,10 @@ def validate(horizons, options):
     for key in {"sala", "era5_land", "chirps", "nino12", "paquete_dir"} & options.keys():
         if not isinstance(options[key], str) or not options[key]:
             raise ValueError(f"La ruta de {key} debe ser relativa al repositorio")
-        path = Path(options[key])
-        if path.is_absolute() or ".." in path.parts:
+        text = options[key]
+        # Absolute in either convention: a path valid on Windows must not slip through on Linux or macOS.
+        if (PurePosixPath(text).is_absolute() or PureWindowsPath(text).is_absolute() or PureWindowsPath(text).drive
+                or ".." in PurePosixPath(text.replace("\\", "/")).parts):
             raise ValueError(f"La ruta de {key} debe ser relativa al repositorio")
 
 
