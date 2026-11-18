@@ -55,8 +55,6 @@ la congelación de la v4 y la transferencia a Lambayeque y Tumbes.
 - Reentrenamiento anual de la V4 al cierre de la temporada 2027: el comando `denguekay.model.refit_v4` ya existe y está
   verificado contra la V4; se corre a mano ([política y procedimiento](docs/modeling/reentrenamiento.md)).
 - Decisión sobre publicar los polígonos distritales (CC BY-IGO 3.0) antes del despliegue.
-- Grabar las líneas base de las guardas del contrato para las migraciones `0009_v4` y `0010_v4`
-  (`python tests/contract_v1_support.py record`).
 - Despliegue: desplegar en Render, Supabase y Vercel y cargar los secrets de GitHub Actions (`DATABASE_URL`,
   `SUPABASE_URL`, `SUPABASE_SECRET_KEY`; ver [despliegue](docs/backend/despliegue.md)). Si se sirve un reajuste con
   `paquete_dir`, falta que el workflow semanal baje esa carpeta del Storage (hoy se detiene con un aviso). Open-Meteo
