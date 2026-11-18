@@ -182,17 +182,24 @@ def season_close(labels_cutoff):
     raise ValueError("No hay cierre de temporada posterior al corte de las etiquetas")
 
 
-def labels_cutoff_of_v4():
+def labels_cutoff_of_v4(options=None):
+    """Last label close of the model in use: the cutoff of the refit package that ``paquete_dir`` names, or the
+    ``corte_etiquetas`` of the frozen V4 card."""
+    if options and options.get("paquete_dir"):
+        from denguekay.config.paths import ROOT
+
+        package = json.loads((ROOT / options["paquete_dir"] / "paquete.json").read_text(encoding="utf-8"))
+        return date.fromisoformat(package["corte"])
     from denguekay.model import registry
 
     return date.fromisoformat(registry.card("v4")["corte_etiquetas"])
 
 
-def retraining_due(sesion, cutoff, *, labels_cutoff=None):
+def retraining_due(sesion, cutoff, *, labels_cutoff=None, options=None):
     """Whether the cutoff week reached the close of the season that follows the labels of the frozen model.
 
     It only informs: the weekly update never trains. ``cutoff`` is an ``id_semana``."""
-    labels_cutoff = labels_cutoff or labels_cutoff_of_v4()
+    labels_cutoff = labels_cutoff or labels_cutoff_of_v4(options)
     close = season_close(labels_cutoff)
     week = sesion.get(EpiWeek, cutoff)
     return {"reentrenamiento_anual_pendiente": bool(week.fecha_fin >= close),

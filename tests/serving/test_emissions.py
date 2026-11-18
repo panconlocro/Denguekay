@@ -173,6 +173,23 @@ class TestRetrainingNotice(unittest.TestCase):
     def test_the_labels_of_the_card_are_the_frozen_ones(self):
         self.assertEqual(emissions.labels_cutoff_of_v4(), date(2026, 10, 17))
 
+    def test_a_refit_package_moves_the_labels_cutoff_and_switches_the_notice_off(self):
+        from tempfile import TemporaryDirectory
+        from pathlib import Path
+        from unittest.mock import patch
+        from denguekay.config import paths
+
+        with TemporaryDirectory() as folder:
+            package = Path(folder) / "reajuste"
+            package.mkdir()
+            (package / "paquete.json").write_text(json.dumps({"corte": "2027-08-28"}), encoding="utf-8")
+            options = {"paquete_dir": "reajuste"}
+            with patch.object(paths, "ROOT", Path(folder)):
+                self.assertEqual(emissions.labels_cutoff_of_v4(options), date(2027, 8, 28))
+        notice = emissions.retraining_due(self.Session(date(2027, 9, 4)), 202799, labels_cutoff=date(2027, 8, 28))
+        self.assertIs(notice["reentrenamiento_anual_pendiente"], False)     # next close: 2028-08-26
+        self.assertEqual(notice["cierre_temporada"], "2028-08-26")
+
     def test_a_close_that_already_passed_moves_to_the_next_year(self):
         self.assertEqual(emissions.season_close(date(2026, 8, 29)), date(2027, 8, 28))   # close of 2026 not after it
         self.assertEqual(emissions.season_close(date(2026, 8, 28)), date(2026, 8, 29))
