@@ -40,6 +40,9 @@ Para regenerar el gold de una versión desde su silver completo (en V4, `11_gold
 El gold conserva `casos_Dengue` como conteo junto a la etiqueta `brote` (semana distrital con casos por
 encima de la media de esa semana en los cinco años previos + 1,5 DE, con un mínimo de 2 casos) y su umbral
 auditable `umbral_brote_casos`. El entrenamiento excluye esas tres columnas de los predictores.
+La regla completa (parámetros, semana 53, semanas sin registro, qué pasa si falta historia, sensibilidad y
+referencias) está en [`modeling/regla_brote.md`](modeling/regla_brote.md); es una regla operativa de vigilancia, no un
+umbral clínico.
 
 Gold persiste solo lo que debe estar en gold (regla «Variables derivadas» de `CONTRIBUTING.md`): un archivo con la alineación h=2, una fila por
 distrito y semana objetivo, y 24 columnas:

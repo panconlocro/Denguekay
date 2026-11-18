@@ -4,7 +4,7 @@ import unittest
 
 import pandas as pd
 
-from denguekay.features.outbreak_label import label_seasonal_outbreak
+from denguekay.features.outbreak_label import future_outbreak_threshold, label_seasonal_outbreak
 
 
 class EtiquetaBroteTests(unittest.TestCase):
@@ -67,6 +67,21 @@ class EtiquetaBroteTests(unittest.TestCase):
         malo.loc[0, "casos_Dengue"] = -1
         with self.assertRaisesRegex(ValueError, "casos inválidos"):
             label_seasonal_outbreak(malo, self.history, multiplicador=2)
+
+    def test_el_etiquetado_se_detiene_e_indica_los_anios_de_historia_que_faltan(self):
+        sin_dos = self.history[~self.history.anio.isin([2013, 2015])]
+        with self.assertRaises(ValueError) as error:
+            label_seasonal_outbreak(self.panel, sin_dos, multiplicador=2)
+        self.assertIn("[2013, 2015]", str(error.exception))
+        # Con la historia completa el mismo panel sí se etiqueta: lo que detiene la ejecución es la falta de años.
+        self.assertEqual(len(label_seasonal_outbreak(self.panel, self.history, multiplicador=2)), len(self.panel))
+
+    def test_el_umbral_de_semanas_objetivo_se_detiene_si_falta_historia_anterior_al_panel(self):
+        sin_2014 = self.history[self.history.anio.ne(2014)]
+        objetivos = self.panel[["ubigeo", "anio", "semana"]]
+        with self.assertRaises(ValueError) as error:
+            future_outbreak_threshold(self.panel, sin_2014, objetivos, multiplicador=2)
+        self.assertIn("Faltan años de historia: [2014]", str(error.exception))
 
 
 if __name__ == "__main__":
