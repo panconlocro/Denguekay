@@ -5,7 +5,6 @@ the last published week). The weeks that are left out are not loaded as observed
 them; with 0 the list is empty and no target is marked as provisional."""
 
 import json
-import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -49,9 +48,8 @@ class TestCutoffRule(unittest.TestCase):
             root = Path(folder)
             (root / "sala.csv").write_text(sala().to_csv(index=False), encoding="utf-8")
             (root / "panel.csv").write_text(panel().to_csv(index=False), encoding="utf-8")
-            relative = os.path.relpath(root / "sala.csv", v4_weekly.ROOT)   # the step reads the path relative to ROOT
-            with patch.object(v4_weekly, "V4_INTEGRATED", root / "panel.csv"):
-                results = {n: v4_weekly.step_expected_cutoff({"sala": relative, "semanas_provisionales": n})
+            with patch.object(v4_weekly, "ROOT", root), patch.object(v4_weekly, "OPERATIONAL_SALA", root / "sala.csv"),                     patch.object(v4_weekly, "V4_INTEGRATED", root / "panel.csv"):
+                results = {n: v4_weekly.step_expected_cutoff({"sala": "sala.csv", "semanas_provisionales": n})
                            for n in (0, 2)}
         self.assertEqual(results[0], (202603, 202603, []))
         self.assertEqual(results[2], (202601, 202603, [202602, 202603]))
