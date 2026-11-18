@@ -5,6 +5,7 @@ of ``US_Criterios_De_Aceptacion_Final.xlsm`` (17/11/2026). A scenario without a 
 no longer exists makes this test fail."""
 
 import re
+import subprocess
 import unittest
 
 from denguekay.config.paths import ROOT
@@ -48,6 +49,15 @@ class TestTraceabilityTable(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.rows = rows()
+        try:   # a cited file must be in Git: ``data/`` and other ignored folders do not exist in the CI
+            listing = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True)
+            cls.tracked = {ROOT / line for line in listing.stdout.splitlines()}
+        except (OSError, subprocess.CalledProcessError):
+            cls.tracked = None
+
+    @classmethod
+    def versioned(cls, path):
+        return path.is_file() and (cls.tracked is None or path in cls.tracked)
 
     def test_there_is_one_row_per_scenario_and_nothing_else(self):
         self.assertEqual(sorted(self.rows), sorted(SCENARIOS))
@@ -85,7 +95,8 @@ class TestTraceabilityTable(unittest.TestCase):
                     if token.startswith("test_"):
                         self.assertIn(token, defined)
                     elif "/" in token and token.endswith(EXTENSIONS):
-                        self.assertTrue(any((base / token).is_file() for base in ROOTS), f"no existe {token}")
+                        self.assertTrue(any(self.versioned(base / token) for base in ROOTS),
+                                        f"no existe o no está versionado: {token}")
 
     def test_the_hu0009_3_rows_name_the_refit_tests_that_the_plan_asks_for(self):
         cells = " ".join(self.rows["HU0009-3"])

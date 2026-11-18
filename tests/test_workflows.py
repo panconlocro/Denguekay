@@ -20,6 +20,15 @@ SECRETS_STEP = "secretos"
 CONFIGURED = "steps.secretos.outputs.configurados == 'true'"
 
 
+def git_bash():
+    """Bash of Git for Windows, which reads Windows paths; ``None`` when it is not installed."""
+    for folder in (os.environ.get("ProgramFiles"), os.environ.get("ProgramW6432"), r"C:\Program Files"):
+        candidate = Path(folder or "") / "Git" / "bin" / "bash.exe"
+        if folder and candidate.is_file():
+            return str(candidate)
+    return None
+
+
 def load(name):
     return yaml.safe_load((WORKFLOWS / name).read_text(encoding="utf-8"))
 
@@ -119,7 +128,7 @@ class TestCommon(unittest.TestCase):
                     self.assertIn(CONFIGURED, step["if"], step.get("name") or step.get("uses"))
 
     def test_the_check_step_ends_with_a_notice_and_exit_0_without_secrets_and_flags_them_with_them(self):
-        bash = shutil.which("bash")
+        bash = git_bash() if os.name == "nt" else shutil.which("bash")   # not the WSL launcher of System32
         if bash is None:
             self.skipTest("no hay bash para ejecutar el paso de comprobación")
         for name, variables in (("weekly_v4.yml", ("DATABASE_URL", "SUPABASE_URL", "SUPABASE_SECRET_KEY")),
