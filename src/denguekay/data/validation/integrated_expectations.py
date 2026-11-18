@@ -158,7 +158,8 @@ def validate_complete(frame: pd.DataFrame, coverage: Coverage) -> None:
     missing = detect_missing_components(frame, coverage)
     remaining = {component: len(keys) for component, keys in missing.items() if keys}
     if remaining:
-        raise ValueError(f"Dataset remains incomplete: {remaining}")
+        districts = {component: sorted({key[0] for key in keys}) for component, keys in missing.items() if keys}
+        raise ValueError(f"Dataset remains incomplete: {remaining}; distritos afectados: {districts}")
     for column in WEATHER_COLUMNS + SOCIO_COLUMNS + ["casos_Dengue"]:
         values = pd.to_numeric(frame[column], errors="coerce")
         if values.isna().any():

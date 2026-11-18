@@ -149,9 +149,16 @@ def build_manual() -> None:
                     paragraph(item["question"], question),
                     paragraph(item["answer"]),
                 ]))
-            story.append(paragraph(content["support"]["title"], heading))
-            story.extend(paragraph(text) for text in content["support"]["paragraphs"])
-            story.extend([Spacer(1, 7), callout(content["support"]["status"])])
+            support = content["support"]
+            story.append(paragraph(support["title"], heading))
+            story.append(paragraph(support["paragraphs"][0]))
+            for contact in support["contacts"]:
+                # Name and e-mail come from the shared content file, never from user input.
+                story.append(Paragraph(
+                    f'{escape(contact["name"])}: <a href="mailto:{escape(contact["email"])}" '
+                    f'color="{palette["primary"].hexval().replace("0x", "#")}">{escape(contact["email"])}</a>', step))
+            story.extend(paragraph(text) for text in support["paragraphs"][1:])
+            story.extend([Spacer(1, 7), callout(support["status"])])
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     document = BaseDocTemplate(str(OUTPUT), pagesize=A4,
@@ -180,9 +187,15 @@ def build_manual() -> None:
         if f"{number} / {len(pages)}" not in text:
             raise ValueError(f"Missing page footer: {number}")
     final_text = compact(reader.pages[-1].extract_text())
-    for snippet in [*content["support"]["paragraphs"], content["support"]["status"]]:
+    for snippet in [*content["support"]["paragraphs"], content["support"]["status"],
+                    *(f'{c["name"]}: {c["email"]}' for c in content["support"]["contacts"])]:
         if compact(snippet) not in final_text:
-            raise ValueError("Missing support content")
+            raise ValueError(f"Missing support content: {snippet[:60]}")
+    links = [str(annotation.get_object().get("/A", {}).get("/URI", ""))
+             for annotation in reader.pages[-1].get("/Annots", [])]
+    for contact in content["support"]["contacts"]:
+        if f'mailto:{contact["email"]}' not in links:
+            raise ValueError(f"Missing mailto link: {contact['email']}")
     print(f"Created {OUTPUT} ({len(reader.pages)} pages; shared text verified)")
 
 

@@ -84,6 +84,25 @@ def frozen_comparison(hashes, manifest):
             for path, digest in sorted(hashes.items()) if path in release}
 
 
+STORAGE_PREFIX = "reportes/emisiones"
+ARCHIVE_FILES = ("emision.json", "predicciones.csv", "vectores.csv")
+
+
+def upload_archive(storage, folder, base=EMISSIONS):
+    """Copy the files of an emission folder to the Storage (bucket ``reportes``) and return their logical paths.
+
+    The path is ``reportes/emisiones/<cutoff>/<stamp>/<file>``, the same ``<cutoff>/<stamp>`` that the folder has
+    under ``base``, so the archive of a runner that disappears (GitHub Actions) stays in the Storage."""
+    folder = Path(folder)
+    relative = folder.relative_to(base).as_posix()
+    paths = []
+    for name in ARCHIVE_FILES:
+        path = f"{STORAGE_PREFIX}/{relative}/{name}"
+        storage.save(path, (folder / name).read_bytes())
+        paths.append(path)
+    return paths
+
+
 def archive_emission(sesion, *, cutoff, ingestion, results, load, emitted_at, reissue, last_published,
                      provisional, captures, code_fingerprint, package_version, frozen_manifest, servir_no_validadas,
                      storage, base=EMISSIONS):

@@ -25,7 +25,7 @@ from denguekay.data.processing.chirps_snapshots import archive_snapshot
 from denguekay.data.processing.enso_index import nino12_monthly
 from denguekay.data.processing.epi_cases import build_weekly_cases, load_raw
 from denguekay.data.processing.epi_sala import SALA_FIRST_YEAR, load_ubigeo_catalog, normalize_sala_records
-from denguekay.data.processing.merge import merge_meteo_socio, merge_with_epi
+from denguekay.data.processing.merge import V4_NAME_ALIASES, merge_meteo_socio, merge_with_epi
 from denguekay.data.processing.weekly_aggregation import (
     aggregate_available_to_weekly, aggregate_to_weekly, clean_names_for_join, latest_snapshot, load_daily_from_caches,
 )
@@ -319,8 +319,7 @@ def socio_silver():
 def weather_socio_silver():
     weather = pd.read_csv(V4_PANEL_WEATHER, float_precision="round_trip")
     demographics = pd.read_csv(V4_SOCIO, dtype={"ubigeo": "string"}, float_precision="round_trip")
-    aliases = {"El Carmendela Frontera": "El Carmen de la Frontera", "San Miguelde El Faique": "San Miguel de el Faique"}
-    weather["distrito"] = weather.distrito.replace(aliases)
+    weather["distrito"] = weather.distrito.replace(V4_NAME_ALIASES)
     weather["distrito_key"] = weather.distrito.map(normalize)
     return write_silver(merge_meteo_socio(weather, demographics), V4_WEATHER_SOCIO, line_ending="\n")
 

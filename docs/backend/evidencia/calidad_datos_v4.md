@@ -1,6 +1,6 @@
 # Calidad y completitud de los datos de la V4 (HU0005-4 y HU0005-5 (US v1.4))
 
-Generado: 2026-11-17T21:30:38.825081+00:00. Estado: **conforme**.
+Generado: 2026-11-18T02:55:53.040576+00:00. Estado: **conforme**.
 
 Solo lectura: el reporte no corrige datos. Entradas: `meteo_socio_epi_piura_2017_2025.csv`, `meteo_socio_epi_piura_2017_2025.coverage.csv`, `DatosDengueV2.csv`, `epi_sala_semanal.csv`.
 
@@ -43,6 +43,39 @@ Excluidos por la definición de la V4 (no son descartes): 2316 notificaciones no
 ## Duplicados
 
 Llave (ubigeo, año, semana): 0; llave (ubigeo, inicio de semana): 0.
+
+## Control de duplicados de la fuente epidemiológica (HU0001-3)
+
+| Fuente | Filas | Claves repetidas | Filas con llave repetida | Resultado | Regla aplicada |
+|---|---|---|---|---|---|
+| Histórico confirmado (CSV epidemiológico, hasta 2024) | 10240 | 0 | 0 | sin duplicados | Las filas que repiten la llave (ubigeo, anio, semana) se suman en una sola fila; el resultado tiene una fila por llave |
+| Sala Situacional confirmada (desde 2025) | 6240 | 0 | 0 | sin duplicados | La Sala no admite claves repetidas: normalize_sala_records y el silver se detienen con error si un distrito o una llave (ubigeo, anio, semana) se repite; nada se suma ni se descarta |
+| Panel integrado de la V4 | 30485 | 0 | 0 | sin duplicados | El panel integrado exige una fila por llave (ubigeo, anio, semana): la validación del panel se detiene si una llave se repite |
+
+## Correspondencia territorial (HU0003-2)
+
+65 distritos en el panel y 65 en el catálogo de UBIGEO: cumple.
+
+- En el panel sin catálogo: ninguno.
+- En el catálogo sin panel: ninguno.
+- UBIGEO con formato inválido: ninguno.
+- Clima sin correspondencia en el censo, después de los alias de nombres («El Carmendela Frontera» → «El Carmen de la Frontera», «San Miguelde El Faique» → «San Miguel de el Faique»): ninguno.
+- Censo sin correspondencia en el clima: ninguno.
+- Correspondencia ambigua: ninguna.
+
+## Fuentes climáticas: producto y fecha de extracción (HU0002-1)
+
+| Fuente | Producto | Fecha de extracción | Tipo de fecha | Capturas | Referencia |
+|---|---|---|---|---|---|
+| NOAA CPC | Niño 1+2: anomalía mensual de la TSM (OISST v2.1, sstoi.indices) | 2026-11-17 | captura registrada | 2 | fecha del nombre del archivo sstoi_AAAAMMDD.indices (bronze/enso) |
+| CHIRPS v3 (Earth Engine) | CHIRPS v3.0 diario final, desagregación sat (Earth Engine, UCSB-CHC/CHIRPS/V3/DAILY_SAT, banda precipitation) | 2026-11-06 | captura registrada | 1 | manifiesto_ee_*.json (bronze/chirps/v3_sat/ee_final) |
+| CHIRPS v3 (FTP del CHC) | CHIRPS v3.0 diario final, desagregación sat (GeoTIFF por FTP del CHC) | 2026-11-17 | captura registrada | 2 | manifiesto_ftp_final_*.json (bronze/chirps/v3_sat/final_ftp) |
+| CHIRPS v3 preliminar (FTP del CHC) | CHIRPS v3.0 diario preliminar, desagregación sat (GeoTIFF por FTP del CHC) | 2026-11-17 | captura registrada | 2 | manifiesto_ftp_prelim_*.json (bronze/chirps/v3_sat/prelim) |
+| ERA5-Land (semanas recientes) | ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias | 2026-11-12 | captura registrada | 2 | carpeta con fecha AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente) |
+| Open-Meteo (clima del panel 2017-2025) | Open-Meteo archive API (sin models), variables diarias | 2026-11-12 | congelamiento del Release model/v4 (la fecha real de extracción no se registró) | 1 | caché histórica (cache_meteo); fecha de congelamiento de la ficha de la V4 |
+| ERA5-Land 2000-2016 | ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias | 2026-11-12 | congelamiento del Release model/v4 (la fecha real de extracción no se registró) | 1 | caché histórica (cache_meteo_era5_land_2000_2016); fecha de congelamiento de la ficha de la V4 |
+| ERA5-Land 2017-2025 | ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias | 2026-11-12 | congelamiento del Release model/v4 (la fecha real de extracción no se registró) | 1 | caché histórica (cache_meteo_era5_land_2017_2025); fecha de congelamiento de la ficha de la V4 |
+| ERA5-Land 2026 (hasta el 31 de octubre) | ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias | 2026-11-12 | congelamiento del Release model/v4 (la fecha real de extracción no se registró) | 1 | caché histórica (cache_meteo_era5_land_2026); fecha de congelamiento de la ficha de la V4 |
 
 ## Cobertura por distrito
 

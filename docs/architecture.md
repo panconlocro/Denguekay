@@ -49,7 +49,7 @@ Denguekay/
 ├── alembic.ini                # migraciones del backend, sin credenciales
 ├── pyproject.toml             # paquete instalable denguekay (pip install -e .); dependencias = requirements.txt
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
-├── .github/workflows/         # backend.yml: SQLite/PostgreSQL; frontend.yml: Node, contrato y E2E fixtures
+├── .github/workflows/         # backend.yml: SQLite/PostgreSQL; frontend.yml: Node, contrato y E2E fixtures; weekly_v4.yml y drift_monthly.yml: actualización semanal y deriva mensual (con secrets)
 ├── requirements.txt
 ├── constraints.txt            # versiones exactas del entorno de la V3 (pip install -r requirements.txt -c constraints.txt)
 ├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
@@ -259,6 +259,8 @@ data/
     ├── gold_expectations.py        # suite GX gold_h2 (esquema, llave, rangos, sin fuga temporal)
     ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
     ├── quality_report.py           # reporte de calidad y completitud de la V4 (HU0005-4/5), solo lectura; escribe en docs/backend/evidencia/
+    ├── duplicates.py               # resultado del control de llaves repetidas de la fuente epidemiológica (HU0001-3)
+    ├── climate_provenance.py       # fuente, producto y fecha de extracción de cada fuente climática (HU0002-1)
     └── forecast_contract.py        # origen temporal y disponibilidad al pronosticar
 ```
 **Va acá:** una función que hable con una API o haga scraping (`ingestion/`); limpieza, agregación, interpolación o joins (`processing/`); cualquier comprobación de rangos, nulos, duplicados o conteos (`validation/`, un archivo por dataset: `<dataset>_expectations.py`). Las suites de GX se definen en código; `great_expectations/gx/` lo regenera GX y no se versiona. Guía: `docs/modeling/mlflow_great_expectations.md`.
@@ -295,7 +297,7 @@ model/
 ├── frozen_configs.py        # configuraciones congeladas V1/V2/V3 y su fingerprint() de comportamiento (D1)
 ├── reproduce.py             # CLI: reentrena v0/v1/v2 con los datos de su Release y compara huella o métricas
 ├── refit_v4.py              # CLI: reajusta la V4 (mismo modelo) con datos nuevos y deja un paquete en una carpeta nueva (docs/modeling/reentrenamiento.md)
-└── variable_dictionary.py   # diccionario de las variables finales (genera docs/modeling/diccionario_variables.md)
+└── variable_dictionary.py   # diccionario de las variables de la V4 (genera docs/modeling/diccionario_variables.md)
 ```
 
 ### `evaluation/` — métricas y protocolos
@@ -371,6 +373,7 @@ tests/
 ├── test_equivalence.py       # guardas de la reestructuración (V1/V2 bit a bit, esquema en 0003_oe2)
 ├── test_contract_v1_guards.py # guardas del contrato v1: OpenAPI, esquema por migración y smoke v1
 ├── test_layout.py            # sin restos del paquete src y dependencias en un solo sentido
+├── test_workflows.py         # cron, comandos, permisos mínimos y salto sin secrets de weekly_v4.yml y drift_monthly.yml
 └── fixtures/
     ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
     ├── equivalence/          # línea base del ADR 0001 (no se regenera; smoke.json es historia)
@@ -535,7 +538,7 @@ módulo.
 - **`models/`**: modelos entrenados serializados; `models/experimentos/` guarda JSON de XGBoost y predicciones por fold. Los artefactos generados no se suben a Git.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
 - **`docs/pipeline.md`**: cómo se corre el pipeline de datos, el actualizador selectivo y la procedencia de los datos de 2025.
-- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
+- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (V4 vigente, generado por `python -m denguekay.model.variable_dictionary`; la v2 queda como histórico en `diccionario_variables_v2.md`). Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
 - **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR): 0001, reestructuración en monorepo; 0002, ramas `develop` (integración) y `main` (producción).
 - **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`.
 - **`research/09_epidemics_revision/`**: conserva sus informes `RESULTS.md`, `RESULTS_TABLES.md` y `figures/`. Su carpeta `paper/` versiona una copia congelada de los insumos mínimos para cotejar las tablas del artículo: script, manifiesto, probabilidades agregadas comprimidas (4,3 MiB) y dos fuentes `.tex` de referencia. La procedencia está en `paper/README.md` y la ruta `PAPER_BUNDLE` en `config/paths.py`. Es una excepción acotada al archivo de predicciones; los ajustes y las demás salidas siguen en `models/experimentos/`, sin versionar.

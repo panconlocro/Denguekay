@@ -67,6 +67,7 @@ class Options:
     sin_descargas: bool = False
     forzar: bool = False
     reemitir: bool = False
+    preparar: bool = False
 
     @property
     def force(self):
@@ -199,6 +200,12 @@ def check_environment(cfg):
     options = cfg.opciones
     if cfg.tipo_paquete != "v4_b3_live" or tuple(cfg.horizontes) != HORIZONS:
         raise WeeklyError("config.yaml debe servir el paquete v4_b3_live con los horizontes 2, 3 y 4", step="preflight")
+    if options.get("paquete_dir") and not (ROOT / options["paquete_dir"] / "paquete.json").is_file():
+        raise WeeklyError(
+            f"config.yaml sirve el reajuste serving.paquete.opciones.paquete_dir = {options['paquete_dir']} y su carpeta "
+            "(paquete.json) no está en este equipo: cópiela desde donde la dejó refit_v4 (fuera de Git) o quite la "
+            "opción para servir el paquete congelado del Release model/v4 (docs/backend/operacion.md)",
+            step="preflight")
     if options.get("perfil_datos") != "fuentes":
         raise WeeklyError("serving.paquete.opciones.perfil_datos debe ser «fuentes»", step="preflight")
     for key, path in EXPECTED_OPTIONS.items():
@@ -306,7 +313,7 @@ def dry_run(options, motor, steps, cfg):
         report["ultimo_corte_emitido"] = None
         report["base_de_datos"] = f"no lista: {error}"
     plan = ["preflight"]
-    if options.inicial and report["archivos_faltantes"]:
+    if (options.inicial or options.preparar) and report["archivos_faltantes"]:
         plan.append("extraer del Release lo que falta")
     plan += ["Sala", "¿semana nueva?"]
     if not options.sin_descargas:
@@ -336,7 +343,7 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
         locked = acquire_lock(base / "en_curso.lock", now=started)
         missing = steps.missing_files()
         if missing:
-            if not options.inicial:
+            if not (options.inicial or options.preparar):
                 raise WeeklyError("Faltan archivos de la copia congelada (" + ", ".join(
                     path.relative_to(ROOT).as_posix() for path in missing) + f"); ejecute: {INITIAL_COMMAND}",
                                   step=stage)
@@ -363,7 +370,7 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
 
         stage = "clima"
         with timer("clima"):
-            report["clima"] = steps.climate(options.sin_descargas, options.inicial)
+            report["clima"] = steps.climate(options.sin_descargas, options.inicial or options.preparar)
 
         if options.inicial:
             stage = "publicacion"
@@ -419,6 +426,14 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
         if emit:
             record = json.loads((archive / "emision.json").read_text(encoding="utf-8"))
             report["emision"] = archive.relative_to(base).as_posix()
+            if cfg.almacenamiento != "local":   # the runner may not survive: keep the archive in the Storage too
+                try:
+                    report["archivo_en_storage"] = emissions.upload_archive(storage, archive, base / "emisiones")
+                except Exception as error:   # noqa: BLE001 - the emission is already committed; say it, do not undo it
+                    report["archivo_en_storage"] = f"fallido: {type(error).__name__}"
+                    report.setdefault("advertencias", []).append(
+                        f"La emisión quedó en la BD pero su archivo no se copió al Storage ({type(error).__name__}); "
+                        f"consérvelo desde {archive.relative_to(base).as_posix()}")
             report["disponibles"] = record["predicciones"]["disponibles"]
             report["ejecuciones"] = record["ejecuciones"]
             reasons = unavailable_reasons(archive / "predicciones.csv")
@@ -509,11 +524,14 @@ def main(argv=None):
     parser.add_argument("--inicial", action="store_true",
                         help="Primera corrida en una BD nueva: extrae lo que falte del Release y publica el paquete V4")
     parser.add_argument("--dry-run", action="store_true", help="Muestra el estado y los pasos sin red ni escrituras")
+    parser.add_argument("--preparar", action="store_true",
+                        help="Equipo vacío (GitHub Actions): extrae del Release lo que falte y restaura el bronce "
+                             "histórico verificado, sin publicar el paquete")
     parser.add_argument("--sin-descargas", action="store_true", help="Reanuda desde los cachés, sin red")
     parser.add_argument("--forzar", action="store_true", help="Carga aunque el corte ya esté emitido (sin emitir)")
     parser.add_argument("--reemitir", action="store_true", help="Emite de nuevo un corte ya emitido (implica --forzar)")
     args = parser.parse_args(argv)
-    options = Options(args.inicial, args.dry_run, args.sin_descargas, args.forzar, args.reemitir)
+    options = Options(args.inicial, args.dry_run, args.sin_descargas, args.forzar, args.reemitir, args.preparar)
     motor = None
     try:
         from denguekay.serving.settings import service_settings

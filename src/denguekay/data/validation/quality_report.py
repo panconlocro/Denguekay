@@ -29,13 +29,19 @@ import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 
 import pandas as pd
 
-from denguekay.config.paths import (BACKEND_EVIDENCE, BRONZE_EPI_CSV, DATA, UBIGEO_CATALOG, V4_RELEASE_HISTORY,
-                                    V4_RELEASE_INTEGRATED, V4_RELEASE_SALA)
-from denguekay.data.processing.epi_cases import RAW_COLUMNS
+from denguekay.config.paths import (BACKEND_EVIDENCE, BRONZE_EPI_CSV, DATA, UBIGEO_CATALOG, V4_PANEL_WEATHER,
+                                    V4_RELEASE_HISTORY, V4_RELEASE_INTEGRATED, V4_RELEASE_SALA, V4_SOCIO)
+from denguekay.data.keys import normalize
+from denguekay.data.processing import epi_sala
+from denguekay.data.processing.epi_cases import RAW_COLUMNS, deduplicate_cases_with_report
 from denguekay.data.processing.epi_sala import SALA_FIRST_YEAR, load_ubigeo_catalog
+from denguekay.data.processing.merge import V4_NAME_ALIASES, diagnose_unmatched_districts
+from denguekay.data.validation.climate_provenance import climate_sources
+from denguekay.data.validation.duplicates import duplicate_key_report
 
 MANDATORY = {"ubigeo": "ubigeo", "año": "anio", "semana": "semana", "inicio de semana": "semana_inicio",
              "casos": "casos_Dengue", "temperatura": "temp_media", "precipitación": "precip_total_mm",
@@ -153,6 +159,45 @@ def cases_with_source_record(panel, history, sala):
                     "criterio de lectura a confirmar: un cero verificado de vigilancia no se trata como dato faltante."}
 
 
+PANEL_DUPLICATE_RULE = ("El panel integrado exige una fila por llave (ubigeo, anio, semana): la validación del panel "
+                        "se detiene si una llave se repite")
+
+
+def epidemiological_duplicates(panel, history, sala):
+    """Result of the repeated-key control of each epidemiological source (HU0001-3).
+
+    The weekly counts of the history add up their repeated rows (``deduplicate_cases``); the Sala and the integrated
+    panel stop on a repeated key, so a repeated key there is a non-conformity."""
+    controls = []
+    if history is not None:
+        controls.append(deduplicate_cases_with_report(
+            history, "Histórico confirmado (CSV epidemiológico, hasta 2024)")[1])
+    controls.append(duplicate_key_report(sala, source="Sala Situacional confirmada (desde 2025)",
+                                         rule=epi_sala.DUPLICATE_RULE))
+    controls.append(duplicate_key_report(panel, source="Panel integrado de la V4", rule=PANEL_DUPLICATE_RULE))
+    return controls
+
+
+def territorial_correspondence(panel, catalog_codes, meteo=None, socio=None):
+    """Districts without correspondence or ambiguous between the sources of the integrated silver (HU0003-2).
+
+    The panel is compared with the UBIGEO catalogue. When the weather and census silver are available, the districts
+    of each are matched by ``distrito_key`` after the documented name aliases, as the merge does."""
+    codes, in_panel = set(catalog_codes), set(panel.ubigeo.astype(str))
+    result = {"distritos_catalogo": len(codes), "distritos_panel": len(in_panel),
+              "en_panel_sin_catalogo": sorted(in_panel - codes), "en_catalogo_sin_panel": sorted(codes - in_panel),
+              "ubigeo_con_formato_invalido": sorted(u for u in in_panel if not re.fullmatch(r"\d{6}", u)),
+              "alias_de_nombres_aplicados": dict(V4_NAME_ALIASES), "meteo_vs_socio": None}
+    if meteo is not None and socio is not None:
+        weather = meteo.assign(distrito=meteo.distrito.replace(V4_NAME_ALIASES))
+        weather["distrito_key"] = weather.distrito.map(normalize)
+        result["meteo_vs_socio"] = diagnose_unmatched_districts(weather, socio, echo=False)
+    problems = [result["en_panel_sin_catalogo"], result["en_catalogo_sin_panel"],
+                result["ubigeo_con_formato_invalido"], *(result["meteo_vs_socio"] or {}).values()]
+    result["cumple"] = not any(problems)
+    return result
+
+
 def read_confirmed_notifications(path, first_year, last_year):
     """Piura confirmed notifications per year of the bronze CSV, plus the counts excluded by definition."""
     raw = pd.read_csv(path, usecols=RAW_COLUMNS, dtype="string", encoding="utf-8-sig")
@@ -188,8 +233,9 @@ def discarded_records(panel, notifications, sala, excluded):
 
 
 def build_report(panel_path=V4_RELEASE_INTEGRATED, notifications_path=BRONZE_EPI_CSV, sala_path=V4_RELEASE_SALA,
-                 catalog_path=UBIGEO_CATALOG, history_path=V4_RELEASE_HISTORY):
-    """Assemble the report; reading only."""
+                 catalog_path=UBIGEO_CATALOG, history_path=V4_RELEASE_HISTORY, meteo_path=V4_PANEL_WEATHER,
+                 socio_path=V4_SOCIO, climate=None):
+    """Assemble the report; reading only. ``climate`` replaces the folders that ``climate_sources`` reads."""
     panel = prepare_panel(pd.read_csv(panel_path, dtype={"ubigeo": "string"}))
     coverage_path = Path(panel_path).with_suffix(".coverage.csv")
     coverage = pd.read_csv(coverage_path, dtype={"ubigeo": "string"}) if coverage_path.exists() else None
@@ -201,7 +247,18 @@ def build_report(panel_path=V4_RELEASE_INTEGRATED, notifications_path=BRONZE_EPI
     sala = sala_frame[sala_frame.anio.between(SALA_FIRST_YEAR, last_year)].groupby("anio").casos_Dengue.sum().to_dict()
     measure = completeness(panel, districts)
     discards = discarded_records(panel, notifications, sala, excluded)
+    duplicate_controls = epidemiological_duplicates(panel, history_frame, sala_frame)
+    territorial = territorial_correspondence(
+        panel, districts, pd.read_csv(meteo_path) if Path(meteo_path).is_file() else None,
+        pd.read_csv(socio_path, dtype={"ubigeo": "string"}) if Path(socio_path).is_file() else None)
     nonconformities = []
+    for control in duplicate_controls[1:]:   # the history adds up its repeated rows; the other sources stop
+        if control["claves_repetidas"]:
+            nonconformities.append({"criterio": "HU0001-3 claves repetidas en " + control["fuente"],
+                                    "variables_afectadas": ["casos"], "valor": control["claves_repetidas"]})
+    if not territorial["cumple"]:
+        nonconformities.append({"criterio": "HU0003-2 correspondencia territorial", "variables_afectadas": ["ubigeo"],
+                                "valor": {k: v for k, v in territorial.items() if isinstance(v, list) and v}})
     if not measure["cumple"]:
         affected = [v for v, item in measure["por_variable"].items() if item["nulos"]]
         nonconformities.append({"criterio": "HU0005-5 completitud >= 95 %", "variables_afectadas": affected,
@@ -216,7 +273,9 @@ def build_report(panel_path=V4_RELEASE_INTEGRATED, notifications_path=BRONZE_EPI
                      "notificaciones": Path(notifications_path).name, "sala": Path(sala_path).name},
         "columnas_obligatorias": MANDATORY, "completitud": measure,
         "cobertura_por_distrito": coverage_by_district(panel, coverage, districts),
-        "duplicados": duplicates(panel), "valores_faltantes": measure["por_variable"],
+        "duplicados": duplicates(panel), "control_duplicados_fuente_epidemiologica": duplicate_controls,
+        "correspondencia_territorial": territorial, "fuentes_climaticas": climate_sources(**(climate or {})),
+        "valores_faltantes": measure["por_variable"],
         "observaciones_descartadas": discards, "transformaciones": list(TRANSFORMATIONS),
         "ceros_de_casos": int(panel.casos_Dengue.eq(0).sum()),
         "casos_antes_de_asignar_ceros": None if history_frame is None else cases_with_source_record(
@@ -263,7 +322,37 @@ def to_markdown(report):
               "del periodo.", "", "## Duplicados", "",
               f"Llave (ubigeo, año, semana): {report['duplicados']['llave_ubigeo_anio_semana']}; "
               f"llave (ubigeo, inicio de semana): {report['duplicados']['llave_ubigeo_semana_inicio']}.", "",
-              "## Cobertura por distrito", "",
+              "## Control de duplicados de la fuente epidemiológica (HU0001-3)", "",
+              "| Fuente | Filas | Claves repetidas | Filas con llave repetida | Resultado | Regla aplicada |",
+              "|---|---|---|---|---|---|"]
+    lines += [f"| {c['fuente']} | {c['filas']} | {c['claves_repetidas']} | {c['filas_con_llave_repetida']} | "
+              f"{c['resultado']} | {c['regla_aplicada']} |" for c in report["control_duplicados_fuente_epidemiologica"]]
+    for c in report["control_duplicados_fuente_epidemiologica"]:
+        if c["ejemplos"]:
+            lines += ["", f"Ejemplos de claves repetidas en {c['fuente']}: " + "; ".join(
+                f"{e['ubigeo']}/{e['anio']}/{e['semana']} ({e['filas']} filas)" for e in c["ejemplos"]) + "."]
+    t = report["correspondencia_territorial"]
+    lines += ["", "## Correspondencia territorial (HU0003-2)", "",
+              f"{t['distritos_panel']} distritos en el panel y {t['distritos_catalogo']} en el catálogo de UBIGEO: "
+              f"{'cumple' if t['cumple'] else 'no cumple'}.", "",
+              f"- En el panel sin catálogo: {t['en_panel_sin_catalogo'] or 'ninguno'}.",
+              f"- En el catálogo sin panel: {t['en_catalogo_sin_panel'] or 'ninguno'}.",
+              f"- UBIGEO con formato inválido: {t['ubigeo_con_formato_invalido'] or 'ninguno'}."]
+    if t["meteo_vs_socio"] is not None:
+        m = t["meteo_vs_socio"]
+        aliases = ", ".join(f"«{a}» → «{b}»" for a, b in t["alias_de_nombres_aplicados"].items())
+        lines += [f"- Clima sin correspondencia en el censo, después de los alias de nombres ({aliases}): "
+                  f"{m['solo_en_meteo'] or 'ninguno'}.",
+                  f"- Censo sin correspondencia en el clima: {m['solo_en_socio'] or 'ninguno'}.",
+                  f"- Correspondencia ambigua: {m['ambiguos'] or 'ninguna'}."]
+    else:
+        lines += ["- Clima frente a censo: no se evaluó (faltan los silver de clima o de sociodemografía)."]
+    lines += ["", "## Fuentes climáticas: producto y fecha de extracción (HU0002-1)", "",
+              "| Fuente | Producto | Fecha de extracción | Tipo de fecha | Capturas | Referencia |",
+              "|---|---|---|---|---|---|"]
+    lines += [f"| {s['fuente']} | {s['producto']} | {s['fecha_extraccion'] or '—'} | {s['tipo_de_fecha']} | "
+              f"{s['capturas']} | {s['referencia']} |" for s in report["fuentes_climaticas"]]
+    lines += ["", "## Cobertura por distrito", "",
               "Completitud de cada distrito y proporción de semanas con casos verificados.", "",
               "| UBIGEO | Semanas | Completas | Completitud | Casos verificados |", "|---|---|---|---|---|"]
     for ubigeo, item in report["cobertura_por_distrito"].items():

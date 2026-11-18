@@ -126,8 +126,9 @@ preparada en esa ruta, usa `npm run dev:demo:v2`.
 - La API no publica serie regional ni incidencia: esos componentes explican su ausencia.
   Seleccionar un distrito muestra su serie real; no se inventan curvas ni poblaciones.
 - Desempeño muestra métricas por bloque, comparación con persistencia, importancias y trazabilidad
-  de cada versión. Ayuda incluye búsqueda, leyenda vigente y un manual PDF descargable de cuatro
-  páginas. El soporte está a cargo de Nicolás Miranda y Rosa Rodríguez; el canal de contacto figura como «[canal de soporte por confirmar]» y la capacitación se coordina en el OE4.
+  de cada versión. Ayuda incluye búsqueda, leyenda vigente y un manual PDF descargable de seis
+  páginas (`tools/build_manual.py`, a partir de `./src/content/help.json`). El soporte es por correo a Rosa Rodríguez y
+  Nicolás Miranda (enlaces `mailto` en la tarjeta Soporte y en el manual).
 - El objetivo corresponde al corte publicado: mapa y resumen no aceptan corte histórico.
   La serie permite rangos personalizados. El umbral futuro de brote sigue sin publicarse por la API.
 - No se muestran explicaciones individuales ni agregados de vecinos que la API no expone.

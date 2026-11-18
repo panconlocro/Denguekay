@@ -6,7 +6,10 @@ import { readFileSync } from 'node:fs';
 
 const help = JSON.parse(
   readFileSync(new URL('../src/content/help.json', import.meta.url), 'utf8'),
-) as { topics: { title: string; liveLegend?: boolean }[] };
+) as {
+  topics: { title: string; liveLegend?: boolean }[];
+  support: { title: string; contacts: { name: string; email: string }[] };
+};
 
 function card(page: Page, title: string) {
   return page
@@ -194,6 +197,10 @@ test('help search, live legend, navigation and actual PDF download', async ({ pa
   await expect(page.getByRole('status').filter({ hasText: 'Temas encontrados' })).not.toContainText(
     '0 /',
   );
+  await page
+    .getByRole('navigation', { name: 'Temas de ayuda' })
+    .getByRole('button', { name: 'Probabilidad y casos', exact: true })
+    .click();
   await expect(page.locator('.help-topic-card')).toContainText('Probabilidad');
   await page.getByRole('button', { name: 'Limpiar búsqueda', exact: true }).click();
   const risk = help.topics.find((topic) => 'liveLegend' in topic)!;
@@ -204,12 +211,26 @@ test('help search, live legend, navigation and actual PDF download', async ({ pa
   await expect(page.locator('.help-live-legend li')).toHaveCount(config.leyenda.length);
   for (const level of config.leyenda)
     await expect(page.locator('.help-live-legend')).toContainText(level.etiqueta);
+  const levels = page.locator('.help-topic-card');
+  for (const level of [
+    'Bajo: probabilidad menor que 0,25',
+    'Medio: desde 0,25 y menor que 0,50',
+    'Alto: desde 0,50 y menor que 0,75',
+    'Muy alto: 0,75 o más',
+    'Sin datos indica que no hay una predicción válida',
+  ])
+    await expect(levels).toContainText(level);
   await expect(page).toHaveURL(/ayuda_tema=riesgo/);
   await page.reload();
   await expect(page.locator('.help-live-legend')).toBeVisible();
-  await expect(
-    page.getByRole('heading', { name: 'Soporte y capacitación', exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: help.support.title, exact: true })).toBeVisible();
+  for (const contact of help.support.contacts)
+    await expect(page.getByRole('link', { name: contact.email, exact: true })).toHaveAttribute(
+      'href',
+      `mailto:${contact.email}`,
+    );
+  await expect(page.getByRole('link', { name: 'rosamariarv10@gmail.com' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'turppie24@gmail.com' })).toBeVisible();
   const download = page.waitForEvent('download');
   await page.getByRole('link', { name: 'Descargar manual', exact: true }).click();
   expect((await download).suggestedFilename()).toBe('manual-usuario.pdf');

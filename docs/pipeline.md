@@ -40,6 +40,9 @@ Para regenerar el gold de una versión desde su silver completo (en V4, `11_gold
 El gold conserva `casos_Dengue` como conteo junto a la etiqueta `brote` (semana distrital con casos por
 encima de la media de esa semana en los cinco años previos + 1,5 DE, con un mínimo de 2 casos) y su umbral
 auditable `umbral_brote_casos`. El entrenamiento excluye esas tres columnas de los predictores.
+La regla completa (parámetros, semana 53, semanas sin registro, qué pasa si falta historia, sensibilidad y
+referencias) está en [`modeling/regla_brote.md`](modeling/regla_brote.md); es una regla operativa de vigilancia, no un
+umbral clínico.
 
 Gold persiste solo lo que debe estar en gold (regla «Variables derivadas» de `CONTRIBUTING.md`): un archivo con la alineación h=2, una fila por
 distrito y semana objetivo, y 24 columnas:
@@ -126,6 +129,22 @@ puede usar, y el vector de un origen solo toma lo que esa fecha deja usar al cie
 | Niño 1+2 | Anomalía mensual de la TSM (`sstoi.indices`, NOAA CPC) | `data/ingestion/enso.py`; silver `enso_nino12_mensual.csv` con `fecha_disponible` | CPC actualiza «cerca del día 10»: el mes M se usa desde el día 10 del mes M + 1 (`enso_index.PUBLICATION_DAY = 10`) |
 | Open-Meteo (clima del panel) | Temperatura, precipitación y humedad diarias del panel 2017-2025 | Misma API, sin `models` | **No es una entrada de la V4.** Alimenta el panel integrado de las versiones anteriores y el EDA; B3 toma el clima de ERA5-Land y CHIRPS |
 
+### Fecha de extracción de cada fuente climática (HU0002-1)
+
+El reporte de calidad (`data/validation/quality_report.py`, evidencia en `docs/backend/evidencia/calidad_datos_v4.md`)
+lleva una tabla con la fuente, el producto y la fecha de extracción. La fecha sale de donde el pipeline ya la deja:
+
+| Fuente | De dónde sale la fecha | Tipo de fecha |
+|---|---|---|
+| NOAA CPC (Niño 1+2) | fecha del nombre del archivo `sstoi_AAAAMMDD.indices` en `data/bronze/enso/` | captura registrada |
+| CHIRPS v3 | manifiestos de cada descarga: `escrito_utc` (Earth Engine) y `fecha_descarga` (FTP del CHC, final y preliminar); solo cuentan las descargas `completa` | captura registrada |
+| ERA5-Land de las semanas recientes | la carpeta con fecha `AAAA-MM-DD` de `data/bronze/meteo/cache_meteo_era5_land_reciente/` | captura registrada |
+| Cachés históricas de Open-Meteo y de ERA5-Land (2000-2016, 2017-2025, 2026 hasta el 31 de octubre) | no tienen fecha de extracción registrada: se muestra la fecha de congelamiento del Release `model/v4` (`fecha_congelamiento` de `models/registry/v4/ficha.json`) | congelamiento del Release `model/v4`: una cota, no el día de la descarga |
+
+Una fuente sin capturas aparece con «sin capturas», no se omite. El mismo reporte lleva el control de duplicados de la
+fuente epidemiológica (HU0001-3: claves repetidas y regla aplicada por fuente) y la correspondencia territorial
+(HU0003-2: distritos sin correspondencia o ambiguos entre el clima, el censo, el panel y el catálogo de UBIGEO).
+
 **Cómo se garantiza que solo se usan datos publicados al origen.** (1) `climate_vector` descarta la semana cuya fecha de
 disponibilidad es posterior al cierre del origen y deja el promedio en `NaN` si falta alguna de las 5 semanas;
 con Niño 1+2 exige tres meses consecutivos ya disponibles. (2) En el entrenamiento, `features/gold_v4.py` alinea Niño
@@ -155,6 +174,14 @@ de 2017 a 2025.
 | `poblacion` | 2017 (censo, `pob_censada_2017`) y 2018-2025 (proyección, `pob_proyectada_<año>`) | Valor del año de cada semana, sin interpolar. Desde 2026: se prolonga la pendiente 2017-2025 (`(valor 2025 − valor 2017) / 8` por año), redondeada y siempre positiva |
 | Las 15 fracciones (`fraccion_rural`, `fraccion_mujeres`, `fraccion_menores_15`, `fraccion_sin_seguro`, `fraccion_analfabeta_15_mas`, `fraccion_pared_precaria`, `fraccion_piso_tierra`, `fraccion_agua_red`, `fraccion_agua_cisterna`, `fraccion_desague_red`, `fraccion_sin_saneamiento`, `fraccion_alumbrado_red`, `fraccion_hogares_refrigeradora`, `fraccion_hogares_celular`, `fraccion_hogares_lena`; columnas `<base>_2017` y `<base>_2025` del Excel) | Extremos 2017 y 2025 | Interpolación lineal año a año entre 2017 y 2025; desde 2026, extrapolación de la misma pendiente acotada a `[0, 1]`, con un registro de cada ajuste |
 | Variables con un solo año (p. ej. `fraccion_menores_5`, solo 2017; `fraccion_60_mas`, solo 2025) | 2017 o 2025 | Se excluyen del dataset: no hay cómo interpolarlas ni suponerlas constantes |
+
+**Unidad y procedencia (HU0003-1).** Cada fila de `socio_anual.csv` conserva `ubigeo`, `departamento`, `provincia`,
+`distrito` y `anio`. Todas las variables vienen del mismo Excel del INEI (`data/bronze/socio/data_socio_2017_2025.xlsx`):
+
+| Variable | Unidad |
+|---|---|
+| `poblacion` | personas (habitantes del distrito) |
+| Las 15 fracciones de la fila anterior | fracción entre 0 y 1 (de la población o de los hogares del distrito, según la variable) |
 
 La población censal de 2017 también está en `distrito.poblacion_censo_2017` (tasas y mapa). **Lo que la regla temporal no
 garantiza:** la interpolación de los años 2018-2024 usa el extremo de 2025, que no estaba disponible en esos años, así

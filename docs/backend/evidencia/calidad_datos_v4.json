@@ -1,6 +1,6 @@
 {
   "criterio": "HU0005-4 y HU0005-5 (US v1.4)",
-  "generado_utc": "2026-11-17T21:30:38.825081+00:00",
+  "generado_utc": "2026-11-18T02:55:53.040576+00:00",
   "estado": "conforme",
   "no_conformidades": [],
   "entradas": {
@@ -1128,6 +1128,141 @@
     "llave_ubigeo_anio_semana": 0,
     "llave_ubigeo_semana_inicio": 0
   },
+  "control_duplicados_fuente_epidemiologica": [
+    {
+      "fuente": "Histórico confirmado (CSV epidemiológico, hasta 2024)",
+      "llave": [
+        "ubigeo",
+        "anio",
+        "semana"
+      ],
+      "filas": 10240,
+      "claves_repetidas": 0,
+      "filas_con_llave_repetida": 0,
+      "ejemplos": [],
+      "regla_aplicada": "Las filas que repiten la llave (ubigeo, anio, semana) se suman en una sola fila; el resultado tiene una fila por llave",
+      "resultado": "sin duplicados"
+    },
+    {
+      "fuente": "Sala Situacional confirmada (desde 2025)",
+      "llave": [
+        "ubigeo",
+        "anio",
+        "semana"
+      ],
+      "filas": 6240,
+      "claves_repetidas": 0,
+      "filas_con_llave_repetida": 0,
+      "ejemplos": [],
+      "regla_aplicada": "La Sala no admite claves repetidas: normalize_sala_records y el silver se detienen con error si un distrito o una llave (ubigeo, anio, semana) se repite; nada se suma ni se descarta",
+      "resultado": "sin duplicados"
+    },
+    {
+      "fuente": "Panel integrado de la V4",
+      "llave": [
+        "ubigeo",
+        "anio",
+        "semana"
+      ],
+      "filas": 30485,
+      "claves_repetidas": 0,
+      "filas_con_llave_repetida": 0,
+      "ejemplos": [],
+      "regla_aplicada": "El panel integrado exige una fila por llave (ubigeo, anio, semana): la validación del panel se detiene si una llave se repite",
+      "resultado": "sin duplicados"
+    }
+  ],
+  "correspondencia_territorial": {
+    "distritos_catalogo": 65,
+    "distritos_panel": 65,
+    "en_panel_sin_catalogo": [],
+    "en_catalogo_sin_panel": [],
+    "ubigeo_con_formato_invalido": [],
+    "alias_de_nombres_aplicados": {
+      "El Carmendela Frontera": "El Carmen de la Frontera",
+      "San Miguelde El Faique": "San Miguel de el Faique"
+    },
+    "meteo_vs_socio": {
+      "solo_en_meteo": [],
+      "solo_en_socio": [],
+      "ambiguos": []
+    },
+    "cumple": true
+  },
+  "fuentes_climaticas": [
+    {
+      "fuente": "NOAA CPC",
+      "producto": "Niño 1+2: anomalía mensual de la TSM (OISST v2.1, sstoi.indices)",
+      "fecha_extraccion": "2026-11-17",
+      "capturas": 2,
+      "tipo_de_fecha": "captura registrada",
+      "referencia": "fecha del nombre del archivo sstoi_AAAAMMDD.indices (bronze/enso)"
+    },
+    {
+      "fuente": "CHIRPS v3 (Earth Engine)",
+      "producto": "CHIRPS v3.0 diario final, desagregación sat (Earth Engine, UCSB-CHC/CHIRPS/V3/DAILY_SAT, banda precipitation)",
+      "fecha_extraccion": "2026-11-06",
+      "capturas": 1,
+      "tipo_de_fecha": "captura registrada",
+      "referencia": "manifiesto_ee_*.json (bronze/chirps/v3_sat/ee_final)"
+    },
+    {
+      "fuente": "CHIRPS v3 (FTP del CHC)",
+      "producto": "CHIRPS v3.0 diario final, desagregación sat (GeoTIFF por FTP del CHC)",
+      "fecha_extraccion": "2026-11-17",
+      "capturas": 2,
+      "tipo_de_fecha": "captura registrada",
+      "referencia": "manifiesto_ftp_final_*.json (bronze/chirps/v3_sat/final_ftp)"
+    },
+    {
+      "fuente": "CHIRPS v3 preliminar (FTP del CHC)",
+      "producto": "CHIRPS v3.0 diario preliminar, desagregación sat (GeoTIFF por FTP del CHC)",
+      "fecha_extraccion": "2026-11-17",
+      "capturas": 2,
+      "tipo_de_fecha": "captura registrada",
+      "referencia": "manifiesto_ftp_prelim_*.json (bronze/chirps/v3_sat/prelim)"
+    },
+    {
+      "fuente": "ERA5-Land (semanas recientes)",
+      "producto": "ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias",
+      "fecha_extraccion": "2026-11-12",
+      "capturas": 2,
+      "tipo_de_fecha": "captura registrada",
+      "referencia": "carpeta con fecha AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente)"
+    },
+    {
+      "fuente": "Open-Meteo (clima del panel 2017-2025)",
+      "producto": "Open-Meteo archive API (sin models), variables diarias",
+      "fecha_extraccion": "2026-11-12",
+      "capturas": 1,
+      "tipo_de_fecha": "congelamiento del Release model/v4 (la fecha real de extracción no se registró)",
+      "referencia": "caché histórica (cache_meteo); fecha de congelamiento de la ficha de la V4"
+    },
+    {
+      "fuente": "ERA5-Land 2000-2016",
+      "producto": "ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias",
+      "fecha_extraccion": "2026-11-12",
+      "capturas": 1,
+      "tipo_de_fecha": "congelamiento del Release model/v4 (la fecha real de extracción no se registró)",
+      "referencia": "caché histórica (cache_meteo_era5_land_2000_2016); fecha de congelamiento de la ficha de la V4"
+    },
+    {
+      "fuente": "ERA5-Land 2017-2025",
+      "producto": "ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias",
+      "fecha_extraccion": "2026-11-12",
+      "capturas": 1,
+      "tipo_de_fecha": "congelamiento del Release model/v4 (la fecha real de extracción no se registró)",
+      "referencia": "caché histórica (cache_meteo_era5_land_2017_2025); fecha de congelamiento de la ficha de la V4"
+    },
+    {
+      "fuente": "ERA5-Land 2026 (hasta el 31 de octubre)",
+      "producto": "ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias",
+      "fecha_extraccion": "2026-11-12",
+      "capturas": 1,
+      "tipo_de_fecha": "congelamiento del Release model/v4 (la fecha real de extracción no se registró)",
+      "referencia": "caché histórica (cache_meteo_era5_land_2026); fecha de congelamiento de la ficha de la V4"
+    }
+  ],
   "valores_faltantes": {
     "ubigeo": {
       "criterio": "ubigeo",

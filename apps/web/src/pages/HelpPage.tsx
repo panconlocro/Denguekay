@@ -207,7 +207,15 @@ export function HelpPage() {
           </Card>
           <Card title={content.support.title}>
             <p className="help-support-status">{content.support.status}</p>
-            {content.support.paragraphs.map((paragraph) => (
+            <p>{content.support.paragraphs[0]}</p>
+            <ul className="help-support-contacts">
+              {content.support.contacts.map((contact) => (
+                <li key={contact.email}>
+                  {contact.name}: <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                </li>
+              ))}
+            </ul>
+            {content.support.paragraphs.slice(1).map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
           </Card>
