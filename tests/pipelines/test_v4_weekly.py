@@ -191,6 +191,48 @@ class TestRunnerWithoutState(LiveCase):
         self.assertTrue(any("Storage" in w for w in report["advertencias"]))
         self.assertEqual(len(weekly_inferences(self.motor)), 3)   # the forecast stays published
 
+    def test_the_dry_run_plans_the_release_extraction_for_the_prepare_flag(self):
+        missing = [v4_weekly.ROOT / "data" / "falta.csv"]
+        report = self.run_weekly(Options(dry_run=True, preparar=True), missing_files=lambda: missing)
+        self.assertEqual(report["estado"], "dry_run")
+        self.assertIn("extraer del Release lo que falta", report["pasos"])
+        self.assertEqual(self.calls, [])
+
+    def test_the_command_line_has_the_prepare_flag(self):
+        captured = {}
+        fake_engine = type("Engine", (), {"dispose": lambda self: None})()
+        with patch.object(v4_weekly, "run", side_effect=lambda options, **kw: captured.update(o=options) or
+                          {"estado": "dry_run"}), patch.object(v4_weekly, "make_engine", return_value=fake_engine),                 patch("denguekay.serving.storage.storage_from_environment"):
+            self.assertEqual(v4_weekly.main(["--preparar", "--dry-run"]), 0)
+        self.assertTrue(captured["o"].preparar and captured["o"].dry_run and not captured["o"].inicial)
+
+    def test_a_partial_upload_to_the_storage_is_reported_as_failed_and_can_be_repeated(self):
+        class Flaky:
+            def __init__(self, inner):
+                self.inner, self.saved = inner, 0
+
+            def save(self, path, content):
+                if path.startswith("reportes/"):   # only the archive of the emission, not the package
+                    self.saved += 1
+                    if self.saved == 2:
+                        raise OSError("corte")
+                self.inner.save(path, content)
+
+            def __getattr__(self, name):
+                return getattr(self.inner, name)
+
+        self.cfg = replace(self.cfg, almacenamiento="supabase")
+        inner = self.storage
+        self.storage = Flaky(inner)
+        report = self.run_weekly(Options(inicial=True))
+        self.assertEqual(report["estado"], "emitida", report)
+        self.assertEqual(report["archivo_en_storage"], "fallido: OSError")
+        self.assertTrue(inner.exists(f"reportes/emisiones/{report['emision'].split('/', 1)[1]}/emision.json"))
+        folder = self.base / report["emision"]
+        again = emissions.upload_archive(inner, folder, self.base / "emisiones")   # x-upsert makes a retry safe
+        self.assertEqual(len(again), 3)
+        self.assertTrue(all(inner.exists(path) for path in again))
+
     def test_a_refit_package_that_is_not_on_the_machine_is_rejected_with_a_clear_message(self):
         options = {**self.cfg.opciones, "paquete_dir": "models/experimentos/mejora_modelo/v4_reajuste/no_existe"}
         self.cfg = replace(self.cfg, paquete={**self.cfg.paquete, "opciones": options})
