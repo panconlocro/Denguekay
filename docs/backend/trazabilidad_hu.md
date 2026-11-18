@@ -5,7 +5,7 @@
 ## Fuente y estados
 
 - La fuente es el documento `US_Criterios_De_Aceptacion_Final.xlsm` (17/11/2026), **que no está en el repo**. SHA-256 de la
-  copia usada: `2d3fc83c9378e2f44baa31d10bfb89a9850c730943b0a72112e093476d48c05d`. La actualización semanal es la HU0019; no
+  copia usada: `a83e14b0711571ac031a80a8ceb75e0eb9c0cc41945b6e3e3c4a0a05e7bded3a`. La actualización semanal es la HU0019; no
   existe una HU0020. Hay una fila por escenario, 76 en total.
 - **cumplido**: lo prueba un test o una ejecución real citados en la fila. Los tests se corren con
   `python -m unittest discover -s tests` y, los del front, con `npm test` y `npx playwright test` en `apps/web/`.
