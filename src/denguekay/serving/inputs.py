@@ -37,7 +37,9 @@ def _weekly(sesion, end, columns, *, confirmed=False):
     ).join(EpiWeek, EpiWeek.id_semana == WeeklyObservation.id_semana).where(EpiWeek.fecha_fin <= end)
     if confirmed:
         query = query.where(WeeklyObservation.casos_solo_confirmados.is_(True))
-    rows = sesion.execute(query).all()
+    # Small fetches keep historical reads responsive over pooled remote connections.
+    with sesion.execute(query.execution_options(yield_per=100)) as result:
+        rows = list(result)
     return pd.DataFrame(rows, columns=["ubigeo", "anio", "semana", "semana_inicio", *columns])
 
 
