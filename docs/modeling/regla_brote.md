@@ -149,19 +149,26 @@ llevó al mínimo provisional de 2 casos (elimina 742 positivos de un solo caso 
 La regla es una adaptación del **canal endémico estacional** de vigilancia: comparar la semana actual con la misma semana
 de años previos y marcar lo que supera la banda superior. Lo que el repositorio documenta de cada fuente:
 
-- **Benedum et al. (2020)** — estudio con Iquitos, San Juan y Singapur: casos semanales por encima de la media más 1,5
-  desviaciones estándar, con la media estimada con los datos de entrenamiento de cada lugar y una serie por lugar.
-  Enlace: <https://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0008710>. *Título completo, revista y
-  volumen: por verificar.*
+- **Benedum CM, Shea KM, Jenkins HE, Kim LY, Markuzon N (2020).** Weekly dengue forecasts in Iquitos, Peru; San Juan,
+  Puerto Rico; and Singapore. *PLoS Neglected Tropical Diseases* 14(10): e0008710. DOI:
+  <https://doi.org/10.1371/journal.pntd.0008710>. Lo que el repositorio recoge del estudio: casos semanales por encima de
+  la media más 1,5 desviaciones estándar, con la media estimada con los datos de entrenamiento de cada lugar y una serie
+  por lugar. *Por verificar: que el 1,5 DE se defina en el artículo tal como lo resume este documento (nadie lo ha
+  contrastado con el texto original).*
 - **OMS / TDR, guía de dengue de 2009, capítulo 3.3.1, p. 73** (cita de la revisión del estudio 02): comparar la semana o
   el mes con la media histórica de la misma semana o mes en los 5–7 años previos; superar media + 2 DE activa una alerta
   de brote, como aproximación de vigilancia. Enlace:
-  <https://iris.who.int/bitstream/handle/10665/44188/9789241547871_eng.pdf?sequence=1>.
-- **OMS, 2016, sección 3.2.4** (cita del protocolo del estudio 07): canal tradicional de 5 años con +2 DE. Enlace:
-  <https://iris.who.int/bitstream/handle/10665/250240/9789241549738-eng.pdf?sequence=1>. *Título: por verificar.*
+  <https://iris.who.int/bitstream/handle/10665/44188/9789241547871_eng.pdf?sequence=1>. *Por verificar: que ese capítulo
+  y esa página describan el canal con +2 DE.*
+- **World Health Organization (2016).** Technical handbook for dengue surveillance, dengue outbreak prediction/detection
+  and outbreak response ("model contingency plan"). Ginebra: OMS (TDR). ISBN 978 92 4 154973 8. Enlace:
+  <https://www.who.int/publications/i/item/9789241549738>; PDF:
+  <https://iris.who.int/bitstream/handle/10665/250240/9789241549738-eng.pdf?sequence=1>. Sección 3.2.4 (cita del
+  protocolo del estudio 07): canal tradicional de 5 años con +2 DE. *Por verificar: que la sección 3.2.4 sea la que
+  describe el canal con +2 DE.*
 - **Por verificar:** el estudio 02 y el estudio 07 citan dos documentos distintos de la OMS (2009 y 2016) para la misma
-  idea del canal con +2 DE. Falta confirmar con el texto de cada uno cuál describe qué y con qué sección; hasta entonces
-  este documento no atribuye a la OMS ningún valor de la regla de Denguekay.
+  idea del canal con +2 DE. Falta confirmar con el texto de cada uno qué sección lo describe; hasta entonces este
+  documento no atribuye a la OMS ningún valor de la regla de Denguekay.
 
 Decisiones del proyecto (no de esas fuentes): aplicar la regla **por distrito y misma semana epidemiológica**, usar 1,5 DE
 (elección de Rosa), exigir un mínimo de 2 casos (provisional, tras revisar la sensibilidad) y sumar la semana 53 a la 52.
