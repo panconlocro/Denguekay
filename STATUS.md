@@ -37,8 +37,9 @@ regenerar desde las fuentes está en [docs/reproducibilidad.md](docs/reproducibi
 - **Calidad de datos:** `python -m denguekay.data.validation.quality_report` (solo lectura) genera
   `docs/backend/evidencia/calidad_datos_v4.md`: completitud 100 % y 3 de 171 569 registros descartados (HU0005-4 y -5).
 - **Deriva:** `python -m denguekay.serving.drift` y el informe semanal registran la degradación frente a la referencia de la
-  HU0007-4; no reentrenan (HU0009-2). La ejecución mensual es del OE4.
-- **Trazabilidad:** [trazabilidad_hu.md](docs/backend/trazabilidad_hu.md) (HU0001 a HU0020, US v1.4).
+  HU0007-4; no reentrenan (HU0009-2). La revisión mensual corre en `.github/workflows/drift_monthly.yml` y la actualización
+  semanal en `weekly_v4.yml` (lunes y jueves), ambas con secrets de GitHub (sin ellos terminan con un aviso).
+- **Trazabilidad:** [trazabilidad_hu.md](docs/backend/trazabilidad_hu.md) (los 76 escenarios de los criterios de aceptación finales, HU0001 a HU0019).
 - **Despliegue:** el repo está preparado para Render, Supabase y Vercel; no hay nada desplegado.
 
 ## Investigación
@@ -53,10 +54,10 @@ la congelación de la v4 y la transferencia a Lambayeque y Tumbes.
   ([operación](docs/backend/operacion.md#actualización-semanal-v4)).
 - Reentrenamiento anual de la V4 al cierre de la temporada 2027: el comando `denguekay.model.refit_v4` ya existe y está
   verificado contra la V4; se corre a mano ([política y procedimiento](docs/modeling/reentrenamiento.md)).
-- Registrar la tarea programada de la actualización semanal (`scripts\register_weekly_v4_task.ps1`) en la BD que se use.
-- Canal de soporte de la ayuda (figura como «[canal de soporte por confirmar]») y decisión sobre publicar los polígonos
-  distritales (CC BY-IGO 3.0) antes del despliegue.
+- Decisión sobre publicar los polígonos distritales (CC BY-IGO 3.0) antes del despliegue.
 - Grabar las líneas base de las guardas del contrato para las migraciones `0009_v4` y `0010_v4`
   (`python tests/contract_v1_support.py record`).
-- Se cumplen en el OE4: la ejecución mensual de la deriva, la HU0019 y la medición desplegada del SLA.
-- Despliegue.
+- Despliegue: desplegar en Render, Supabase y Vercel y cargar los secrets de GitHub Actions (`DATABASE_URL`,
+  `SUPABASE_URL`, `SUPABASE_SECRET_KEY`; ver [despliegue](docs/backend/despliegue.md)). Si se sirve un reajuste con
+  `paquete_dir`, falta que el workflow semanal baje esa carpeta del Storage (hoy se detiene con un aviso). Open-Meteo
+  gratuito limita por IP: una corrida desde GitHub puede esperar o fallar por el límite horario.
