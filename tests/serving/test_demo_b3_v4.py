@@ -101,7 +101,9 @@ class TestFrozenB3Demo(unittest.TestCase):
                     rows = response.json()["elementos"]
                     self.assertEqual(len(rows), 65)
                     self.assertEqual({row["semana_objetivo"]["id_semana"] for row in rows}, {202502 + h})
-                    self.assertTrue(all(row["disponible"] and row["experimental"] for row in rows))
+                    self.assertTrue(all(row["disponible"] for row in rows))
+                    # With the thresholds of the US v1.4 the flag follows the metrics of the synthetic bundle.
+                    self.assertTrue(all(isinstance(row["experimental"], bool) for row in rows))
                     self.assertTrue(all(0 <= row["probabilidad_brote"] <= 1 and row["casos_estimados"] >= 0
                                         for row in rows))
                     self.assertTrue(all(row["nivel_intervalo"] is None for row in rows))

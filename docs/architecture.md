@@ -15,7 +15,7 @@ flowchart LR
   fuentes -. Sala, ERA5-Land,<br/>CHIRPS, Niño 1+2 .-> v4w[denguekay.pipelines<br/>v4_weekly] --> operativo[(data/silver/operativo)]
   v4w --> db
   gold --> model[denguekay.features / model / evaluation]
-  model --> registry[models/registry<br/>v0 · v1 · v2 · v3]
+  model --> registry[models/registry<br/>v0 · v1 · v2 · v3 · v4]
   gold --> serving[denguekay.serving<br/>load_data, publish]
   registry -. v3 .-> serving
   serving --> db[(PostgreSQL OE2<br/>denguekay.db)]
@@ -30,7 +30,7 @@ flowchart LR
 - **Modelado** (`denguekay.features`, `model`, `evaluation`): variables, entrenamiento, protocolos y las
   configuraciones congeladas; cada versión tiene su ficha en `models/registry/`.
 - **Backend** (`denguekay.serving`, `denguekay.db`, `apps/api`): carga validada, ajuste de servicio, Storage,
-  inferencia y la API del documento OE2. La configuración de servicio vigente es la v3.
+  inferencia y la API del documento OE2. La configuración de servicio vigente es la V4 (`v4_b3_live`).
 - **Frontend** (`apps/web/`): SPA React + Vite + TypeScript que consume lecturas de `/api/v1`.
 - **Investigación** (`research/`): congelada; puede importar el paquete, nunca al revés.
 
@@ -88,7 +88,7 @@ Denguekay/
 ├── research/                  # estudios congelados: 01_eda … 06_model_improvement (README y, si hace falta, manifiesto_datos.json por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
-│   └── registry/              # fichas de v0 … v3, CHANGELOG.md y <versión>/manifiesto_datos.json (datos del Release de cada tag)
+│   └── registry/              # fichas de v0 … v4, CHANGELOG.md y <versión>/manifiesto_datos.json (datos del Release de cada tag)
 ├── tests/                     # misma estructura que el paquete: tests/<subpaquete>/ y tests/api/
 │   ├── fixtures/backend/      # muestra agregada real, pequeña y versionada
 │   └── fixtures/equivalence/  # línea base de las guardas de la reestructuración (no se regenera)
@@ -258,6 +258,7 @@ data/
     ├── integrated_expectations.py  # cobertura y validación del integrado + suite GX silver_integrado
     ├── gold_expectations.py        # suite GX gold_h2 (esquema, llave, rangos, sin fuga temporal)
     ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
+    ├── quality_report.py           # reporte de calidad y completitud de la V4 (HU0005-4/5), solo lectura; escribe en docs/backend/evidencia/
     └── forecast_contract.py        # origen temporal y disponibilidad al pronosticar
 ```
 **Va acá:** una función que hable con una API o haga scraping (`ingestion/`); limpieza, agregación, interpolación o joins (`processing/`); cualquier comprobación de rangos, nulos, duplicados o conteos (`validation/`, un archivo por dataset: `<dataset>_expectations.py`). Las suites de GX se definen en código; `great_expectations/gx/` lo regenera GX y no se versiona. Guía: `docs/modeling/mlflow_great_expectations.md`.
@@ -319,7 +320,7 @@ src/denguekay/db/
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land
+└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
 ├── settings.py               # paquete a publicar, CORS, selección experimental y almacenamiento (config.yaml; el entorno los reemplaza)
@@ -339,6 +340,8 @@ src/denguekay/serving/
 ├── inference.py              # paquete -> predictor -> UPSERT de predicciones y alertas; OOS
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 ├── emissions.py              # actualización semanal de la V4: emisión ya hecha, archivo de cada emisión, puntajes prospectivos y aviso de reentrenamiento
+├── geometries.py             # límites distritales para el mapa (HU0014-1): lectura, validación y simplificación de data/reference/distritos_piura_limites.geojson
+├── drift.py                  # monitoreo de deriva (HU0009-2): semanas cerradas de las emisiones frente a la referencia de la HU0007-4; CLI mensual a mano; solo registra
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
 ├── weekly_update.py          # actualización selectiva del integrado y silver de la Sala (confirmados o notificados)
@@ -375,7 +378,7 @@ tests/
     ├── v2_serving/           # 6 distritos reales, orígenes, predicciones y modelo congelado (no se regenera)
     └── v4_gold/              # huellas por columna y referencia de flotantes del gold desde el Release (no se regenera)
 docs/backend/                 # especificación OE2, desviaciones, operación, despliegue y contrato (openapi_v1.json congelado)
-└── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU (versionado)
+└── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU, reporte de calidad de datos de la V4 (calidad_datos_v4.json y .md) (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
 models/serving/               # BD SQLite y ejecuciones locales; no se versionan
 ├── actualizacion_semanal/    # v4_weekly: emisiones/<corte>/<UTC>/ (emision.json, predicciones.csv, vectores.csv), ejecuciones/, logs/ y en_curso.lock
@@ -454,6 +457,7 @@ apps/web/
 ├── public/manual-usuario.pdf            # manual descargable desde Ayuda
 ├── tools/build_manual.py                # autoría del PDF; requiere reportlab y pypdf, revisión visual
 ├── tools/serve_demo.py                  # demo ya preparada, lectura en 127.0.0.1:18001
+├── tools/measure_load.mjs               # mide 20 cargas por vista sobre vite preview (HU0016-3); salida en docs/backend/
 ├── e2e/serve_api.py                      # API real sobre fixtures en 127.0.0.1:18000
 └── playwright.config.ts                 # escritorio/móvil, Vite 5174, trazas en fallos
 ```

@@ -19,7 +19,7 @@ from denguekay.db.models import Prediction, Run, WeeklyObservation
 from denguekay.db.session import make_engine, transaction
 from denguekay.pipelines import v4_inputs, v4_weekly
 from denguekay.pipelines.v4_weekly import Options, WeeklyError
-from denguekay.serving import emissions
+from denguekay.serving import drift, emissions
 from denguekay.serving import inference
 from denguekay.serving.settings import service_settings
 
@@ -60,6 +60,17 @@ class TestFullRuns(LiveCase):
         self.assertFalse((self.base / "en_curso.lock").exists())
         self.assertIs(report["reentrenamiento_anual_pendiente"], False)
         self.assertEqual(report["seguimiento_prospectivo"]["2"]["n"], 0)
+        self.assertEqual(report["monitoreo_deriva"]["horizontes"]["2"]["estado"], "sin_datos")   # nothing closed yet
+        self.assertFalse(report["monitoreo_deriva"]["requiere_revision"])
+
+    def test_a_failure_in_the_drift_review_never_fails_the_emission(self):
+        with patch.object(drift, "drift_report", side_effect=ValueError("boom")):
+            report = self.run_weekly(Options(inicial=True))
+        self.assertEqual(report["estado"], "emitida", report)
+        self.assertEqual(report["monitoreo_deriva"], "no disponible: ValueError")
+        self.assertEqual(report["seguimiento_prospectivo"]["2"]["n"], 0)   # the follow-up and the notice survive
+        self.assertIs(report["reentrenamiento_anual_pendiente"], False)
+        self.assertEqual(counts(self.motor)["ejecuciones"].get(("inferencia", "fallida"), 0), 0)
 
     def test_the_second_run_with_the_same_data_is_without_news_and_creates_nothing(self):
         self.run_weekly(Options(inicial=True))

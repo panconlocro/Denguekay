@@ -210,6 +210,28 @@ de corte: la primera es la que vale para la evaluación prospectiva.
 de los casos de las emisiones cuya semana objetivo ya está cargada. No lleva interpretación ni umbrales: con pocos
 brotes no se concluye nada.
 
+**Monitoreo de deriva (HU0009-2).** El informe trae también `monitoreo_deriva`: para cada horizonte compara las
+semanas cerradas de las emisiones archivadas con las métricas de referencia del mismo horizonte (el bloque agregado de
+la HU0007-4, `temporadas_2022_2026`, de las versiones servidas). Calcula Precision, Recall y F1 (alerta con p ≥ 0,50) y
+MAE y RMSE de los casos. Degradación relativa: Recall y F1, (referencia − periodo) / referencia; MAE y RMSE,
+(periodo − referencia) / referencia. Con **8 semanas cerradas o más** (por horizonte) se marcan las métricas con
+degradación > 10 %; con menos solo se registran, sin decisiones. Si la referencia es 0 no se calcula la degradación
+relativa. Precision se informa con su referencia pero el criterio no define su degradación, así que no se marca.
+El resultado es un registro para revisión del Ingeniero de Datos / ML: **no reentrena ni cambia la versión en uso**.
+Registrar el resultado agrega una fila de `ejecucion`, y `fecha_actualizacion` de las respuestas y `ultima_ejecucion`
+de `/salud` salen de la última ejecución exitosa de cualquier tipo: cada registro mensual las mueve (lo mismo que ya
+hace una activación). Las semanas cerradas se cuentan por semana objetivo, y las predicciones salen de la BD (con `--reemitir` el
+UPSERT reemplaza la predicción, mientras el archivo en disco conserva la primera emisión). Si el periodo no tiene
+brotes observados, Recall y F1 quedan en `null`. Para correrlo a mano (mensual, desde la raíz y con `DATABASE_URL` apuntando a la BD que se use):
+
+```powershell
+.\.venv\Scripts\python -m denguekay.serving.drift                  # calcula y registra una ejecución de mantenimiento
+.\.venv\Scripts\python -m denguekay.serving.drift --sin-registrar  # solo muestra el resultado
+```
+
+El registro es una fila de `ejecucion` con `tipo = mantenimiento` y `detalle.origen = monitoreo_deriva`. Programar la
+corrida mensual y revisar sus marcas corresponde al OE4; aquí solo queda el código y no se muestra en el frontend.
+
 **Si falla.** El informe y la `ejecucion` (`tipo` `ingesta` o `inferencia`, `estado` `fallida`, `detalle.etapa`) dicen en
 qué paso. No hay reintentos automáticos: las descargas reanudan desde sus cachés en la corrida siguiente
 (`--sin-descargas` para no usar la red). Un candado de más de 12 horas se considera huérfano y se reemplaza; si hay uno
@@ -220,6 +242,20 @@ reciente, otra corrida sigue en curso. Si Open-Meteo corta por cuota, la corrida
 - La `ejecucion` de tipo `reentrenamiento` que crea `publish` para la V4 es el **registro del paquete congelado**, no un
   ajuste.
 - Si cambian los umbrales de aceptación basta `python -m denguekay.serving.publish --seleccionar-experimental`.
+- **Polígonos del mapa (`0010_v4`).** Tras `alembic upgrade head`, `/mapa-riesgo` sigue devolviendo centroides hasta la
+  siguiente carga de datos (`v4_weekly`, `v4_weekly --inicial` o `load_data`): esa carga lee
+  `data/reference/distritos_piura_limites.geojson`, lo simplifica y guarda la geometría de cada distrito (el hash del
+  archivo entra en la huella de la ingesta, así que una BD existente vuelve a cargar los distritos). El mapa muestra «Límites
+  distritales» con la atribución del IGN, OCHA/HDX (CC BY-IGO 3.0) cuando todos los distritos tienen polígono.
+- **Umbrales de la HU0007-4 (US v1.4).** `alembic upgrade head` aplica la `0009_v4`: Recall ≥ 0,65, Precision ≥ 0,60,
+  F1 ≥ 0,70 (p ≥ 0,50) y MAE y RMSE ≤ 90 % de la persistencia, sobre el bloque `temporadas_2022_2026` (las semanas
+  distritales de las temporadas 2022 a 2026 agregadas). En una BD que ya tenía la V4 publicada, después de migrar hay
+  que republicar (`publish --seleccionar-experimental`) para recalcular `cumple_umbrales`: con las métricas del paquete
+  congelado las seis versiones V4 (clasificación y regresión en h2, h3 y h4) cumplen los umbrales y la API deja de
+  marcarlas `experimental`. «Validado» significa aquí cumplimiento retrospectivo con una semilla; el agregado descansa
+  en 2022–2024 ([ficha](../../models/registry/v4/ficha.md)). Una BD que tuviera v0–v3 publicadas las vería
+  `experimental` al republicar, porque sus métricas no traen el bloque agregado. Se revisaron el
+  17/11/2026, después de ver los resultados; la evaluación independiente es la prospectiva 2026-27.
 - Un año calendario nuevo sin semanas publicadas en la Sala se omite durante su primer mes; cualquier otro año vacío es
   un error. (Cómo se manifiesta ese caso en la Sala no se observó: el comportamiento se basa en el código del scraper.)
 

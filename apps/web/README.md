@@ -117,8 +117,9 @@ preparada en esa ruta, usa `npm run dev:demo:v2`.
 
 ## Límites y siguientes entregas
 
-- El mapa usa centroides reales; no usa los polígonos esquemáticos de Figma. Soporta Point, Polygon y
-  MultiPolygon. Los polígonos requieren una fuente publicable en el backend. El mapa base usa
+- El mapa muestra los límites distritales (COD-AB de Perú, IGN, OCHA/HDX, CC BY-IGO 3.0, con su atribución) y
+  usa el centroide real de un distrito si la API no trae su límite; no usa los polígonos esquemáticos de Figma.
+  Soporta Point, Polygon y MultiPolygon. El mapa base usa
   OpenStreetMap con atribución y conexión, sujeto a su
   [política de teselas](https://operations.osmfoundation.org/policies/tiles/).
   Si no cargan las teselas, los marcadores permanecen sobre el fondo del mapa.
@@ -126,7 +127,7 @@ preparada en esa ruta, usa `npm run dev:demo:v2`.
   Seleccionar un distrito muestra su serie real; no se inventan curvas ni poblaciones.
 - Desempeño muestra métricas por bloque, comparación con persistencia, importancias y trazabilidad
   de cada versión. Ayuda incluye búsqueda, leyenda vigente y un manual PDF descargable de cuatro
-  páginas. Capacitación y canal de soporte siguen pendientes de definición y publicación.
+  páginas. El soporte está a cargo de Nicolás Miranda y Rosa Rodríguez; el canal de contacto figura como «[canal de soporte por confirmar]» y la capacitación se coordina en el OE4.
 - El objetivo corresponde al corte publicado: mapa y resumen no aceptan corte histórico.
   La serie permite rangos personalizados. El umbral futuro de brote sigue sin publicarse por la API.
 - No se muestran explicaciones individuales ni agregados de vecinos que la API no expone.

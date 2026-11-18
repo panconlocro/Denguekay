@@ -7,7 +7,8 @@ module holds what that needs from the database and the disk, apart from the orch
 - ``archive_emission``: the record of one emission (date, inputs, forecasts and origin vectors), written before the
   outcomes are known, as the prospective evaluation of ``research/08_v3_confirmed_cases/congelamiento_b3_v4.md``
   requires;
-- ``prospective_scores``: Brier, observed outbreaks and MAE of the emissions whose target week is already observed;
+- ``prospective_frame`` and ``prospective_scores``: the emissions whose target week is already observed, and their Brier,
+  observed outbreaks and MAE (the drift review of ``denguekay.serving.drift`` reads the same frame);
 - ``retraining_due``: whether the cutoff reached the close of the next season (a notice, never a training).
 
 It writes nothing to ``data/`` and trains nothing.
@@ -130,19 +131,29 @@ def archive_emission(sesion, *, cutoff, ingestion, results, load, emitted_at, re
 
 # --- prospective follow-up ---------------------------------------------------------
 
-def prospective_scores(sesion):
-    """Per horizon: ``n``, observed outbreaks, the sum of the probabilities, Brier and MAE of the cases.
+def prospective_frame(sesion):
+    """One row per available prediction of the weekly update whose target week already has an observation loaded.
 
-    It takes the available predictions of the weekly update whose target week already has an observation loaded
-    (the weeks that the load treats as provisional are never loaded). It interprets nothing and sets no threshold."""
-    query = select(Prediction.horizonte, Prediction.probabilidad_brote, Prediction.casos_estimados,
-                   WeeklyObservation.brote, WeeklyObservation.casos_dengue, Run.detalle).join(
+    The weeks that the load treats as provisional are never loaded, so they never appear here. Columns: ``horizonte``,
+    ``id_semana_objetivo``, ``p`` (probability), ``casos_estimados``, ``brote`` and ``casos`` (observed)."""
+    query = select(Prediction.horizonte, Prediction.id_semana_objetivo, Prediction.probabilidad_brote,
+                   Prediction.casos_estimados, WeeklyObservation.brote, WeeklyObservation.casos_dengue,
+                   Run.detalle).join(
         Run, Run.id_ejecucion == Prediction.id_ejecucion).join(
         WeeklyObservation, (WeeklyObservation.ubigeo == Prediction.ubigeo)
         & (WeeklyObservation.id_semana == Prediction.id_semana_objetivo)).where(
         Prediction.estado == "disponible", WeeklyObservation.brote.is_not(None))
     rows = [row for row in sesion.execute(query).all() if (row.detalle or {}).get("origen") == ORIGIN]
-    frame = pd.DataFrame(rows, columns=["horizonte", "p", "casos_estimados", "brote", "casos", "detalle"])
+    return pd.DataFrame(rows, columns=["horizonte", "id_semana_objetivo", "p", "casos_estimados", "brote", "casos",
+                                       "detalle"]).drop(columns="detalle")
+
+
+def prospective_scores(sesion):
+    """Per horizon: ``n``, observed outbreaks, the sum of the probabilities, Brier and MAE of the cases.
+
+    It takes ``prospective_frame``. It interprets nothing and sets no threshold (the drift review is
+    ``denguekay.serving.drift``)."""
+    frame = prospective_frame(sesion)
     scores = {}
     for horizon in HORIZONS:
         part = frame[frame.horizonte.eq(horizon)]

@@ -95,7 +95,10 @@ class TestParametrosYAlmacenamiento(unittest.TestCase):
             try:
                 with transaction(motor) as s:
                     self.assertEqual(parametros.risk_cutoffs(s), CORTES)
-                    self.assertEqual(parametros.acceptance_criteria(s), CRITERIOS)
+                    # Valores de la US v1.4 que fija la migración 0009_v4 (HU0007-4).
+                    self.assertEqual(parametros.acceptance_criteria(s), {
+                        "bloques": ["temporadas_2022_2026"], "recall_minimo": 0.65, "precision_minima": 0.6,
+                        "f1_minimo": 0.7, "proporcion_error_persistencia": 0.9})
                     self.assertEqual((parametros.default_horizon(s), parametros.interval_level(s)), (4, 0.80))
                     for clave, valor, funcion in (("nivel_intervalo_casos", {"nivel": 1.2}, parametros.interval_level),
                                                   ("horizonte_por_defecto", {"horizonte": 7}, parametros.default_horizon)):

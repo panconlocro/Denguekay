@@ -23,10 +23,11 @@ from denguekay.db.settings import InvalidDatabaseSettings
 from denguekay.db.models import (District, Nino12Observation, Run, WeeklyObservation, Province,
                             EpiWeek, utc_now)
 from denguekay.db.session import make_engine, transaction, upsert
+from denguekay.serving.geometries import read_boundaries
 from denguekay.data.processing.weekly_aggregation import clean_names_for_join
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.keys import normalize
-from denguekay.config.paths import (DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL,
+from denguekay.config.paths import (DISTRICT_BOUNDARIES, DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL,
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
 # Version of this transformation; part of the ingestion fingerprint. 3: humidity is no longer rounded (M5).
@@ -60,7 +61,7 @@ def source_hashes():
     """Fingerprint of every input used, without storing credentials."""
     from denguekay.features.climate import era5_land_silver
 
-    sources = [UBIGEO_CATALOG, DISTRICT_COORDS, SILVER_INTEGRATED,
+    sources = [UBIGEO_CATALOG, DISTRICT_COORDS, DISTRICT_BOUNDARIES, SILVER_INTEGRATED,
                SILVER_INTEGRATED.with_suffix(".coverage.csv"), SILVER_EPI_HISTORICAL,
                SILVER_SALA, GOLD_MANIFEST, era5_land_silver()]
     sources.append(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv")
@@ -68,8 +69,11 @@ def source_hashes():
             hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
 
 
-def prepare_districts(catalog, coordinates, population_2017):
-    """Relate centroids to UBIGEO with the join already used in silver."""
+def prepare_districts(catalog, coordinates, population_2017, geometries=None):
+    """Relate centroids to UBIGEO with the join already used in silver.
+
+    ``geometries`` ({ubigeo: Polygon or MultiPolygon}, from ``serving.geometries.read_boundaries``) adds each district's
+    outline; without it the records carry no ``geometria`` key, so a load never erases a stored outline."""
     if catalog.ubigeo.duplicated().any() or not catalog.ubigeo.str.fullmatch(r"[0-9]{6}").all():
         raise ValueError("El catálogo debe contener UBIGEO únicos de seis dígitos")
     cat = clean_names_for_join(catalog)
@@ -83,6 +87,8 @@ def prepare_districts(catalog, coordinates, population_2017):
                       validate="one_to_one", indicator=True)
     if not join._merge.eq("both").all():
         raise ValueError("El catálogo y los centroides no contienen los mismos distritos")
+    if geometries is not None and not set(geometries) <= set(join.ubigeo):
+        raise ValueError("Los límites distritales traen UBIGEO que no están en el catálogo")
     provinces, districts = {}, []
     for row in join.itertuples():
         if not (math.isfinite(row.lat) and math.isfinite(row.lon)
@@ -95,7 +101,8 @@ def prepare_districts(catalog, coordinates, population_2017):
         districts.append({"ubigeo": row.ubigeo, "ubigeo_provincia": code, "nombre": row.distrito,
                           "latitud": round(float(row.lat), 6), "longitud": round(float(row.lon), 6),
                           "poblacion_censo_2017": None if population is None else int(population),
-                          "activo": True})
+                          "activo": True,
+                          **({} if geometries is None else {"geometria": geometries.get(row.ubigeo)})})
     return ([{"ubigeo_provincia": c, "nombre": n} for c, n in sorted(provinces.items())],
             sorted(districts, key=lambda r: r["ubigeo"]))
 
@@ -197,9 +204,10 @@ def prepare_observations(silver, coverage, gold, sala, era5_land=None):
     return result, cutoff
 
 
-def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation, era5_land=None):
+def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation, era5_land=None,
+                        geometries=None):
     """Build the whole batch; kept apart from file reading so it can be tested with fixtures."""
-    provinces, districts = prepare_districts(catalog, coordinates, census_population_2017(silver))
+    provinces, districts = prepare_districts(catalog, coordinates, census_population_2017(silver), geometries)
     observations, cutoff = prepare_observations(silver, coverage, gold, sala, era5_land)
     known = {d["ubigeo"] for d in districts}
     if not {o["ubigeo"] for o in observations} <= known:
@@ -230,7 +238,7 @@ def prepare_load():
         load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS), silver,
         pd.read_csv(SILVER_INTEGRATED.with_suffix(".coverage.csv"), dtype={"ubigeo": "string"}),
         gold, pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}), hashes, quality,
-        era5_land=era5_land_weekly(era5_land_silver(), silver))
+        era5_land=era5_land_weekly(era5_land_silver(), silver), geometries=read_boundaries())
     if hashes != source_hashes():
         raise ValueError("Las fuentes cambiaron durante la validación; vuelva a ejecutar la carga")
     return data

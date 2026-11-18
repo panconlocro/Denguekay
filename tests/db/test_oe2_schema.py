@@ -153,8 +153,9 @@ class EsquemaOE2:
     def test_semillas_de_parametros(self):
         with transaction(self.motor) as s:
             valores = {p.clave: p.valor for p in s.scalars(select(SystemParameter))}
-        # Semillas del DDL (0003_oe2), el horizonte por defecto (0004_v1), el nivel del intervalo (0005_v1) y la
-        # fila vacía de la selección experimental (0006_v1: la fija la publicación, sin datos de modelos).
+        # Semillas del DDL (0003_oe2), el horizonte por defecto (0004_v1), el nivel del intervalo (0005_v1), la
+        # fila vacía de la selección experimental (0006_v1: la fija la publicación, sin datos de modelos) y los
+        # umbrales de la US v1.4 (0009_v4).
         self.assertEqual(set(valores), {"regla_brote", "cortes_riesgo", "umbrales_aceptacion", "horizonte_por_defecto",
                                         "nivel_intervalo_casos", "seleccion_experimental"})
         self.assertEqual(valores["seleccion_experimental"], {})
@@ -162,8 +163,8 @@ class EsquemaOE2:
         self.assertEqual(valores["nivel_intervalo_casos"], {"nivel": 0.80})
         self.assertEqual(valores["regla_brote"], {"anios_previos": 5, "k_desviaciones": 1.5, "minimo_casos": 2})
         self.assertEqual(valores["cortes_riesgo"], {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75})
-        self.assertEqual(valores["umbrales_aceptacion"]["bloque"], "temporada_2024")
-        self.assertEqual(valores["umbrales_aceptacion"]["razon_error_base"], 0.85)
+        self.assertEqual(valores["umbrales_aceptacion"], {"recall": 0.65, "precision": 0.60, "f1": 0.70,
+                                                          "razon_error_base": 0.90, "bloque": "temporadas_2022_2026"})
 
     # --- CHECK, uno por caso inválido --------------------------------------
 

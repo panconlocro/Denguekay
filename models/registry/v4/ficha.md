@@ -57,3 +57,42 @@ de 1 × 10⁻¹² por celda.
 | macOS ARM64 | `63148b7144eebe74` |
 | Linux x86-64 | `3797b7a853fd8405` |
 | Windows x86-64 | `bd86c94d68f008d0` |
+
+## Aceptación (HU0007-4, US v1.4)
+
+Evaluación retrospectiva fuera de muestra por bloques de temporada: las semanas distritales de `temporada_2022` a
+`temporada_2026` (16 965 filas por horizonte, 2 478 semanas elevadas) se agregan en el bloque `temporadas_2022_2026`,
+con las predicciones archivadas de **una sola semilla** (17; el paquete trae boosters de cinco semillas pero un único
+archivo de predicciones, así que no se midió la variación entre semillas) (`oos_b3_s17.csv.gz` del paquete congelado, calculadas igual que los
+bloques por temporada de `demo_b3_v4.archived_predictions`).
+
+Umbrales (migración `0009_v4`, `parametro_sistema.umbrales_aceptacion`): clasificador con Recall ≥ 0,65, Precision ≥ 0,60
+y F1 ≥ 0,70 con p ≥ 0,50; regresor con MAE y RMSE ≤ 90 % de los de la persistencia. Un horizonte es operativo solo si
+ambas tareas cumplen.
+
+| h | Recall | Precision | F1 | MAE / persistencia | RMSE / persistencia | Cumple |
+|---|---|---|---|---|---|---|
+| 2 | 0,769 | 0,824 | 0,795 | 0,868 | 0,861 | sí |
+| 3 | 0,723 | 0,827 | 0,772 | 0,824 | 0,819 | sí |
+| 4 | 0,666 | 0,820 | 0,735 | 0,806 | 0,787 | sí |
+
+**Cómo leerlo.** Los umbrales se revisaron el 17/11/2026, **después de ver los resultados** de la V4 (antes eran
+Recall ≥ 0,80, razón ≥ 0,85 y el bloque `temporada_2024`). Por eso este cumplimiento es retrospectivo y no es una
+evaluación independiente: la evaluación independiente es la prospectiva 2026-27 (emisiones semanales archivadas por
+`v4_weekly`). El cumplimiento del agregado descansa en las temporadas 2022 a 2024, que reúnen el 94 % de las semanas elevadas
+del bloque (2 335 de 2 478); las de 2025 y 2026 suman 143. Revisión independiente de las cifras (17/11/2026), por
+temporada individual (informativo, p ≥ 0,50, h2 / h3 / h4):
+
+| Temporada | Recall | F1 | MAE / persistencia |
+|---|---|---|---|
+| 2022 | 0,617 / 0,529 / 0,446 | 0,695 / 0,643 / 0,582 | 0,887 / 0,820 / 0,776 |
+| 2023 | 0,816 / 0,752 / 0,700 | 0,854 / 0,826 / 0,799 | 0,792 / 0,735 / 0,712 |
+| 2024 | 0,834 / 0,829 / 0,788 | 0,807 / 0,798 / 0,771 | 0,948 / 0,933 / 0,921 |
+| 2025 | 0,526 / 0,561 / 0,456 | 0,508 / 0,538 / 0,426 | 1,282 / 1,471 / 1,727 |
+| 2026 | 0,512 / 0,442 / 0,314 | 0,638 / 0,580 / 0,439 | 1,100 / 1,135 / 1,136 |
+
+Solo 2023 cumple todos los umbrales por sí sola; 2025 y 2026 no los cumplen (en 2025 el modelo es peor que la
+persistencia). Sin 2023 el agregado falla la razón de error en los tres horizontes. El margen del h4 es corto
+(Recall 0,666 frente a 0,65). Por eso «validado» significa aquí **«cumple los umbrales, de forma retrospectiva y con una
+semilla»**: no se generaliza ni se lee como efecto causal. La v3 y las anteriores no traen el bloque agregado y quedan
+`experimental`. El detalle por temporada sigue en las métricas de cada versión.

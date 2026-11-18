@@ -13,6 +13,17 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
 
+## 2026-11-17 · Umbrales de aceptación de la US v1.4 (HU0007-4)
+
+- La migración `0009_v4` fija `parametro_sistema.umbrales_aceptacion` en Recall ≥ 0,65, Precision ≥ 0,60, F1 ≥ 0,70 y
+  razón de error ≤ 0,90 sobre el bloque `temporadas_2022_2026` (semanas distritales de `temporada_2022` a
+  `temporada_2026` agregadas). Las métricas de cada versión V4 llevan ese bloque.
+- Con esos umbrales las seis versiones de la V4 (clasificación y regresión en h2, h3 y h4) quedan `validado` (retrospectivo,
+  una semilla; el agregado descansa en las temporadas 2022–2024); v0 a v3
+  no traen el bloque y quedan `experimental`. Los umbrales se revisaron **después de ver los resultados**; la evaluación
+  independiente es la prospectiva 2026-27. No cambia el modelo ni sus boosters.
+- Detalle y cifras: [v4/ficha.md](v4/ficha.md#aceptación-hu0007-4-us-v14).
+
 ## 2026-11-17 · Actualización semanal de la V4
 
 - `python -m denguekay.pipelines.v4_weekly` actualiza cada semana las fuentes que cambian (Sala Situacional, ERA5-Land,

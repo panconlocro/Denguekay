@@ -253,7 +253,7 @@ def legend(cutoffs):
 
 
 def risk_map(session, horizon, servir_no_validadas):
-    """GeoJSON of centroids (Point): the project reference has no polygons yet (decision C4)."""
+    """GeoJSON of the districts: the stored Polygon or MultiPolygon (HU0014-1) and, if a district has none, its centroid (Point)."""
     cutoff, dtos = current_predictions(session, horizon)
     by_ubigeo = {p["ubigeo"]: p for p in dtos}
     general_reason = no_prediction_reason(session, horizon, servir_no_validadas) if not dtos else None
@@ -262,7 +262,7 @@ def risk_map(session, horizon, servir_no_validadas):
     for d in session.scalars(select(District).where(District.activo.is_(True)).order_by(District.ubigeo)):
         p = by_ubigeo.get(d.ubigeo)
         features.append({"type": "Feature", "id": d.ubigeo,
-            "geometry": {"type": "Point", "coordinates": [d.longitud, d.latitud]},
+            "geometry": d.geometria or {"type": "Point", "coordinates": [d.longitud, d.latitud]},
             "properties": {"ubigeo": d.ubigeo, "distrito": d.nombre, "provincia": d.provincia.nombre,
                            "estado": p["estado"] if p else "no_disponible",
                            "nivel_riesgo": p["nivel_riesgo"] if p else None,

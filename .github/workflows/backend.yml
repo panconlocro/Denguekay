@@ -18,7 +18,8 @@ jobs:
   pruebas:
     name: Python 3.12 / ${{ matrix.sistema }}
     runs-on: ${{ matrix.sistema }}
-    timeout-minutes: 20
+    # La suite completa tarda más de 20 min en Windows (develop ya agotaba ese límite); 45 deja margen.
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:

@@ -77,4 +77,4 @@ sequenceDiagram
 
 - Corte de datos publicado: 27/12/2025; sin actualización automática ni scheduler.
 - Ninguna versión cumple los umbrales: la demo sirve predicciones `experimental: true`.
-- El mapa usa centroides; no hay polígonos en la referencia del proyecto.
+- El mapa usa los límites distritales (`distrito.geometria`, migración `0010_v4`) y, si a un distrito le falta, su centroide.

@@ -116,6 +116,8 @@ class District(WithUbigeo, Base):
     longitud: Mapped[float] = mapped_column(Numeric(9, 6, asdecimal=False))
     poblacion_censo_2017: Mapped[int | None] = mapped_column(Integer)
     activo: Mapped[bool] = mapped_column(Boolean, default=True, server_default=text("true"))
+    # Extension (0010_v4, HU0014-1): simplified Polygon or MultiPolygon of the district; NULL falls back to the centroid.
+    geometria: Mapped[dict | None] = mapped_column(JSONB_PORTABLE, nullable=True)
     provincia: Mapped[Province] = relationship()
 
 
@@ -343,7 +345,8 @@ INITIAL_PARAMETERS = (
      "valor": {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75},
      "descripcion": "Cortes de probabilidad para el nivel de riesgo"},
     {"clave": "umbrales_aceptacion",
-     "valor": {"recall": 0.80, "precision": 0.60, "f1": 0.70, "razon_error_base": 0.85,
-               "bloque": "temporada_2024"},
+     # Migration 0009_v4 sets the US v1.4 values (HU0007-4); the DDL seed of 0003_oe2 stays in that migration.
+     "valor": {"recall": 0.65, "precision": 0.60, "f1": 0.70, "razon_error_base": 0.90,
+               "bloque": "temporadas_2022_2026"},
      "descripcion": "Criterios para promover un modelo"},
 )
