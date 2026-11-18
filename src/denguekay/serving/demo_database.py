@@ -4,7 +4,7 @@
 
 - ``denguekay_demo.sqlite``: SQLite migrated to head (Alembic) with the real aggregated data of Piura
   (cases and climate per district and week, no personal data), loaded and published with the same
-  ``publish`` as the local backend (the configured package, today v2 with h=2, 3 and 4: model versions
+  ``publish`` as the local backend (V3 with h=2, 3 and 4: model versions
   and OOS predictions), its experimental selection (``publish --seleccionar-experimental``) and the
   current inference (``publish --inferir``);
 - ``storage/``: the model artifacts that the published versions point to;
@@ -17,6 +17,7 @@ shared outside Git (Drive or a Release).
 
 import argparse
 from contextlib import contextmanager
+from dataclasses import replace as replace_config
 import json
 import os
 from pathlib import Path
@@ -75,7 +76,11 @@ def build(destination=DEMO_DIR, replace=False, *, package_v4=None):
         with tracking_store(folder):
             storage = LocalStorage(folder / "storage")
             if frozen is None:
-                summary = publish(engine, storage=storage, run_inference=True, select_experimental=True)
+                from denguekay.serving.settings import service_settings
+
+                cfg = replace_config(service_settings(), paquete={"tipo": "v3_l5a_d3", "horizontes": [2, 3, 4],
+                                                           "opciones": {"configuracion": "v3", "nivel_intervalo": 0.80}})
+                summary = publish(engine, cfg=cfg, storage=storage, run_inference=True, select_experimental=True)
             else:
                 from denguekay.serving.demo_b3_v4 import publish_frozen_demo
 

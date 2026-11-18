@@ -106,6 +106,10 @@ test('320px layout and reduced motion remain usable', async ({ page }) => {
   await expect(page.getByRole('searchbox', { name: 'Buscar en la ayuda' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('searchbox', { name: 'Buscar en la ayuda' }).fill('riesgo');
+  await page
+    .getByRole('navigation', { name: 'Temas de ayuda' })
+    .getByRole('button', { name: 'Riesgo y leyenda', exact: true })
+    .click();
   await expect(page.locator('.help-live-legend')).toBeVisible();
 });
 

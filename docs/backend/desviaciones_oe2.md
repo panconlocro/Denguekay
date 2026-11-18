@@ -28,6 +28,7 @@ Tipos de desviación:
 | — | Persistencia | No es una `version_modelo` (el DDL solo admite `clasificacion` y `regresion`). La línea base se calcula al vuelo: casos de la semana de corte en `observacion_semanal` | Conforme al documento |
 | — | Idempotencia de cargas | La huella va en `ejecucion.detalle->>'huella'`. En PostgreSQL, índice por expresión sobre ese campo para `tipo = 'ingesta'` | Extensión |
 | — | Bloque de validación | La semilla `umbrales_aceptacion` incluye `"bloque": "temporada_2024"`; `cumple_umbrales` se calcula leyendo umbrales y bloque de la BD, no de `config.yaml` | Corrección del documento |
+| — | Umbrales de la US v1.4 (HU0007-4) | La migración `0009_v4` cambia los valores de `umbrales_aceptacion` a recall 0,65, precisión 0,60, F1 0,70, razón 0,90 y el bloque agregado `temporadas_2022_2026` (semanas distritales de las temporadas 2022 a 2026). Se fijaron el 17/11/2026, después de ver los resultados de la V4, por indicación de la US v1.4; la evaluación independiente es la prospectiva 2026-27. No cambia el esquema | Cambio de parámetro (US v1.4) |
 | — | `alerta.motivo` | Se mantiene como columna opcional (nullable) que explica el retiro | Extensión |
 | — | Reproducibilidad del modelo | Una sola columna opcional `version_modelo.reproducibilidad` jsonb con `device`, `version_xgboost`, `plataforma`, `particion_temporal` y fechas de entrenamiento | Extensión |
 | — | `GET /configuracion` (contrato v1, C2; aprobada por Rosa el 29/10/2026) | Extensión de lectura con horizontes disponibles y por defecto, cortes, niveles, leyenda, corte vigente y nota experimental. Nueva clave `parametro_sistema.horizonte_por_defecto` = `{"horizonte": 4}`, sembrada por la migración de solo datos `0004_v1`; si falta, 503 `parametros_no_configurados` | Extensión |
@@ -37,7 +38,7 @@ Tipos de desviación:
 | f′ | Permisos de `rol_pipeline` (D2; aprobada por Rosa el 29/10/2026) | Amplía la decisión f: `rol_pipeline` recibe además INSERT y UPDATE en `prediccion` (migración `0005_v1`) para las predicciones OOS de cada paquete. La inferencia vigente la hace la API (`rol_api`), no la publicación | Corrección del documento |
 | — | Paquete de modelo (M2; aprobada por Rosa el 29/10/2026) | `version_modelo.ruta_artefacto` apunta al manifiesto `modelos/<codigo_paquete>/manifest.json` y `sha256_artefacto` es su SHA-256. El manifiesto declara el tipo de predictor, horizontes, variables, nivel del intervalo y el SHA-256 de cada archivo; la inferencia verifica todos al cargar (409 `artefacto_invalido`). Sin columnas nuevas | Extensión (uso) |
 | — | Versión del contrato (C5) | `info.version` del OpenAPI = versión del contrato (semver; `1.1.0` desde la fase 4), cabecera `X-Version-Contrato` en todas las respuestas; `version_api` de `/salud` sigue siendo la versión de la aplicación | Extensión |
-| — | Geometría del mapa (C4) | El contrato admite `Point`, `Polygon` y `MultiPolygon`; hoy se sirven centroides (`Point`) | Conforme al documento |
+| — | Geometría del mapa (C4, HU0014-1) | El contrato admite `Point`, `Polygon` y `MultiPolygon`. Desde la migración `0010_v4` el endpoint sirve el `Polygon` o `MultiPolygon` de cada distrito y, si falta, su centroide (`Point`). Columna nueva `distrito.geometria` (JSON anulable; JSONB en PostgreSQL), cargada por `--inicial` y `load_data` desde `data/reference/distritos_piura_limites.geojson` con una simplificación de Douglas-Peucker de 0,0005° y 5 decimales (de unos 2,4 MB a unos 0,2 MB; no sirve para medir áreas). **Fuente y licencia:** Instituto Geográfico Nacional (IGN) del Perú, publicado por OCHA en HDX (COD-AB de Perú, https://data.humdata.org/dataset/cod-ab-per), CC BY-IGO 3.0: permite redistribuir con atribución, que el mapa muestra. La licencia se comprueba contra el paquete de HDX al descargar (`district_boundaries.py`); GADM no se usa porque no permite redistribuir. **Riesgo:** su publicación en un servicio desplegado se decide antes del despliegue; no se desplegó nada. El OpenAPI exportado no cambia (su descripción de `Feature.geometry` y del endpoint sigue diciendo «hoy Point»; se corrige en el próximo cambio de versión menor del contrato). La atribución viaja en la interfaz y en estos documentos, no dentro del GeoJSON versionado | Extensión |
 
 ## 2. Observaciones de datos (no son desviaciones de diseño)
 
@@ -55,7 +56,7 @@ Tipos de desviación:
   (`research/02_feature_engineering/docs/fase5_sociodemografia.md`).
 - **Regla de brote, cortes y umbrales.** Los valores del manifiesto gold y de `config.yaml`
   (1,5 DE, 5 años, mínimo 2 casos; cortes 0,25/0,50/0,75; recall 0,80, precisión 0,60,
-  F1 0,70, razón 0,85) coinciden con las semillas del DDL.
+  F1 0,70, razón 0,85) coinciden con las semillas del DDL. La migración `0009_v4` reemplaza después los umbrales por los de la US v1.4 (recall 0,65, razón 0,90, bloque `temporadas_2022_2026`).
 - **Claves OOS.** En el CSV del protocolo no se repite ningún `(ubigeo, origen_cierre)` entre
   bloques del mismo horizonte y variante; las OOS caben en la clave única de `prediccion`.
 - **Variables de servicio.** Las variantes en uso (`base_6`, `base_6_poblacion_2017`) solo
@@ -189,8 +190,8 @@ Elecciones simples registradas sin consulta (modo de trabajo acordado):
 - **h=3** (nota histórica de TB1; desviación retirada en la fase 4 de la API v1, cuando la v2 sirve h=3):
   las lecturas respondían 200 con `disponible: false` y motivo «sin modelo para h=3» (listas vacías; en el mapa,
   todos los distritos «Sin datos»); `POST /admin/inferencias` con h=3 respondía 409.
-- **`/mapa-riesgo`:** GeoJSON `FeatureCollection` con un `Point` (centroide) por distrito; la
-  referencia del proyecto no tiene polígonos, así que el bucket `geodatos` no se usa en TB1.
+- **`/mapa-riesgo`:** GeoJSON `FeatureCollection` con un `Point` (centroide) por distrito en TB1; desde la `0010_v4`
+  devuelve el polígono si el distrito lo tiene (ver la fila «Geometría del mapa»). El bucket `geodatos` sigue sin usarse.
   Metadatos (horizonte, cortes, leyenda, `experimental`) van como miembros extra (RFC 7946).
 - **`/modelos/activo`:** devuelve la versión en uso por tarea y horizonte: la `activa` o, en su
   defecto, la de `seleccion_experimental`, con `seleccion` y `experimental`.
@@ -259,8 +260,8 @@ API (Tabla 2):
 11. Campo calculado `experimental` en predicciones, alertas, tablero y modelos. Un horizonte sin modelo
     responde `no_disponible` («sin modelo para h=N») en lecturas y 409 en la inferencia; con la v2 los tres
     horizontes del documento tienen modelo (la desviación de h=3 se retiró en la fase 4).
-12. `/mapa-riesgo` devuelve centroides (`Point`), no polígonos; el contrato admite `Point`, `Polygon` y
-    `MultiPolygon` (C4).
+12. `/mapa-riesgo` devolvía centroides (`Point`); desde la `0010_v4` devuelve el polígono de cada distrito y, si falta,
+    el centroide; el contrato admite `Point`, `Polygon` y `MultiPolygon` (C4).
 12b. **Endpoint `GET /configuracion`** (C2): horizontes disponibles (leídos de la BD) y por defecto, cortes y
     niveles de riesgo, leyenda, corte vigente y nota experimental; 503 `parametros_no_configurados` si falta
     `horizonte_por_defecto`.
@@ -338,3 +339,15 @@ La tabla siguiente es la propuesta original:
 |---|---|---|
 | Columna nueva `observacion_semanal.temp_media_era5_land_c` | La v3 usa la temperatura media semanal de ERA5-Land (d3: semana del origen y medias de o−1..o−4, o−5..o−8 y o−9..o−12). La de `temp_media_c` es la de Open-Meteo sin modelo fijado y la siguen usando la v0 y la v2: no se toca. La columna nueva es anulable, `double precision` (reproduce el silver sin redondear) y tiene un CHECK de rango físico (−20 a 50 °C). Migración `0007_v3`; la llena `load_data` desde `data/silver/meteo_humedad_era5_land_desde_2000.csv` (o el silver congelado de la v3). | Extensión (columna) |
 | Entrenamiento de la v3 fuera de la BD | La v3 entrena con la historia desde 2000 (`features.long_history`) y la BD empieza en 2017 (decisión M4). El paquete se ajusta con los silver y la BD solo da los insumos de inferencia (casos desde 2017, temperatura de las 13 semanas hasta el origen y la regla de brote). Comprobado: el umbral necesita los 5 años previos al año objetivo, la temporada anterior unas 104 semanas y las semanas desde el último caso 52, todo cubierto para objetivos desde 2022. | Uso (sin cambio de esquema) |
+
+## 10. Datos semanales para el predictor V4 B3
+
+La migración `0008_v4` amplía `observacion_semanal` con la marca de casos confirmados y valores
+semanales de humedad ERA5-Land y precipitación CHIRPS a precisión completa. Guarda las fechas de
+disponibilidad de ERA5-Land y CHIRPS. `observacion_nino12` contiene la anomalía regional mensual
+y su fecha de disponibilidad. En PostgreSQL, la API tiene acceso de lectura y el pipeline
+puede insertar y actualizar los registros. El cálculo de las ventanas se hace en memoria.
+
+La migración `0011_v4` concede `INSERT` y `UPDATE` en `alerta` a `rol_pipeline` en PostgreSQL.
+La actualización semanal usa ese rol para generar y retirar alertas en la misma transacción que
+la carga y la inferencia. La política RLS `servicio_alerta` ya incluye a ambos roles de servicio.

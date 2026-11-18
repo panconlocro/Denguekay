@@ -42,6 +42,20 @@ variable vacía se ignora. Plantilla sin secretos: `.env.example`.
 | `DENGUEKAY_XGB_DEVICE`, `DENGUEKAY_XGB_NJOBS` | XGBoost en CPU con un hilo | `cpu`, `1` |
 | `PYTHON_VERSION` | Versión de Python en Render (debe ser completa, p. ej. `3.12.10`) | `3.12.10` |
 
+### Secrets de GitHub Actions (actualización semanal y deriva mensual)
+
+Los workflows `.github/workflows/weekly_v4.yml` y `drift_monthly.yml` leen estos secrets del repositorio (Settings →
+Secrets and variables → Actions). Sin ellos terminan con un aviso, sin fallar; se cargan al desplegar.
+
+| Secret | Uso | Quién lo usa |
+|---|---|---|
+| `DATABASE_URL` | Conexión de la BD de producción con el usuario `denguekay_pipeline` (carga y publica; no es el de la API) | actualización semanal y deriva |
+| `SUPABASE_URL` | `https://<ref>.supabase.co` del Storage donde está el paquete publicado y donde se archivan las emisiones | actualización semanal |
+| `SUPABASE_SECRET_KEY` | Clave secreta del proyecto | actualización semanal |
+
+`STORAGE_BACKEND=supabase` no es secreto: lo fija el workflow. Ninguna fuente de datos pide clave. Detalle en
+`docs/backend/operacion.md`.
+
 ## 3. Render (API)
 
 ### Lo que permite el plan gratuito (verificado)
@@ -157,6 +171,7 @@ BD, su Storage y sus claves. **No verificado:** cuántos proyectos gratuitos per
    ```
 
    `DATABASE_URL` de Render usa `denguekay_api`. Las cargas y publicaciones desde la PC usan `denguekay_pipeline`.
+   La migración `0011_v4` habilita a `rol_pipeline` para insertar y actualizar alertas durante la emisión semanal.
    Las migraciones las corre Rosa desde la PC con el dueño del esquema (sección 3). `rol_api` no puede ejecutar DDL
    ni leer `alembic_version`, y Render no tiene otra credencial.
 3. **API REST automática de Supabase (hipótesis D2, verificada en parte):**
@@ -171,22 +186,40 @@ BD, su Storage y sus claves. **No verificado:** cuántos proyectos gratuitos per
 
 ### Datos y modelo
 
-Desde la PC de Rosa:
+La publicación de V4 registra el booster congelado de **B3, semilla 17**. La inferencia usa
+casos confirmados, latitud, longitud, elevación, temperatura y humedad ERA5-Land, precipitación CHIRPS
+y Niño 1+2. La geografía fija viene del paquete; la API consulta las observaciones de la BD al corte.
 
-1. Migrar (`alembic upgrade head`, incluye `0007_v3`: temperatura de ERA5-Land).
-2. Regenerar gold con el notebook 10 (gold trae d3 desde la v3).
-3. Cargar con `.\.venv\Scripts\python -m denguekay.serving.load_data`, con `DATABASE_URL` de `denguekay_pipeline`.
-   Necesita el silver de ERA5-Land (`meteo_humedad_era5_land_desde_2000.csv` del notebook 03 o el congelado del
-   Release de `model/v3`).
-4. Publicar con `python -m denguekay.serving.publish --seleccionar-experimental`, con `STORAGE_BACKEND=supabase`,
-   `SUPABASE_URL` y `SUPABASE_SECRET_KEY`.
-   - Desde la v3 el paquete se entrena fuera de la BD con la serie desde 2000 y las predicciones congeladas del
-     Release (`release_bundles --version v3`).
-   - Conviene publicar desde una PC con GPU NVIDIA: la paridad con la v3 congelada se exige en GPU. En CPU se
-     registra pero no bloquea, y el booster es otra realización del mismo modelo.
-   - La inferencia en Render es en CPU con el booster guardado.
-3. Para las predicciones vigentes, llamar a `POST /api/v1/admin/inferencias` en la API de Render (D2), con
-   `X-API-Key`.
+1. Antes de desplegar el código, el dueño del esquema aplica `alembic upgrade head` a la BD de
+   producción. La migración `0008_v4` agrega datos crudos y fechas de disponibilidad de B3,
+   además de la serie mensual Niño 1+2. La `0010_v4` agrega `distrito.geometria` (los polígonos se llenan en la siguiente carga) y la `0009_v4` solo cambia los valores de `umbrales_aceptacion` (US v1.4);
+   después de migrar, republica el paquete (`publish --seleccionar-experimental`) para recalcular `cumple_umbrales`.
+2. En la PC de publicación, instala las dependencias y descarga
+   `python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip modelo_v4.zip`.
+   Si ya hay archivos de otra versión, usa un clon dedicado para conservarlos.
+3. Los silver operativos los escribe `python -m denguekay.pipelines.v4_weekly` en `data/silver/operativo/`, sin el
+   recorte de la V4 congelada, y `configs/config.yaml` ya apunta a ellos: `perfil_datos: fuentes` (valida el panel y su
+   cobertura sin depender del gold) y las opciones `sala`, `era5_land`, `chirps` y `nino12`. La copia congelada de
+   `data/silver/` no cambia ([operación](operacion.md#actualización-semanal-v4)). El perfil `release` lee los
+   archivos con los nombres del Release y valida su linaje con el gold h2 y su manifiesto; sirve para reproducir la V4
+   con el [pipeline de V4](../reproducibilidad.md#v4-con-confirmados).
+   La carga excluye las últimas dos semanas publicadas en Sala por
+   defecto, según `semanas_provisionales`. El cálculo al corte usa la fecha registrada por CHIRPS,
+   el día de disponibilidad de cada mes de Niño y la fecha de ERA5-Land cuando está en el CSV
+   (si falta la columna, semana meteorológica más siete días desde el cierre).
+4. Con el rol `denguekay_pipeline` y Storage de Supabase, ejecuta
+   `python -m denguekay.serving.publish --seleccionar-experimental`. La publicación registra las
+   versiones a partir de sus métricas archivadas y de los umbrales vigentes en la BD. Si se
+   aprueba un cambio de umbrales, vuelve a publicar para que el registro refleje ese cambio.
+5. Para activar una pareja que cumple los criterios, usa `POST /api/v1/admin/modelos/{version}/activar`.
+   Luego ejecuta `POST /api/v1/admin/inferencias` para h2, h3 y h4 y verifica las versiones y el
+   corte con `GET /api/v1/modelos/activo` y `GET /api/v1/predicciones?horizonte=4`.
+   La selección experimental se usa cuando no hay versiones activas y Render admite
+   `SERVIR_NO_VALIDADAS=true`. Una pareja activa tiene prioridad.
+6. Cada semana, ejecuta `python -m denguekay.pipelines.v4_weekly`: actualiza los silver operativos, carga las
+   observaciones nuevas y emite h2, h3 y h4 con el mismo booster publicado, en una sola transacción y con cada emisión
+   archivada (la primera corrida en una BD nueva usa `--inicial`; la programación está en la
+   [operación](operacion.md#actualización-semanal-v4)).
 
 ### Storage
 
@@ -214,12 +247,12 @@ Desde la PC de Rosa:
 
 ## 5. Vercel (frontend)
 
-El frontend (`apps/web/`) todavía es un plan, así que estos pasos son para cuando exista:
+El frontend React y Vite vive en `apps/web/`. Su `vercel.json` permite abrir y recargar las rutas de la SPA.
 
-1. *New Project* → el repositorio → **Root Directory** `apps/web` → variables de entorno con la URL de la API de
-   Render (el nombre de la variable lo define Nicolás en `apps/web`).
-2. Rama de producción: Vercel elige `main` por defecto. Cada push a otra rama crea un *preview deployment* con su
-   propio dominio.
+1. *New Project* → el repositorio → **Root Directory** `apps/web` → preset **Vite**, build `npm run build`
+   y salida `dist`. Definir `VITE_API_BASE_URL=https://<api>.onrender.com/api/v1` y `VITE_DATA_SOURCE=api`.
+2. Seleccionar explícitamente `main` como rama de producción. Las demás ramas generan *preview deployments*
+   con sus propios dominios.
 3. `CORS_ORIGINS` en Render debe incluir el dominio de producción de Vercel, exacto y sin barra final. Los dominios
    de *preview* cambian por rama y no tienen comodín en la API (`*` se rechaza). Para probar un *preview* contra la
    API de producción, hay que agregar su dominio a mano. Otra opción: un *preview* apunta a una API local.

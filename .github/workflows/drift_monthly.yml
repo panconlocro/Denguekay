@@ -1,0 +1,64 @@
+name: Monitoreo de deriva mensual
+
+# Compara las semanas cerradas de las emisiones semanales con las métricas de referencia (python -m denguekay.serving.drift)
+# y lo registra como una ejecución de mantenimiento. No reentrena ni cambia el modelo en uso. Sin los secrets (antes del
+# despliegue) termina con un aviso, sin fallar. Detalle: docs/backend/operacion.md.
+
+on:
+  schedule:
+    # El día 1 de cada mes a las 07:00 de Lima (UTC-5) = 12:00 UTC.
+    - cron: "0 12 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: drift-monthly
+  cancel-in-progress: false
+
+jobs:
+  deriva:
+    name: Revisión de deriva
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      MPLBACKEND: Agg
+    steps:
+      - name: Comprobar los secrets
+        id: secretos
+        shell: bash
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "configurados=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Monitoreo de deriva omitido: falta el secret DATABASE_URL. Se configura al desplegar (docs/backend/despliegue.md)."
+            echo "Monitoreo de deriva OMITIDO: falta el secret DATABASE_URL. No se registró ninguna revisión." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "configurados=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v7
+        if: steps.secretos.outputs.configurados == 'true'
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        if: steps.secretos.outputs.configurados == 'true'
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            pyproject.toml
+      - name: Instalar el entorno
+        if: steps.secretos.outputs.configurados == 'true'
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install -e . --no-deps
+      - name: Revisar la deriva y registrarla
+        if: steps.secretos.outputs.configurados == 'true'
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m denguekay.serving.drift | tee deriva.json
+          { echo "### Revisión de deriva"; echo '```json'; cat deriva.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

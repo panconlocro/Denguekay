@@ -10,6 +10,8 @@ from denguekay.data.keys import normalize_sala
 
 KEY = ["ubigeo", "anio", "semana"]
 SALA_FIRST_YEAR = 2025
+DUPLICATE_RULE = ("La Sala no admite claves repetidas: normalize_sala_records y el silver se detienen con error si "
+                  "un distrito o una llave (ubigeo, anio, semana) se repite; nada se suma ni se descarta")
 
 
 def load_ubigeo_catalog(path: Path) -> pd.DataFrame:
@@ -113,8 +115,22 @@ def normalize_sala_records(records: list[dict], controls: list[dict], catalog: p
     return result.sort_values(KEY).reset_index(drop=True)
 
 
-def upsert_sala_silver(path: Path, fresh: pd.DataFrame, *, replace_legacy: bool = False) -> None:
-    """Replace refreshed district-years without mixing different case definitions."""
+def upsert_sala_silver(path: Path, fresh: pd.DataFrame, *, replace_legacy: bool = False,
+                       case_definition: str = "confirmados") -> None:
+    """Replace refreshed district-years without mixing different case definitions.
+
+    ``notificados`` is the upsert of v0-v3 (no ``tipo_dx``): the previous rows and the new ones, one row per
+    district-week, the newest winning."""
+    if case_definition == "notificados":
+        if "tipo_dx" in fresh:
+            raise ValueError("Notified-case Sala silver has no tipo_dx")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.exists():
+            fresh = pd.concat([pd.read_csv(path, dtype={"ubigeo": "string"}), fresh], ignore_index=True)
+        fresh.drop_duplicates(KEY, keep="last").sort_values(KEY).to_csv(path, index=False)
+        return
+    if case_definition != "confirmados":
+        raise ValueError(f"Unknown case definition {case_definition!r}")
     if "tipo_dx" not in fresh or not fresh["tipo_dx"].isin(["C"]).all():
         raise ValueError("Sala silver requires confirmed cases (tipo_dx=C)")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -128,7 +144,7 @@ def upsert_sala_silver(path: Path, fresh: pd.DataFrame, *, replace_legacy: bool 
         elif replace_legacy:
             logging.warning("Replacing legacy Sala silver with confirmed cases: %s", path)
         else:
-            raise ValueError("Sala silver predates confirmed-only extraction; run notebook 06b first")
+            raise ValueError("Sala silver predates confirmed-only extraction; run step 05_bronze_sala of pipelines/notebooks/V4 first")
     if fresh.duplicated(KEY).any():
         raise ValueError("Sala silver contains duplicate district-weeks")
     temporary = None

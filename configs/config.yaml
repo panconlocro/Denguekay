@@ -6,7 +6,8 @@
 drive:
   # ID del archivo de Google Drive (no de la carpeta).
   # Se obtiene del link: drive.google.com/file/d/<ESTE_ID>/view
-  epi_file_id: "1zI83fBig8eyEQI3cDfu709OP1pAjBx1i"  # DatosDengueV2.csv
+  epi_file_id: "1zI83fBig8eyEQI3cDfu709OP1pAjBx1i"  # DatosDengueV2.csv (V4: confirmados)
+  epi_excel_file_id: "1vSPn8SqR4ioz-uDj7HKmem6mgWexin8V"  # PiuraDengue.xlsx (v0-v3: notificados; valor de model/v3)
   socio_file_id: "1x4NoX2vJEs_g3SQyZkfFFwvxTbXO4OBn"
 
 meteo:
@@ -22,17 +23,21 @@ xgboost:
   n_jobs: auto
 
 serving:
-  # Paquete de modelo que construye la publicación (denguekay.serving.predictors): tipo de predictor,
-  # horizontes y opciones propias del tipo. v3_l5a_d3 = modelo v3 (CONFIG_V3: L + 5a + d3, E3 multisalida
-  # S4_s3), entrenado fuera de la BD con la serie desde 2000; nivel_intervalo debe coincidir con
-  # parametro_sistema.nivel_intervalo_casos. La v2 (v2_e3_s4, opciones.configuracion: v2) y la v0
-  # (v0_compact_xgb, opciones: variantes del protocolo compacto) siguen registradas.
+  # B3 congelado (model/v4). El predictor calcula el vector con datos de la BD al corte.
   paquete:
-    tipo: v3_l5a_d3
+    tipo: v4_b3_live
     horizontes: [2, 3, 4]
     opciones:
-      configuracion: v3
-      nivel_intervalo: 0.80
+      # Insumos de la operación semanal: los escribe `python -m denguekay.pipelines.v4_weekly` en
+      # data/silver/operativo/ sin el corte congelado; la copia congelada de data/silver/ no cambia.
+      perfil_datos: fuentes
+      # 0: la operación usa la última semana publicada por la Sala. La V4 se congeló excluyendo las 2 últimas
+      # (el valor por defecto del código); aquí se acepta que el conteo de las semanas más recientes puede ser incompleto.
+      semanas_provisionales: 0
+      sala: data/silver/operativo/epi_sala_semanal.csv
+      era5_land: data/silver/operativo/meteo_humedad_era5_land_desde_2000.csv
+      chirps: data/silver/operativo/precip_chirps_v3_semanal_desde_2000.csv
+      nino12: data/silver/operativo/enso_nino12_mensual.csv
   # Demo experimental (desviación temporal OE2): si no hay versión activa, se sirve la
   # selección de parametro_sistema.seleccion_experimental, que fija la publicación
   # (python -m denguekay.serving.publish --seleccionar-experimental).
@@ -43,5 +48,5 @@ serving:
   almacenamiento: local
   # El entorno reemplaza estos tres valores: CORS_ORIGINS (separados por comas), SERVIR_NO_VALIDADAS
   # y STORAGE_BACKEND (ver .env.example y docs/backend/despliegue.md).
-  # Cortes de riesgo, umbrales de aceptación (bloque temporada_2024) y regla de
+  # Cortes de riesgo, umbrales de aceptación (bloque temporadas_2022_2026 desde la 0009_v4) y regla de
   # brote viven en parametro_sistema; los siembra la migración 0003_oe2.

@@ -8,7 +8,7 @@ recorded as an ``ejecucion`` of type ``ingesta``. It persists no feature enginee
 """
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 import hashlib
 import json
@@ -20,13 +20,14 @@ from sqlalchemy import inspect, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from denguekay.db.settings import InvalidDatabaseSettings
-from denguekay.db.models import (District, Run, WeeklyObservation, Province,
+from denguekay.db.models import (District, Nino12Observation, Run, WeeklyObservation, Province,
                             EpiWeek, utc_now)
 from denguekay.db.session import make_engine, transaction, upsert
+from denguekay.serving.geometries import read_boundaries
 from denguekay.data.processing.weekly_aggregation import clean_names_for_join
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.keys import normalize
-from denguekay.config.paths import (DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL,
+from denguekay.config.paths import (DISTRICT_BOUNDARIES, DISTRICT_COORDS, GOLD, GOLD_MANIFEST, ROOT, SILVER_EPI_HISTORICAL,
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
 # Version of this transformation; part of the ingestion fingerprint. 3: humidity is no longer rounded (M5).
@@ -53,13 +54,14 @@ class LoadBatch:
     hashes: dict
     validacion_gx: dict
     fecha_corte_datos: date
+    nino12: list[dict] = field(default_factory=list)
 
 
 def source_hashes():
     """Fingerprint of every input used, without storing credentials."""
     from denguekay.features.climate import era5_land_silver
 
-    sources = [UBIGEO_CATALOG, DISTRICT_COORDS, SILVER_INTEGRATED,
+    sources = [UBIGEO_CATALOG, DISTRICT_COORDS, DISTRICT_BOUNDARIES, SILVER_INTEGRATED,
                SILVER_INTEGRATED.with_suffix(".coverage.csv"), SILVER_EPI_HISTORICAL,
                SILVER_SALA, GOLD_MANIFEST, era5_land_silver()]
     sources.append(GOLD / f"{SILVER_INTEGRATED.stem}_h2_gold.csv")
@@ -67,8 +69,11 @@ def source_hashes():
             hashlib.sha256(p.read_bytes()).hexdigest() for p in sources}
 
 
-def prepare_districts(catalog, coordinates, population_2017):
-    """Relate centroids to UBIGEO with the join already used in silver."""
+def prepare_districts(catalog, coordinates, population_2017, geometries=None):
+    """Relate centroids to UBIGEO with the join already used in silver.
+
+    ``geometries`` ({ubigeo: Polygon or MultiPolygon}, from ``serving.geometries.read_boundaries``) adds each district's
+    outline; without it the records carry no ``geometria`` key, so a load never erases a stored outline."""
     if catalog.ubigeo.duplicated().any() or not catalog.ubigeo.str.fullmatch(r"[0-9]{6}").all():
         raise ValueError("El catálogo debe contener UBIGEO únicos de seis dígitos")
     cat = clean_names_for_join(catalog)
@@ -82,6 +87,8 @@ def prepare_districts(catalog, coordinates, population_2017):
                       validate="one_to_one", indicator=True)
     if not join._merge.eq("both").all():
         raise ValueError("El catálogo y los centroides no contienen los mismos distritos")
+    if geometries is not None and not set(geometries) <= set(join.ubigeo):
+        raise ValueError("Los límites distritales traen UBIGEO que no están en el catálogo")
     provinces, districts = {}, []
     for row in join.itertuples():
         if not (math.isfinite(row.lat) and math.isfinite(row.lon)
@@ -94,7 +101,8 @@ def prepare_districts(catalog, coordinates, population_2017):
         districts.append({"ubigeo": row.ubigeo, "ubigeo_provincia": code, "nombre": row.distrito,
                           "latitud": round(float(row.lat), 6), "longitud": round(float(row.lon), 6),
                           "poblacion_censo_2017": None if population is None else int(population),
-                          "activo": True})
+                          "activo": True,
+                          **({} if geometries is None else {"geometria": geometries.get(row.ubigeo)})})
     return ([{"ubigeo_provincia": c, "nombre": n} for c, n in sorted(provinces.items())],
             sorted(districts, key=lambda r: r["ubigeo"]))
 
@@ -196,9 +204,10 @@ def prepare_observations(silver, coverage, gold, sala, era5_land=None):
     return result, cutoff
 
 
-def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation, era5_land=None):
+def prepare_from_tables(catalog, coordinates, silver, coverage, gold, sala, hashes, gx_validation, era5_land=None,
+                        geometries=None):
     """Build the whole batch; kept apart from file reading so it can be tested with fixtures."""
-    provinces, districts = prepare_districts(catalog, coordinates, census_population_2017(silver))
+    provinces, districts = prepare_districts(catalog, coordinates, census_population_2017(silver), geometries)
     observations, cutoff = prepare_observations(silver, coverage, gold, sala, era5_land)
     known = {d["ubigeo"] for d in districts}
     if not {o["ubigeo"] for o in observations} <= known:
@@ -229,15 +238,17 @@ def prepare_load():
         load_ubigeo_catalog(UBIGEO_CATALOG), pd.read_csv(DISTRICT_COORDS), silver,
         pd.read_csv(SILVER_INTEGRATED.with_suffix(".coverage.csv"), dtype={"ubigeo": "string"}),
         gold, pd.read_csv(SILVER_SALA, dtype={"ubigeo": "string"}), hashes, quality,
-        era5_land=era5_land_weekly(era5_land_silver(), silver))
+        era5_land=era5_land_weekly(era5_land_silver(), silver), geometries=read_boundaries())
     if hashes != source_hashes():
         raise ValueError("Las fuentes cambiaron durante la validación; vuelva a ejecutar la carga")
     return data
 
 
 def load_fingerprint(data):
-    return hashlib.sha256(json.dumps({"transformacion": TRANSFORMATION, "hashes": data.hashes},
-                                     sort_keys=True).encode("utf-8")).hexdigest()
+    payload = {"transformacion": TRANSFORMATION, "hashes": data.hashes}
+    if data.nino12:
+        payload.update(configuracion="v4", fecha_corte_datos=data.fecha_corte_datos.isoformat())
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode("utf-8")).hexdigest()
 
 
 def existing_ingestion(sesion, fingerprint):
@@ -265,8 +276,11 @@ def persist_load(sesion, data):
     upsert(sesion, District.__table__, data.distritos, ["ubigeo"])
     upsert(sesion, EpiWeek.__table__, data.semanas, ["id_semana"])
     upsert(sesion, WeeklyObservation.__table__,
-           [{**o, "fecha_extraccion": instant, "id_ejecucion": run.id_ejecucion} for o in data.observaciones],
+           [{"casos_solo_confirmados": False, **o, "fecha_extraccion": instant,
+             "id_ejecucion": run.id_ejecucion} for o in data.observaciones],
            ["ubigeo", "id_semana"])
+    if data.nino12:
+        upsert(sesion, Nino12Observation.__table__, data.nino12, ["mes"])
     last = max(o["id_semana"] for o in data.observaciones)
     summary = {"provincias": len(data.provincias), "distritos": len(data.distritos),
                "semanas_calendario": len(data.semanas), "observaciones": len(data.observaciones),
@@ -294,11 +308,11 @@ def require_schema(motor):
         raise ValueError("Faltan tablas del esquema OE2: ejecute alembic upgrade head antes de cargar")
 
 
-def load_data(motor):
+def load_data(motor, *, prepare=prepare_load):
     """Require a migrated database and publish the whole load in a single transaction."""
     require_schema(motor)
     try:
-        data = prepare_load()
+        data = prepare()
     except (ValueError, OSError) as error:
         record_failure(motor, "ingesta", error, {"etapa": "preparacion"})
         raise
@@ -312,11 +326,26 @@ def load_data(motor):
 
 def main(argv=None):
     """CLI without credentials in arguments or error output."""
-    argparse.ArgumentParser(description=__doc__).parse_args(argv)
+    parser = argparse.ArgumentParser(description=__doc__)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--v4", action="store_true", help="Cargar confirmados y fuentes climáticas B3")
+    mode.add_argument("--v3", action="store_true", help="Usar la ruta histórica de carga V3")
+    args = parser.parse_args(argv)
     motor = None
     try:
         motor = make_engine()
-        print(json.dumps(load_data(motor), ensure_ascii=False))
+        from functools import partial
+        from denguekay.serving.settings import service_settings
+
+        cfg = service_settings()
+        prepare = prepare_load
+        if args.v4 or (cfg.tipo_paquete == "v4_b3_live" and not args.v3):
+            from denguekay.serving.predictors import v4_b3_live
+
+            options = cfg.opciones if cfg.tipo_paquete == v4_b3_live.KIND else {}
+            v4_b3_live.validate((2, 3, 4), options)
+            prepare = partial(v4_b3_live.prepare_load, options)
+        print(json.dumps(load_data(motor, prepare=prepare), ensure_ascii=False))
         return 0
     except SQLAlchemyError:
         print("No se pudo completar la carga en la BD; revise conexión, migraciones y permisos", file=sys.stderr)

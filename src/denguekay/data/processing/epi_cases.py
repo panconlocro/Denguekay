@@ -6,6 +6,7 @@ import pandas as pd
 
 from denguekay.config.paths import UBIGEO_CATALOG
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
+from denguekay.data.validation.duplicates import duplicate_key_report
 
 RAW_COLUMNS = ["departamento", "tipo_dx", "ubigeo", "ano", "semana"]
 
@@ -39,12 +40,26 @@ def build_weekly_cases(df_epi_raw: pd.DataFrame) -> pd.DataFrame:
             .rename("casos_Dengue").reset_index().rename(columns={"ano": "anio"}))
 
 
-def deduplicate_cases(df_cases: pd.DataFrame) -> pd.DataFrame:
-    """When a ubigeo-year-week repeats (reported in more than one row), add up the cases."""
-    dup = df_cases.duplicated(subset=["ubigeo", "anio", "semana"], keep=False)
-    print(f"{dup.sum()} filas con ubigeo-año-semana repetido")
+DUPLICATE_RULE = ("Las filas que repiten la llave (ubigeo, anio, semana) se suman en una sola fila; el resultado "
+                  "tiene una fila por llave")
 
-    return (
+
+def deduplicate_cases_with_report(df_cases: pd.DataFrame, source: str = "casos semanales confirmados"):
+    """Add up repeated ubigeo-year-week rows and return ``(cases, control)``.
+
+    ``control`` is the result of the repeated-key control (HU0001-3): which keys repeat and the rule applied."""
+    control = duplicate_key_report(df_cases, source=source, rule=DUPLICATE_RULE)
+    cases = (
         df_cases.groupby(["ubigeo", "anio", "semana"], as_index=False)["casos_Dengue"]
         .sum()
     )
+    return cases, control
+
+
+def deduplicate_cases(df_cases: pd.DataFrame) -> pd.DataFrame:
+    """When a ubigeo-year-week repeats (reported in more than one row), add up the cases.
+
+    It prints the count as before; ``deduplicate_cases_with_report`` also returns the control."""
+    cases, control = deduplicate_cases_with_report(df_cases)
+    print(f"{control['filas_con_llave_repetida']} filas con ubigeo-año-semana repetido")
+    return cases

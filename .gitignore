@@ -1,5 +1,9 @@
 data/bronze/
 data/silver/
+# Silver y gold de las versiones v0-v3 (DENGUEKAY_DATA_DIR=data_anteriores/<vN>); se recuperan del Release
+data_anteriores/
+# Notebooks ejecutados y registros de run_all (uno por corrida)
+pipelines/ejecuciones/
 data/gold/*
 !data/gold/.gitkeep
 models/*.pkl

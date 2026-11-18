@@ -9,11 +9,11 @@ limpieza del 27/10/2026 (tag `pre-restructure`). La estructura de carpetas está
   nuevo no cabe, actualiza ese documento en el mismo cambio.
 - **`data/` es de solo lectura.** Ningún análisis ni experimento escribe, borra o modifica `data/` (bronze,
   silver, reference ni gold). Si hay que corregir datos, se cambia el pipeline (notebooks 01–09 de
-  `pipelines/notebooks/` y `src/denguekay/data/processing/`) y se regenera.
+  `pipelines/notebooks/<versión>/` y `src/denguekay/data/processing/`) y se regenera.
 - **Variables derivadas:** se calculan solo en memoria, con funciones de `src/denguekay/features/` y un test
   de no fuga por perturbación, y nunca se guardan en `data/`. Gold persiste solo llaves, objetivo, etiqueta y
   las variables de la configuración vigente; si una variable entra a esa configuración, se cambia
-  `src/denguekay/features/gold.py` y gold se regenera con `pipelines/notebooks/10_silver_to_gold.ipynb`.
+  `src/denguekay/features/gold.py` y gold se regenera con el paso `11_gold` de la carpeta de la versión.
 - **`ubigeo` es texto de seis dígitos** (con ceros a la izquierda) en todo el pipeline; nunca un entero. La
   llave del panel es `(ubigeo, anio, semana)`.
 - **Rutas** siempre desde `src/denguekay/config/paths.py`; nada de rutas absolutas en el código.

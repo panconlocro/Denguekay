@@ -1,0 +1,40 @@
+{
+  "input": {
+    "file": "predictions.csv.gz",
+    "sha256": "00a185202d4778f0f2c9109539c85c08525f2bb477e57a6b69541c9b35ee02a0",
+    "rows": 61230
+  },
+  "seasons": [
+    2010,
+    2015,
+    2016,
+    2022,
+    2023,
+    2026
+  ],
+  "horizons": [
+    2,
+    3,
+    4
+  ],
+  "seeds": [
+    17,
+    29,
+    41,
+    53,
+    67
+  ],
+  "source_archive_sha256": {
+    "comparadores_revision/predicciones_baselines.csv.gz": "13bcec2a057520a98a3c1d891f09da70ea81c719c3264ddc8f11022d03194d94",
+    "controles_espaciales/b3_obs_s17/predicciones.csv.gz": "928e1d09955f13efa7da035d08fa2c31d5f7c82fc788c11266d91f914fd4f4b9",
+    "piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s17/predicciones.csv.gz": "0d18e1a6ce9af9ef47b0ce1af749d71642186f351c4022f21b5aba995bade326",
+    "controles_espaciales/b3_obs_s29/predicciones.csv.gz": "04e95f0f0757e11035228e243c2a45eb099b50dabba2f334883ef19b9a91f0e2",
+    "piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s29/predicciones.csv.gz": "ac226ffe95bc8a61e42373a283623cf92263f91158b7d54c74f75d26284fd537",
+    "controles_espaciales/b3_obs_s41/predicciones.csv.gz": "953b8592de2be06243951b42ddfa66d7087c93a9c7acb599331fe8a92d805e52",
+    "piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s41/predicciones.csv.gz": "89bec453306a3accb55005e5a37b61845c16764e6a82c060f3399f0835d1ea1d",
+    "controles_espaciales/b3_obs_s53/predicciones.csv.gz": "0ff8b2fdd5027b0d96b41af31370c30920d950e62a88dba715cf39dc1e5f8f5c",
+    "piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s53/predicciones.csv.gz": "018a16100cc64608aea329a717a327ed0a507fafd90833124ae10f4e87eed223",
+    "controles_espaciales/b3_obs_s67/predicciones.csv.gz": "babc78553c773dd720d9e833fe0f90e64e6145af169e488cfadb2bc40cad9417",
+    "piloto_clima/resolucion_chirts/historico/pronosticos/epidemiologia_geografia_s67/predicciones.csv.gz": "749ff7b1f1338646f99ccb444af770a757856690e0ab59c77a5c6189dbb52382"
+  }
+}

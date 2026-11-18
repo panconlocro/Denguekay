@@ -8,12 +8,14 @@ Esta guía explica cómo está organizado el repo y **dónde va cada archivo nue
 
 ```mermaid
 flowchart LR
-  fuentes[Open-Meteo, censo,<br/>Excel epi, Sala MINSA] --> nb[pipelines/notebooks<br/>01–09]
+  fuentes[Open-Meteo, censo,<br/>Excel epi, Sala MINSA] --> nb[pipelines/notebooks<br/>V0–V4]
   nb --> silver[(data/silver/integrado)]
-  silver --> gold_nb[10_silver_to_gold] --> gold[(data/gold)]
+  silver --> gold_nb[11_gold] --> gold[(data/gold)]
   silver --> weekly[denguekay.pipelines<br/>weekly_update] --> silver
+  fuentes -. Sala, ERA5-Land,<br/>CHIRPS, Niño 1+2 .-> v4w[denguekay.pipelines<br/>v4_weekly] --> operativo[(data/silver/operativo)]
+  v4w --> db
   gold --> model[denguekay.features / model / evaluation]
-  model --> registry[models/registry<br/>v0 · v1 · v2 · v3]
+  model --> registry[models/registry<br/>v0 · v1 · v2 · v3 · v4]
   gold --> serving[denguekay.serving<br/>load_data, publish]
   registry -. v3 .-> serving
   serving --> db[(PostgreSQL OE2<br/>denguekay.db)]
@@ -28,7 +30,7 @@ flowchart LR
 - **Modelado** (`denguekay.features`, `model`, `evaluation`): variables, entrenamiento, protocolos y las
   configuraciones congeladas; cada versión tiene su ficha en `models/registry/`.
 - **Backend** (`denguekay.serving`, `denguekay.db`, `apps/api`): carga validada, ajuste de servicio, Storage,
-  inferencia y la API del documento OE2. La configuración de servicio vigente es la v3.
+  inferencia y la API del documento OE2. La configuración de servicio vigente es la V4 (`v4_b3_live`).
 - **Frontend** (`apps/web/`): SPA React + Vite + TypeScript que consume lecturas de `/api/v1`.
 - **Investigación** (`research/`): congelada; puede importar el paquete, nunca al revés.
 
@@ -47,12 +49,12 @@ Denguekay/
 ├── alembic.ini                # migraciones del backend, sin credenciales
 ├── pyproject.toml             # paquete instalable denguekay (pip install -e .); dependencias = requirements.txt
 ├── .coveragerc                # cobertura de API/serving/db, umbral de CI
-├── .github/workflows/         # backend.yml: SQLite/PostgreSQL; frontend.yml: Node, contrato y E2E fixtures
+├── .github/workflows/         # backend.yml: SQLite/PostgreSQL; frontend.yml: Node, contrato y E2E fixtures; weekly_v4.yml y drift_monthly.yml: actualización semanal y deriva mensual (con secrets)
 ├── requirements.txt
 ├── constraints.txt            # versiones exactas del entorno de la V3 (pip install -r requirements.txt -c constraints.txt)
 ├── requirements-api.txt       # solo lo que la API usa en ejecución (Render y job humo-api); subconjunto de requirements.txt
 ├── render.yaml                # Blueprint de Render para la API (docs/backend/despliegue.md); no despliega por sí solo
-├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan)
+├── scripts/                   # setup.ps1 / setup.sh (crean .venv e instalan); weekly_v4.ps1 y register_weekly_v4_task.ps1 (programan la actualización semanal de la V4)
 ├── configs/
 │   └── config.yaml
 │
@@ -82,11 +84,11 @@ Denguekay/
 │   │   └── tools/             # benchmark, export_openapi, smoke_test
 │   └── web/                   # SPA React + Vite (ver 3c)
 │
-├── pipelines/notebooks/       # pipeline: 01–09 (con 03b Niño, 03c CHIRPS y 06b Sala) y 10_silver_to_gold; todo junto: python -m denguekay.pipelines.run_all
+├── pipelines/notebooks/       # un pipeline por versión (V0 a V4), una carpeta cada uno; los ejecuta denguekay.pipelines.run_all
 ├── research/                  # estudios congelados: 01_eda … 06_model_improvement (README y, si hace falta, manifiesto_datos.json por estudio)
 ├── great_expectations/        # contexto de GX generado (gx/ no se versiona)
 ├── models/
-│   └── registry/              # fichas de v0 … v3, CHANGELOG.md y <versión>/manifiesto_datos.json (datos del Release de cada tag)
+│   └── registry/              # fichas de v0 … v4, CHANGELOG.md y <versión>/manifiesto_datos.json (datos del Release de cada tag)
 ├── tests/                     # misma estructura que el paquete: tests/<subpaquete>/ y tests/api/
 │   ├── fixtures/backend/      # muestra agregada real, pequeña y versionada
 │   └── fixtures/equivalence/  # línea base de las guardas de la reestructuración (no se regenera)
@@ -137,6 +139,7 @@ bronze/
 ├── meteo/cache_meteo_era5_land_2000_2016/  # estudio 06 (1b′): ERA5-Land 2000-2016 (humedad y temperatura)
 ├── meteo/cache_meteo_era5_land_2026/  # estudio 06 (temporada 2026): ERA5-Land 2026 (humedad y temperatura)
 ├── enso/                    # sstoi.indices de NOAA CPC (Niño 1+2), un archivo por fecha de descarga
+├── geografia/open_meteo_elevation/ # respuesta GLO-90 por consulta y manifiesto de puntos y SHA-256
 ├── limites/hdx_cod_ab_per/  # COD-AB de Perú (IGN, publicado por OCHA en HDX, CC BY-IGO) tal cual, con su manifiesto
 ├── chirps/v3_sat/           # CHIRPS v3 diario (sat): final/AAAA/, final_ftp/AAAA/ (final por FTP) y prelim/AAAA/ (revisiones en AAAA/<fecha_descarga>/) con la ventana de Piura por día, y los manifiestos de cada corrida;
 │                            #   ee_final/AAAA/AAAA-MM.json: media por polígono distrital desde Earth Engine, tal cual llega, con un manifiesto por corrida
@@ -158,15 +161,17 @@ silver/
 ├── socio_anual.csv
 ├── epi_piura_semanal.csv
 ├── epi_sala_semanal.csv            # exportación normalizada por ejecución
+├── confirmados/                    # entradas archivadas del Release V4
+├── operativo/                      # las 4 fuentes que cambian (Sala, ERA5-Land, CHIRPS, Niño 1+2) sin el corte de la V4; las escribe v4_weekly y las lee el servicio. La copia congelada (nombres del Release) no cambia nunca
 └── integrado/                      # fuentes silver unidas entre sí
     ├── meteo_socio_piura_2017_2025.csv                   # meteo + socio
     ├── meteo_socio_epi_base_piura_2017_2025.csv          # + epi histórico (entrada del actualizador)
     ├── meteo_socio_epi_piura_2017_2025.csv               # + epi completado por el actualizador
     └── meteo_socio_epi_piura_2017_2025.coverage.csv      # cobertura de casos verificados
 ```
-**Por fuente (raíz de `silver/`):** ya pasaron por normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Es la salida de cualquier notebook `0X_bronze_to_silver_*`. Si agregas una fuente nueva (ej. datos de un hospital, otro sensor climático), su versión limpia va acá con su propio nombre de archivo.
+**Por fuente (raíz de `silver/`):** ya pasaron por normalización de nombres de distrito (`distrito_key`), tipos de dato correctos, deduplicación, y (idealmente) una corrida de Great Expectations. Es la salida de cualquier paso `06_silver_*` a `08_silver_*` de `pipelines/notebooks/<versión>/`. Si agregas una fuente nueva (ej. datos de un hospital, otro sensor climático), su versión limpia va acá con su propio nombre de archivo.
 
-**`silver/integrado/`:** el resultado de cualquier merge entre fuentes silver (notebooks `08_silver_merge_*` y `09_silver_merge_*`, y el actualizador `src/denguekay/pipelines/weekly_update.py`). Siguen siendo datos limpios sin features derivadas, por eso **no van en gold**. Si agregas una versión nueva (ej. extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`meteo_socio_epi_piura_2017_2026.csv`) para poder comparar versiones.
+**`silver/integrado/`:** el resultado de cualquier merge entre fuentes silver (los pasos `09_silver_meteo_socio` y `10_silver_integrado` de cada versión, y el actualizador `src/denguekay/pipelines/weekly_update.py`). Siguen siendo datos limpios sin features derivadas, por eso **no van en gold**. Si agregas una versión nueva (ej. extendida a 2026), no sobrescribas el archivo viejo — nómbralo distinto (`meteo_socio_epi_piura_2017_2026.csv`) para poder comparar versiones.
 
 ### `data/gold/` — solo el dataset con feature engineering
 ```
@@ -174,11 +179,29 @@ gold/
 ├── .gitkeep
 ├── meteo_socio_epi_piura_2017_2025_h2_gold.csv
 ├── manifest_fase6.json
+├── piura_confirmados_v4_gold.csv # matriz B3 al corte congelado, con un origen común y objetivos h2–h4
+├── manifest_v4.json              # hashes de entradas de la generación y del CSV
 └── respaldo_pre_b3/           # gold anterior (h=2, h=4, manifiesto y SHA256SUMS.txt) para la v0 y el estudio 03; única copia, guardarla fuera de la PC
 ```
 **Va acá:** únicamente el dataset con el feature engineering ya aplicado, listo para entrenar el modelo. Un merge entre fuentes **no** es gold: eso va en `silver/integrado/`.
 
-Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el notebook 10 genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
+Las fases de construcción están en `research/02_feature_engineering/docs/fases_feature_engineering.md`. La entrada silver se conserva sin modificar; el paso `11_gold` de cada versión genera y valida el gold. El manifiesto documenta fuentes y límites de disponibilidad. Gold contiene solo las llaves, el objetivo, la etiqueta `brote` (media histórica + 1,5 DE) y las variables de la configuración vigente (v2: `base_6`, A3 y B3), sin estadísticas predictoras aprendidas con datos de prueba; las demás candidatas se calculan en memoria con `build_gold`. Detalle y respaldo en `docs/pipeline.md`. `brote` y `umbral_brote_casos` son objetivo/metadato, no predictores.
+
+El recorrido `run_all --version v4` ejecuta los notebooks de `pipelines/notebooks/V4/` (el 11 llama a `features.gold_v4`). Escribe en
+`data/silver/` y `data/gold/` con los nombres del Release (`data/silver/confirmados/`, etc.), fuera de Git; el corte de
+cada fuente es una constante de la versión en `pipelines/versions.py`.
+El paso 06 conserva la serie limpia de CHIRPS de cada sesión con descarga en `data/silver/chirps_capturas/`,
+con su hora de observación en UTC y SHA-256. Una consulta histórica exporta la captura aplicable a
+`data/silver/chirps_al_corte/`.
+`data/bronze/` conserva las capturas. El gold de reproducción del Release se genera en `data/gold/`.
+Ambos recorridos y el paquete de servicio V4 usan la geografía exacta del Release.
+
+### `data_anteriores/<versión>/` — silver y gold de v0–v3 (fuera de Git)
+
+`data/silver/` y `data/gold/` son los de V4. Los de una versión anterior se extraen en
+`data_anteriores/<vN>/silver` y `data_anteriores/<vN>/gold` con `release_bundles --data-dir`, y el código los lee
+con la variable de entorno `DENGUEKAY_DATA_DIR=data_anteriores/<vN>`, que `config/paths.py` aplica a `SILVER` y `GOLD`
+(y a todo lo que cuelga de ellos). `data/bronze/` y `data/reference/` no se mueven. Ver `docs/reproducibilidad.md` §2.
 
 ### `data/reference/` — catálogos que casi no cambian
 ```
@@ -222,18 +245,22 @@ data/
 │   ├── chirps_prelim.py        # CHIRPS v3 preliminar (y final) del CHC por HTTPS o FTP: TIF global a carpeta temporal, verificación de tamaño, sha256 y grilla, y recorte de Piura
 │   ├── drive_download.py       # descarga desde Google Drive (reemplaza drive.mount de Colab)
 │   ├── release_bundles.py      # paquetes de datos del Release de una versión congelada (descarga, SHA-256 y extracción)
-│   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE
+│   └── minsa_sala_scraper.py   # series distrito-año de la Sala Situacional MINSA/DGE: confirmados (V4) o notificados (v0-v3)
 ├── processing/
 │   ├── weekly_aggregation.py   # diario -> semanal por distrito
 │   ├── chirps_precipitation.py # CHIRPS -> lluvia semanal con fecha_disponible (media del polígono: final + preliminar, sin mezclar versiones por semana)
 │   ├── socio_interpolation.py  # interpolación 2017-2025
-│   ├── epi_cases.py            # Excel epidemiológico (un caso por fila) -> silver semanal
+│   ├── epi_cases.py            # CSV de notificaciones, casos confirmados (V4) -> silver semanal
+│   ├── epi_cases_legacy.py     # Excel de notificados de v0-v3 (restaurado de model/v3) -> silver semanal
 │   ├── epi_sala.py             # normalización y conciliación de la Sala
 │   └── merge.py                # merges meteo + socio + epi y relleno selectivo
 └── validation/
     ├── integrated_expectations.py  # cobertura y validación del integrado + suite GX silver_integrado
     ├── gold_expectations.py        # suite GX gold_h2 (esquema, llave, rangos, sin fuga temporal)
     ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
+    ├── quality_report.py           # reporte de calidad y completitud de la V4 (HU0005-4/5), solo lectura; escribe en docs/backend/evidencia/
+    ├── duplicates.py               # resultado del control de llaves repetidas de la fuente epidemiológica (HU0001-3)
+    ├── climate_provenance.py       # fuente, producto y fecha de extracción de cada fuente climática (HU0002-1)
     └── forecast_contract.py        # origen temporal y disponibilidad al pronosticar
 ```
 **Va acá:** una función que hable con una API o haga scraping (`ingestion/`); limpieza, agregación, interpolación o joins (`processing/`); cualquier comprobación de rangos, nulos, duplicados o conteos (`validation/`, un archivo por dataset: `<dataset>_expectations.py`). Las suites de GX se definen en código; `great_expectations/gx/` lo regenera GX y no se versiona. Guía: `docs/modeling/mlflow_great_expectations.md`.
@@ -269,7 +296,8 @@ model/
 ├── future_rows.py           # filas futuras en memoria, sin fuga ni escritura en data/
 ├── frozen_configs.py        # configuraciones congeladas V1/V2/V3 y su fingerprint() de comportamiento (D1)
 ├── reproduce.py             # CLI: reentrena v0/v1/v2 con los datos de su Release y compara huella o métricas
-└── variable_dictionary.py   # diccionario de las variables finales (genera docs/modeling/diccionario_variables.md)
+├── refit_v4.py              # CLI: reajusta la V4 (mismo modelo) con datos nuevos y deja un paquete en una carpeta nueva (docs/modeling/reentrenamiento.md)
+└── variable_dictionary.py   # diccionario de las variables de la V4 (genera docs/modeling/diccionario_variables.md)
 ```
 
 ### `evaluation/` — métricas y protocolos
@@ -295,7 +323,7 @@ src/denguekay/db/
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land
+└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
 ├── settings.py               # paquete a publicar, CORS, selección experimental y almacenamiento (config.yaml; el entorno los reemplaza)
@@ -314,13 +342,17 @@ src/denguekay/serving/
 ├── risk.py                   # nivel de riesgo y cambio de alerta
 ├── inference.py              # paquete -> predictor -> UPSERT de predicciones y alertas; OOS
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
+├── emissions.py              # actualización semanal de la V4: emisión ya hecha, archivo de cada emisión, puntajes prospectivos y aviso de reentrenamiento
+├── geometries.py             # límites distritales para el mapa (HU0014-1): lectura, validación y simplificación de data/reference/distritos_piura_limites.geojson
+├── drift.py                  # monitoreo de deriva (HU0009-2): semanas cerradas de las emisiones frente a la referencia de la HU0007-4; CLI mensual a mano; solo registra
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/
-├── weekly_update.py          # actualización selectiva del integrado (notebook 09) y silver de la Sala (notebook 06b)
-├── run_all.py                # CLI: el pipeline completo en orden, desde las fuentes
-├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS por HTTPS (alternativa del 03c)
+├── weekly_update.py          # actualización selectiva del integrado y silver de la Sala (confirmados o notificados)
+├── v4_weekly.py              # operación de la V4: silver operativos sin corte, carga + inferencia h2–h4 con el paquete congelado y archivo de cada emisión (no es weekly_update)
+├── run_all.py                # CLI: ejecuta en orden los notebooks de la carpeta de una versión (--version v0 a v4)
+├── chirps_download.py        # corrida desatendida de la descarga de CHIRPS por HTTPS (alternativa a la descarga por FTP)
 ├── chirps_ee.py              # guarda de método y descarga mensual de CHIRPS v3 desde Earth Engine (solo para el snapshot; necesita cuenta)
-└── chirps_prelim.py          # preliminar y final de CHIRPS v3 por FTP anónimo (o HTTPS) y silver semanal (03c)
+└── chirps_prelim.py          # preliminar y final de CHIRPS v3 por FTP anónimo (o HTTPS) y silver semanal
 ```
 
 ## 3b. `apps/api/` — la API
@@ -341,17 +373,19 @@ tests/
 ├── test_equivalence.py       # guardas de la reestructuración (V1/V2 bit a bit, esquema en 0003_oe2)
 ├── test_contract_v1_guards.py # guardas del contrato v1: OpenAPI, esquema por migración y smoke v1
 ├── test_layout.py            # sin restos del paquete src y dependencias en un solo sentido
+├── test_workflows.py         # cron, comandos, permisos mínimos y salto sin secrets de weekly_v4.yml y drift_monthly.yml
 └── fixtures/
     ├── backend/              # filas reales copiadas de silver/gold/Sala, con procedencia
     ├── equivalence/          # línea base del ADR 0001 (no se regenera; smoke.json es historia)
     ├── contract_v1/          # línea base v1: esquema de cada migración nueva y smoke v1 (no se regenera)
     ├── pluggable_predictor/  # línea base de la v0 antes del motor enchufable, sus boosters congelados y su entorno (no se regenera)
-    └── v2_serving/           # 6 distritos reales y lo que la v2 congelada calcula con los datos completos: orígenes,
-                              #   predicciones, el modelo del bloque calendario_2025 y su entorno (no se regenera)
+    ├── v2_serving/           # 6 distritos reales, orígenes, predicciones y modelo congelado (no se regenera)
+    └── v4_gold/              # huellas por columna y referencia de flotantes del gold desde el Release (no se regenera)
 docs/backend/                 # especificación OE2, desviaciones, operación, despliegue y contrato (openapi_v1.json congelado)
-└── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU (versionado)
+└── evidencia/                # SQL de la migración, prueba de humo TB1 y completa v1, perfil de CPU, reporte de calidad de datos de la V4 (calidad_datos_v4.json y .md) (versionado)
 models/storage/               # artefactos (buckets modelos/geodatos/reportes; modelos/<paquete>/manifest.json); no se versiona
 models/serving/               # BD SQLite y ejecuciones locales; no se versionan
+├── actualizacion_semanal/    # v4_weekly: emisiones/<corte>/<UTC>/ (emision.json, predicciones.csv, vectores.csv), ejecuciones/, logs/ y en_curso.lock
 └── demo/                     # BD de demostración (D1), su storage y su MLflow; se comparte fuera de Git
 ```
 
@@ -401,6 +435,9 @@ Las guardas que comparan con una línea base grabada siguen una sola regla:
     redondea distinto (se vio 7,5e-9 en casos);
   - las tolerancias ya acordadas con Rosa se mantienen en todas las plataformas: la precipitación de A3,
     guardada en `numeric(7,2)`, usa 1e-9.
+- **Gold V4 y origen congelado.** Después de la suite local, el CI descarga `datos_v4.zip` y `modelo_v4.zip`,
+  verifica las referencias del gold por columna y compara el vector de la SE 41 calculado desde una BD temporal
+  con `origen.csv`. La referencia fija del gold vive en `tests/fixtures/v4_gold/`.
 - **Reentrenar no es comparable entre sistemas operativos** (decisión D1 del ADR 0001). Las pruebas que
   reentrenan quedan clavadas al entorno de grabación y, fuera de él, se omiten con el motivo.
 
@@ -412,6 +449,7 @@ El frontend usa el mismo contrato de lectura para las versiones publicadas por l
 ```text
 apps/web/
 ├── package.json, package-lock.json       # scripts y dependencias npm
+├── vercel.json                          # reescritura de rutas de la SPA para Vercel
 ├── src/
 │   ├── api/                             # cliente HTTP, TanStack Query y schema.d.ts generado
 │   ├── components/                      # filtros, estados, mapa Leaflet y series Recharts
@@ -424,6 +462,7 @@ apps/web/
 ├── public/manual-usuario.pdf            # manual descargable desde Ayuda
 ├── tools/build_manual.py                # autoría del PDF; requiere reportlab y pypdf, revisión visual
 ├── tools/serve_demo.py                  # demo ya preparada, lectura en 127.0.0.1:18001
+├── tools/measure_load.mjs               # mide 20 cargas por vista sobre vite preview (HU0016-3); salida en docs/backend/
 ├── e2e/serve_api.py                      # API real sobre fixtures en 127.0.0.1:18000
 └── playwright.config.ts                 # escritorio/móvil, Vite 5174, trazas en fallos
 ```
@@ -454,22 +493,15 @@ independiente. Comandos, evidencia disponible y orden de PR en [frontend-ci.md](
 
 ```
 pipelines/notebooks/
-├── 01_ingesta_distritos.ipynb
-├── 02_ingesta_meteo.ipynb
-├── 03_bronze_to_silver_meteo.ipynb
-├── 03b_ingesta_enso.ipynb      # Niño 1+2 de NOAA CPC: bronze y silver (estudio 06, fase 4)
-├── 03c_ingesta_chirps.ipynb    # CHIRPS v3 diario (final sat): ventana de Piura a bronze; silver aparte (V3)
-├── 04_ingesta_socio.ipynb
-├── 05_bronze_to_silver_socio.ipynb
-├── 06_ingesta_epi.ipynb
-├── 07_bronze_to_silver_epi.ipynb
-├── 08_silver_merge_meteo_socio.ipynb
-├── 09_silver_merge_epi.ipynb
-└── 10_silver_to_gold.ipynb      # genera y valida gold (antes notebooks/22_fe_integracion.ipynb, D3)
+├── V0/ V1/ V2/ V3/             # casos notificados; 01_bronze_… → 11_gold, 99_verificacion y README.md
+└── V4/                         # casos confirmados; 01_bronze_geografia → 11_gold, 99_verificacion y README.md
 ```
 
-Los notebooks 01–09 escriben bronze, silver y el integrado; el 10 regenera gold. Importan el paquete
-instalado (`pip install -e .`), así que no dependen de la carpeta desde la que se abren. Los notebooks
+Cada carpeta es el pipeline de una versión y lleva su `README.md`. Los pasos son los mismos por capa (01–05 bronze,
+06–10 silver, 11 gold, 99 verificación); `run_all --version vN` los ejecuta en orden y guarda el notebook ejecutado en
+`pipelines/ejecuciones/` (ignorada por Git). V4 escribe en `data/`; v0 a v3 escriben su silver y gold en
+`data_anteriores/<vN>/` (`DENGUEKAY_DATA_DIR`) y leen el mismo `data/bronze/`. Los notebooks solo llaman funciones
+del paquete instalado (`pip install -e .`), así que no dependen de la carpeta desde la que se abren. Los notebooks
 de investigación (los antiguos 10–21 y 23–35) están en `research/<estudio>/notebooks/` con su
 numeración original:
 
@@ -489,11 +521,14 @@ desde el que se reproduce. No se vuelven a correr en `develop`, en `main` ni en 
 Cada notebook debería poder leerse como una bitácora corta: "cargo tal cosa → llamo tal función de `denguekay` → guardo el resultado → imprimo una verificación". Si un notebook empieza a crecer con lógica pesada pegada en las celdas, esa lógica probablemente debería moverse a `src/denguekay/`.
 
 Para actualizaciones incrementales del dataset ya consolidado, usar
-`python -m denguekay.pipelines.weekly_update --input ... --output ...`. El módulo
+`python -m denguekay.pipelines.weekly_update --input ... --output ...` (es el actualizador del integrado y de la Sala
+de los pipelines por versión; la operación del servicio con la V4, que baja las fuentes sin el corte congelado a
+`data/silver/operativo/`, carga la BD y emite h2–h4, es `python -m denguekay.pipelines.v4_weekly`, ver
+[operación](backend/operacion.md#actualización-semanal-v4)). El módulo
 detecta componentes incompletos por `ubigeo`/año/semana y llama solo a las
 fuentes necesarias. El CSV lateral `<dataset>.coverage.csv` diferencia un
 cero epidemiológico ya verificado de un cero en una fila nueva sin cobertura.
-El notebook 09 reconstruye la base histórica y delega la salida final a este
+El paso `10_silver_integrado` reconstruye la base histórica y delega la salida final a este
 módulo.
 
 ---
@@ -504,9 +539,10 @@ módulo.
 - **`models/`**: modelos entrenados serializados; `models/experimentos/` guarda JSON de XGBoost y predicciones por fold. Los artefactos generados no se suben a Git.
 - **`docs/`**: documentos de la tesis en sí (Acta Constitucional, Plan de Dirección, este mismo archivo). Estos **sí se versionan** en Git porque son texto y chicos.
 - **`docs/pipeline.md`**: cómo se corre el pipeline de datos, el actualizador selectivo y la procedencia de los datos de 2025.
-- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (generado por `python -m denguekay.model.variable_dictionary`) Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
+- **`docs/modeling/`**: lo que sigue usando el producto: `mlflow_great_expectations.md` (guía de MLflow y GX), `diccionario_variables.md` (V4 vigente, generado por `python -m denguekay.model.variable_dictionary`; la v2 queda como histórico en `diccionario_variables_v2.md`). Las métricas de selección de V0, que lee serving, están en `models/registry/v0/validacion_temporal_compacta.json`. Las predicciones por fila quedan en `models/experimentos/` (no versionado).
 - **`docs/decisions/`**: decisiones de arquitectura del repositorio (ADR): 0001, reestructuración en monorepo; 0002, ramas `develop` (integración) y `main` (producción).
 - **`research/<estudio>/docs/`**: informes, `metricas/` y `figuras/` de cada estudio cerrado (EDA, feature engineering, primeros modelos y ablaciones, arquitectura multi-horizonte, FE e hiperparámetros). La referencia PDF aportada por Rosa está en `research/02_feature_engineering/docs/references/`.
+- **`research/09_epidemics_revision/`**: conserva sus informes `RESULTS.md`, `RESULTS_TABLES.md` y `figures/`. Su carpeta `paper/` versiona una copia congelada de los insumos mínimos para cotejar las tablas del artículo: script, manifiesto, probabilidades agregadas comprimidas (4,3 MiB) y dos fuentes `.tex` de referencia. La procedencia está en `paper/README.md` y la ruta `PAPER_BUNDLE` en `config/paths.py`. Es una excepción acotada al archivo de predicciones; los ajustes y las demás salidas siguen en `models/experimentos/`, sin versionar.
 ---
 
 ## 6. `.gitignore` — qué NO se sube al repo

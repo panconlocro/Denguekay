@@ -1,6 +1,7 @@
 """Integridad, causalidad y escritura reproducible de la fase 6."""
 
 import hashlib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -95,28 +96,55 @@ class GoldTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Nulos"):
             validate_gold(nulo, self.panel, 4)
 
+    def preparar(self, raiz):
+        """Escribe en ``raiz`` un integrado pequeño con sus insumos y devuelve sus rutas."""
+        fuente = raiz / "integrado.csv"
+        catalogo = raiz / "catalogo.csv"
+        self.panel[["provincia", "distrito", "ubigeo"]].drop_duplicates().to_csv(catalogo, index=False)
+        self.panel.to_csv(fuente, index=False)
+        cobertura = self.panel[["ubigeo", "anio", "semana", "casos_Dengue"]].copy()
+        cobertura["source"] = "verified"
+        cobertura.to_csv(coverage_path(fuente), index=False)
+        historia = raiz / "historia.csv"
+        pd.DataFrame([
+            {"ubigeo": f"20010{d + 1}", "anio": y, "semana": 1, "casos_Dengue": 0}
+            for d in range(6) for y in range(2012, 2017)
+        ]).to_csv(historia, index=False)
+        era5 = raiz / "era5_land.csv"  # weekly ERA5-Land silver from 2017-06 (13 weeks before the first origin)
+        semanas = pd.date_range("2017-06-04", "2018-03-04", freq="W-SUN")
+        distritos = self.panel[["distrito", "lat", "lon"]].drop_duplicates()
+        pd.DataFrame([{"distrito": r.distrito, "lat": r.lat, "lon": r.lon, "semana_inicio": w,
+                       "temp_media": 24.0 + k * 0.1 + i * 0.01}
+                      for k, r in enumerate(distritos.itertuples()) for i, w in enumerate(semanas)]).to_csv(era5, index=False)
+        return fuente, catalogo, historia, era5
+
+    def test_un_cambio_de_regla_regenera_etiquetas_reproducibles_y_deja_su_configuracion(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            raiz = Path(tmp)
+            fuente, catalogo, historia, era5 = self.preparar(raiz)
+            hechos = {}
+            for nombre, minimo in ("a", 2), ("b", 5), ("otra_vez_a", 2):
+                regla = {"outbreak": SeasonalOutbreakConfig(2.0, minimo_casos=minimo),
+                         "history_path": historia, "era5_land_path": era5}
+                salida = raiz / nombre
+                generate_gold(fuente, salida, catalogo, **regla)
+                manifiesto = json.loads((salida / "manifest_fase6.json").read_text(encoding="utf-8"))
+                hechos[nombre] = (manifiesto, pd.read_csv(salida / "integrado_h2_gold.csv"))
+            (a, gold_a), (b, gold_b), (otra, gold_otra) = hechos["a"], hechos["b"], hechos["otra_vez_a"]
+            # La configuración usada queda en el manifiesto de cada gold y distingue una regla de otra.
+            self.assertEqual((a["regla_brote"]["minimo_casos"], b["regla_brote"]["minimo_casos"]), (2, 5))
+            self.assertEqual(a["regla_brote"]["multiplicador"], 2.0)
+            self.assertNotEqual(a, b)
+            # Otra regla da otras etiquetas; con la misma regla el resultado es idéntico.
+            self.assertLess(int(gold_b.brote.sum()), int(gold_a.brote.sum()))
+            self.assertEqual(a, otra)
+            pd.testing.assert_frame_equal(gold_a, gold_otra)
+
     def test_escritura_repetida_identica_y_fallo_sin_salida(self):
         with tempfile.TemporaryDirectory() as tmp:
             raiz = Path(tmp)
-            fuente = raiz / "integrado.csv"
+            fuente, catalogo, historia, era5 = self.preparar(raiz)
             salida = raiz / "gold"
-            catalogo = raiz / "catalogo.csv"
-            self.panel[["provincia", "distrito", "ubigeo"]].drop_duplicates().to_csv(catalogo, index=False)
-            self.panel.to_csv(fuente, index=False)
-            cobertura = self.panel[["ubigeo", "anio", "semana", "casos_Dengue"]].copy()
-            cobertura["source"] = "verified"
-            cobertura.to_csv(coverage_path(fuente), index=False)
-            historia = raiz / "historia.csv"
-            pd.DataFrame([
-                {"ubigeo": f"20010{d + 1}", "anio": y, "semana": 1, "casos_Dengue": 0}
-                for d in range(6) for y in range(2012, 2017)
-            ]).to_csv(historia, index=False)
-            era5 = raiz / "era5_land.csv"  # weekly ERA5-Land silver from 2017-06 (13 weeks before the first origin)
-            semanas = pd.date_range("2017-06-04", "2018-03-04", freq="W-SUN")
-            distritos = self.panel[["distrito", "lat", "lon"]].drop_duplicates()
-            pd.DataFrame([{"distrito": r.distrito, "lat": r.lat, "lon": r.lon, "semana_inicio": w,
-                           "temp_media": 24.0 + k * 0.1 + i * 0.01}
-                          for k, r in enumerate(distritos.itertuples()) for i, w in enumerate(semanas)]).to_csv(era5, index=False)
             regla = {"outbreak": SeasonalOutbreakConfig(2.0, minimo_casos=2), "history_path": historia,
                      "era5_land_path": era5}
             primer = generate_gold(fuente, salida, catalogo, **regla)

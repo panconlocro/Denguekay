@@ -276,7 +276,7 @@ class UpdateDatasetTests(unittest.TestCase):
         row = {"ubigeo": CODE, "anio": 2026, "semana": 1, "casos_Dengue": 1}
         pd.DataFrame([row]).to_csv(path, index=False)
         fresh = pd.DataFrame([{**row, "tipo_dx": "C"}])
-        with self.assertRaisesRegex(ValueError, "run notebook 06b"):
+        with self.assertRaisesRegex(ValueError, "run step 05_bronze_sala"):
             upsert_sala_silver(path, fresh)
         with self.assertLogs(level="WARNING"):
             upsert_sala_silver(path, fresh, replace_legacy=True)
@@ -296,7 +296,7 @@ class UpdateDatasetTests(unittest.TestCase):
         result = merge_with_epi(target, historical, sala_cases=sala)
         self.assertEqual(result.casos_Dengue.iloc[:2].tolist(), [8, 3])
         self.assertTrue(pd.isna(result.casos_Dengue.iloc[2]))
-        with self.assertRaisesRegex(ValueError, "notebook 06b"):
+        with self.assertRaisesRegex(ValueError, "step 05_bronze_sala"):
             merge_with_epi(target, historical, sala_cases=sala.drop(columns="tipo_dx"))
 
 

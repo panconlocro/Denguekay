@@ -116,6 +116,8 @@ class District(WithUbigeo, Base):
     longitud: Mapped[float] = mapped_column(Numeric(9, 6, asdecimal=False))
     poblacion_censo_2017: Mapped[int | None] = mapped_column(Integer)
     activo: Mapped[bool] = mapped_column(Boolean, default=True, server_default=text("true"))
+    # Extension (0010_v4, HU0014-1): simplified Polygon or MultiPolygon of the district; NULL falls back to the centroid.
+    geometria: Mapped[dict | None] = mapped_column(JSONB_PORTABLE, nullable=True)
     provincia: Mapped[Province] = relationship()
 
 
@@ -187,10 +189,23 @@ class WeeklyObservation(WithUbigeo, Base):
     # ERA5-Land weekly mean temperature (d3 of the v3) since 0007_v3: apart from temp_media_c, full precision.
     temp_media_era5_land_c: Mapped[float | None] = mapped_column(
         Double().with_variant(Numeric(asdecimal=False), "sqlite"))
+    casos_solo_confirmados: Mapped[bool] = mapped_column(Boolean, server_default=text("false"))
+    humedad_era5_land_pct: Mapped[float | None] = mapped_column(Double)
+    fecha_era5_land_disponible: Mapped[date | None] = mapped_column(Date)
+    lluvia_chirps_mm: Mapped[float | None] = mapped_column(Double)
+    fecha_chirps_disponible: Mapped[date | None] = mapped_column(Date)
     fuente_casos: Mapped[str] = mapped_column(enum(CASE_SOURCE, "fuente_casos_t"))
     estado_cobertura: Mapped[str] = mapped_column(enum(COVERAGE, "cobertura_t"))
     fecha_extraccion: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     id_ejecucion: Mapped[int] = mapped_column(ForeignKey("ejecucion.id_ejecucion"))
+
+
+class Nino12Observation(Base):
+    __tablename__ = "observacion_nino12"
+
+    mes: Mapped[date] = mapped_column(Date, primary_key=True)
+    fecha_disponible: Mapped[date] = mapped_column(Date)
+    anomalia: Mapped[float] = mapped_column(Double)
 
 
 class ModelVersion(Base):
@@ -330,7 +345,8 @@ INITIAL_PARAMETERS = (
      "valor": {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75},
      "descripcion": "Cortes de probabilidad para el nivel de riesgo"},
     {"clave": "umbrales_aceptacion",
-     "valor": {"recall": 0.80, "precision": 0.60, "f1": 0.70, "razon_error_base": 0.85,
-               "bloque": "temporada_2024"},
+     # Migration 0009_v4 sets the US v1.4 values (HU0007-4); the DDL seed of 0003_oe2 stays in that migration.
+     "valor": {"recall": 0.65, "precision": 0.60, "f1": 0.70, "razon_error_base": 0.90,
+               "bloque": "temporadas_2022_2026"},
      "descripcion": "Criterios para promover un modelo"},
 )

@@ -121,6 +121,45 @@ test('series ranges validate locally, persist on reload and retain their weekly 
   await expect(page.locator('.series-data tbody tr')).toHaveCount(4);
 });
 
+test('district polygons show the limits, keep the legend and select with Enter', async ({
+  page,
+}) => {
+  await page.route('**/api/v1/mapa-riesgo?**', async (route) => {
+    const response = await route.fetch();
+    const data = await response.json();
+    for (const f of data.features) {
+      const [x, y] = f.geometry.coordinates;
+      const d = 0.03;
+      f.geometry = {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [x - d, y - d],
+            [x + d, y - d],
+            [x + d, y + d],
+            [x - d, y + d],
+            [x - d, y - d],
+          ],
+        ],
+      };
+    }
+    await route.fulfill({ response, json: data });
+  });
+  await page.goto('/mapa?horizonte=2');
+  await expect(page.locator('.map-note')).toContainText('Límites distritales');
+  await expect(page.locator('.map-note')).toContainText('CC BY-IGO 3.0');
+  await expect(page.locator('.map-note')).not.toContainText('Centroides');
+  await expect(page.locator('.leaflet-interactive')).toHaveCount(65);
+  await expect(page.locator('.map-legend > div')).toHaveCount(5);
+  const polygon = page.getByRole('button', { name: /^Seleccionar Piura:/ });
+  await expect(polygon).toBeVisible();
+  await polygon.focus();
+  await polygon.press('Enter');
+  await expect(page).toHaveURL(/\/mapa\?.*seleccion=200101/);
+  await expect(polygon).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByLabel('Distrito del panel')).toHaveValue('200101');
+});
+
 test('unavailable map values stay grey and never expose carried probabilities or magnitudes', async ({
   page,
 }) => {

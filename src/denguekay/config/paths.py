@@ -9,6 +9,7 @@ Any notebook or script that needs a data path must import it from here
 instead of hardcoding new paths.
 """
 
+import os
 from pathlib import Path
 
 # Repository root (this file lives in src/denguekay/config/paths.py -> go up 3 levels)
@@ -18,11 +19,16 @@ SRC = ROOT / "src"
 CONFIG = ROOT / "configs" / "config.yaml"
 
 DATA = ROOT / "data"
+# Silver and gold of an older version live apart from the V4 ones in data/: with DENGUEKAY_DATA_DIR set (relative to
+# the repository root, e.g. data_anteriores/v2), SILVER and GOLD hang from that folder, and everything derived from
+# them (SILVER_*, GOLD_*, GOLD_MANIFEST, ...) follows. BRONZE (the common cache) and REFERENCE never move. The folder
+# should be inside the repository: several modules report their files relative to ROOT.
+DATA_DIR = ROOT / os.environ["DENGUEKAY_DATA_DIR"] if os.environ.get("DENGUEKAY_DATA_DIR") else DATA
 
 BRONZE = DATA / "bronze"
-SILVER = DATA / "silver"
+SILVER = DATA_DIR / "silver"
 SILVER_EPI_HISTORICAL = SILVER / "epi_piura_semanal.csv"
-GOLD = DATA / "gold"   # datasets derived per horizon and the lineage manifest
+GOLD = DATA_DIR / "gold"   # datasets derived per horizon and the lineage manifest
 REFERENCE = DATA / "reference"
 
 # Bronze subfolders per source
@@ -35,13 +41,17 @@ CACHE_METEO_ERA5_LAND_2017_2025 = BRONZE_METEO / "cache_meteo_era5_land_2017_202
 CACHE_METEO_2000_2016 = BRONZE_METEO / "cache_meteo_2000_2016"
 CACHE_METEO_ERA5_LAND_2000_2016 = BRONZE_METEO / "cache_meteo_era5_land_2000_2016"   # study 06, 1b'
 # ERA5-Land of 2026 up to 2026-10-31 (study 06) and the later downloads, one snapshot per end date
-# (cache_meteo_era5_land_reciente/<YYYY-MM-DD>/, notebook 02, cell C).
+# (cache_meteo_era5_land_reciente/<YYYY-MM-DD>/, step 02_bronze_clima of V3 and V4).
 CACHE_METEO_ERA5_LAND_2026 = BRONZE_METEO / "cache_meteo_era5_land_2026"
 CACHE_METEO_ERA5_LAND_RECENT = BRONZE_METEO / "cache_meteo_era5_land_reciente"
 BRONZE_SOCIO = BRONZE / "socio"
 BRONZE_EPI = BRONZE / "epi"
 BRONZE_EPI_CSV = BRONZE_EPI / "DatosDengueV2.csv"
-BRONZE_SALA = BRONZE_EPI / "sala"
+# Notified-case Excel of v0-v3 (PiuraDengue.xlsx of the Release datos_v1/datos_v2 sources); V4 uses the CSV above.
+BRONZE_EPI_EXCEL = BRONZE_EPI / "PiuraDengue.xlsx"
+BRONZE_SALA = BRONZE_EPI / "sala"   # confirmed-case captures (V4); the offline replay takes the newest one per year
+# Notified-case captures of v0-v3, apart from the confirmed ones so that a replay of V4 never reads them.
+BRONZE_SALA_NOTIFIED = BRONZE_EPI / "sala_notificados"
 BRONZE_ENSO = BRONZE / "enso"   # raw NOAA CPC sstoi.indices, one file per download date
 # CHIRPS v3 daily, sat disaggregation: one GeoTIFF per day with the Piura window, plus the run manifests
 BRONZE_CHIRPS = BRONZE / "chirps" / "v3_sat"
@@ -56,7 +66,7 @@ SILVER_SALA = SILVER / "epi_sala_semanal.csv"
 SILVER_METEO_2000_2016 = SILVER / "meteo_semanal_distrital_2000_2016.csv"   # study 06, phase 1b
 # Study 06, 1b': humidity and temperature from ERA5-Land 2000-2025 (no precipitation), apart from the silver in use.
 SILVER_METEO_ERA5_LAND_2000_2025 = SILVER / "meteo_humedad_era5_land_2000_2025.csv"
-# ERA5-Land weekly temperature and humidity from 2000 to the latest download (notebook 03): input of the v3 (d3).
+# ERA5-Land weekly temperature and humidity from 2000 to the latest download (step 06_silver_clima): input of the v3 (d3).
 SILVER_METEO_ERA5_LAND = SILVER / "meteo_humedad_era5_land_desde_2000.csv"
 # The frozen input of the v3 (2000 to the week of 2026-10-25), in datos_v3.zip of the model/v3 Release; used when
 # SILVER_METEO_ERA5_LAND does not exist yet (features.climate.era5_land_silver).
@@ -90,6 +100,42 @@ STORAGE = MODELS / "storage"
 MODEL_REGISTRY = MODELS / "registry"
 # Data bundles of the frozen V3 (zips attached to the GitHub Release of model/v3): files, rows and SHA-256.
 V3_DATA_MANIFEST = MODEL_REGISTRY / "v3" / "manifiesto_datos.json"
+V4_DATA_MANIFEST = MODEL_REGISTRY / "v4" / "manifiesto_datos.json"
+V4_STUDY_MANIFEST = ROOT / "research" / "08_v3_confirmed_cases" / "manifiesto_b3_v4.json"
+V4_FROZEN = MODELS / "experimentos" / "mejora_modelo" / "v4_b3_confirmados"
+V4_GEOGRAPHY = (MODELS / "experimentos" / "mejora_modelo" / "v3_confirmados" / "piloto_clima"
+                / "resolucion_chirts" / "historico" / "insumos" / "geografia_distritos.csv")
+SILVER_CONFIRMED = SILVER / "confirmados"
+V4_RELEASE_HISTORY = SILVER_CONFIRMED / SILVER_EPI_HISTORICAL.name
+V4_RELEASE_SALA = SILVER_CONFIRMED / SILVER_SALA.name
+V4_RELEASE_INTEGRATED = SILVER_CONFIRMED / SILVER_INTEGRATED.name
+# A run from the sources writes the same files, with the same names, as the Release (datos_v4.zip), so that data/ ends up
+# as the model reads it. Older versions regenerate under DENGUEKAY_DATA_DIR / data_anteriores/<vN>, never here.
+V4_HISTORY = V4_RELEASE_HISTORY
+V4_SALA = V4_RELEASE_SALA
+V4_INTEGRATED = V4_RELEASE_INTEGRATED
+V4_PANEL_WEATHER = SILVER / "meteo_semanal_distrital.csv"
+V4_SOCIO = SILVER / "socio_anual.csv"
+V4_WEATHER_SOCIO = SILVER_METEO_SOCIO
+V4_CHIRPS = SILVER_CHIRPS_PRECIP
+V4_CHIRPS_SNAPSHOTS = SILVER / "chirps_capturas"
+V4_CHIRPS_CUTOFFS = SILVER / "chirps_al_corte"
+V4_ENSO = SILVER_ENSO
+V4_ERA5_LAND = SILVER_METEO_ERA5_LAND_2000_2026
+# Weekly operation of the V4 (denguekay.pipelines.v4_weekly): the four sources that keep moving, WITHOUT the frozen
+# cutoff, apart from the Release copy above (which never changes). The package reads them through configs/config.yaml.
+SILVER_OPERATIONAL = SILVER / "operativo"
+OPERATIONAL_SALA = SILVER_OPERATIONAL / SILVER_SALA.name
+OPERATIONAL_ERA5_LAND = SILVER_OPERATIONAL / SILVER_METEO_ERA5_LAND.name
+OPERATIONAL_CHIRPS = SILVER_OPERATIONAL / SILVER_CHIRPS_PRECIP.name
+OPERATIONAL_ENSO = SILVER_OPERATIONAL / SILVER_ENSO.name
+V4_ELEVATION_RAW = BRONZE / "geografia" / "open_meteo_elevation"
+# New elevation query, kept in bronze only for comparison with the Release geography (V4_GEOGRAPHY, the one the model uses).
+V4_LIVE_GEOGRAPHY = BRONZE / "geografia" / "geografia_distritos_v4.csv"
+V4_GOLD = GOLD / "piura_confirmados_v4_gold.csv"
+V4_GOLD_MANIFEST = GOLD / "manifest_v4.json"
+V4_VERIFICATION_REPORT = GOLD / "verificacion_v4.json"
+V4_GOLD_REFERENCE = ROOT / "tests" / "fixtures" / "v4_gold"
 # Frozen out-of-sample predictions of the v3 (5 seeds, every block; predicciones_v3.zip of the Release): the v3
 # package fits Platt and the 5a mixture with them and publishes their 2022-2025 blocks as its OOS.
 V3_REFERENCE_PREDICTIONS = MODELS / "experimentos" / "mejora_modelo" / "v3" / "predicciones_v3.csv.gz"
@@ -128,6 +174,8 @@ COMPACT_METRICS = MODEL_REGISTRY / "v0" / "validacion_temporal_compacta.json"
 COMPACT_PREDICTIONS = MODELS / "experimentos" / "validacion_temporal_compacta" / "predicciones_por_bloque.csv"
 # Research studies, frozen in research/<study>/ (docs/decisions/0001-repo-restructure.md).
 RESEARCH = ROOT / "research"
+# Frozen paper inputs for study 09; the adjacent .tex files are reference snapshots.
+PAPER_BUNDLE = RESEARCH / "09_epidemics_revision" / "paper" / "reproducibility"
 RESEARCH_FIRST_MODELS = RESEARCH / "03_first_models_and_ablations"
 # Multi-horizon architecture study (research/04_horizon_architecture/docs/diseno_arquitectura_horizontes.md)
 ARCHITECTURE_METRICS = RESEARCH / "04_horizon_architecture" / "docs" / "metricas" / "arquitectura_horizontes.json"
@@ -139,6 +187,8 @@ FE_HYPERPARAMETERS_FIGURES = RESEARCH / "05_fe_hyperparameters" / "docs" / "figu
 FE_HYPERPARAMETERS_EXPERIMENTS = MODELS / "experimentos" / "fe_hiperparametros"
 VARIABLE_DICTIONARY = DOCS / "modeling" / "diccionario_variables.md"
 SERVING_RUNS =SERVING_MODELS / "ejecuciones"
+# Weekly V4 update: lock, run reports, archived emissions and logs (not versioned).
+SERVING_WEEKLY = SERVING_MODELS / "actualizacion_semanal"
 SERVING_REGENERATED_PROTOCOL = SERVING_MODELS / "protocolo_regenerado"
 EDA_DOCS = RESEARCH / "01_eda" / "docs"
 EDA_FIGURES = EDA_DOCS / "figuras"

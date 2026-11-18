@@ -1,0 +1,375 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{cite}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{figures/}}
+\newcommand{\bthree}{\textit{b3}}
+\newcommand{\dthree}{\textit{d3}}
+
+\begin{document}
+\bstctlcite{IEEEexample:BSTcontrol}
+
+\title{What Does Climate Add to Case History? A Multiseason Evaluation of District-Level Dengue Forecasts in Piura, Peru}
+
+\author{Nicol\'as~Francisco~Miranda~Rafael and
+        Rosa~Mar\'ia~Rodr\'iguez~Valencia%
+\thanks{This manuscript was prepared on 12 November 2026.}%
+\thanks{N.~F.~Miranda Rafael and R.~M.~Rodr\'iguez Valencia are with the Universidad Peruana de Ciencias Aplicadas, Lima, Peru (e-mail: turppie24@gmail.com; rosamariarv10@gmail.com).}}
+
+\markboth{Denguekay: Climate and Case History in District-Level Dengue Forecasts}%
+{Miranda Rafael and Rodr\'iguez Valencia: What Does Climate Add to Case History?}
+
+\maketitle
+
+\begin{abstract}
+We evaluated whether climate improves forecasts of elevated weekly dengue activity beyond case history and geography in 65 districts of Piura, Peru. We used confirmed cases from 2000 through epidemiological week 41 of 2026, with out-of-sample forecasts at two, three and four weeks from the surveillance cutoff. Six retrospective evaluation seasons had previously informed development. The primary contrast paired XGBoost models with shared hyperparameters and controls for weather availability. Adding the \bthree{} climate predictors changed Brier by $-0.14\%$, $+0.41\%$ and $+0.91\%$ across horizons. The four-week change had a whole-season bootstrap interval of $-0.53\%$ to $+2.33\%$ and was $+1.49\%$ excluding 2026. Four-week Brier skill relative to probabilistic persistence was $+2.11\%$ ($-6.12\%$ to $+9.96\%$). With training held fixed, a longer calibration history reduced Brier without changing within-season ranking. Earlier outbreak detection varied by season and false-alert cost. In retrospective geographic validation, probabilistic persistence had the lowest Brier in Lambayeque and Tumbes across all evaluated horizons and years. The results show limited and inconsistent incremental value of climate in this setting and distinguish probability accuracy, ranking and alert performance.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Dengue, epidemic forecasting, climate, gradient boosting, probability calibration, public health surveillance
+\end{IEEEkeywords}
+
+\section{Introduction}
+\IEEEPARstart{D}{engue} surveillance teams need estimates of how many cases will be reported and whether weekly counts will exceed what is usual for that place and time of year~\cite{who2016}. Piura was among the Peruvian departments most affected in both 2017 and 2023. The 2023 epidemic coincided with extreme rainfall associated with Cyclone Yaku in northwestern Peru~\cite{munayco2024}. Across the region, epidemic peaks alternate with quiet periods, making district-level forecasts difficult.
+
+Weekly dengue forecasting studies have already examined the contribution of surveillance and weather data. Benedum et al.\ compared machine learning, regression and time-series models for weekly case counts and outbreaks at four and twelve weeks in Iquitos, San Juan and Singapore~\cite{benedum2020}. In three Latin American cities, da Silva et al.\ found that the benefit of adding weather to recent cases varied by city~\cite{dasilva2025}. Chen and Moraga compared weekly forecasts with and without lagged weather in Rio de Janeiro, including XGBoost~\cite{chen2025}. Tuan evaluated climate-informed forecasts with weekly district surveillance in coastal Vietnam~\cite{tuan2026}.
+
+Forecast targets and lead times differ across other studies. The Iquitos and San Juan dengue forecasting challenge assessed probabilities for seasonal peak timing, peak size and total incidence~\cite{johansson2019}. Multicountry short-term ensemble forecasts have been benchmarked against persistence at monthly horizons~\cite{wu2025}. Probabilistic climate-informed forecasts have also been developed for Machala, Ecuador, and for provinces in Vietnam~\cite{lowe2017,colongonzalez2021}.
+
+In Peru, Mills and Donnelly modeled monthly dengue incidence in Piura, Tumbes and Lambayeque and evaluated one-month-ahead forecasts of outbreaks above incidence thresholds~\cite{mills2024}. Dostal et al.\ estimated weather and El Ni\~no associations with dengue risk across Peruvian district-months~\cite{dostal2022}, and Sebastianelli et al.\ evaluated the transfer of a monthly ensemble developed in Brazil to Peru~\cite{sebastianelli2024}. A study of real-time dengue prediction in Thailand compared forecasts made with the data available at issuance against forecasts made with fully reported data, showing why the two kinds of evaluation can give different results~\cite{reich2016}.
+
+We ask how much climate information adds to forecasts of elevated dengue weeks at two, three and four weeks after the last published surveillance week in Piura, given local case history. We compare matched forecasts on the same district-weeks and use the Brier score of calibrated exceedance probabilities as the primary outcome. We distinguish the accuracy of assigned probabilities, the ranking of district-weeks by risk, and the ability to anticipate new episodes at a given false-alert cost.
+
+We evaluate paired district-week predictions on common origins and test whether apparent gains survive geographic controls, weather availability restrictions and temporal placebos. We also separate the effects of longer training and calibration histories and compare model-based alerts with persistence at explicit operating points. We then evaluate retrospective transfer to Lambayeque and Tumbes using a package fitted in Piura through December 2024. The study uses dated internal decision records and reports the changes made during development.
+
+The forecasting specification of the experimental Denguekay V4 dashboard is based on \bthree{}. The dashboard is intended to support district-level surveillance in Piura. This paper evaluates retrospective predictive performance only; the usability of the dashboard and its usefulness for decisions require separate assessment.
+
+\section{Methods and Procedures}
+
+\subsection{Study Area and Data}
+Piura is a region on the northern coast of Peru with 65 districts in eight provinces, ranging from coastal desert to Andean highlands. The unit of analysis is the district-week. Weeks run from Sunday to Saturday and are numbered with the MMWR convention. For incidence sensitivities we used the official 2018--2026 district population projections from INEI~\cite{inei2025}.
+
+Weekly confirmed case counts were derived from the CDC--MINSA national surveillance file for 2000--2024~\cite{cdcminsa} and the MINSA situational dashboard for 2025--2026~\cite{minsasala}. We retained diagnosis code C in the case file and the confirmed series in the dashboard. The 2025 audit compared the two sources across all 3,445 district-weeks, including week 53. All pairs agreed and both sources totaled 1,117 confirmed cases. The retrospective series ends in epidemiological week 41 of 2026 and excludes the two most recent dashboard weeks as provisional. Under the study's coverage convention, an absent notification in a covered historical district-week was represented as zero reported cases. The full analytic series, including the years used to construct historical predictors and thresholds, contains 227,091 confirmed cases. We could audit agreement in the available files. Estimating reporting backfill would require historical dashboard snapshots.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig1_weekly_cases.png}
+\caption{Weekly confirmed dengue cases across Piura in the analytic panel. Shading identifies the six historical decision seasons.}
+\label{fig:cases}
+\end{figure}
+
+The primary climate comparison used the archived ERA5-Land temperature and humidity series at the original district locations~\cite{munozsabater2021,openmeteo}, CHIRPS v3 sat precipitation at 0.05\textdegree{} averaged over district polygons~\cite{funk2026}, and the Ni\~no 1+2 anomaly. Weekly weather windows in the availability-controlled comparison end at least two weeks before the forecast origin. Ni\~no 1+2 is joined by its recorded availability date. The weather dates apply release proxies to archived data, including seven days after the observation week for ERA5-Land. The historical reproduction uses the original alignment. A separate exposure sensitivity uses population-weighted ERA5 global at 0.25\textdegree{}~\cite{hersbach2020} and population-weighted CHIRTS-ERA5 daily temperature extrema at 0.05\textdegree{}~\cite{chirtsera5}. This design separates the primary paired comparison from the change in climate product and aggregation.
+
+\subsection{Outcome: Elevated Week}
+For district $d$ and target week $t$, the reference comprises the reported counts in the same epidemiological week of the previous five years. Week 53 is combined with week 52 in the reference. The count threshold uses the sample standard deviation. The integer cutoff $k$ is the larger of two and the floor of the reference threshold plus one:
+\begin{align}
+\tau_{d,t} &= \bar{y}_{d,t} + 1.5\, s_{d,t}, \qquad k_{d,t} = \max\{2,\ \lfloor \tau_{d,t} \rfloor + 1\}, \tag{1a}\\
+b_{d,t} &= \mathbb{1}\{ y_{d,t} \geq k_{d,t} \}. \tag{1b}
+\end{align}
+
+The label applies to all weeks of elevated activity. The WHO endemic channel motivates the five-year seasonal reference~\cite{who2016}. Col\'on-Gonz\'alez et al.\ evaluated a moving endemic channel among several definitions and described removing epidemic years~\cite{colongonzalez2021}. Benedum et al.\ used a multiplier of 1.5 with a location-specific training reference~\cite{benedum2020}. We use the two-case minimum to exclude isolated single notifications from the forecasting outcome when the seasonal reference is near zero. We assess sensitivity to the look-back period, multiplier, minimum count and reference statistic, including a seasonal 75th percentile and fixed incidence. The threshold serves as a forecasting outcome.
+
+\subsection{Forecast Origin and Horizons}
+The forecast origin is the last published surveillance week. We index the target at 2, 3 or 4 weeks after that origin. Case-history predictors use observations up to the origin, and calendar terms are known in advance. Weather availability is handled using the source-specific rules above.
+
+\subsection{Predictors and Model}
+All availability-controlled XGBoost arms share the same case-history, calendar and static geographic predictors (Table~\ref{tab:predictors}). The geography comprises latitude, longitude and elevation from a fixed digital elevation model. \bthree{} adds temperature, humidity, precipitation and Ni\~no 1+2. \dthree{} is the temperature-only comparator and uses four temperature windows. The two climate arms differ in both the variables included and the temperature windows. The history-and-geography arm supplies the matched no-climate comparator.
+
+\begin{table}[!t]
+\caption{Predictors in the Availability-Controlled XGBoost Comparisons}
+\label{tab:predictors}
+\centering
+\begin{tabular}{@{}l p{0.72\columnwidth}@{}}
+\toprule
+Arm & Predictors and windows\\
+\midrule
+Shared & Local case lags, 4-week summaries, time since last case, slope and preceding-season total\\
+Shared & Sine and cosine of the week two weeks after origin, latitude, longitude and elevation\\
+\bthree{} & Five-week means of temperature, relative humidity and precipitation, ending two weeks before origin\\
+\bthree{} & Three-month Ni\~no 1+2 anomaly summary available at origin\\
+\dthree{} & Temperature windows at lags 2, 3--6, 7--10 and 11--14 weeks\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We used XGBoost as a common model for the climate comparisons because regularized boosted trees can represent nonlinear responses and interactions among case history, calendar and weather predictors~\cite{chen2016}. The Poisson objective produces a nonnegative count mean, and vector-valued trees allow the three horizons to share splits while estimating a separate correction for each horizon. Prior dengue studies have compared tree ensembles with statistical models and seasonal baselines~\cite{chen2025,roster2022}. We assessed the performance of the model family in Piura against persistence, count regressions and LightGBM under common evaluation cuts.
+
+A vector-valued tree ensemble estimates a Poisson count mean for each horizon. The initial margin uses the last count plus 0.5, so each output estimates a multiplicative correction to persistence:
+\begin{equation}
+\hat{\mu}_{d,o+h} = (y_{d,o} + 0.5)\, \exp\{ f_h(x_{d,o}) \}.
+\label{eq:mu}
+\end{equation}
+
+We report a fixed-hyperparameter contrast for attributing differences to the predictors. We also tuned \bthree{}, \dthree{} and the comparator separately with the same 17 candidates, screening cuts and finalist cuts. The tuning objective used calibrated Brier in 2009, 2012, 2013, 2014, 2018 and 2021. The candidates included inherited settings and 16 Sobol configurations. Both climate arms selected the same Sobol candidate and the comparator retained the inherited settings. Some tuning seasons followed earlier evaluation seasons in calendar time. Each fitted arm used seeds 17, 29, 41, 53 and 67 on the common evaluation calendar.
+
+\subsection{Published Count and Probability of an Elevated Week}
+The published count blends the model mean with the persistence count:
+\begin{equation}
+\hat{c}_{d,o+h} = w_h\, \hat{\mu}_{d,o+h} + (1 - w_h)\, y_{d,o}.
+\label{eq:blend}
+\end{equation}
+
+The blend weight is fitted per horizon on earlier out-of-sample count predictions with closed outcomes. For the elevated-week probability, the raw exceedance is obtained from NB2 using the unblended mean and a horizon-specific dispersion fitted in training. The exceedance event is an integer count at least as large as the larger of two and the floor of the reference threshold plus one. The raw probability $q$ is clipped to the interval from 0.000001 to 0.999999 before Platt calibration~\cite{platt1999}. The original count interval uses NB2 centered on the blended mean with the dispersion from the regressor.
+\begin{equation}
+p = \frac{1}{1 + \exp\{-(a_h \operatorname{logit} q + b_h)\}}.
+\label{eq:platt}
+\end{equation}
+
+The calibrator is fitted by horizon on earlier out-of-sample forecasts whose target weeks closed by the first origin of the evaluation block. The historical alert evaluation used a cutoff of 0.50. We also assess relative false-alert and missed-event costs, precision-matched recall, and cutoffs chosen on development seasons.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.92\columnwidth]{fig2_outputs.png}
+\caption{Count and probability outputs for the three forecast horizons. The calibration and count-blend steps use earlier out-of-sample predictions.}
+\label{fig:outputs}
+\end{figure}
+
+\subsection{Validation Design and Decision Rules}
+A regular season runs from epidemiological week 35 of the previous year through week 34 of the named year. The common calendar has 19 complete seasons (2008--2026) and a seven-week block after the 2026 season. Expanding training uses origins from 2005 onward. It contains 64,935 district-weeks per horizon before calibration. The initial block, 2008, provides early out-of-sample predictions for fitting later calibrators and is excluded from calibrated scores. Each block is trained with target outcomes that have closed by its first forecast origin, including the four-week target for joint training. The calendar recovers 18 weeks in 2024 and eliminates 19 repeated weeks in 2025.
+
+The main analysis gives equal weight to the six historical decision seasons (2010, 2015, 2016, 2022, 2023 and 2026). Each block provides out-of-sample forecasts for its historical fit. The team had already inspected results from the six decision seasons during model development, so these seasons form the retrospective evaluation rather than an independent final holdout for the selected specification. Season 2024 was also inspected and is shown as a retrospective contrast. The dated records describe the move toward a broader evaluation across seasons, but lack an exact reproducible rule for the initial choice of years. Within each season and horizon we take the median of the five seed-level paired contrasts. For relative changes, we divide each paired Brier difference by the corresponding comparator Brier before taking the median and averaging over seasons. Brier is the primary proper score~\cite{brier1950,gneiting2007}. The main weather ablation uses fixed hyperparameters, and the separately tuned comparison assesses performance under an equal budget. Other variants and horizon contrasts are descriptive given the multiplicity of the historical search.
+
+We evaluated average precision (AP) and precision--recall curves for the uncommon elevated weeks~\cite{saito2015}. The evaluation uses CORP for calibration and discrimination~\cite{dimitriadis2021}, weighted interval score (WIS) for predictive count intervals~\cite{bracher2021}, and net benefit across relative alert costs~\cite{vickers2006}. Net benefit subtracts cost-weighted false alerts from true alerts and divides by the number of evaluated district-weeks.
+
+\subsection{Development and Selection History}
+During development, Brier replaced F1 as the primary score and 2026 was added after the climate comparisons began. The resulting historical rule selected \bthree{} from 12 climate representations. After reviewing the results, the team advanced \dthree{} for further development based on its interpretation of outbreak anticipation during El Ni\~no seasons. This study uses \bthree{} for the primary climate comparison. The historical hyperparameter search used Optuna~\cite{akiba2019}. The selection criteria and chronology are documented in the supplement (Table S14).
+
+\subsection{Comparators, Metrics and Uncertainty}
+Persistence predicts the last available case count. Its deterministic alert applies the target-week count threshold to that count. Probabilistic persistence fits a chronological logistic calibrator using the latest count relative to the target threshold. The climatology uses earlier outbreak frequencies for the district and time of year. The seasonal-naive count is the same district's count 52 weeks earlier.
+
+The common-calendar evaluation also compares LightGBM~\cite{ke2017} and Poisson and negative-binomial count regressions. The NB2 climate arm uses rain, humidity, Ni\~no 1+2 and linear and quadratic temperature terms across four windows. A regularized fit was used if the prespecified numerical convergence checks failed.
+
+We report Brier skill against probabilistic persistence and climatology. The two-week onset stratum and continuation stratum use the same negative rows and retain the corresponding positives. They describe conditional performance of the probability for any elevated week. Count evaluation includes MAE, RMSE, absolute error on the $\log(1+\text{count})$ scale, WIS, coverage, interval width and the randomized probability integral transform.
+
+Episodes join elevated weeks separated by at most two weeks. A clean onset follows at least eight weeks without an elevated week. We report an onset as anticipated when an alert has an origin at least two nominal weeks before the onset and targets a week from two weeks before onset through the episode end. For operating policies, cutoffs were chosen in development with a target of one false alert per district per 52 weeks. We report the observed cost separately for each method. The precision-matched comparison uses evaluation labels to characterize achievable recall.
+
+We enumerated bootstrap resamples of whole seasons with replacement, preserving paired methods and all districts within a season. We report percentile intervals using the 2.5th and 97.5th percentiles. A sensitivity incorporates seed variability and another estimates a paired score difference with crossed season and district random intercepts. The six decision seasons were also omitted one at a time. The small number of seasons limits precision even though there are many district-weeks.
+
+\subsection{External Transfer to Lambayeque and Tumbes}
+To assess retrospective transfer, we fitted \bthree{} and the history-and-geography comparator only on Piura, with the fixed hyperparameters of the main contrast, five seeds and a common cutoff of 7 December 2024, the first four-week origin for the 2025 targets. The Platt calibrators, blend weights and probabilistic-persistence calibrator were fitted on Piura out-of-sample forecasts whose labels had closed by that date. The package was applied without refitting to 37 districts of Lambayeque and 13 of Tumbes for target weeks 1--38 of 2025, the first continuous stretch of that year with notifications in both departments. Both arms and the persistence rules shared the same 1,900 district-weeks per horizon. The model and probabilistic persistence used a probability cutoff of 0.50. Deterministic persistence applied the target-week count threshold. The period, arms, cutoff and support were fixed before the destinations were scored. One Lambayeque district was excluded because the national file contained no notifications of any diagnosis for it in 2020--2024, and five confirmed Lambayeque records with weeks outside the MMWR calendar were excluded. In the included districts, an absent record was coded as zero registered confirmed cases.
+
+Precipitation used daily CHIRPS v3 final sat estimates weighted by intersection with the COD-AB district polygons. ERA5-Land temperature and humidity were taken at GADM 4.1 district centroids, with COD-AB centroids for six districts absent from GADM. The Piura availability rules were reproduced. After the 2025 results, we added three analyses: the same package applied to weeks 1--38 of 2026, a sensitivity that refits both arms in Piura without latitude, and a sensitivity that refits the package with a cutoff of 13 December 2025 for the 2026 targets. Confirmed cases for 2026 came from the dashboard and were reconciled against provincial and departmental totals. In 2025 the dashboard and the national file agreed in all 2,703 district-weeks of the two departments and in the 1,739 confirmed cases of the year.
+
+\section{Results}
+
+\subsection{Outcome Prevalence}
+The six decision seasons contained 2,632 elevated weeks among 20,410 district-weeks per horizon (12.9\%). Prevalence ranged from 2.5\% in 2026 to 30.5\% in 2023. The minimum of two cases was the effective threshold for 1,714 elevated weeks (65.1\%). The historical mean-plus-standard-deviation threshold was zero in 13,729 weeks (67.3\%). Season 2025 contained 57 elevated weeks on the common calendar, which is distinct from calendar year 2025 used in the source agreement check.
+
+\subsection{Seasonal Controls and Climate Contribution}
+Table~\ref{tab:primary} reports the main fixed-hyperparameter comparison. The relative change from adding climate was small at all horizons. At four weeks it was $+0.91\%$ and rose to $+1.49\%$ when 2026 was omitted. The bootstrap interval spanned zero. Relative to probabilistic persistence, the same fixed-hyperparameter \bthree{} had mean four-week Brier skill of $+2.11\%$, with an interval spanning zero. Supplementary Table S16 reports the paired contrasts by season.
+
+With the historical weather alignment and shared hyperparameters, \bthree{} reduced four-week Brier by 1.14\% with or without geography. Under the availability restriction, four-week Brier increased by 1.21\% without geography and by 0.91\% with geography. The loss of the historical gain was associated chiefly with weather timing in this design.
+
+\begin{table*}[!t]
+\caption{Primary Retrospective Comparison of Fixed-Hyperparameter Brier Scores}
+\label{tab:primary}
+\centering
+\small
+\begin{tabular}{@{}crrrrr@{}}
+\toprule
+ & \multicolumn{3}{c}{Mean seasonal Brier} & \multicolumn{2}{c}{Mean paired seasonal contrast (95\% interval)}\\
+\cmidrule(lr){2-4}\cmidrule(l){5-6}
+Horizon & \bthree{} & History + geography & PP & \bthree{} vs.\ history + geography (\%) & \bthree{} skill vs.\ PP (\%)\\
+\midrule
+2 wk & 0.04276 & 0.04273 & 0.04420 & $-0.14$ ([-0.89, +0.46]) & $+0.49$ ([-4.80, +6.26])\\
+3 wk & 0.04979 & 0.04938 & 0.05201 & $+0.41$ ([-0.63, +1.31]) & $+0.26$ ([-7.11, +7.79])\\
+4 wk & 0.05569 & 0.05488 & 0.05950 & $+0.91$ ([-0.53, +2.33]) & $+2.11$ ([-6.12, +9.96])\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.94\textwidth}{\footnotesize PP is probabilistic persistence. Negative change versus history and geography favors \bthree{}. Positive skill versus PP favors \bthree{}. For each paired contrast we computed the relative change within seed and season, took the median across seeds and averaged the six seasons equally. Intervals use whole-season bootstrap resampling.}
+\end{table*}
+
+\subsection{Spatial Placebos and Equal-Budget Tuning}
+For the temporal placebos, donor data came from the same district and epidemiological week one to four years earlier. A donor offset was shared across districts and windows within a season. We repeated \bthree{} temperature replacement using three donor schedules, and also shifted its full climate block and \dthree{}'s temperature windows. An anomaly sensitivity used a district-week climate mean fitted on training data only. The accumulated local effect (ALE) describes the response of raw \bthree{} probability to the temperature predictor (Fig.~\ref{fig:ale}).
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig3_ale.png}
+\caption{Centered accumulated local effect (ALE) of temperature on raw \bthree{} probability at four weeks in season 2023, seed 17. Bins are defined from training data.}
+\label{fig:ale}
+\end{figure}
+
+In the same-source exposure pilot, the median absolute difference between the population-weighted temperature and the nearest cell was 0.25\,\textdegree C on the coast and 0.68\,\textdegree C in the highlands. Five districts had less than 95\% population coverage for the tested ERA5-Land delivery in the coastal pilot week. The 0.25\textdegree{} ERA5 candidate covered 65 districts across 1,400 weeks, but its grid can smooth local gradients. The two-station coastal comparison was limited to short overlaps. CHIRTS at 0.05\textdegree{} reduced four-week Brier by 0.33\% versus the same data aggregated to 0.25\textdegree, and was close to history and geography ($+0.03\%$). Adding the diurnal range to the midpoint of the maximum and minimum raised Brier by 0.71\% at four weeks. At Talara, the mean estimated range was 3.76\,\textdegree C versus 10.72\,\textdegree C at the station in the seven-day pilot.
+
+At four weeks, \bthree{} improved Brier by 0.13\% over the median temperature placebo and 1.02\% over the full-climate placebo. Without 2026 these differences were a 0.34\% increase and a 0.12\% reduction, respectively. The temperature anomaly increased Brier by 1.28\% versus history and geography. With equal-budget tuning (Fig.~\ref{fig:paired}), \bthree{} changed Brier by $+0.01\%$, $+3.68\%$ and $+5.28\%$, and \dthree{} by $+0.46\%$, $+3.12\%$ and $+4.43\%$. At four weeks without 2026, the increases were $+6.37\%$ and $+6.06\%$. For \bthree{} at four weeks the season-and-seed bootstrap interval was $+1.02\%$ to $+9.81\%$, and the crossed-effects interval for the absolute change was $-0.00047$ to $+0.00808$. Omitting 2023 also yielded an interval spanning zero. The six-season estimate describes the retrospective comparison.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig4_paired_brier.png}
+\caption{Secondary comparison of separately tuned climate arms by decision season. Changes in Brier are relative to history and geography. Each point is the median of five paired seed-level changes from the equal-budget evaluation. Positive values indicate higher Brier.}
+\label{fig:paired}
+\end{figure}
+
+\subsection{Probability Accuracy, Ranking and Alerts}
+Supplementary Table S15 reports the separately tuned climate arms, the other model comparators and the two probability baselines. At four weeks, the tuned \bthree{} had higher AP than probabilistic persistence (0.714 versus 0.673) and a lower logarithmic score (0.1915 versus 0.2189), while its average Brier skill relative to persistence was $-1.86\%$. In that comparison, the history-and-geography XGBoost had the lowest mean four-week Brier among the evaluated arms. The NB2 climate arm worsened Brier by 7.74\% relative to its no-climate counterpart at four weeks. The regularized backup was used in three of 60 no-climate fits and ten of 60 climate fits.
+
+In the equal-budget analysis at four weeks, the two-week onset stratum included 486 positive weeks and the continuation stratum included 2,146, with 17,778 common negatives. \bthree{}'s AP versus probabilistic persistence was 0.143 versus 0.104 for early weeks and 0.766 versus 0.746 for continuations. The corresponding Brier skills were $-2.74\%$ and $-13.04\%$. In the risk range of at least 0.30, 1,967 elevated weeks were observed against 1,447 expected in 2,938 \bthree{} forecasts. Four-week mean calibration slope and intercept were 1.31 and 0.64. Across districts with high, low and zero prior outbreak frequency, four-week AP was 0.749, 0.665 and 0.549, respectively. Supplementary Tables S3--S4 report calibration and stratified performance by horizon. Table S11 gives the CORP components and log score. At the observed precision of deterministic persistence, \bthree{}'s attainable recall was 69.19\% versus 67.82\% at four weeks (Fig.~\ref{fig:pr}). The estimate pooled decision-season rows. In 2026 alone, \bthree{} recall was 27.91 percentage points below deterministic persistence at matched precision. Supplementary Tables S5--S6 give the matched-precision results by horizon and season.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig5_pr.png}
+\caption{Precision--recall envelopes for weekly alerts across the six decision seasons. Lines are median envelopes across five seeds. The diamond is deterministic persistence. The pooled panel includes target weeks repeated across horizons.}
+\label{fig:pr}
+\end{figure}
+
+\subsection{Point and Distributional Count Forecasts}
+Using the equal-budget fits, the four-week MAE ratio for the \bthree{} blended count versus persistence was 0.88 with equal season weight and 0.77 when pooling all weeks. The log-scale MAE was 0.282. \bthree{}'s raw mean estimated 54.4\% of observed cases during elevated weeks, and the blend estimated 59.5\%. Outside elevated weeks, the blend estimated 146.0\% of observed cases. Its count MAE ratio in season 2025 was 1.96. Table~\ref{tab:counts} shows the NB2 interval and a calibration sensitivity fitted on earlier blocks by the level of the predicted count. The \bthree{} mean from the recalibrated distribution reached 75.2\% of cases in elevated weeks, with global MAE rising from 3.86 to 4.05.
+
+\begin{table*}[!t]
+\caption{Four-Week Count Performance and Interval Coverage}
+\label{tab:counts}
+\centering
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Model & MAE & RMSE & WIS base & WIS cal. & 80\% all & 80\% elev.\\
+\midrule
+\bthree{} & 3.86 & 18.84 & 2.930 & 2.768 & 93.9\% & 66.6\%\\
+\dthree{} & 3.97 & 19.29 & 2.993 & 2.831 & 94.0\% & 67.4\%\\
+History + geography & 4.00 & 19.64 & 3.293 & 2.864 & 93.6\% & 67.1\%\\
+LightGBM & 3.96 & 19.53 & 3.291 & 2.861 & 93.6\% & 66.4\%\\
+Poisson GLM & 3.91 & 19.14 & 3.352 & 2.798 & 94.0\% & 70.3\%\\
+NB2, no climate & 4.27 & 20.18 & 3.440 & 2.966 & 93.5\% & 69.4\%\\
+NB2, climate & 5.02 & 22.55 & 3.556 & 3.297 & 92.2\% & 70.1\%\\
+Persistence & 4.98 & 22.66 & 4.386 & 3.710 & 92.0\% & 68.7\%\\
+Seasonal naive & 6.53 & 29.54 & 5.394 & 5.091 & 83.2\% & 10.1\%\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.9\textwidth}{\footnotesize WIS is shown before and after recalibration. The coverage columns show the recalibrated nominal 80\% interval. For \bthree{}, the original interval covered 93.5\% of all weeks and 63.7\% of elevated weeks. Elevated-week coverage reached 66.6\% after recalibration. The threshold applied to the published mean and the probability rule at 0.50 disagreed in 1,080 of 20,410 district-weeks. Additional interval coverage and PIT histograms are provided in Supplementary Tables S1--S2 and Figure S1.}
+\end{table*}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig6_forecasts.png}
+\caption{Four-week retrospective forecasts from season 2022 through week 41 of 2026, separately tuned \bthree{} (seed 17). Top, total observed cases, published \bthree{} counts and persistence. Bottom, districts with an elevated week and districts alerted by \bthree{} at 0.50.}
+\label{fig:forecasts}
+\end{figure}
+
+\subsection{Anticipation of Outbreak Onsets}
+In 2022, 2023 and 2026, 102 clean onsets were eligible for the four-week cutoff-policy analysis. With the tuned fits and thresholds selected on development seasons, \bthree{} anticipated 49 onsets with 367 false alerts. Probabilistic persistence anticipated 29 with 411, and deterministic persistence anticipated 22 with 301. The history-and-geography arm anticipated 56 with 474. In 2026 alone, \bthree{} anticipated 10 with 37 compared with 13 with 65 for probabilistic persistence. These operating points differ in observed false-alert cost. Relative to history and geography, 11 onsets were exclusive to that comparator and three to \bthree{} under the development-selected cutoffs and a majority-of-seeds definition. Ten of the 11 had a most recent count below the target threshold. At four weeks, \bthree{}'s simulated net benefit exceeded probabilistic persistence at 36 of 46 relative-cost values in 2022, all 46 in 2023 and none in 2026 (Fig.~\ref{fig:nb}). Supplementary Tables S7--S8 and Figure S2 show the cutoff policies, anticipated onsets and observed false-alert costs.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig7_net_benefit.png}
+\caption{Four-week net benefit for elevated-week alerts by season and relative cost. Lines are medians over five seeds. Zero denotes no alerts.}
+\label{fig:nb}
+\end{figure}
+
+In the original development study, giving near-onset rows five times the weight increased four-week anticipation by 4.7 percentage points with lower AP. Season weighting reduced anticipation by 2.6--3.6 points, a two-regime model reduced three-week anticipation by 18.1 points, and adding spatial context increased four-week anticipation by 3.1 points while lowering continuation sensitivity in two seasons. These results describe the historical development experiments. Supplementary Table S9 summarizes the four strategies.
+
+\subsection{Sensitivity to the Outcome Definition}
+The seasonal sensitivities retain the count forecasts and dispersion estimates, recompute the probability of exceeding each threshold, and refit the chronological calibrator. Changing the threshold changes which district-weeks are positive (Table~\ref{tab:label}). Four-week Brier for the tuned \bthree{} was higher than for history and geography under all six seasonal definitions. Recent-window rules were assessed as observed labels. Incidence cutoffs of 5, 10 and 20 confirmed cases per 100,000 per week used the same INEI publication for denominators. Across the decision seasons covered by those denominators (2022, 2023 and 2026), the cutoff of 10 identified 2,009 elevated weeks versus 1,563 under the primary definition. At four weeks, both climate models had higher Brier than history and geography under each incidence rule, including after omission of 2026.
+
+\begin{table}[!t]
+\caption{Sensitivity to the Seasonal Outcome Definition}
+\label{tab:label}
+\centering
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Rule & Elevated weeks & \bthree{} $\Delta$ h4 & \dthree{} $\Delta$ h4\\
+\midrule
+1.5 SD, 5 years & 2,632 & $+5.28\%$ & $+4.43\%$\\
+2 SD, 5 years & 2,504 & $+5.14\%$ & $+4.22\%$\\
+1.5 SD, 3 years & 2,878 & $+5.82\%$ & $+4.17\%$\\
+Minimum 1 case & 3,269 & $+4.39\%$ & $+3.38\%$\\
+Minimum 5 cases & 1,907 & $+3.02\%$ & $+2.78\%$\\
+Seasonal 75th percentile & 3,457 & $+5.71\%$ & $+4.98\%$\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.95\columnwidth}{\footnotesize Each seasonal definition is evaluated on the same 20,410 district-weeks at four weeks, reusing the tuned count forecasts. Positive Brier change favors the model with history and geography.}
+\end{table}
+
+\subsection{Transfer to Lambayeque and Tumbes}
+In weeks 1--38 of 2025 there were 9 elevated weeks among 1,406 district-weeks in Lambayeque and 11 among 494 in Tumbes. Relative to history and geography, \bthree{} lowered Brier in Lambayeque by 6.13\%, 11.58\% and 12.07\% at two, three and four weeks and raised it in Tumbes by 22.46\%, 30.28\% and 33.50\% (Table~\ref{tab:transfer}). The direction of the change held in all five seeds and three horizons. \bthree{}'s AP exceeded that of probabilistic persistence in Lambayeque at every horizon and was lower in Tumbes. In 2026 there were 136 elevated weeks in Lambayeque and 13 in Tumbes. The climate change in Brier was $-1.05\%$, $-0.21\%$ and $+0.43\%$ in Lambayeque and $+4.92\%$, $+6.85\%$ and $+19.75\%$ in Tumbes. Probabilistic persistence had the lowest Brier in all 12 department--horizon--year contrasts.
+
+\begin{table*}[!t]
+\caption{Transfer of the Piura Package to Lambayeque and Tumbes, Target Weeks 1--38}
+\label{tab:transfer}
+\centering
+\begin{tabular}{@{}llrrrrrrrr@{}}
+\toprule
+ & & \multicolumn{4}{c}{2025} & \multicolumn{4}{c}{2026}\\
+\cmidrule(lr){3-6}\cmidrule(l){7-10}
+Department & h & \bthree{} & H+G & PP & $\Delta$ \bthree{} & \bthree{} & H+G & PP & $\Delta$ \bthree{}\\
+\midrule
+Lambayeque & 2 & 0.01127 & 0.01204 & 0.00757 & $-6.13\%$ & 0.03970 & 0.04010 & 0.03722 & $-1.05\%$\\
+Lambayeque & 3 & 0.00965 & 0.01092 & 0.00616 & $-11.58\%$ & 0.04859 & 0.04873 & 0.04354 & $-0.21\%$\\
+Lambayeque & 4 & 0.01277 & 0.01446 & 0.00673 & $-12.07\%$ & 0.05397 & 0.05369 & 0.04754 & $+0.43\%$\\
+Tumbes & 2 & 0.02727 & 0.02232 & 0.01494 & $+22.46\%$ & 0.01937 & 0.01842 & 0.01758 & $+4.92\%$\\
+Tumbes & 3 & 0.03874 & 0.02968 & 0.01617 & $+30.28\%$ & 0.02533 & 0.02363 & 0.01847 & $+6.85\%$\\
+Tumbes & 4 & 0.04673 & 0.03512 & 0.02003 & $+33.50\%$ & 0.03014 & 0.02517 & 0.01981 & $+19.75\%$\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.95\textwidth}{\footnotesize Brier scores for \bthree{}, history and geography (H+G) and probabilistic persistence (PP). The package was fitted in Piura with data closed by 7 December 2024 and applied without refitting. Brier values for the trained arms are medians across five seeds; $\Delta$ is the median of seed-level relative changes of \bthree{} versus H+G. Lambayeque has 37 districts and Tumbes 13; each department--year has 38 target weeks per horizon. Elevated weeks: 9 (Lambayeque) and 11 (Tumbes) in 2025; 136 and 13 in 2026.}
+\end{table*}
+
+At four weeks in 2025, \bthree{} at the 0.50 probability cutoff and deterministic persistence under its count rule detected the same number of elevated weeks in each department, with 21 versus 9 false alerts in Lambayeque and 25 versus 3 in Tumbes. In 2026, \bthree{} detected 54 of 136 elevated weeks with 20 false alerts in Lambayeque, against 62 with 10 for probabilistic persistence; in Tumbes it detected 4 of 13 with 10 false alerts, against 3 with 4. The latitude of all 50 destination districts lies outside the range of the Piura training districts, and elevation and longitude also exceed that range in some Lambayeque districts. Refitting without latitude reduced four-week \bthree{} Brier in 2026 by 0.00035 in Lambayeque and 0.00048 in Tumbes, and the climate contrast in Tumbes remained unfavorable at every horizon. Refitting the package with data closed by 13 December 2025 reduced four-week \bthree{} Brier in 2026 by 0.98\% in Lambayeque and 6.67\% in Tumbes; the four-week climate contrast remained unfavorable ($+0.79\%$ and $+16.99\%$), and probabilistic persistence retained the lowest Brier in all six contrasts. Supplementary Tables S12--S13 give the alert counts and the latitude sensitivity.
+
+\section{Discussion}
+The estimated contribution of climate depended on the information and timing available to the model. The small gain with the original weather alignment did not survive the availability-controlled comparison at four weeks. Temperature from the observed year barely improved on temporal placebos once the models shared geographic predictors. The contrast without 2026 and the season-specific results do not support a general claim of larger climate gains during El Ni\~no. Regime dependence remains a hypothesis for evaluation with a prospective, prespecified climate index.
+
+The comparison in Piura extends earlier weekly forecasting studies by evaluating the incremental contribution of weather on the same district-weeks, and by distinguishing probability accuracy from the operational value of alerts~\cite{benedum2020,dasilva2025,chen2025}. The district-month associations reported for Peru address a different question from short-horizon forecast performance conditional on local case history~\cite{dostal2022}. The four-arm comparison in the revision crossed access to case history with access to climate predictors. This analysis omitted the persistence offset and count blend in all four models. At four weeks, adding climate without case predictors improved average precision by 3.51 percentage points while worsening Brier by 2.89\% on average across the six decision seasons. With case predictors, Brier improved by 0.91\% on average and worsened by 0.08\% when 2026 was omitted. The estimates quantify incremental prediction under the evaluated specifications. A causal pathway through reported cases would require a different design.
+
+On the revised common calendar, the four-week mean seasonal Brier scores for the history-and-geography models were 0.0549 for XGBoost, 0.0552 for LightGBM and 0.0560 for Poisson regression. The small differences at this horizon put the choice of the boosted-tree model in context.
+
+For XGBoost with history and geography, using more seasons to calibrate with expanding training held fixed reduced four-week Brier by 5.54\% on average across five eligible decision seasons. The improvement came from lower miscalibration in four of the five seasons. The monotonic calibration retained within-season ranking (Supplementary Table S10). Expanding training history while holding the calibration window fixed increased AP by 2.35 percentage points. The two sources of improvement therefore address different forecast properties. The separately tuned \bthree{} illustrates why ranking and alert evaluation both matter. It ranked risk better than probabilistic persistence, while four-week recall gains at matched precision were modest overall and varied by season. The threshold analysis also shows why counts, probability and episode timing need separate evaluation. Neighbor incidence, vector surveillance, serotype and mobility are candidates for assessing earlier changes in risk.
+
+The retrospective transfer applied the December 2024 Piura package to two neighboring coastal departments without refitting. The climate contrast changed with department and year: \bthree{} lowered Brier in Lambayeque in 2025, changed it by about 1\% or less there in 2026, and raised it in Tumbes in both years. Probabilistic persistence had the lowest Brier in every department--horizon contrast, and \bthree{} alerts at 0.50 generated more false alerts than the persistence rules at four weeks. The destination districts lie outside the latitude range of the training data, and 2025 contained only 9 and 11 elevated weeks. These results describe transfer under geographic extrapolation and few events, and do not provide a stable estimate of the value of climate outside Piura.
+
+The dashboard is an experimental surveillance tool. Table~\ref{tab:criteria} compares the internal operating criteria for alerts and counts. Model selection drew on the same six seasons used for the primary retrospective comparison. The limited number of seasons and their use during development constrain inference about future seasons. The forecasts are retrospective and use archived weather and surveillance values. Historical backfill could not be quantified from the available files. Over the surveillance period, ascertainment, testing and notification may have changed, affecting the five-year seasonal reference, including potential reporting disruptions during 2020--2021. Case counts are subject to under-reporting. The threshold sensitivities show how the operational label changes with the reference period and the minimum count. Model development used one region, and the transfer covers two departments over two partial years. The data lack district-week serotype and vector information. The station comparison covers two coastal sites and does not establish performance in the highlands.
+
+The acceptance criteria were internal project targets. In the equal-budget evaluation, no climate arm met all alert criteria at 0.50 in the 18 decision-season--horizon cells. The criteria and cell counts are reported separately for alerts and point counts.
+
+\begin{table}[!t]
+\caption{Internal Acceptance Criteria}
+\label{tab:criteria}
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Arm & Alert cells & Count cells\\
+\midrule
+\bthree{} & 0/18 & 4/18\\
+\dthree{} & 0/18 & 2/18\\
+History + geography & 1/18 & 1/18\\
+\bottomrule
+\end{tabular}
+
+\vspace{2pt}\parbox{0.9\columnwidth}{\footnotesize Alert criteria at 0.50 require precision $\geq 0.60$, recall $\geq 0.80$ and F1 $\geq 0.70$. Count criteria require both MAE and RMSE ratios to persistence $\leq 0.85$. Cells use median metrics across the five seeds.}
+\end{table}
+
+For the experimental V4 dashboard, we refitted the fixed-hyperparameter \bthree{} specification (\textit{b3\_obs}) and its matched history-and-geography comparator using Piura outcomes through 17 October 2026 (epidemiological week 41). We froze five fits per arm on 12 November 2026, together with the dispersion, calibration and count-blend parameters and the probabilistic-persistence calibrator. The local demonstration serves seed 17 at the archived week-41 origin and displays exceedance probabilities and point count forecasts. Independent prospective evaluation of the frozen V4 fit in Piura remains pending. It requires archiving the inputs and forecasts available at each issuance, with assessment dates and alert-cost metrics fixed in advance.
+
+\section{Conclusion}
+In Piura, local case history and geography provided most of the short-horizon predictive skill. With weather availability restrictions and matched controls, the principal climate arm yielded no consistent improvement in the Brier score. In the history-and-geography arm, additional calibration history improved probability accuracy while preserving within-season ranking. Alert recall and early episode detection depended on the operating point and season. In retrospective transfer to Lambayeque and Tumbes, the December 2024 Piura package showed no consistent climate benefit and did not improve on probabilistic persistence in Brier. The retrospective evidence supports comparing any climate-enhanced warning system with both probabilistic and deterministic persistence before deploying an alert policy.
+
+\section*{Data and Code Availability}
+The public Denguekay repository (\url{https://github.com/panconlocro/Denguekay}) provides the project implementation, analysis code, protocols and result reports. The \href{https://github.com/panconlocro/Denguekay/blob/36e2cc62826aada83e727a2d650ef04422e9ebf3/models/registry/v4/ficha.md}{V4 model record} links to the freeze specification and SHA-256 manifest. The accompanying reproducibility bundle contains district-week outcomes, calibrated probabilities and a script to reconstruct Table~\ref{tab:primary} and Supplementary Table S16, including the sensitivity excluding 2026. The authors retain the fitted models and the remaining archived forecasts and intermediate inputs. The national surveillance source and dashboard data are aggregated to district-week for all analyses reported here. EPIFORGE reporting items inform the documentation of forecasts and evaluation~\cite{pollett2021}.
+
+\section*{Ethics Statement}
+The public national surveillance file contains individual notification records. We used diagnosis status, epidemiological week and district to aggregate confirmed notifications. Modeling and reporting used only district-week aggregates and public climate and population data.
+
+\section*{Conflict of Interest}
+The authors declare no conflicts of interest.
+
+\section*{Funding}
+This work received no external funding.
+
+\section*{Use of Artificial Intelligence}
+Generative artificial intelligence tools were used to speed up the writing of software code. The authors reviewed, tested and take responsibility for all code, analyses and content of this article.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

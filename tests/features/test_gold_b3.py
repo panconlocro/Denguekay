@@ -72,8 +72,10 @@ class TestGoldReal(unittest.TestCase):
         cls.gold = leer(GOLD / NOMBRE)
 
     def test_esquema_y_filas(self):
-        self.assertEqual(list(self.gold.columns), persisted_columns(2))
-        self.assertEqual(self.gold.shape, (30485, 24))  # 20 of the v2 + the 4 d3 columns of the v3
+        # The gold of the folder in use: v3 (with the 4 d3 columns) or the clean one of the v2 (20 columns).
+        columns = "v3" if D3_COLUMNS[0] in self.gold.columns else "v2"
+        self.assertEqual(list(self.gold.columns), persisted_columns(2, columns=columns))
+        self.assertEqual(self.gold.shape, (30485, 24 if columns == "v3" else 20))
         self.assertEqual(sorted(p.name for p in GOLD.glob("*_gold.csv")), [NOMBRE])
 
     def test_b3_identica_a_frozen_configs_origins(self):

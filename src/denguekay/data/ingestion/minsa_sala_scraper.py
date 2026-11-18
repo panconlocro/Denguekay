@@ -1,7 +1,10 @@
-"""Read confirmed district-year dengue series from the public MINSA/DGE Sala chart.
+"""Read district-year dengue series from the public MINSA/DGE Sala chart.
 
 The Shiny chart exposes a full annual series per district. Callers select the
 weeks they need after extraction. Raw responses are optional runtime artifacts.
+
+Two case definitions: ``confirmados`` (chart ``ten-fig02a-echart``, series CONFIRMADO; V4) and ``notificados``
+(chart ``ten-fig02b-echart`` with ``ten-tog02c = "2"``, one series per year; the extraction of ``model/v0``-``v3``).
 """
 
 import asyncio
@@ -16,7 +19,18 @@ from urllib.request import urlopen
 from denguekay.data.keys import normalize_sala
 
 URL = "https://app7.dge.gob.pe/maps2/shiny_metaxenicas_web/"
-CHART = "ten-fig02a-echart"
+CHARTS = {"confirmados": "ten-fig02a-echart", "notificados": "ten-fig02b-echart"}
+CHART = CHARTS["confirmados"]
+
+
+class SalaYearWithoutWeeks(RuntimeError):
+    """The Sala has no published week for the year yet (the first days of a new year)."""
+
+
+def check_case_definition(case_definition: str) -> str:
+    if case_definition not in CHARTS:
+        raise ValueError(f"Unknown case definition {case_definition!r}; use one of {sorted(CHARTS)}")
+    return case_definition
 
 
 def observed_weekly_points(raw_points: list, year: int) -> list[list[int]]:
@@ -29,7 +43,9 @@ def observed_weekly_points(raw_points: list, year: int) -> list[list[int]]:
     if any(value is not None for _, value in points[first_unobserved:]):
         raise RuntimeError(f"Sala weekly series for {year} contains an internal missing week")
     observed = points[:first_unobserved]
-    if not observed or any(not isinstance(value, (int, float)) or value < 0 or int(value) != value for _, value in observed):
+    if not observed:
+        raise SalaYearWithoutWeeks(f"Sala case counts for {year} are malformed: no week is observed yet")
+    if any(not isinstance(value, (int, float)) or value < 0 or int(value) != value for _, value in observed):
         raise RuntimeError(f"Sala case counts for {year} are malformed")
     return observed
 
@@ -45,8 +61,10 @@ def confirmed_weekly_points(chart: dict, year: int) -> list[list[int]]:
     prefix = f"{year}-"
     weeks = [label for label in chart["xAxis"][0]["data"] if label.startswith(prefix)]
     points = [point["value"] for point in confirmed[0]["data"] if point["value"][0].startswith(prefix)]
+    if not weeks:
+        raise SalaYearWithoutWeeks(f"Sala CONFIRMADO does not match the weekly axis for {year}: the axis has no weeks")
     if (
-        not weeks or len(weeks) > 53
+        len(weeks) > 53
         or weeks != [f"{year}-{week:02d}" for week in range(1, len(weeks) + 1)]
         or [label for label, _ in points] != weeks
     ):
@@ -63,8 +81,19 @@ def confirmed_weekly_points(chart: dict, year: int) -> list[list[int]]:
     return observed_weekly_points(converted, year)
 
 
-def initial_inputs(page: str) -> dict:
+def notified_weekly_points(chart: dict, year: int) -> list[list[int]]:
+    """The weekly series of the year in the notified-cases chart (as extracted for v0-v3)."""
+    if "semanal" not in chart["title"][0]["text"].lower():
+        raise RuntimeError("Sala returned a chart with unexpected time granularity")
+    series = [item for item in chart["series"] if str(item["name"]) == str(year)]
+    if len(series) != 1:
+        raise RuntimeError(f"Sala has no unique weekly series for {year}")
+    return observed_weekly_points(series[0]["data"], year)
+
+
+def initial_inputs(page: str, case_definition: str = "confirmados") -> dict:
     """Build the initial Shiny inputs from the site's HTML."""
+    chart_id = CHARTS[check_case_definition(case_definition)]
     values = {}
     for input_id, options in re.findall(r'<select id="([^"]+)"[^>]*>(.*?)</select>', page, re.S):
         selected = re.search(r'<option value="([^"]*)" selected', options)
@@ -76,7 +105,6 @@ def initial_inputs(page: str) -> dict:
         values[input_id + ":shiny.action"] = 0
     values.update({
         "ten-pn01": "Tendencias", "dir-pn01": "Tendencias",
-        "ten-tog02a": "1", "ten-tog02b": "1",  # Cases by type of diagnosis.
         ".clientdata_pixelratio": 1, ".clientdata_url_protocol": "https:",
         ".clientdata_url_hostname": "app7.dge.gob.pe", ".clientdata_url_port": "",
         ".clientdata_url_pathname": "/maps2/shiny_metaxenicas_web/",
@@ -85,17 +113,20 @@ def initial_inputs(page: str) -> dict:
     for input_id in re.findall(r'id="([^"]+)"', page):
         if any(part in input_id for part in ("-echart", "-kpi", "-tbl", "-map", "-card")):
             values[".clientdata_output_" + input_id + "_hidden"] = True
-    for input_id in (CHART, "ten-kpi01-title", "ten-kpi01-kpi01"):
+    if case_definition == "confirmados":
+        values.update({"ten-tog02a": "1", "ten-tog02b": "1"})  # Cases by type of diagnosis.
+    for input_id in (chart_id, "ten-kpi01-title", "ten-kpi01-kpi01"):
         values[".clientdata_output_" + input_id + "_hidden"] = False
-    values[".clientdata_output_" + CHART + "_width"] = 1000
-    values[".clientdata_output_" + CHART + "_height"] = 400
+    values[".clientdata_output_" + chart_id + "_width"] = 1000
+    values[".clientdata_output_" + chart_id + "_height"] = 400
     return values
 
 
 class SalaClient:
     """Small client for the Sala's Shiny WebSocket protocol."""
 
-    def __init__(self, websocket, artifact_dir: Path | None):
+    def __init__(self, websocket, artifact_dir: Path | None, case_definition: str = "confirmados"):
+        self.case_definition = check_case_definition(case_definition)
         self.websocket = websocket
         self.artifact_dir = artifact_dir
         self.sequence = 0
@@ -146,21 +177,26 @@ class SalaClient:
     async def extract(self, year: int, province: str = "0", district: str = "0", level: str = "distrito") -> dict:
         self.run_number += 1
         response = await self.call({"ten-run:shiny.action": self.run_number})
-        if CHART not in response:
+        chart_id = CHARTS[self.case_definition]
+        if chart_id not in response:
             raise RuntimeError("Sala did not return a fresh weekly chart")
-        chart = response[CHART]["x"]["opts"]
-        geography = ["PIURA", *(name for name in (province, district) if name != "0")]
-        expected = "DENGUE - " + ", ".join(geography)
-        if normalize_sala(chart["title"][0].get("subtext", "")) != normalize_sala(expected):
-            raise RuntimeError(f"Sala returned a chart for the wrong geography: expected {expected}")
-        points = confirmed_weekly_points(chart, year)
+        chart = response[chart_id]["x"]["opts"]
+        if self.case_definition == "confirmados":
+            geography = ["PIURA", *(name for name in (province, district) if name != "0")]
+            expected = "DENGUE - " + ", ".join(geography)
+            if normalize_sala(chart["title"][0].get("subtext", "")) != normalize_sala(expected):
+                raise RuntimeError(f"Sala returned a chart for the wrong geography: expected {expected}")
+            points = confirmed_weekly_points(chart, year)
+        else:
+            points = notified_weekly_points(chart, year)
         record = {
             "departamento": "PIURA", "provincia": province, "distrito": district,
-            "nivel": level, "anio": year, "tipo_dx": "C",
+            "nivel": level, "anio": year,
+            **({"tipo_dx": "C"} if self.case_definition == "confirmados" else {}),
             "consulta_utc": datetime.now(timezone.utc).isoformat(),
             "fuente": URL, "titulo": chart["title"][0], "points": points,
             "kpi": {key: value for key, value in response.items() if "kpi" in key},
-            "chart": response[CHART],
+            "chart": response[chart_id],
         }
         if self.artifact_dir:
             name = f"{level}_{province}_{district}".replace(" ", "_").replace("/", "_")
@@ -174,9 +210,10 @@ class SalaClient:
 
 async def scrape_sala(
     year: int, targets: set[tuple[str, str]], artifact_dir: Path | None = None,
-    url: str = URL,
+    url: str = URL, *, case_definition: str = "confirmados",
 ) -> tuple[list[dict], list[dict]]:
-    """Scrape requested normalized (province, district) labels for one year."""
+    """Scrape requested normalized (province, district) labels for one year, for one case definition."""
+    check_case_definition(case_definition)
     try:
         from websockets.asyncio.client import connect
     except ImportError as exc:
@@ -189,11 +226,14 @@ async def scrape_sala(
         async with connect(socket_url, origin="https://app7.dge.gob.pe", open_timeout=40, max_size=20_000_000) as websocket:
             if await websocket.recv() != "o":
                 raise RuntimeError("Sala did not open the Shiny socket")
-            client = SalaClient(websocket, artifact_dir)
+            client = SalaClient(websocket, artifact_dir, case_definition)
             try:
                 await client.send("0|o|")
-                await client.call(initial_inputs(page), method="init")
-                await client.call({"ten-fyear": str(year), "ten-fdepa-filter": "PIURA"})
+                await client.call(initial_inputs(page, case_definition), method="init")
+                selection = {"ten-fyear": str(year), "ten-fdepa-filter": "PIURA"}
+                if case_definition == "notificados":
+                    selection["ten-tog02c"] = "2"
+                await client.call(selection)
                 controls = [await client.extract(year, level="departamento")]
                 records = []
                 found = set()

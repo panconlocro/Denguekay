@@ -155,6 +155,8 @@ def main(argv=None):
     parser.add_argument("--repeticiones", type=int, default=20)
     parser.add_argument("--calentamiento", type=int, default=2)
     parser.add_argument("--incluir-escrituras", action="store_true", help="Agrega ejecuciones reales; usar una copia de la BD")
+    parser.add_argument("--limite-segundos", type=float, default=5,
+                        help="Límite del p95 de cada operación (5 por defecto; la HU0016-3 de la US v1.4 pide 2 para las lecturas)")
     parser.add_argument("--salida", default=str(API_BENCHMARK_JSON.relative_to(ROOT)), help="Archivo JSON de mediciones; ruta relativa al repo")
     options = parser.parse_args(argv)
     load_dotenv(ENV_FILE, override=False)
@@ -164,7 +166,7 @@ def main(argv=None):
         parser.error("La salida debe estar en models/ o docs/backend/; nunca en data/")
     arguments = dict(horizons=None if options.horizontes is None else tuple(options.horizontes),
         repetitions=options.repeticiones, warmup=options.calentamiento, include_writes=options.incluir_escrituras,
-        api_key=os.environ.get("API_KEY", ""))
+        api_key=os.environ.get("API_KEY", ""), limit=options.limite_segundos)
     try:
         if options.url:
             parts = urlsplit(options.url)

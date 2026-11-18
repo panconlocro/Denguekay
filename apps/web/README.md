@@ -52,6 +52,16 @@ son públicas y se incorporan al build: nunca colocar API_KEY ni credenciales de
 Configurar CORS en la API para el origen del frontend y el hosting de la SPA para devolver index.html
 al abrir rutas internas.
 
+### Desplegar en Vercel
+
+Configurar el proyecto con `apps/web` como **Root Directory**, `main` como rama de producción
+y el preset **Vite**. El comando de build es `npm run build` y la carpeta de salida es `dist`.
+Definir `VITE_API_BASE_URL=https://<api>.onrender.com/api/v1` y `VITE_DATA_SOURCE=api`
+antes del build. En Render, agregar el dominio exacto de Vercel a `CORS_ORIGINS`.
+
+`vercel.json` permite abrir y recargar rutas como `/mapa` y `/distritos/200101`.
+Tras desplegar, comprobar ambas rutas, el manual PDF y las consultas a la API.
+
 ### Demo local V4 con b3
 
 La demo V4 publica la semilla 17 del paquete congelado del paper, con origen en la SE 41 de 2026.
@@ -117,16 +127,18 @@ preparada en esa ruta, usa `npm run dev:demo:v2`.
 
 ## Límites y siguientes entregas
 
-- El mapa usa centroides reales; no usa los polígonos esquemáticos de Figma. Soporta Point, Polygon y
-  MultiPolygon. Los polígonos requieren una fuente publicable en el backend. El mapa base usa
+- El mapa muestra los límites distritales (COD-AB de Perú, IGN, OCHA/HDX, CC BY-IGO 3.0, con su atribución) y
+  usa el centroide real de un distrito si la API no trae su límite; no usa los polígonos esquemáticos de Figma.
+  Soporta Point, Polygon y MultiPolygon. El mapa base usa
   OpenStreetMap con atribución y conexión, sujeto a su
   [política de teselas](https://operations.osmfoundation.org/policies/tiles/).
   Si no cargan las teselas, los marcadores permanecen sobre el fondo del mapa.
 - La API no publica serie regional ni incidencia: esos componentes explican su ausencia.
   Seleccionar un distrito muestra su serie real; no se inventan curvas ni poblaciones.
 - Desempeño muestra métricas por bloque, comparación con persistencia, importancias y trazabilidad
-  de cada versión. Ayuda incluye búsqueda, leyenda vigente y un manual PDF descargable de cuatro
-  páginas. Capacitación y canal de soporte siguen pendientes de definición y publicación.
+  de cada versión. Ayuda incluye búsqueda, leyenda vigente y un manual PDF descargable de seis
+  páginas (`tools/build_manual.py`, a partir de `./src/content/help.json`). El soporte es por correo a Rosa Rodríguez y
+  Nicolás Miranda (enlaces `mailto` en la tarjeta Soporte y en el manual).
 - El objetivo corresponde al corte publicado: mapa y resumen no aceptan corte histórico.
   La serie permite rangos personalizados. El umbral futuro de brote sigue sin publicarse por la API.
 - No se muestran explicaciones individuales ni agregados de vecinos que la API no expone.

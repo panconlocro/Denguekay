@@ -16,7 +16,7 @@ from backend_support import datos_muestra, entorno_bd, motor_temporal
 from serving_support import preparar_muestra, publish_sample
 from apps.api.cache import ReadCache
 from apps.api.main import create_app
-from denguekay.db.models import Alert, Run, Prediction, ModelVersion
+from denguekay.db.models import Alert, District, Run, Prediction, ModelVersion
 from denguekay.db.session import make_engine, transaction
 from denguekay.serving.storage import LocalStorage
 from denguekay.serving.load_data import persist_load
@@ -186,6 +186,20 @@ class TestAPIReal(unittest.TestCase):
         self.assertEqual(len(r["leyenda"]), 5)
         h3 = self.get("/mapa-riesgo?horizonte=3")
         self.assertEqual(h3["features"][0]["properties"]["motivo"], "sin modelo para h=3")
+
+    def test_mapa_riesgo_poligonos_con_respaldo_de_centroide(self):
+        cuadrado = [[-80.0, -5.0], [-80.0, -5.1], [-80.1, -5.1], [-80.1, -5.0], [-80.0, -5.0]]
+        with transaction(self.motor) as s:
+            s.get(District, "200101").geometria = {"type": "Polygon", "coordinates": [cuadrado]}
+            s.get(District, "200104").geometria = {"type": "MultiPolygon", "coordinates": [[cuadrado], [cuadrado]]}
+        r = self.get("/mapa-riesgo?horizonte=2")
+        tipos = {x["id"]: x["geometry"]["type"] for x in r["features"]}
+        self.assertEqual((tipos["200101"], tipos["200104"]), ("Polygon", "MultiPolygon"))
+        self.assertEqual({t for u, t in tipos.items() if u not in ("200101", "200104")}, {"Point"})  # centroide de respaldo
+        self.assertEqual(len(r["features"]), 65)
+        f = next(x for x in r["features"] if x["id"] == "200101")
+        self.assertEqual(f["geometry"]["coordinates"][0][0], [-80.0, -5.0])
+        self.assertEqual(f["properties"]["nivel_riesgo"], "muy_alto")   # el riesgo no depende de la geometría
 
     def test_alertas_filtros_y_detalle(self):
         r = self.get("/alertas?horizonte=2&ubigeo=200101&nivel=muy_alto&estado=activa")

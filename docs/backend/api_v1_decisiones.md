@@ -203,8 +203,9 @@ frontend tendría que rediseñar la ficha del distrito.
 
 **C4. Geometría del mapa.**
 *Recomendación:* tipar `features` en el esquema como GeoJSON (RFC 7946), con `geometry` de tipo `Point`,
-`Polygon` o `MultiPolygon`. Hoy se sirve `Point` (centroide, `queries.py:228, 237`); los polígonos llegarán
-cuando haya una fuente con licencia (según el encargo, Tabla 35 de OE2; esa tabla no está en
+`Polygon` o `MultiPolygon`. Desde la migración `0010_v4` se sirve el `Polygon` o `MultiPolygon` de cada distrito (centroide `Point` si falta);
+los polígonos vienen del COD-AB de Perú (ver `desviaciones_oe2.md`); antes se servía solo `Point` y los polígonos llegarían
+cuando hubiera una fuente con licencia (según el encargo, Tabla 35 de OE2; esa tabla no está en
 `especificacion_oe2.md`, así que no la verifiqué).
 *Por qué:* hoy `features` es `list[dict]` sin tipar (`schemas.py:148`). Tiparlo ya permite generar tipos
 TypeScript útiles, y aceptar polígonos desde v1 evita un cambio que rompa el contrato.

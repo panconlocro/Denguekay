@@ -26,6 +26,7 @@ from denguekay.db.models import (Alert, Base, District, Run, VariableImportance,
                             WeeklyObservation, SystemParameter, Prediction, Province,
                             EpiWeek, ModelVersion)
 from denguekay.db.session import make_engine, transaction
+from denguekay.serving.inference import update_alerts
 
 TABLAS_OE2 = {"provincia", "distrito", "semana_epidemiologica", "observacion_semanal",
               "version_modelo", "ejecucion", "prediccion", "alerta", "parametro_sistema"}
@@ -145,7 +146,7 @@ class EsquemaOE2:
                 diferencias = compare_metadata(MigrationContext.configure(conexion), Base.metadata)
         self.assertEqual(diferencias, [])
         tablas = set(inspect(self.motor).get_table_names())
-        self.assertEqual(tablas, TABLAS_OE2 | {"importancia_variable", "alembic_version"})
+        self.assertEqual(tablas, TABLAS_OE2 | {"importancia_variable", "observacion_nino12", "alembic_version"})
         indices = {i["name"] for t in tablas for i in inspect(self.motor).get_indexes(t)}
         self.assertLessEqual({"ix_pred_objetivo", "ix_alerta_estado", "ix_obs_semana",
                               "ix_ejecucion_tipo_inicio", "ux_version_activa"}, indices)
@@ -153,8 +154,9 @@ class EsquemaOE2:
     def test_semillas_de_parametros(self):
         with transaction(self.motor) as s:
             valores = {p.clave: p.valor for p in s.scalars(select(SystemParameter))}
-        # Semillas del DDL (0003_oe2), el horizonte por defecto (0004_v1), el nivel del intervalo (0005_v1) y la
-        # fila vacía de la selección experimental (0006_v1: la fija la publicación, sin datos de modelos).
+        # Semillas del DDL (0003_oe2), el horizonte por defecto (0004_v1), el nivel del intervalo (0005_v1), la
+        # fila vacía de la selección experimental (0006_v1: la fija la publicación, sin datos de modelos) y los
+        # umbrales de la US v1.4 (0009_v4).
         self.assertEqual(set(valores), {"regla_brote", "cortes_riesgo", "umbrales_aceptacion", "horizonte_por_defecto",
                                         "nivel_intervalo_casos", "seleccion_experimental"})
         self.assertEqual(valores["seleccion_experimental"], {})
@@ -162,8 +164,8 @@ class EsquemaOE2:
         self.assertEqual(valores["nivel_intervalo_casos"], {"nivel": 0.80})
         self.assertEqual(valores["regla_brote"], {"anios_previos": 5, "k_desviaciones": 1.5, "minimo_casos": 2})
         self.assertEqual(valores["cortes_riesgo"], {"medio": 0.25, "alto": 0.50, "muy_alto": 0.75})
-        self.assertEqual(valores["umbrales_aceptacion"]["bloque"], "temporada_2024")
-        self.assertEqual(valores["umbrales_aceptacion"]["razon_error_base"], 0.85)
+        self.assertEqual(valores["umbrales_aceptacion"], {"recall": 0.65, "precision": 0.60, "f1": 0.70,
+                                                          "razon_error_base": 0.90, "bloque": "temporadas_2022_2026"})
 
     # --- CHECK, uno por caso inválido --------------------------------------
 
@@ -331,6 +333,7 @@ class TestEsquemaOE2SQLite(EsquemaOE2, unittest.TestCase):
     def test_migracion_0004_solo_datos_y_reversible(self):
         """0004_v1 siembra horizonte_por_defecto y su downgrade lo quita sin tocar el esquema."""
         consulta = text("SELECT valor FROM parametro_sistema WHERE clave = 'horizonte_por_defecto'")
+        bajar_una_revision(self.motor, "0004_v1")
         tablas = set(inspect(self.motor).get_table_names())
         bajar_una_revision(self.motor, "0003_oe2")
         with self.motor.connect() as conexion:
@@ -436,11 +439,11 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
     def test_rls_politicas_y_roles(self):
         rls = dict(self.consulta("SELECT relname, relrowsecurity FROM pg_class WHERE relkind = 'r' "
                                  "AND relnamespace = 'public'::regnamespace"))
-        for tabla in TABLAS_OE2 | {"importancia_variable"}:
+        for tabla in TABLAS_OE2 | {"importancia_variable", "observacion_nino12"}:
             with self.subTest(tabla=tabla):
                 self.assertTrue(rls[tabla])
         politicas = {r[0] for r in self.consulta("SELECT policyname FROM pg_policies WHERE schemaname = 'public'")}
-        self.assertEqual(politicas, {f"servicio_{t}" for t in TABLAS_OE2 | {"importancia_variable"}}
+        self.assertEqual(politicas, {f"servicio_{t}" for t in TABLAS_OE2 | {"importancia_variable", "observacion_nino12"}}
                          | {"pipeline_seleccion_experimental"})
         roles = dict(self.consulta("SELECT rolname, rolcanlogin FROM pg_roles WHERE rolname IN ('rol_api', 'rol_pipeline')"))
         self.assertEqual(roles, {"rol_api": False, "rol_pipeline": False})
@@ -490,6 +493,24 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
             return self.consulta(f"SELECT has_column_privilege('{rol}', 'parametro_sistema', '{columna}', 'UPDATE')")[0][0]
         self.assertEqual((tiene("rol_pipeline", "valor"), tiene("rol_pipeline", "clave"), tiene("rol_api", "valor")),
                          (True, False, False))
+
+    def test_pipeline_creates_and_withdraws_alerts(self):
+        with transaction(self.motor) as session:
+            session.execute(text("SET LOCAL ROLE rol_pipeline"))
+            prediction = Prediction(**self.fila_prediccion())
+            session.add(prediction)
+            session.flush()
+
+            self.assertEqual(update_alerts(session, 2, 202551), {"nuevas_o_actualizadas": 1, "retiradas": 0})
+            alert = session.scalars(select(Alert)).one()
+            self.assertEqual((alert.nivel, alert.estado), ("alto", "activa"))
+
+            prediction.probabilidad_brote, prediction.nivel_riesgo = 0.3, "medio"
+            session.flush()
+            self.assertEqual(update_alerts(session, 2, 202551), {"nuevas_o_actualizadas": 0, "retiradas": 1})
+            self.assertEqual(alert.estado, "retirada")
+            self.assertIsNotNone(alert.fecha_retiro)
+            self.assertFalse(session.scalar(text("SELECT has_table_privilege(current_user, 'alerta', 'DELETE')")))
 
     def test_huella_de_ingesta_unica(self):
         # setUp ya creó una ingesta exitosa con huella h1.

@@ -53,5 +53,20 @@ class TestConfiguracionPorEntorno(unittest.TestCase):
         self.assertEqual(local.publication_options(), deployed.publication_options())
 
 
+    def test_el_paquete_apunta_a_los_silver_operativos_de_la_v4(self):
+        from denguekay.config.paths import (OPERATIONAL_CHIRPS, OPERATIONAL_ENSO, OPERATIONAL_ERA5_LAND,
+                                            OPERATIONAL_SALA, ROOT)
+        from denguekay.serving.predictors import v4_b3_live
+
+        cfg = service_settings(CONFIG, environ={})
+        self.assertEqual(cfg.tipo_paquete, "v4_b3_live")
+        self.assertEqual(cfg.opciones["perfil_datos"], "fuentes")
+        for key, path in (("sala", OPERATIONAL_SALA), ("era5_land", OPERATIONAL_ERA5_LAND),
+                          ("chirps", OPERATIONAL_CHIRPS), ("nino12", OPERATIONAL_ENSO)):
+            with self.subTest(key=key):
+                self.assertEqual(cfg.opciones[key], path.relative_to(ROOT).as_posix())
+        v4_b3_live.validate((2, 3, 4), cfg.opciones)
+
+
 if __name__ == "__main__":
     unittest.main()

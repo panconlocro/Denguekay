@@ -40,6 +40,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import select
 
+from denguekay.config.paths import DATA_DIR
 import equivalence_support as eq
 import v2_support as vs
 from backend_support import motor_temporal
@@ -205,7 +206,7 @@ class TestV2RefitParity(unittest.TestCase):
     """Everything the fixtures hold from the model, recomputed now from data/ (CPU with 2 threads)."""
 
     def test_current_code_reproduces_the_recorded_model(self):
-        result = vs.compute_frozen(vs.ROOT, vs.ROOT / "data")
+        result = vs.compute_frozen(vs.ROOT, DATA_DIR)   # data/ or data_anteriores/<version> (DENGUEKAY_DATA_DIR)
         self.assertEqual(result["origenes"], (vs.FIXTURES / "origenes_muestra.csv").read_text(encoding="utf-8").replace("\r\n", "\n"))
         self.assertEqual(result["predicciones"], (vs.FIXTURES / "predicciones_muestra.csv").read_text(encoding="utf-8").replace("\r\n", "\n"))
         meta = vs.package_meta()

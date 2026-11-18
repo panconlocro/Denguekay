@@ -7,11 +7,48 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 
 | Versión | Estado | Tag | Ficha |
 |---|---|---|---|
-| v4 | congelada para el paper | — | [v4/ficha.md](v4/ficha.md) |
+| v4 | congelada para el paper | `model/v4` | [v4/ficha.md](v4/ficha.md) |
 | v3 | vigente y servida (experimental) | `model/v3` | [v3/ficha.md](v3/ficha.md) |
 | v2 | reemplazada por la v3 (sigue registrada como `v2_e3_s4`) | `model/v2` (`424a148`) | [v2/ficha.md](v2/ficha.md) |
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
+
+## 2026-11-17 · Comando de reentrenamiento de la V4
+
+- `python -m denguekay.model.refit_v4` vuelve a ajustar el **mismo modelo** (la V4: `b3_obs`, semilla 17, misma
+  configuración) con datos nuevos y deja un paquete en una carpeta nueva; se sirve con la opción `paquete_dir` de
+  `serving.paquete.opciones`. **No cambia la versión** ni requiere ficha, Release ni tag nuevos.
+- Verificado contra la V4 con su corte (17/10/2026): variables de entrenamiento idénticas, pesos de mezcla y calibración de
+  la persistencia iguales, Platt dentro de 5 × 10⁻⁵; el booster no es idéntico bit a bit (depende del número de hilos).
+  Detalle en [reentrenamiento.md](../../docs/modeling/reentrenamiento.md).
+
+## 2026-11-17 · Umbrales de aceptación de la US v1.4 (HU0007-4)
+
+- La migración `0009_v4` fija `parametro_sistema.umbrales_aceptacion` en Recall ≥ 0,65, Precision ≥ 0,60, F1 ≥ 0,70 y
+  razón de error ≤ 0,90 sobre el bloque `temporadas_2022_2026` (semanas distritales de `temporada_2022` a
+  `temporada_2026` agregadas). Las métricas de cada versión V4 llevan ese bloque.
+- Con esos umbrales las seis versiones de la V4 (clasificación y regresión en h2, h3 y h4) quedan `validado` (retrospectivo,
+  una semilla; el agregado descansa en las temporadas 2022–2024); v0 a v3
+  no traen el bloque y quedan `experimental`. Los umbrales se revisaron **después de ver los resultados**; la evaluación
+  independiente es la prospectiva 2026-27. No cambia el modelo ni sus boosters.
+- Detalle y cifras: [v4/ficha.md](v4/ficha.md#aceptación-hu0007-4-us-v14).
+
+## 2026-11-17 · Actualización semanal de la V4
+
+- `python -m denguekay.pipelines.v4_weekly` actualiza cada semana las fuentes que cambian (Sala Situacional, ERA5-Land,
+  CHIRPS y Niño 1+2) en `data/silver/operativo/`, sin el corte congelado, las carga en la BD y emite h2, h3 y h4 con el
+  paquete **congelado** `v4_b3_live`, archivando cada emisión (fecha, insumos, pronósticos y vectores). **No cambia el
+  modelo ni se reentrena**: la V4 sigue siendo la del tag `model/v4`.
+- Política de reentrenamiento: anual, por temporada, a mano ([reentrenamiento.md](../../docs/modeling/reentrenamiento.md)).
+  Es un criterio operativo; no se evaluó reentrenar con mayor frecuencia.
+- Operación y programación: [docs/backend/operacion.md](../../docs/backend/operacion.md#actualización-semanal-v4).
+
+## 2026-11-15 · Pipeline de datos V4
+
+- `run_all --version v4 --verificar` construye el integrado de confirmados y el gold B3 de h2–h4, y coteja
+  los insumos con los manifiestos congelados. La reproducción exacta usa los insumos del Release `model/v4`.
+- `v4_b3_live` puede cargar el integrado y las observaciones generadas por el pipeline. La publicación
+  conserva el booster y las métricas congeladas. Pasos y resultados en la [guía de V4](../../docs/modeling/reproducir_v4.md).
 
 ## 2026-11-12 · v4 congelada para el paper
 

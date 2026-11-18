@@ -5,7 +5,7 @@ import { useRiskMap } from '../api/queries';
 import { RiskMapView } from '../components/Visuals';
 import { Card, DataTag, Empty, Failure, Loading, RiskChip } from '../components/ui';
 import { inSelection } from '../lib/dashboard';
-import { districtPath, intervalText, mapCounts } from '../lib/district';
+import { districtPath, intervalText, mapCopy, mapCounts } from '../lib/district';
 import { date, number, percent, weekLabel } from '../lib/format';
 
 export function MapPage() {
@@ -84,6 +84,7 @@ export function MapPage() {
     (f) => f.properties.estado !== 'disponible' || f.properties.nivel_riesgo == null,
   );
   const counts = mapCounts(visible);
+  const copy = mapCopy(visible);
   const p = selected?.properties;
   const available = p?.estado === 'disponible';
   const provinceId = districts.find((d) => d.ubigeo === selectedId)?.ubigeo_provincia || '';
@@ -92,18 +93,14 @@ export function MapPage() {
       <p className="scope-note">
         {weekLabel(visible.semana_objetivo)} · objetivo{' '}
         {date(visible.semana_objetivo?.fecha_inicio)} – {date(visible.semana_objetivo?.fecha_fin)} ·
-        corte {weekLabel(visible.semana_corte)}. Selecciona un marcador o usa el selector del panel.
+        corte {weekLabel(visible.semana_corte)}. Selecciona un distrito en el mapa o usa el selector
+        del panel.
       </p>
       <div className="map-layout">
-        <Card
-          title="Mapa de riesgo distrital"
-          subtitle="Centroides distritales · selección con clic, Enter o barra espaciadora"
-          className="map-main"
-        >
+        <Card title="Mapa de riesgo distrital" subtitle={copy.subtitle} className="map-main">
           <RiskMapView data={visible} select={select} selected={selectedId} />
           <p className="footnote">
-            {visible.features.length} distritos representados. Los puntos no delimitan el
-            territorio; la leyenda procede de la API.
+            {visible.features.length} distritos representados. {copy.footnote}
           </p>
         </Card>
         <div className="stack">

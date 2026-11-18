@@ -28,7 +28,7 @@ decisiones del contrato v1: [api_v1_decisiones.md](api_v1_decisiones.md). Guía 
 | GET `/predicciones?horizonte=&ubigeo=&corte=` | Público | HU0010, HU0011 | Predicciones del corte vigente (o de `corte`): probabilidad, nivel, casos estimados, intervalo, línea base, `experimental` |
 | GET `/series/{ubigeo}?horizonte=&desde=&hasta=` | Público | HU0013 | Semanas continuas con casos observados y la predicción cuyo objetivo es esa semana |
 | GET `/tablero/resumen?horizonte=` | Público | HU0012 | Conteo por nivel, alertas activas, casos estimados regionales (null si falta un distrito) y observados |
-| GET `/mapa-riesgo?horizonte=` | Público | HU0014 | GeoJSON `FeatureCollection` (geometría `Point`, `Polygon` o `MultiPolygon`; hoy centroides) con nivel o «Sin datos» y leyenda |
+| GET `/mapa-riesgo?horizonte=` | Público | HU0014 | GeoJSON `FeatureCollection` (geometría `Polygon` o `MultiPolygon` por distrito; `Point` (centroide) si falta el límite) con nivel o «Sin datos» y leyenda |
 | GET `/alertas?horizonte=&ubigeo=&nivel=&estado=` | Público | HU0015 | Alertas alto/muy_alto con `cambio`, estado y su predicción |
 | GET `/modelos/activo?horizonte=` | Público | HU0008 | Versión en uso por tarea y horizonte (`seleccion`: activa o experimental) |
 | POST `/admin/inferencias` | `X-API-Key` | HU0009 | Cuerpo `{"horizonte": 2|3|4, "id_semana_corte": opcional}`; resumen de la ejecución |
