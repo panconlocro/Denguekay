@@ -1,111 +1,126 @@
-# Trazabilidad de historias de usuario (US v1.4)
+# Trazabilidad de historias de usuario (criterios de aceptación finales)
 
-*Actualizada: 17/11/2026, sobre `develop` con la V4 como configuración vigente.*
+*Actualizada: 17/11/2026, sobre la rama `feat/close-user-stories` (parte de `develop`, con la V4 como configuración vigente).*
 
-## Fuente y límites de esta tabla
+## Fuente y estados
 
-- La fuente es el documento de criterios de aceptación (`US_Criterios_De_Aceptacion`, versión 1.4). **Ese archivo no
-  está en el repo** (la versión 1 se leyó de Drive, carpeta Docs_TB1, SHA-256 de esa copia
-  `59a3fecb7559dd07912ca7529c90a16ba81c342fa4db276f9c1dfadd486bf139`). Esta tabla se rehízo con los criterios de la
-  v1.4 que se citaron en `PLAN_PENDIENTES_OE3.md` (HU0002-4, HU0003-4, HU0005-4 y -5, HU0007-4, HU0009-2, HU0014-1,
-  HU0016-3, HU0017-3, HU0019 y HU0020) y con los títulos de la v1 para el resto. **Los criterios de las HU0001 a HU0006 y
-  los títulos de la HU0017 que no están en esos textos figuran como «texto por verificar contra la US v1.4»**: no se
-  inventó su redacción.
-- **Cumplido** indica comportamiento comprobado por una prueba o por una ejecución citada; **parcial**, una parte
-  hecha y lo que falta; **se cumple en el OE4**, lo que el alcance del OE3 deja fuera (la ejecución mensual de la
-  HU0009-2, la HU0019 completa y la medición desplegada del SLA); **por verificar**, lo que no se pudo contrastar con
-  el texto de la US.
-- «Retrospectivo» significa evaluado con predicciones archivadas de temporadas ya cerradas; los umbrales de la
-  HU0007-4 se revisaron el 17/11/2026, después de ver los resultados, y la evaluación independiente es la prospectiva
-  2026-27 ([ficha de la V4](../../models/registry/v4/ficha.md)).
-- Prefijo de rutas de la API: `/api/v1`. Los tests están en `tests/` y `apps/web/`.
+- La fuente es el documento `US_Criterios_De_Aceptacion_Final.xlsm` (17/11/2026), **que no está en el repo**. SHA-256 de la
+  copia usada: `2d3fc83c9378e2f44baa31d10bfb89a9850c730943b0a72112e093476d48c05d`. La actualización semanal es la HU0019; no
+  existe una HU0020. Hay una fila por escenario, 76 en total.
+- **cumplido**: lo prueba un test o una ejecución real citados en la fila. Los tests se corren con
+  `python -m unittest discover -s tests` y, los del front, con `npm test` y `npx playwright test` en `apps/web/`.
+- **cumplido retrospectivo**: solo la HU0007-4. La evaluación usa predicciones archivadas de temporadas ya cerradas; el
+  resultado agregado descansa en 2022–2024, con una semilla, y los umbrales se revisaron el 17/11/2026 después de ver los
+  resultados. La evaluación independiente es la prospectiva 2026-27 ([ficha de la V4](../../models/registry/v4/ficha.md)).
+- **retirado**: HU0002-3, HU0010-3 y HU0011-2, con su motivo en la fila.
+- `tests/test_traceability.py` comprueba que cada archivo y cada test citados aquí existen y que están los 76 escenarios.
+- Prefijo de rutas de la API: `/api/v1`. Los nombres de test citados son los de la función (`test_…`).
 
 ## HU0001 a HU0006: datos, calidad y variables
 
-| HU | Criterio | Módulo / documento | Evidencia | Estado |
-|---|---|---|---|---|
-| HU0001 | Texto por verificar contra la US v1.4 | Pipeline por versión (`pipelines/notebooks/V0` a `V4`), `docs/pipeline.md`, `docs/reproducibilidad.md` | `tests/pipelines/test_run_all.py`, `tests/data/test_v4_reproducibility.py` | **por verificar** |
-| HU0002 | HU0002-4 — Fuentes climáticas: producto, rezago de publicación y disponibilidad al origen | `docs/pipeline.md` («Fuentes climáticas de la V4»); `features/b3.py`, `data/processing/enso_index.py`, `chirps_precipitation.py` | `tests/serving/test_v4_live.py::TestB3Availability`, `tests/data/test_enso.py`, `tests/data/test_chirps_prelim.py` | **cumplido** con reservas documentadas: las fechas de disponibilidad son reglas conservadoras (no se registró la fecha real de publicación de cada dato pasado) y no se verificó cuánto cambian los valores recientes al revisarse |
-| HU0002 | HU0002-1 a HU0002-3 | Texto por verificar | — | **por verificar** |
-| HU0003 | HU0003-4 — Variables sociodemográficas: año de referencia y regla temporal | `docs/pipeline.md` («Sociodemografía»); `data/processing/socio_interpolation.py` | `tests/pipelines/test_weekly_update.py` (extrapolación desde 2026) y `tests/features/test_sociodemographics.py` | **cumplido** con una reserva: la interpolación 2018-2024 usa el extremo de 2025; la V4 no usa variables sociodemográficas |
-| HU0003 | HU0003-1 a HU0003-3 | Texto por verificar | — | **por verificar** |
-| HU0004 | Texto por verificar | Gold y matriz B3 (`features/gold_v4.py`, `features/gold.py`) | `tests/features/`, `tests/fixtures/v4_gold/` | **por verificar** |
-| HU0005 | HU0005-4 — Resumen de cobertura, faltantes, duplicados, descartados y transformaciones | `data/validation/quality_report.py` | `tests/data/test_quality_report.py`; reporte `docs/backend/evidencia/calidad_datos_v4.md` y `.json` | **cumplido**: el reporte se genera en solo lectura sobre el integrado de confirmados |
-| HU0005 | HU0005-5 — Completitud ≥ 95 % y descartes ≤ 5 % | Idem | Idem. Corrida del 17/11/2026: completitud 100 % (30 485 de 30 485 filas esperadas, 65 distritos × 469 semanas); 3 de 171 569 registros originales descartados (0,002 %: las 3 notificaciones de la semana 53 de 2025, fuera del calendario del modelo) | **cumplido**, con la reserva de que `casos` es 100 % por construcción: las semanas sin notificación reciben cero en la unión (el reporte mide aparte que solo el 31,37 % tiene un conteo en la fuente) |
-| HU0005 | HU0005-1 a HU0005-3 | Great Expectations: `data/validation/integrated_expectations.py`, `gold_expectations.py` | `tests/data/test_gx_quality.py` | **por verificar** |
-| HU0006 | HU0006-3 — Diccionario de variables de la configuración final | `model/variable_dictionary.py` | `docs/modeling/diccionario_variables.md` (generado) | **parcial**: el diccionario generado describe la configuración de la v2 (C3 + A3 + B3), no la V4; las 16 columnas de la V4 están en el `paquete.json` congelado y en su ficha |
-| HU0006 | HU0006-1, HU0006-2 | Texto por verificar | — | **por verificar** |
+| Escenario | Módulo / documento | Test o ejecución | Estado |
+|---|---|---|---|
+| HU0001-1 Integración del histórico epidemiológico | `data/processing/epi_cases.py`, `epi_sala.py`, `merge.py`; Release `model/v4` con `models/registry/v4/manifiesto_datos.json` | `tests/data/test_v4_reproducibility.py` · `test_regenerated_files_are_compared_with_the_release_zip`; `tests/data/test_release_bundles.py` · `test_wrong_file_hash_is_rejected` | cumplido |
+| HU0001-2 Estandarización territorial y temporal | `data/keys.py`, `data/calendar.py`, `data/processing/merge.py` | `tests/data/test_calendar.py` · `test_integrado_y_carga_aceptan_calendario_oficial_sin_mutar`; `tests/data/test_loading.py` · `test_detecta_ubigeo_sin_ceros` | cumplido |
+| HU0001-3 Control de duplicados | `data/validation/duplicates.py`, `data/processing/epi_cases.py` (`deduplicate_cases_with_report`), `quality_report.py` | `tests/data/test_duplicates.py` · `test_it_returns_the_control_with_the_documented_rule_and_adds_up_the_cases`; `tests/data/test_quality_report.py` · `test_the_report_records_the_duplicate_control_of_each_epidemiological_source`; evidencia `docs/backend/evidencia/calidad_datos_v4.md` | cumplido |
+| HU0001-4 Detección de registros inválidos | `data/processing/epi_cases.py`, `data/validation/integrated_expectations.py` | `tests/data/test_epi_cases.py` · `test_invalid_confirmed_keys_fail_instead_of_losing_cases`; `tests/pipelines/test_weekly_update.py` · `test_duplicate_keys_are_rejected` | cumplido |
+| HU0002-1 Obtención de variables climáticas | `data/validation/climate_provenance.py`, `quality_report.py`, `docs/pipeline.md` | `tests/data/test_climate_provenance.py` · `test_each_source_takes_its_date_from_where_the_pipeline_leaves_it`, `test_historical_caches_show_the_freeze_date_marked_as_such` | cumplido |
+| HU0002-2 Agregación semanal | `data/processing/weekly_aggregation.py` | `tests/data/test_weekly_aggregation.py` · `test_same_weeks_and_calendar_as_the_full_aggregation`; `tests/data/test_calendar.py` · `test_agregacion_climatica_conserva_semana_53_y_descarta_parcial` | cumplido |
+| HU0002-3 Tratamiento de faltantes climáticos | — | — | retirado el 17/11/2026: se fusionó con HU0005-2, que exige la regla documentada y las cantidades afectadas también para el clima (ver HU0005-2) |
+| HU0002-4 Prevención de fuga temporal | `features/b3.py`, `data/processing/enso_index.py`, `chirps_precipitation.py`; `docs/pipeline.md` | `tests/serving/test_v4_live.py` · `test_unpublished_weather_and_future_nino_are_excluded`; `tests/features/test_gold_v4.py` · `test_uses_only_the_five_eligible_weeks_and_three_published_months` | cumplido |
+| HU0003-1 Integración de fuentes del INEI | `data/processing/socio_interpolation.py`; `docs/pipeline.md` (unidad y procedencia) | `tests/test_documentation.py` · `test_the_annual_silver_keeps_the_district_and_the_year`, `test_the_pipeline_guide_gives_reference_year_unit_and_source_of_every_variable` | cumplido |
+| HU0003-2 Homologación de distritos | `data/processing/merge.py` (`diagnose_unmatched_districts`, `merge_meteo_socio`), `integrated_expectations.py` (`validate_complete`), `quality_report.py` | `tests/data/test_merge_territorial.py` · `test_the_merge_stops_and_names_the_districts`, `test_the_merge_stops_on_an_ambiguous_district`, `test_the_error_carries_the_affected_districts_and_not_only_the_count`; `tests/data/test_quality_report.py` · `test_the_territorial_section_names_the_districts_without_correspondence` | cumplido |
+| HU0003-3 Alineación con la granularidad semanal | `data/processing/socio_interpolation.py`, `features/sociodemographics.py` | `tests/features/test_sociodemographics.py` · `test_disponibilidad_segun_origen_para_dos_y_cuatro`; `tests/pipelines/test_weekly_update.py` · `test_demographic_extrapolation_caps_fractions` | cumplido |
+| HU0003-4 Trazabilidad temporal | `docs/pipeline.md` («Sociodemografía: año de referencia y regla temporal») | `tests/test_documentation.py` · `test_the_pipeline_guide_gives_reference_year_unit_and_source_of_every_variable` | cumplido |
+| HU0004-1 Etiquetado con parámetros definidos | `features/outbreak_label.py`, `features/long_history.py` (`OUTBREAK_RULE`), `parametro_sistema.regla_brote`, manifiesto de gold; `docs/modeling/regla_brote.md` | `tests/features/test_outbreak_label.py` · `test_media_desviacion_y_piso`, `test_semana_53_comparte_referencia_52`; `tests/db/test_oe2_schema.py` (valor de `regla_brote`); `tests/features/test_future_outbreak_threshold.py` · `test_exactamente_igual_a_la_regla_de_gold` | cumplido |
+| HU0004-2 Cambio controlado de definición | `features/gold.py`, `features/gold_v4.py`; `docs/modeling/regla_brote.md` | `tests/features/test_gold.py` · `test_un_cambio_de_regla_regenera_etiquetas_reproducibles_y_deja_su_configuracion`, `test_escritura_repetida_identica_y_fallo_sin_salida` | cumplido |
+| HU0004-3 Datos insuficientes para etiquetar | `features/outbreak_label.py` | `tests/features/test_outbreak_label.py` · `test_el_etiquetado_se_detiene_e_indica_los_anios_de_historia_que_faltan`, `test_el_umbral_de_semanas_objetivo_se_detiene_si_falta_historia_anterior_al_panel` | cumplido |
+| HU0004-4 Ausencia de información futura | `features/outbreak_label.py` (`future_outbreak_threshold`) | `tests/features/test_future_outbreak_threshold.py` · `test_no_usa_el_anio_objetivo`; `tests/features/test_outbreak_threshold_no_leak.py` · `test_sintetico_varios_cortes` | cumplido |
+| HU0004-5 Documentación y sensibilidad de la regla | `docs/modeling/regla_brote.md` (parámetros, semanas positivas por año, sensibilidad del estudio 07, fundamento y declaración de regla operativa) | cifras recalculadas por el subagente `revisor-modelado` (tabla en el PR) y por `label_seasonal_outbreak`; `tests/features/test_gold.py` · `test_un_cambio_de_regla_regenera_etiquetas_reproducibles_y_deja_su_configuracion` | cumplido |
+| HU0005-1 Ejecución reproducible | `pipelines/run_all.py` (`--verificar`), `data/gold/verificacion_v4.json` | `tests/data/test_v4_reproducibility.py` · `test_verifies_both_profiles_and_reports_drift_without_rewriting_inputs`; `tests/data/test_frozen_inputs.py` · `test_reports_each_version_without_writing` | cumplido |
+| HU0005-2 Tratamiento de valores faltantes y atípicos | `data/processing/weekly_aggregation.py`, `quality_report.py` (nulos por variable) | `tests/data/test_weekly_aggregation.py` · `test_missing_variable_stays_empty_not_zero`; `tests/data/test_quality_report.py` · `test_a_null_in_a_mandatory_column_makes_the_row_incomplete_and_names_the_variable` | cumplido |
+| HU0005-3 Validación de esquema y rangos | `data/validation/integrated_expectations.py`, `gold_expectations.py`, `gx_quality.py` | `tests/data/test_gx_quality.py` · `test_integrado_valido_y_errores_fisicos`, `test_gold_detecta_llave_ubigeo_etiqueta_y_fuga` | cumplido |
+| HU0005-4 Reporte de calidad | `data/validation/quality_report.py` | `tests/data/test_quality_report.py` · `test_the_markdown_has_the_three_sections`; evidencia `docs/backend/evidencia/calidad_datos_v4.md` y `.json` | cumplido |
+| HU0005-5 Completitud mínima del dataset | `data/validation/quality_report.py` | `tests/data/test_quality_report.py` · `test_exactly_95_percent_passes_and_one_row_less_fails`; corrida del 17/11/2026 (hora de Lima) sobre el panel de la V4: completitud 100 % (30 485 de 30 485 filas), 3 de 171 569 registros descartados | cumplido |
+| HU0006-1 Generación de variables temporales | `features/history_calendar.py`, `features/onset_features.py`, `features/b3.py`; `docs/modeling/diccionario_variables.md` | `tests/features/test_history_calendar.py` · `test_cuatro_semanas_solo_utiliza_observaciones_hasta_origen`; `tests/model/test_variable_dictionary_v4.py` · `test_las_16_columnas_de_la_v4_tienen_entrada_completa` | cumplido |
+| HU0006-2 Prevención de fuga de información | `features/gold.py`, `data/validation/forecast_contract.py`, `gold_expectations.py` | `tests/features/test_history_calendar.py` · `test_cambios_despues_del_origen_no_alteran_ningun_horizonte`; `tests/features/test_gold.py` · `test_casos_y_clima_posteriores_al_origen_no_alteran_features`; `tests/data/test_gx_quality.py` · `test_gold_detecta_llave_ubigeo_etiqueta_y_fuga` | cumplido |
+| HU0006-3 Diccionario de variables | `model/variable_dictionary.py`; `docs/modeling/diccionario_variables.md` (V4 vigente; la v2 como histórico) | `tests/model/test_variable_dictionary_v4.py` · `test_una_columna_sin_entrada_hace_fallar_el_diccionario`, `test_el_documento_versionado_es_el_que_genera_el_codigo` | cumplido |
 
 ## HU0007 a HU0009: modelo, desempeño y monitoreo
 
-| HU | Criterio | Módulo / endpoint | Evidencia | Estado |
-|---|---|---|---|---|
-| HU0007 | HU0007-1 — Modelo base de referencia | `serving/` + protocolo + MLflow; la persistencia sale en las métricas por bloque (`casos_persistencia`) | `tests/serving/test_publish.py` | **cumplido** |
-| HU0007 | HU0007-2 — Validación cruzada temporal | `model/train.py`, `data/validation/forecast_contract.py` | `tests/serving/test_future_rows.py`, `tests/data/test_forecast_contract.py` | **cumplido** |
-| HU0007 | HU0007-3 — Optimización de hiperparámetros | `evaluation/tuning.py` (preregistro, espacio, objetivo y estudio TPE) | `tests/evaluation/test_tuning.py`. La V4 usa los hiperparámetros de su congelamiento | **cumplido** en la investigación; no se reoptimiza en el producto |
-| HU0007 | HU0007-4 — Umbrales de aceptación: Recall ≥ 0,65, Precision ≥ 0,60, F1 ≥ 0,70 (p ≥ 0,50), MAE y RMSE ≤ 90 % de la persistencia, bloque agregado `temporadas_2022_2026` | Migración `0009_v4`, `evaluation/acceptance.py`, `serving/demo_b3_v4.py` (`block_metrics`) | `tests/serving/test_v4_acceptance.py`, `tests/db/test_oe2_schema.py`. V4, semilla 17: h2 0,769 / 0,824 / 0,795; h3 0,723 / 0,827 / 0,772; h4 0,666 / 0,820 / 0,735 (Recall / Precision / F1) | **cumplido, retrospectivo**: las seis versiones de la V4 quedan `validado`; el agregado descansa en 2022-2024 (2025 y 2026 no cumplen por separado), con una semilla y umbrales revisados después de ver los resultados. La v0 a la v3 no traen el bloque: `experimental` |
-| HU0007 | HU0007-5 — Horizonte no validado | `GET /predicciones` y `GET /configuracion` (`experimental`); inferencia sin versión utilizable → `no_disponible` | `tests/api/test_api.py`, `tests/serving/test_inference.py`, `tests/api/test_contract_v1.py` | **cumplido** (el mecanismo; con la V4 los tres horizontes salen sin la marca) |
-| HU0008 | HU0008-1 — Métricas del clasificador | `GET /modelos/{id}` | `tests/api/test_api.py` | **cumplido** |
-| HU0008 | HU0008-2 — Métricas del regresor | `GET /modelos/{id}` | `tests/api/test_api.py` | **cumplido** |
-| HU0008 | HU0008-3 — Validación temporal | `GET /modelos/{id}` (`reproducibilidad.particion_temporal`) | `tests/serving/test_publish.py` | **cumplido** |
-| HU0008 | HU0008-4 — Variables relevantes y limitaciones | `GET /modelos/{id}/variables` | `tests/api/test_api.py` | **cumplido** |
-| HU0009 | HU0009-1 — Registro de versión del modelo | `serving/publish.py`, `version_modelo`, Storage, MLflow; fichas en `models/registry/` | `tests/serving/test_publish.py`, `tests/model/test_registry.py` | **cumplido** |
-| HU0009 | HU0009-2 — Monitoreo de deriva | `serving/drift.py`; informe de `v4_weekly` (`monitoreo_deriva`); `python -m denguekay.serving.drift` | `tests/serving/test_drift.py`, `tests/pipelines/test_v4_weekly.py` | **cumplido en el código** (Precision, Recall, F1, MAE y RMSE de las semanas cerradas frente a la referencia de la HU0007-4; marca > 10 % desde 8 semanas; solo registra, nunca reentrena). **La ejecución mensual se cumple en el OE4** |
-| HU0009 | HU0009-3 — Reentrenamiento controlado | `docs/modeling/reentrenamiento.md`; `serving/emissions.py` (`retraining_due`); `serving/publish.py` | `tests/serving/test_emissions.py` | **parcial**: el reentrenamiento es anual, a mano, y la actualización semanal avisa pero nunca entrena; el primero corresponde al cierre de la temporada 2027 |
-| HU0009 | HU0009-4 — Retorno a una versión validada | `POST /admin/modelos/{version}/activar` | `tests/api/test_api.py::test_activacion`, `tests/serving/test_v4_acceptance.py` (activación de una versión V4 validada) | **cumplido**: archiva la activa anterior, audita en `ejecucion` y exige `cumple_umbrales` |
+| Escenario | Módulo / endpoint | Test o ejecución | Estado |
+|---|---|---|---|
+| HU0007-1 Modelo base de referencia | `model/tracking.py` (MLflow), `serving/publish.py`; la persistencia sale en las métricas por bloque | `tests/model/test_tracking.py` · `test_registra_padre_variantes_y_folds_anidados`; `tests/serving/test_publish.py` · `test_publicacion_registra_versiones_y_oos_sin_inferir` | cumplido |
+| HU0007-2 Validación cruzada temporal | `model/train.py`, `evaluation/protocol.py`, `data/validation/forecast_contract.py` | `tests/evaluation/test_protocol.py` · `test_excluye_etiquetas_no_cerradas_al_corte`; `tests/model/test_train.py` · `test_corte_calendario_no_entrena_con_etiquetas_futuras` | cumplido |
+| HU0007-3 Optimización de hiperparámetros | `evaluation/tuning.py` (estudio Optuna) y `model/tracking.py`; la V4 usa los hiperparámetros de su congelamiento | `tests/evaluation/test_tuning.py` · `test_termina_con_n_trials_ejecutados_y_reanuda`; `tests/model/test_tracking.py` · `test_registra_estudio_con_trials_y_fallidos` | cumplido |
+| HU0007-4 Cumplimiento de umbrales de aceptación | Migración `0009_v4`, `evaluation/acceptance.py`, `serving/parameters.py` (umbrales de `parametro_sistema`, bloque `temporadas_2022_2026`) | `tests/serving/test_v4_acceptance.py` · `test_migration_0009_sets_the_us_v14_values`, `test_the_six_v4_versions_are_validated`, `test_pooled_block_adds_the_seasons_2022_to_2026_and_leaves_the_others` | cumplido retrospectivo: el resultado agregado descansa en 2022–2024, con una semilla, y los umbrales se revisaron después de ver los resultados |
+| HU0007-5 Horizonte no validado | `serving/parameters.py`, `serving/inference.py`; `GET /predicciones` y `/configuracion` (`experimental`) | `tests/serving/test_v4_acceptance.py` · `test_a_metric_just_below_the_threshold_stays_experimental`; `tests/serving/test_inference.py` · `test_sin_version_utilizable_queda_no_disponible`; `tests/api/test_api.py` · `test_predicciones_vigentes_experimentales` | cumplido |
+| HU0008-1 Métricas del modelo de clasificación | `GET /modelos/{id}` | `tests/api/test_api.py` · `test_modelos_activo_detalle_y_variables`; `apps/web/e2e/models-help.spec.ts` | cumplido |
+| HU0008-2 Métricas del modelo de regresión | `GET /modelos/{id}` | `tests/api/test_api.py` · `test_modelos_activo_detalle_y_variables`; `apps/web/src/lib/modelMetrics.test.ts` | cumplido |
+| HU0008-3 Validación temporal | `GET /modelos/{id}` (`reproducibilidad.particion_temporal`) | `tests/serving/test_publish.py` · `test_publicacion_registra_versiones_y_oos_sin_inferir`; `tests/api/test_api.py` · `test_modelos_activo_detalle_y_variables` | cumplido |
+| HU0008-4 Variables relevantes y limitaciones | `GET /modelos/{id}/variables` | `tests/api/test_api.py` · `test_modelos_activo_detalle_y_variables`; `apps/web/e2e/models-help.spec.ts` | cumplido |
+| HU0009-1 Registro de versión del modelo | `serving/publish.py`, `version_modelo`, Storage, MLflow; fichas en `models/registry/` | `tests/serving/test_publish.py` · `test_mismo_paquete_reutiliza_y_otro_crea_versiones_nuevas`; `tests/model/test_registry.py` · `test_every_version_has_its_cards_and_the_changelog_exists` | cumplido |
+| HU0009-2 Monitoreo de deriva | `serving/drift.py`; informe de `v4_weekly`; `.github/workflows/drift_monthly.yml` (mensual) | `tests/serving/test_drift.py` · `test_with_8_weeks_flags_the_degraded_metrics_by_hand_computed_values`, `test_with_fewer_than_8_weeks_only_records`, `test_it_registers_a_maintenance_run_and_changes_no_version`; `tests/test_workflows.py` · `test_it_runs_monthly_at_7_in_lima_and_by_hand`, `test_it_runs_the_drift_review_against_the_same_database` | cumplido |
+| HU0009-3 Reentrenamiento controlado | `model/refit_v4.py` (reajuste del mismo modelo), `docs/modeling/reentrenamiento.md`, `serving/emissions.py` (`retraining_due`), `serving/predictors/v4_b3_live.py` (`paquete_dir`) | `tests/model/test_refit_v4.py` (archivo completo); `tests/serving/test_emissions.py` · `test_a_refit_package_moves_the_labels_cutoff_and_switches_the_notice_off`, `test_false_before_and_true_from_the_close`; `tests/serving/test_v4_live.py` · `test_a_refit_package_is_served_through_paquete_dir_without_the_release_manifest`; `tests/serving/test_publish.py` · `test_mismo_paquete_reutiliza_y_otro_crea_versiones_nuevas` (no modifica versiones anteriores) | cumplido |
+| HU0009-4 Retorno a una versión validada | `POST /admin/modelos/{version}/activar` | `tests/api/test_api.py` · `test_activacion`; `tests/serving/test_v4_acceptance.py` · `test_a_validated_v4_is_published_without_experimental_flag_and_can_be_activated` | cumplido |
 
 ## HU0010 a HU0015: pronóstico, tablero, series, mapa y alertas
 
 La V4 se sirve con el predictor `v4_b3_live` (boosters congelados; el vector se calcula con los datos de la BD al corte). Las
-vistas son `apps/web/` (pruebas de Vitest y de Playwright en `apps/web/e2e/`).
+vistas son `apps/web/` (Vitest y Playwright en `apps/web/src/` y `apps/web/e2e/`).
 
-| HU | Criterio | Endpoint / módulo | Evidencia | Estado |
-|---|---|---|---|---|
-| HU0010 | HU0010-1 — Consulta de probabilidad de brote | `GET /predicciones`; `serving/risk.py` | `tests/api/test_api.py`, `tests/serving/test_policies.py` | **cumplido** (retrospectivo, ver HU0007-4) |
-| HU0010 | HU0010-2 — Horizonte mínimo de alerta | `GET /predicciones?horizonte=2` | `tests/serving/test_v4_live.py`, `tests/serving/test_demo_b3_v4.py` | **cumplido**: h = 2 cumple la HU0007-4 |
-| HU0010 | HU0010-3 — Horizontes de tres y cuatro semanas (meta) | `GET /predicciones?horizonte=3` y `4` | `tests/serving/test_v4_acceptance.py` | **cumplido**: h = 3 y h = 4 cumplen la HU0007-4 (el margen del h = 4 es corto: Recall 0,666 frente a 0,65) |
-| HU0010 | HU0010-4 — Predicción no disponible | `GET /predicciones`, `/mapa-riesgo` | `tests/serving/test_inference.py` | **cumplido**: `no_disponible` con motivo; nunca un riesgo sin vector |
-| HU0011 | HU0011-1 — Consulta de magnitud estimada | `GET /predicciones` (`casos_estimados`, intervalo si existe) | `tests/api/test_api.py` | **cumplido** |
-| HU0011 | HU0011-2 — Coherencia con la selección | `GET /predicciones?ubigeo=`, `/series` | `apps/web/e2e/map-detail.spec.ts` | **cumplido** |
-| HU0011 | HU0011-3 — Estimación no disponible | `GET /predicciones` | `tests/serving/test_inference.py` | **cumplido**: nunca un cero ficticio |
-| HU0012 | HU0012-1 — Vista consolidada | `GET /tablero/resumen`; `DashboardPage` | `tests/api/test_api.py`, `apps/web/e2e/dashboard.spec.ts` | **cumplido** |
-| HU0012 | HU0012-2 — Filtrado del tablero | `GET /tablero/resumen?horizonte=` | `apps/web/e2e/dashboard.spec.ts` | **cumplido** |
-| HU0012 | HU0012-3 — Observado frente a pronosticado | `GET /tablero/resumen`, `GET /series` | `tests/api/test_benchmark.py` | **cumplido** |
-| HU0012 | HU0012-4 — Ausencia parcial de datos | `GET /tablero/resumen` | `tests/api/test_api.py` | **cumplido**: la suma regional es `null` si falta un distrito |
-| HU0013 | HU0013-1 — Serie histórica y pronosticada | `GET /series/{ubigeo}` | `tests/api/test_api.py`, `apps/web/e2e/map-detail.spec.ts` | **cumplido** |
-| HU0013 | HU0013-2 — Cambio de distrito o periodo | `GET /series/{ubigeo}?desde=&hasta=` | `apps/web/e2e/map-detail.spec.ts` | **cumplido** |
-| HU0013 | HU0013-3 — Semanas sin información | `GET /series/{ubigeo}` | `tests/api/test_api.py` | **cumplido**: `null` explícito |
-| HU0014 | HU0014-1 — Mapa distrital de riesgo | `GET /mapa-riesgo`; migración `0010_v4` (`distrito.geometria`); `serving/geometries.py` | `tests/serving/test_geometries.py`, `tests/api/test_api.py::test_mapa_riesgo_poligonos_con_respaldo_de_centroide`, `apps/web/e2e/map-detail.spec.ts` (polígonos), `apps/web/src/lib/district.test.ts` | **cumplido**: 65 polígonos (COD-AB de Perú, IGN, OCHA/HDX, CC BY-IGO 3.0, con atribución en el mapa), centroide de respaldo. **Riesgo:** su publicación en un servicio desplegado se decide antes del despliegue |
-| HU0014 | HU0014-2 — Selección de horizonte | `GET /mapa-riesgo?horizonte=` | `apps/web/e2e/map-detail.spec.ts` | **cumplido** |
-| HU0014 | HU0014-3 — Detalle del distrito | `GET /distritos/{ubigeo}`, `/predicciones?ubigeo=` | `apps/web/e2e/map-detail.spec.ts` | **cumplido** |
-| HU0014 | HU0014-4 — Distrito sin predicción | `GET /mapa-riesgo` | `tests/api/test_api.py`, `apps/web/e2e/map-detail.spec.ts` | **cumplido**: «Sin datos» con motivo |
-| HU0015 | HU0015-1 — Generación de alerta | `serving/inference.py` (`update_alerts`), `GET /alertas` | `tests/serving/test_inference.py` | **cumplido** |
-| HU0015 | HU0015-2 — Priorización de alertas | `GET /alertas?horizonte=&ubigeo=&nivel=` | `tests/api/test_api.py`, `apps/web/e2e/alerts.spec.ts` | **cumplido** |
-| HU0015 | HU0015-3 — Consulta del detalle | `GET /alertas/{id}` | `tests/api/test_api.py` | **cumplido** |
-| HU0015 | HU0015-4 — Actualización del estado de alerta | `serving/inference.py`, `v4_weekly` | `tests/serving/test_inference.py`, `tests/pipelines/test_v4_weekly.py` | **cumplido**: la actualización semanal recalcula alertas y retira las que dejan de aplicar |
+| Escenario | Endpoint / módulo | Test o ejecución | Estado |
+|---|---|---|---|
+| HU0010-1 Consulta de probabilidad de brote | `GET /predicciones`; `serving/risk.py` | `tests/serving/test_policies.py` · `test_bordes_de_riesgo`; `tests/api/test_api.py` · `test_predicciones_vigentes_experimentales`; `apps/web/src/lib/format.test.ts` | cumplido |
+| HU0010-2 Horizontes operativos (2 mínimo; 3 y 4 meta) | `GET /predicciones?horizonte=`; `DashboardPage` (anticipación efectiva) | `apps/web/src/lib/dashboard.test.ts`; `tests/api/test_api.py` · `test_predicciones_retrospectivas_y_h3`; `tests/serving/test_v4_acceptance.py` · `test_the_six_v4_versions_are_validated` | cumplido |
+| HU0010-3 Horizontes de tres y cuatro semanas (meta) | — | — | retirado el 17/11/2026: se fusionó con HU0010-2, que cubre los horizontes de 2, 3 y 4 semanas; el caso no validado está en HU0007-5 |
+| HU0010-4 Predicción no disponible | `GET /predicciones`, `/mapa-riesgo` | `tests/serving/test_inference.py` · `test_sin_version_utilizable_queda_no_disponible`; `apps/web/e2e/dashboard.spec.ts` | cumplido |
+| HU0011-1 Consulta de magnitud estimada | `GET /predicciones` (`casos_estimados`) | `tests/api/test_api.py` · `test_predicciones_vigentes_experimentales` | cumplido |
+| HU0011-2 Coherencia con la selección | — | — | retirado el 17/11/2026: lo cubren HU0016-2, HU0012-2 y HU0013-2 |
+| HU0011-3 Estimación no disponible | `GET /predicciones` | `tests/api/test_api.py` · `test_base_vacia_sin_cero_ficticio`; `tests/serving/test_inference.py` · `test_sin_version_utilizable_queda_no_disponible` | cumplido |
+| HU0012-1 Vista consolidada | `GET /tablero/resumen`; `DashboardPage` | `tests/api/test_api.py` · `test_tablero_resumen`; `apps/web/e2e/dashboard.spec.ts` | cumplido |
+| HU0012-2 Filtrado del tablero | `GET /tablero/resumen?horizonte=`; `DashboardPage` | `apps/web/e2e/dashboard.spec.ts`; `apps/web/src/lib/dashboard.test.ts` | cumplido |
+| HU0012-3 Observado frente a pronosticado | `GET /tablero/resumen`, `GET /series` | `tests/api/test_benchmark.py` · `test_tablero_casos_observados_de_la_ultima_semana`; `apps/web/src/lib/series.test.ts` | cumplido |
+| HU0012-4 Ausencia parcial de datos | `GET /tablero/resumen` | `apps/web/src/lib/dashboard.test.ts`; `apps/web/e2e/dashboard.spec.ts` | cumplido |
+| HU0013-1 Serie histórica y pronosticada | `GET /series/{ubigeo}` | `tests/api/test_api.py` · `test_series_semanas_continuas`; `apps/web/e2e/map-detail.spec.ts` | cumplido |
+| HU0013-2 Cambio de distrito o periodo | `GET /series/{ubigeo}?desde=&hasta=` | `apps/web/e2e/map-detail.spec.ts`; `apps/web/src/lib/series.test.ts` | cumplido |
+| HU0013-3 Semanas sin información | `GET /series/{ubigeo}` | `tests/api/test_api.py` · `test_series_semanas_continuas`; `apps/web/src/lib/series.test.ts` | cumplido |
+| HU0014-1 Mapa distrital de riesgo | `GET /mapa-riesgo`; migración `0010_v4` (`distrito.geometria`); `serving/geometries.py` | `tests/api/test_api.py` · `test_mapa_riesgo_poligonos_con_respaldo_de_centroide`; `tests/serving/test_geometries.py` · `test_65_districts_of_the_catalog_with_string_ubigeo`; `apps/web/e2e/map-detail.spec.ts` | cumplido |
+| HU0014-2 Selección de horizonte | `GET /mapa-riesgo?horizonte=` | `apps/web/e2e/map-detail.spec.ts` | cumplido |
+| HU0014-3 Detalle del distrito | `GET /distritos/{ubigeo}`, `/predicciones?ubigeo=` | `apps/web/e2e/map-detail.spec.ts` | cumplido |
+| HU0014-4 Distrito sin predicción | `GET /mapa-riesgo` | `tests/api/test_api.py` · `test_mapa_riesgo_geojson`; `apps/web/e2e/map-detail.spec.ts` | cumplido |
+| HU0015-1 Generación de alerta | `serving/inference.py` (`update_alerts`), `GET /alertas` | `tests/serving/test_inference.py` · `test_alertas_cambio_y_retiro`; `tests/api/test_api.py` · `test_alertas_filtros_y_detalle` | cumplido |
+| HU0015-2 Priorización de alertas | `GET /alertas?horizonte=&ubigeo=&nivel=` | `tests/api/test_api.py` · `test_alertas_filtros_y_detalle`; `apps/web/src/lib/alerts.test.ts`; `apps/web/e2e/alerts.spec.ts` | cumplido |
+| HU0015-3 Consulta del detalle | `GET /alertas/{id}` | `tests/api/test_api.py` · `test_alertas_filtros_y_detalle`; `apps/web/e2e/alerts.spec.ts` | cumplido |
+| HU0015-4 Actualización del estado de alerta | `serving/inference.py`, `pipelines/v4_weekly.py` | `tests/serving/test_inference.py` · `test_alertas_cambio_y_retiro`; `tests/pipelines/test_v4_weekly.py` · `test_a_new_week_in_the_sala_emits_the_next_cutoff` | cumplido |
 
-## HU0016 a HU0020: API, ayuda, operación y actualización
+## HU0016 a HU0019: API, ayuda, documentación y actualización semanal
 
-| HU | Criterio | Módulo / documento | Evidencia | Estado |
-|---|---|---|---|---|
-| HU0016 | HU0016-1 — Contrato de la API | Todos los routers; OpenAPI v1.1.0 (`openapi_v1.json`, congelado) | `tests/api/test_contract_v1.py`, `tests/test_contract_v1_guards.py` | **cumplido**. El OpenAPI no cambió con los polígonos ni con los umbrales |
-| HU0016 | HU0016-2 — Integración con los servicios de datos | `GET /observaciones`, `/predicciones`, `/series` | `tests/api/test_api.py`, `apps/web/e2e/` | **cumplido** |
-| HU0016 | HU0016-3 — Tiempos de respuesta (SLA) | `apps/api/tools/benchmark.py`, `apps/web/tools/measure_load.mjs` | [sla_local_v4.md](sla_local_v4.md), [benchmark_v4_local.json](benchmark_v4_local.json) y [sla_vistas_v4_local.json](sla_vistas_v4_local.json). Local, 20 repeticiones: 33 lecturas con p95 máximo de 105 ms (límite 2 s) y 6 vistas con p95 máximo de 1 049 ms (límite 10 s) | **cumplido en local**; la medición desplegada **se cumple en el OE4** |
-| HU0016 | HU0016-4 — Manejo de carga y fallos | `apps/api/errors.py`, `dependencies.py`, caché | `tests/api/test_api.py`, `apps/web/e2e/map-detail.spec.ts` | **cumplido**: errores uniformes, BD caída (503) y estados de error y reintento en las vistas |
-| HU0017 | HU0017-3 — Soporte y capacitación | `apps/web/src/content/help.json`, `apps/web/public/manual-usuario.pdf` | `apps/web/e2e/models-help.spec.ts` | **parcial**: el soporte está a cargo de Nicolás Miranda y Rosa Rodríguez y la capacitación se coordina en el OE4; **el canal de contacto figura como «[canal de soporte por confirmar]»** (pendiente de Rosa) |
-| HU0017 | Resto de los criterios (ayuda, búsqueda, manual descargable) | `HelpPage`, `manual-usuario.pdf` | `apps/web/e2e/models-help.spec.ts` | **por verificar** contra el texto de la US v1.4 |
-| HU0018 | HU0018-1 — Documentación de arquitectura | `docs/architecture.md`, `docs/backend/arquitectura.md` | Revisión de diagramas contra módulos | **cumplido** |
-| HU0018 | HU0018-2 — Reproducción del pipeline y los modelos | `docs/reproducibilidad.md`, `docs/modeling/reproducir_v4.md`, `docs/backend/operacion.md` | `tests/data/test_v4_reproducibility.py` | **cumplido** (con los datos del Release de `model/v4`) |
-| HU0018 | HU0018-3 — Despliegue y configuración | `docs/backend/despliegue.md`, `render.yaml`, `.env.example` | Job `humo-api` del CI, `tests/serving/test_settings.py` | **parcial**: el repo está preparado para Render, Supabase y Vercel; el despliegue lo hace Rosa y queda para el final |
-| HU0018 | HU0018-4 — Mantenimiento y recuperación | `docs/backend/operacion.md` (respaldo, reversión) | `tests/api/test_api.py::test_activacion` | **cumplido** |
-| HU0019 | Texto por verificar contra la US v1.4 | — | — | **se cumple en el OE4** |
-| HU0020 | Actualización semanal | `pipelines/v4_weekly.py`, `serving/emissions.py`, `scripts/weekly_v4.ps1`, `docs/backend/operacion.md` | `tests/pipelines/test_v4_weekly.py`, `tests/serving/test_emissions.py` | **cumplido**: trae las fuentes que cambian, carga la BD, emite h2 a h4 con el paquete congelado y archiva cada emisión; no entrena. Registrar la tarea programada es decisión de quien opera |
+| Escenario | Módulo / documento | Test o ejecución | Estado |
+|---|---|---|---|
+| HU0016-1 Contrato de la API | Routers de `apps/api/`; OpenAPI v1.1.0 (`docs/backend/openapi_v1.json`, congelado) | `tests/api/test_contract_v1.py` · `test_every_endpoint_validates_with_h2_h3_h4`; `tests/api/test_api.py` · `test_openapi_contrato_tabla_2`; `tests/test_contract_v1_guards.py` | cumplido |
+| HU0016-2 Integración con los servicios de datos | `GET /observaciones`, `/predicciones`, `/series` | `tests/api/test_api.py` · `test_observaciones_cero_y_filtros`; `apps/web/e2e/map-detail.spec.ts` | cumplido |
+| HU0016-3 Tiempos de respuesta (SLA) | `apps/api/tools/benchmark.py`, `apps/web/tools/measure_load.mjs` | `tests/api/test_benchmark.py` · `test_todas_las_operaciones_cache_y_escrituras_preservan_historia`; mediciones locales de 20 repeticiones en [sla_local_v4.md](sla_local_v4.md), [benchmark_v4_local.json](benchmark_v4_local.json) y [sla_vistas_v4_local.json](sla_vistas_v4_local.json) | cumplido |
+| HU0016-4 Manejo de carga y fallos | `apps/api/errors.py`, `dependencies.py` | `tests/api/test_api.py` · `test_cache_revision_y_bd_caida`, `test_404_422_formato_uniforme`; `apps/web/e2e/dashboard.spec.ts` | cumplido |
+| HU0017-1 Cobertura del flujo funcional | `apps/web/src/content/help.json`, `apps/web/public/manual-usuario.pdf` (`tools/build_manual.py`) | `apps/web/src/content/help.test.ts`; `apps/web/e2e/models-help.spec.ts` | cumplido |
+| HU0017-2 Interpretación de resultados | Ídem | `apps/web/src/content/help.test.ts`; `apps/web/e2e/models-help.spec.ts` | cumplido |
+| HU0017-3 Limitaciones y soporte | Ídem (guía de «no disponible» y sección Soporte con enlaces `mailto`) | `apps/web/src/content/help.test.ts`; `apps/web/e2e/models-help.spec.ts` | cumplido |
+| HU0018-1 Documentación de arquitectura | `docs/architecture.md`, `docs/backend/arquitectura.md` | `tests/test_documentation.py` · `test_the_flow_names_every_component_from_the_sources_to_the_web_application`; `tests/api/test_architecture.py` | cumplido |
+| HU0018-2 Reproducción del pipeline y los modelos | `docs/reproducibilidad.md`, `docs/modeling/reproducir_v4.md` | `tests/test_documentation.py` · `test_it_gives_the_commands_and_the_versioned_records`; `tests/data/test_v4_reproducibility.py` · `test_regenerated_files_are_compared_with_the_release_zip` | cumplido |
+| HU0018-3 Despliegue y configuración | `docs/backend/despliegue.md`, `render.yaml`, `.env.example` | `tests/test_documentation.py` · `test_every_variable_of_the_environment_template_is_documented`, `test_it_covers_the_dependencies_the_configuration_and_the_checks_after_deploying`; `tests/serving/test_settings.py` · `test_el_entorno_reemplaza_a_config_yaml` | cumplido |
+| HU0018-4 Mantenimiento y recuperación | `docs/backend/operacion.md` | `tests/test_documentation.py` · `test_the_operation_guide_covers_the_five_topics` | cumplido |
+| HU0019-1 Actualización semanal programada | `pipelines/v4_weekly.py`; `.github/workflows/weekly_v4.yml` (lunes y jueves 07:00 de Lima); `scripts/weekly_v4.ps1` para uso local | `tests/pipelines/test_v4_weekly.py` · `test_the_initial_run_publishes_loads_and_emits_the_three_horizons`; `tests/test_workflows.py` · `test_it_runs_monday_and_thursday_at_7_in_lima_and_by_hand`, `test_it_fetches_the_frozen_inputs_verified_and_runs_the_weekly_update` | cumplido |
+| HU0019-2 Corte ya emitido | `pipelines/v4_weekly.py`, `serving/emissions.py` | `tests/pipelines/test_v4_weekly.py` · `test_the_second_run_with_the_same_data_is_without_news_and_creates_nothing` | cumplido |
+| HU0019-3 Semanas provisionales | `pipelines/v4_weekly.py` (`step_expected_cutoff`), `features/long_history.py` (`sala_after_panel`); parámetro `semanas_provisionales` de `configs/config.yaml` (hoy 0) | `tests/serving/test_provisional_weeks.py` · `test_the_cutoff_is_the_last_published_week_minus_the_provisional_ones`, `test_the_weekly_step_reads_the_parameter_from_the_options`, `test_with_zero_provisional_weeks_nothing_is_excluded_or_marked`; `tests/serving/test_emissions.py` · `test_it_says_which_targets_the_sala_already_published_as_provisional` | cumplido |
+| HU0019-4 Fallo de un paso | `pipelines/v4_weekly.py` (una sola transacción), tabla `ejecucion` | `tests/pipelines/test_v4_weekly.py` · `test_a_failure_in_h4_rolls_back_the_load_and_the_other_horizons`, `test_the_previous_forecast_stays_in_force`, `test_a_source_that_fails_loads_nothing_and_is_recorded` | cumplido |
+| HU0019-5 Registro de cada emisión | `serving/emissions.py` (`archive_emission`, `upload_archive`, `prospective_scores`, `retraining_due`) | `tests/serving/test_emissions.py` · `test_the_record_has_the_forecasts_and_the_origin_vectors`, `test_brier_mae_and_counts_are_computed_by_hand`, `test_the_archive_of_an_emission_is_uploaded_with_its_cutoff_and_stamp`; `tests/pipelines/test_v4_weekly.py` · `test_the_emission_is_copied_to_the_storage_when_the_backend_is_not_local` | cumplido |
 
-## Pendientes que esta tabla deja visibles
+## Reservas
 
-1. Contrastar con el texto de la US v1.4 las filas **por verificar** (HU0001 a HU0006 salvo lo citado, HU0017 y HU0019).
-2. Confirmar el canal de soporte (HU0017-3).
-3. Decidir antes del despliegue si se publican los polígonos distritales (CC BY-IGO 3.0, con atribución).
-4. Grabar las líneas base de las guardas del contrato para las migraciones `0009_v4` y `0010_v4` (comando en el PR).
-5. Se cumplen en el OE4: la ejecución mensual del monitoreo de deriva (HU0009-2), la HU0019 y la medición desplegada
-   del SLA (HU0016-3).
+1. **HU0007-4 es retrospectivo.** El resultado agregado descansa en las temporadas 2022–2024, con una semilla; los umbrales se
+   revisaron después de ver los resultados. No hay evaluación prospectiva todavía.
+2. Los workflows de GitHub Actions están probados en su estructura (`tests/test_workflows.py`) y el comportamiento de la
+   actualización y de la deriva, por los tests de `v4_weekly` y `drift`. **No se ejecutaron en GitHub**: no hay secrets
+   configurados porque no hay nada desplegado.
+3. Los tests citados que dependen de los datos locales (`data/`) se omiten en un clon sin ellos; en el CI se omiten por la misma
+   razón o corren con el Release de `model/v4`.
