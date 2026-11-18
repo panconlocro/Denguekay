@@ -51,7 +51,8 @@ la congelación de la v4 y la transferencia a Lambayeque y Tumbes.
 - Evaluación prospectiva 2026–27 de la v3 y de b3 con datos publicados después del 09/11/2026. La V4 archiva cada
   emisión semanal (fecha, insumos, pronósticos y vectores) en `models/serving/actualizacion_semanal/emisiones/`
   ([operación](docs/backend/operacion.md#actualización-semanal-v4)).
-- Reentrenamiento anual de la V4 al cierre de la temporada 2027 ([política](docs/modeling/reentrenamiento.md)).
+- Reentrenamiento anual de la V4 al cierre de la temporada 2027: el comando `denguekay.model.refit_v4` ya existe y está
+  verificado contra la V4; se corre a mano ([política y procedimiento](docs/modeling/reentrenamiento.md)).
 - Registrar la tarea programada de la actualización semanal (`scripts\register_weekly_v4_task.ps1`) en la BD que se use.
 - Canal de soporte de la ayuda (figura como «[canal de soporte por confirmar]») y decisión sobre publicar los polígonos
   distritales (CC BY-IGO 3.0) antes del despliegue.

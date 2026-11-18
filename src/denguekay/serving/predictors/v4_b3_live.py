@@ -3,7 +3,7 @@
 from dataclasses import dataclass, replace
 from io import BytesIO
 import json
-from pathlib import Path
+from pathlib import PurePosixPath, PureWindowsPath
 
 import numpy as np
 import pandas as pd
@@ -73,18 +73,20 @@ class Prepared:
 def validate(horizons, options):
     if horizons != v3.HORIZONS:
         raise ValueError("El paquete congelado V4 requiere los horizontes 2, 3 y 4")
-    if set(options) - {"sala", "era5_land", "chirps", "nino12", "semanas_provisionales", "perfil_datos"}:
+    if set(options) - {"sala", "era5_land", "chirps", "nino12", "semanas_provisionales", "perfil_datos", "paquete_dir"}:
         raise ValueError("La publicación V4 solo admite opciones de procedencia de insumos")
     if options.get("perfil_datos", "release") not in ("release", "fuentes"):
         raise ValueError("perfil_datos debe ser release o fuentes")
     trailing = options.get("semanas_provisionales", 2)
     if type(trailing) is not int or trailing < 0:
         raise ValueError("semanas_provisionales debe ser un entero no negativo")
-    for key in {"sala", "era5_land", "chirps", "nino12"} & options.keys():
+    for key in {"sala", "era5_land", "chirps", "nino12", "paquete_dir"} & options.keys():
         if not isinstance(options[key], str) or not options[key]:
             raise ValueError(f"La ruta de {key} debe ser relativa al repositorio")
-        path = Path(options[key])
-        if path.is_absolute() or ".." in path.parts:
+        text = options[key]
+        # Absolute in either convention: a path valid on Windows must not slip through on Linux or macOS.
+        if (PurePosixPath(text).is_absolute() or PureWindowsPath(text).is_absolute() or PureWindowsPath(text).drive
+                or ".." in PurePosixPath(text.replace("\\", "/")).parts):
             raise ValueError(f"La ruta de {key} debe ser relativa al repositorio")
 
 
@@ -92,22 +94,29 @@ def fingerprint_parameters():
     return {"modelo_congelado": "v4-b3", "inferencia": KIND}
 
 
+def package_folder(options):
+    """The package in use: the frozen V4 of the Release, or the refit one that ``paquete_dir`` names."""
+    return ROOT / options["paquete_dir"] if options.get("paquete_dir") else V4_FROZEN
+
+
 def prepare(horizons, options):
     from denguekay.serving.demo_b3_v4 import read_bundle, prepare_observations, build_package
 
-    reference = json.loads(V4_DATA_MANIFEST.read_text(encoding="utf-8"))
-    release = {file["ruta"]: file["sha256"] for item in reference["paquetes"] for file in item["archivos"]}
-    manifest_path = V4_FROZEN / "paquete.json"
-    config, digest = read_bundle(V4_FROZEN)
-    if digest != release[manifest_path.relative_to(ROOT).as_posix()]:
-        raise ValueError("El paquete V4 local difiere del manifiesto del release")
+    folder = package_folder(options)
+    manifest_path = folder / "paquete.json"
+    config, digest = read_bundle(folder)   # every file is checked against the package's own manifest
+    if folder == V4_FROZEN:   # the frozen package must be exactly the one of the Release
+        reference = json.loads(V4_DATA_MANIFEST.read_text(encoding="utf-8"))
+        release = {file["ruta"]: file["sha256"] for item in reference["paquetes"] for file in item["archivos"]}
+        if digest != release[manifest_path.relative_to(ROOT).as_posix()]:
+            raise ValueError("El paquete V4 local difiere del manifiesto del release")
     geography = V4_GEOGRAPHY.read_bytes()
     geo_digest = sha256_bytes(geography)
     if geo_digest != config["fuentes"]["geografia"]:
         raise ValueError("La geografía local difiere de la V4 congelada")
     _geography(geography)
-    _, observations = prepare_observations(V4_FROZEN, config, digest)
-    archived = build_package(V4_FROZEN, config, digest, observations)
+    _, observations = prepare_observations(folder, config, digest)
+    archived = build_package(folder, config, digest, observations)
     files = {name: data for name, data in archived.files.items() if name != frozen.SNAPSHOT}
     files[GEOGRAPHY] = geography
     origin = {**archived.oos_detail, "alcance": "V4 B3 para pronósticos con observaciones de Piura al corte"}

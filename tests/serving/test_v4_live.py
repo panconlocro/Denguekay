@@ -14,7 +14,7 @@ import pandas as pd
 
 from backend_support import motor_temporal
 from serving.test_demo_b3_v4 import HORIZONS, synthetic_bundle
-from denguekay.config.paths import UBIGEO_CATALOG
+from denguekay.config.paths import CONFIG, UBIGEO_CATALOG
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.db.models import SystemParameter, WeeklyObservation
@@ -23,6 +23,7 @@ from denguekay.features.b3 import NINO, climate_vector
 from denguekay.serving import load_data
 from denguekay.serving.predictors import v4_b3_live as v4
 from denguekay.serving.publish import publish
+from denguekay.serving.settings import service_settings
 from denguekay.serving.storage import LocalStorage
 
 
@@ -45,6 +46,13 @@ class TestB3Availability(unittest.TestCase):
         pd.testing.assert_frame_equal(climate_vector(weather, enso, cutoff, district), baseline)
         weather.loc[weather.semana_inicio.eq("2026-09-27"), "fecha_chirps_disponible"] = "2026-10-18"
         self.assertTrue(pd.isna(climate_vector(weather, enso, cutoff, district).iloc[0]["precip_total_mm_media5_h2_obs"]))
+
+
+class TestRefitPackageOption(unittest.TestCase):
+    def test_paquete_dir_is_a_valid_option_and_selects_the_folder(self):
+        v4.validate(HORIZONS, {"paquete_dir": "models/experimentos/mejora_modelo/v4_reajuste/2027-08-28"})
+        self.assertEqual(v4.package_folder({}), v4.V4_FROZEN)
+        self.assertEqual(v4.package_folder({"paquete_dir": "carpeta/nueva"}), v4.ROOT / "carpeta/nueva")
 
 
 class TestLivePublication(unittest.TestCase):
@@ -101,6 +109,42 @@ class TestLivePublication(unittest.TestCase):
                 self.assertEqual(initial["paquete"]["codigo"], updated["paquete"]["codigo"])
                 self.assertTrue(publish(motor, storage=storage)["reutilizada"])
 
+    def test_a_refit_package_is_served_through_paquete_dir_without_the_release_manifest(self):
+        with TemporaryDirectory() as directory, ExitStack() as cleanup:
+            root = Path(directory)
+            folder = root / "reajuste"
+            folder.mkdir()
+            synthetic_bundle(folder)
+            districts = load_ubigeo_catalog(UBIGEO_CATALOG).ubigeo.tolist()
+            geo = root / "geografia.csv"
+            pd.DataFrame({"ubigeo": districts, "lat": -5.0, "lon": -80.0, "elevacion_dem90": 100}).to_csv(geo, index=False)
+            package = folder / "paquete.json"
+            config = json.loads(package.read_text())
+            config["fuentes"] = {"geografia": hashlib.sha256(geo.read_bytes()).hexdigest()}
+            package.write_text(json.dumps(config), encoding="utf-8")
+            from denguekay.serving.demo_b3_v4 import prepare_observations
+            template, _ = prepare_observations(folder, config, "a" * 64)
+            cutoff = date(2025, 1, 18)
+            weeks = pd.Series(pd.date_range("2019-01-06", cutoff, freq="W-SUN"))
+            calendar = mmwr_epi_week(weeks)
+            observations = [
+                {"ubigeo": u, "id_semana": load_data.week_id(w.anio_epi, w.semana_epi), "casos_dengue": 4,
+                 "brote": False, "umbral_brote_casos": 4, "casos_solo_confirmados": True,
+                 "fuente_casos": "sala_situacional", "estado_cobertura": "verificado"}
+                for w in calendar.itertuples() for u in districts
+            ]
+            batch = replace(template, observaciones=observations, fecha_corte_datos=cutoff)
+            motor = motor_temporal(root)
+            cleanup.callback(motor.dispose)
+            cfg = service_settings(CONFIG, environ={})
+            cfg = replace(cfg, paquete={**cfg.paquete, "opciones": {**cfg.opciones, "paquete_dir": "reajuste"}})
+            missing = root / "no_existe.json"    # the Release manifest is not consulted for a refit package
+            with patch.multiple(v4, V4_FROZEN=root / "congelado", V4_DATA_MANIFEST=missing, V4_GEOGRAPHY=geo, ROOT=root),                     patch.object(v4, "prepare_load", return_value=batch),                     patch.object(v4, "source_hashes", return_value=batch.hashes),                     patch("denguekay.serving.publish.log_report", return_value="test"):
+                result = publish(motor, cfg=cfg, storage=LocalStorage(root / "storage"), run_inference=True,
+                                 select_experimental=True)
+            self.assertEqual(result["paquete"]["tipo_predictor"], v4.KIND)
+            self.assertEqual([r["disponibles"] for r in result["inferencias_vigentes"]], [65] * 3)
+
     def test_changes_in_cutoff_reload_the_same_source_files(self):
         with TemporaryDirectory() as directory:
             folder = Path(directory)
@@ -130,6 +174,7 @@ class TestLivePublication(unittest.TestCase):
                 motor.dispose()
 
     def test_invalid_options_are_rejected(self):
-        for options in ({"semanas_provisionales": -1}, {"sala": "../data.csv"}, {"configuracion": "v3"}):
+        for options in ({"semanas_provisionales": -1}, {"sala": "../data.csv"}, {"configuracion": "v3"},
+                        {"paquete_dir": "../paquete"}, {"paquete_dir": "C:/paquete"}, {"paquete_dir": ""}):
             with self.subTest(options=options), self.assertRaises(ValueError):
                 v4.validate(HORIZONS, options)

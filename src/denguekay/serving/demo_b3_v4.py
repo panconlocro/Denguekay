@@ -24,7 +24,7 @@ from denguekay.serving.publish import publish_to_db
 FIRST_WEEK = pd.Timestamp("2024-12-29")  # week 1 of MMWR 2025, covered by the Sala
 TASKS = {"clasificacion": "clf", "regresion": "reg"}
 ALGORITHM = "xgboost_multisalida_bn"
-SEASON_BLOCKS = tuple(f"temporada_{year}" for year in range(2018, 2027))
+SEASON_BLOCKS = tuple(f"temporada_{year}" for year in range(2018, 2041))   # later seasons only exist in a refit package
 ACCEPTANCE_SEASONS = tuple(f"temporada_{year}" for year in range(2022, 2027))
 ACCEPTANCE_BLOCK = "temporadas_2022_2026"
 

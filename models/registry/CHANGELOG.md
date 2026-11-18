@@ -13,6 +13,15 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
 
+## 2026-11-17 · Comando de reentrenamiento de la V4
+
+- `python -m denguekay.model.refit_v4` vuelve a ajustar el **mismo modelo** (la V4: `b3_obs`, semilla 17, misma
+  configuración) con datos nuevos y deja un paquete en una carpeta nueva; se sirve con la opción `paquete_dir` de
+  `serving.paquete.opciones`. **No cambia la versión** ni requiere ficha, Release ni tag nuevos.
+- Verificado contra la V4 con su corte (17/10/2026): variables de entrenamiento idénticas, pesos de mezcla y calibración de
+  la persistencia iguales, Platt dentro de 5 × 10⁻⁵; el booster no es idéntico bit a bit (depende del número de hilos).
+  Detalle en [reentrenamiento.md](../../docs/modeling/reentrenamiento.md).
+
 ## 2026-11-17 · Umbrales de aceptación de la US v1.4 (HU0007-4)
 
 - La migración `0009_v4` fija `parametro_sistema.umbrales_aceptacion` en Recall ≥ 0,65, Precision ≥ 0,60, F1 ≥ 0,70 y

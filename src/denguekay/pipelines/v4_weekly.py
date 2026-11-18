@@ -359,7 +359,7 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
         report["corte_ya_emitido"] = emitted
         if emitted and not options.force:
             report["estado"] = "sin_novedad"
-            return finish(report, motor, base, cutoff, timer)
+            return finish(report, motor, base, cutoff, timer, cfg.opciones)
 
         stage = "clima"
         with timer("clima"):
@@ -428,7 +428,7 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
             report["estado"] = "emitida"
         else:
             report["estado"] = "cargada_sin_emitir"
-        return finish(report, motor, base, cutoff, timer)
+        return finish(report, motor, base, cutoff, timer, cfg.opciones)
     except Exception as error:
         report["estado"] = "fallida"
         report["error"] = f"{type(error).__name__}: {error}"
@@ -478,7 +478,7 @@ def record_failure_safely(motor, kind, error, detail):
         print(f"No se pudo registrar el fallo en ejecucion: {type(secondary).__name__}", file=sys.stderr)
 
 
-def finish(report, motor, base, cutoff, timer):
+def finish(report, motor, base, cutoff, timer, options=None):
     """Follow-up and notice (when the database answers), then the report file."""
     if motor is not None and cutoff is not None:
         try:
@@ -488,9 +488,13 @@ def finish(report, motor, base, cutoff, timer):
                     report["monitoreo_deriva"] = drift.drift_report(sesion)
                 except Exception as error:   # noqa: BLE001
                     report["monitoreo_deriva"] = f"no disponible: {type(error).__name__}"
-                notice = emissions.retraining_due(sesion, cutoff)
+                try:   # the package folder that names the labels cutoff may not exist on the machine that runs this
+                    notice = emissions.retraining_due(sesion, cutoff, options=options)
+                except (OSError, ValueError, KeyError) as error:
+                    notice = {}
+                    report["aviso_reentrenamiento"] = f"no disponible: {type(error).__name__}: {error}"
             report.update(notice)
-            if notice["reentrenamiento_anual_pendiente"]:
+            if notice.get("reentrenamiento_anual_pendiente"):
                 report["aviso"] = ("Se alcanzó el cierre de la temporada: corresponde el reentrenamiento anual "
                                    "(docs/modeling/reentrenamiento.md). Esta actualización no entrena.")
         except SQLAlchemyError as error:
