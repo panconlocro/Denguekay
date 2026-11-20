@@ -346,6 +346,7 @@ src/denguekay/serving/
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 ├── emissions.py              # actualización semanal de la V4: emisión ya hecha, archivo de cada emisión, puntajes prospectivos y aviso de reentrenamiento
 ├── geometries.py             # límites distritales para el mapa (HU0014-1): lectura, validación y simplificación de data/reference/distritos_piura_limites.geojson
+├── refit_package.py          # paquete de un reajuste (paquete_dir) entre el PC y el Storage: --subir y --descargar con SHA-256 verificado
 ├── first_emission_backfill.py # relleno inicial de emision_prediccion (primera emisión) desde el archivo local o la fila actual; solo inserta
 ├── drift.py                  # monitoreo de deriva (HU0009-2): semanas cerradas de las emisiones frente a la referencia de la HU0007-4; CLI mensual a mano; solo registra
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)

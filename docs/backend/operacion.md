@@ -199,13 +199,33 @@ o fallar por el límite horario (la siguiente la retoma desde los cachés).
 **Archivo de emisiones (HU0019-5).** Con `STORAGE_BACKEND=supabase`, tras confirmar la transacción cada emisión se copia al
 Storage en `reportes/emisiones/<corte>/<sello>/` (`emision.json`, `predicciones.csv`, `vectores.csv`; clave
 `archivo_en_storage` del informe). Si esa copia falla, la emisión ya está en la BD: queda una advertencia en el informe
-y el artefacto del workflow (`actualizacion-semanal-<id>`, 90 días) conserva la carpeta. Con el Storage local no se copia:
+y el artefacto del workflow (`actualizacion-semanal-<id>`, 90 días) conserva la carpeta.
+**Alcance de la transacción:** la carga, la inferencia de h2–h4 y el registro de la primera emisión se confirman juntos;
+la copia al Storage es posterior y recuperable. Su resultado queda en `ejecucion.detalle.archivo_remoto` de la inferencia
+de h2 de esa emisión (`estado` = `subido` o `fallido` con el `error`, la `ruta` de la carpeta y los `intentos`), y
+`python -m denguekay.pipelines.v4_weekly --reintentar-archivo` sube desde la carpeta local las emisiones que sigan
+`fallido` (no descarga ni emite; el workflow lo corre después de cada actualización y, si sigue fallando, avisa y deja la
+carpeta como artefacto) Con el Storage local no se copia:
 la carpeta de `models/serving/actualizacion_semanal/emisiones/` ya es el archivo.
 
 **Paquete servido.** Hoy `config.yaml` no define `paquete_dir`, así que el runner sirve el paquete congelado del Release
 `model/v4`. Si un reajuste (`refit_v4`) se sirve con `serving.paquete.opciones.paquete_dir`, esa carpeta está fuera de
-Git y el runner no la tiene: la corrida se detiene en `preflight` con un mensaje que lo dice. Mientras no se agregue la
-descarga de esa carpeta desde el Storage al workflow, un reajuste se opera desde el PC con los `.ps1`.
+Git y el runner no la tiene: antes de la comprobación inicial el workflow (y `v4_weekly`) la **descarga del Storage**
+(`modelos/reajustes/<carpeta>/`) y verifica el SHA-256 de cada archivo contra el `paquete.json` del paquete; un archivo
+alterado o faltante se rechaza (la corrida queda `fallida` en `preflight`, registrada en `ejecucion`) y no se deja nada en la
+carpeta. Después de reajustar (`refit_v4`) y antes de servirlo, súbalo una vez con
+`python -m denguekay.serving.refit_package --subir` (con las credenciales del Storage). Si el paquete no está en el
+Storage, la corrida se detiene en `preflight` con el mensaje de siempre.
+
+**Fallos de la comprobación inicial.** Un fallo de `preflight` (entorno, archivos congelados, paquete reajustado) queda
+como una ejecución `fallida` en `ejecucion`, con su motivo y la etapa, y no publica nada. No se registra el candado ocupado
+(otra corrida sigue en curso) ni una BD sin esquema (no hay dónde escribir).
+
+**Fecha de extracción de cada captura.** La emisión archiva en `emision.json` (`capturas`) el nombre de la última captura
+de cada fuente y su fecha de extracción en UTC: la Sala y CHIRPS llevan el instante en el nombre de su captura, NOAA el
+día UTC (`sstoi_AAAAMMDD`) y ERA5-Land el instante en `AAAA-MM-DD.captura.json`, junto a la carpeta, que se nombra por su
+último día de datos y no por la extracción. Los cachés históricos no tienen fecha de extracción registrada y no se
+inventa: el reporte de calidad los muestra con la fecha de congelamiento del Release, marcada como tal.
 
 | Bandera | Efecto |
 |---|---|

@@ -5,7 +5,9 @@ Read-only. The date of each source comes from where the pipeline already leaves 
 - NOAA CPC (Niño 1+2): the date in the name of the raw file ``sstoi_AAAAMMDD.indices`` (one file per download).
 - CHIRPS v3: the manifests that the downloads write next to the data (``escrito_utc`` for Earth Engine and
   ``fecha_descarga`` for the CHC FTP).
-- ERA5-Land of the recent weeks: the dated folder (``AAAA-MM-DD``) that the weekly update creates.
+- ERA5-Land of the recent weeks: the folder ``AAAA-MM-DD`` is the last day of data, not the extraction; the weekly update
+  writes the UTC instant of the extraction in ``AAAA-MM-DD.captura.json`` next to it (without it, the folder name is
+  shown and marked as the last day of data).
 - The historical Open-Meteo and ERA5-Land caches have no extraction date on record: they are shown with the freeze
   date of the Release ``model/v4`` and marked as such (an upper bound, not the day they were downloaded).
 """
@@ -23,6 +25,7 @@ from denguekay.config.paths import (
 
 FREEZE_KIND = "congelamiento del Release model/v4 (la fecha real de extracción no se registró)"
 CAPTURE_KIND = "captura registrada"
+LAST_DAY_KIND = "último día de datos del caché (la fecha real de extracción no se registró)"
 ENSO_NAME = re.compile(r"^sstoi_(\d{8})\.indices$")
 DAY_NAME = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 CHIRPS_PRODUCTS = {
@@ -82,8 +85,15 @@ def climate_sources(*, enso=BRONZE_ENSO, chirps_ee=BRONZE_CHIRPS_EE_FINAL, chirp
     }
     enso_dates = [_iso(m.group(1)) for m in (ENSO_NAME.match(p.name) for p in
                                               (Path(enso).iterdir() if Path(enso).is_dir() else [])) if m]
-    recent = [_iso(p.name) for p in (Path(era5_recent).iterdir() if Path(era5_recent).is_dir() else [])
-              if DAY_NAME.match(p.name)]
+    recent_files = list(Path(era5_recent).iterdir()) if Path(era5_recent).is_dir() else []
+    recent_folders = [_iso(p.name) for p in recent_files if p.is_dir() and DAY_NAME.match(p.name)]
+    recent_extracted = []
+    for path in recent_files:   # ``AAAA-MM-DD.captura.json``: the UTC instant at which the folder was complete
+        if path.name.endswith(".captura.json"):
+            try:
+                recent_extracted.append(_iso(json.loads(path.read_text(encoding="utf-8")).get("extraido_utc")))
+            except (OSError, ValueError):
+                continue
     rows = [
         _row("NOAA CPC", "Niño 1+2: anomalía mensual de la TSM (OISST v2.1, sstoi.indices)", enso_dates, CAPTURE_KIND,
              "fecha del nombre del archivo sstoi_AAAAMMDD.indices (bronze/enso)"),
@@ -97,8 +107,10 @@ def climate_sources(*, enso=BRONZE_ENSO, chirps_ee=BRONZE_CHIRPS_EE_FINAL, chirp
              _manifests(chirps_prelim, "manifiesto_ftp_prelim_*.json", "fecha_descarga"), CAPTURE_KIND,
              "manifiesto_ftp_prelim_*.json (bronze/chirps/v3_sat/prelim)"),
         _row("ERA5-Land (semanas recientes)",
-             "ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias", recent, CAPTURE_KIND,
-             "carpeta con fecha AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente)"),
+             "ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias",
+             recent_extracted or recent_folders, CAPTURE_KIND if recent_extracted else LAST_DAY_KIND,
+             "AAAA-MM-DD.captura.json (extraido_utc) junto a la carpeta (bronze/meteo/cache_meteo_era5_land_reciente)"
+             if recent_extracted else "nombre de la carpeta AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente)"),
     ]
     for label, folder in historical.items():
         present = Path(folder).is_dir() and any(Path(folder).iterdir())

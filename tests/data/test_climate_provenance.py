@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from denguekay.data.validation.climate_provenance import CAPTURE_KIND, FREEZE_KIND, climate_sources
+from denguekay.data.validation.climate_provenance import CAPTURE_KIND, FREEZE_KIND, LAST_DAY_KIND, climate_sources
 
 
 def write(path, content=""):
@@ -46,6 +46,20 @@ class TestClimateSources(unittest.TestCase):
         self.assertEqual(rows["ERA5-Land (semanas recientes)"]["fecha_extraccion"], "2026-11-12")
         self.assertEqual(rows["NOAA CPC"]["tipo_de_fecha"], CAPTURE_KIND)
         self.assertTrue(all(r["producto"] and r["referencia"] for r in rows.values()))
+
+    def test_the_era5_folder_is_the_last_day_of_data_and_the_sidecar_is_the_extraction(self):
+        with TemporaryDirectory() as directory:
+            rows = self.build(directory)
+            without = rows["ERA5-Land (semanas recientes)"]
+            self.assertEqual((without["fecha_extraccion"], without["tipo_de_fecha"]), ("2026-11-12", LAST_DAY_KIND))
+            write(Path(directory) / "recent" / "2026-11-12.captura.json",
+                  json.dumps({"extraido_utc": "2026-11-14T08:00:00+00:00", "ultimo_dia_de_datos": "2026-11-12"}))
+            rows = {row["fuente"]: row for row in climate_sources(
+                enso=Path(directory) / "enso", chirps_ee=Path(directory) / "ee", chirps_final=Path(directory) / "final",
+                chirps_prelim=Path(directory) / "prelim", era5_recent=Path(directory) / "recent",
+                historical={}, frozen="2026-11-12")}
+        with_sidecar = rows["ERA5-Land (semanas recientes)"]
+        self.assertEqual((with_sidecar["fecha_extraccion"], with_sidecar["tipo_de_fecha"]), ("2026-11-14", CAPTURE_KIND))
 
     def test_a_stopped_download_does_not_count_and_a_source_without_captures_says_so(self):
         with TemporaryDirectory() as directory:

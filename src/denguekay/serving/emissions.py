@@ -177,6 +177,20 @@ def record_first_emission(sesion, results, *, last_published, emitted_at):
     return {"insertadas": inserted, "ya_existian": len(records) - inserted}
 
 
+def set_archive_status(sesion, run_id, status):
+    """Record in ``ejecucion.detalle.archivo_remoto`` of an inference run whether its archive reached the Storage."""
+    run = sesion.get(Run, run_id)
+    run.detalle = {**(run.detalle or {}), "archivo_remoto": status}
+
+
+def pending_archives(sesion):
+    """[(run id, status)] of the weekly emissions whose copy to the Storage is still ``fallido``."""
+    runs = sesion.scalars(select(Run).where(Run.tipo == "inferencia", Run.estado == "exitosa").order_by(Run.id_ejecucion))
+    return [(run.id_ejecucion, run.detalle["archivo_remoto"]) for run in runs
+            if (run.detalle or {}).get("origen") == ORIGIN
+            and (run.detalle.get("archivo_remoto") or {}).get("estado") == "fallido"]
+
+
 def prospective_frame(sesion):
     """One row per eligible first emission whose target week already has an observation loaded.
 

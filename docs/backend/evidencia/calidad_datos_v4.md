@@ -1,6 +1,6 @@
 # Calidad y completitud de los datos de la V4 (HU0005-4 y HU0005-5 (US v1.4))
 
-Generado: 2026-11-20T22:37:59.700650+00:00. Estado: **conforme**.
+Generado: 2026-11-20T23:55:31.900449+00:00. Estado: **conforme**.
 
 Solo lectura: el reporte no corrige datos. Entradas: `meteo_socio_epi_piura_2017_2025.csv`, `meteo_socio_epi_piura_2017_2025.coverage.csv`, `DatosDengueV2.csv`, `epi_sala_semanal.csv`.
 
@@ -73,7 +73,7 @@ Llave (ubigeo, año, semana): 0; llave (ubigeo, inicio de semana): 0.
 | CHIRPS v3 (Earth Engine) | CHIRPS v3.0 diario final, desagregación sat (Earth Engine, UCSB-CHC/CHIRPS/V3/DAILY_SAT, banda precipitation) | 2026-11-06 | captura registrada | 1 | manifiesto_ee_*.json (bronze/chirps/v3_sat/ee_final) |
 | CHIRPS v3 (FTP del CHC) | CHIRPS v3.0 diario final, desagregación sat (GeoTIFF por FTP del CHC) | 2026-11-17 | captura registrada | 2 | manifiesto_ftp_final_*.json (bronze/chirps/v3_sat/final_ftp) |
 | CHIRPS v3 preliminar (FTP del CHC) | CHIRPS v3.0 diario preliminar, desagregación sat (GeoTIFF por FTP del CHC) | 2026-11-20 | captura registrada | 3 | manifiesto_ftp_prelim_*.json (bronze/chirps/v3_sat/prelim) |
-| ERA5-Land (semanas recientes) | ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias | 2026-11-15 | captura registrada | 3 | carpeta con fecha AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente) |
+| ERA5-Land (semanas recientes) | ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias | 2026-11-15 | último día de datos del caché (la fecha real de extracción no se registró) | 3 | nombre de la carpeta AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente) |
 | Open-Meteo (clima del panel 2017-2025) | Open-Meteo archive API (sin models), variables diarias | 2026-11-12 | congelamiento del Release model/v4 (la fecha real de extracción no se registró) | 1 | caché histórica (cache_meteo); fecha de congelamiento de la ficha de la V4 |
 | ERA5-Land 2000-2016 | ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias | 2026-11-12 | congelamiento del Release model/v4 (la fecha real de extracción no se registró) | 1 | caché histórica (cache_meteo_era5_land_2000_2016); fecha de congelamiento de la ficha de la V4 |
 | ERA5-Land 2017-2025 | ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias | 2026-11-12 | congelamiento del Release model/v4 (la fecha real de extracción no se registró) | 1 | caché histórica (cache_meteo_era5_land_2017_2025); fecha de congelamiento de la ficha de la V4 |

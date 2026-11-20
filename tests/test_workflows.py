@@ -105,6 +105,19 @@ class TestWeekly(unittest.TestCase):
         self.assertNotIn("--inicial", text)
         self.assertLess(text.index("release_bundles"), text.index("v4_weekly"))
 
+    def test_it_downloads_the_refit_package_before_the_update_and_retries_the_remote_archive_after_it(self):
+        text = commands(self.workflow)
+        self.assertIn("python -m denguekay.serving.refit_package --descargar", text)
+        self.assertLess(text.index("refit_package --descargar"), text.index("v4_weekly $banderas"))
+        self.assertIn("python -m denguekay.pipelines.v4_weekly --reintentar-archivo", text)
+        self.assertLess(text.index("v4_weekly $banderas"), text.index("--reintentar-archivo"))
+        by_name = {step["name"]: step for step in steps_of(self.workflow) if "name" in step}
+        retry = by_name["Reintentar la copia del archivo de las emisiones al Storage"]
+        self.assertIn("always()", retry["if"])   # it runs even when the weekly step failed
+        self.assertIn("inputs.dry_run != true", retry["if"])
+        names = [step["name"] for step in steps_of(self.workflow) if "name" in step]
+        self.assertLess(names.index(retry["name"]), names.index("Conservar el archivo de emisiones y los informes"))
+
     def test_the_dry_run_input_exists_and_defaults_to_false(self):
         dispatch = triggers(self.workflow)["workflow_dispatch"]["inputs"]["dry_run"]
         self.assertEqual((dispatch["type"], dispatch["default"]), ("boolean", False))

@@ -1,6 +1,6 @@
 {
   "criterio": "HU0005-4 y HU0005-5 (US v1.4)",
-  "generado_utc": "2026-11-20T22:37:59.700650+00:00",
+  "generado_utc": "2026-11-20T23:55:31.900449+00:00",
   "estado": "conforme",
   "no_conformidades": [],
   "entradas": {
@@ -1370,8 +1370,8 @@
       "producto": "ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias",
       "fecha_extraccion": "2026-11-15",
       "capturas": 3,
-      "tipo_de_fecha": "captura registrada",
-      "referencia": "carpeta con fecha AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente)"
+      "tipo_de_fecha": "último día de datos del caché (la fecha real de extracción no se registró)",
+      "referencia": "nombre de la carpeta AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente)"
     },
     {
       "fuente": "Open-Meteo (clima del panel 2017-2025)",
