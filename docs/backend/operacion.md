@@ -274,6 +274,12 @@ Por cada corte sin primera emisión usa la emisión archivada **más antigua** (
 nunca es elegible. Para usar el archivo que el runner copió al Storage, baje `reportes/emisiones/` y pásela con
 `--carpeta`.
 
+**Orden: primero el relleno.** Corra el relleno justo después de migrar a `0013_v4` y antes de cualquier `--reemitir`: el
+relleno decide por corte, y una reemisión hecha antes de rellenar quedaría guardada como la primera de ese corte (con
+`procedencia = emision`), con lo que la emisión original dejaría de contar. La garantía de «solo inserción» son los permisos
+(ningún rol de la aplicación tiene UPDATE ni DELETE); el dueño de la tabla y el rol con el que se corren las migraciones
+(en Supabase, `postgres`) conservan esos privilegios, y SQLite (solo pruebas) no tiene protección alguna.
+
 **Monitoreo de deriva (HU0009-2).** El informe trae también `monitoreo_deriva`: para cada horizonte compara las
 semanas cerradas de las primeras emisiones elegibles (las mismas del seguimiento prospectivo) con las métricas de referencia del mismo horizonte (el bloque agregado de
 la HU0007-4, `temporadas_2022_2026`, de las versiones servidas). Calcula Precision, Recall y F1 (alerta con p ≥ 0,50) y

@@ -516,6 +516,29 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
                                  "has_column_privilege('rol_api', 'version_modelo', 'metricas', 'UPDATE')")[0]
         self.assertEqual(columnas, (True, False))
 
+    def test_pipeline_inserta_la_primera_emision_bajo_rls_y_no_puede_modificarla(self):
+        """0013_v4: rol_pipeline inserta con «insertar si no existe»; una reinserción no cambia nada y UPDATE se niega."""
+        puede = self.consulta("SELECT rolsuper OR pg_has_role(current_user, 'rol_pipeline', 'SET') "
+                              "FROM pg_roles WHERE rolname = current_user")[0][0]
+        if not puede:
+            self.skipTest("El usuario de la BD de pruebas no puede asumir rol_pipeline (en el CI es superusuario)")
+        fila = self.fila_primera_emision()
+        insertar = text("INSERT INTO emision_prediccion (" + ", ".join(fila) + ") VALUES ("
+                        + ", ".join(f":{c}" for c in fila) + ") ON CONFLICT DO NOTHING")
+        with self.motor.connect() as conexion:
+            transaccion = conexion.begin()
+            try:
+                conexion.execute(text("SET LOCAL ROLE rol_pipeline"))
+                self.assertEqual(conexion.execute(insertar, fila).rowcount, 1)
+                self.assertEqual(conexion.execute(insertar, {**fila, "probabilidad_brote": 0.1}).rowcount, 0)
+                self.assertEqual(conexion.execute(text("SELECT probabilidad_brote FROM emision_prediccion")).scalar(),
+                                 0.6)
+                with self.assertRaises(DBAPIError) as error, conexion.begin_nested():
+                    conexion.execute(text("UPDATE emision_prediccion SET probabilidad_brote = 0.1"))
+                self.assertRegex(str(error.exception.orig), r"permission denied")
+            finally:
+                transaccion.rollback()
+
     def test_pipeline_solo_actualiza_la_seleccion_experimental(self):
         """0006_v1: rol_pipeline actualiza la fila seleccion_experimental y ninguna otra de parametro_sistema."""
         puede = self.consulta("SELECT rolsuper OR pg_has_role(current_user, 'rol_pipeline', 'SET') "
