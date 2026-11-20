@@ -125,7 +125,7 @@ test('all 65 priorities remain accessible and geographic filters preserve region
   await page.getByLabel('Provincia', { exact: true }).selectOption('2001');
   await expect(pager).toContainText('Página 1 de 2');
   await expect(page.getByRole('note', { name: 'Alcance de los filtros' })).toContainText(
-    'no modifican los cuatro indicadores regionales',
+    'no modifican los tres indicadores regionales',
   );
   expect(await indicators.locator('.metric-value').allTextContents()).toEqual(regionalValues);
   await page.getByLabel('Distrito', { exact: true }).selectOption('200101');
@@ -162,7 +162,6 @@ test('partial magnitudes and absent counts never become a complete regional tota
   const indicators = page.getByLabel('Indicadores de la región Piura');
   await expect(indicators.locator('.card').nth(2)).toContainText('Cobertura incompleta: 64 de 65');
   await expect(indicators.locator('.metric-value')).toHaveText([
-    'No disponible',
     'No disponible',
     'No disponible',
     'No disponible',

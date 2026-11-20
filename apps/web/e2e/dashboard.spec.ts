@@ -13,6 +13,14 @@ test('published dashboard, geographic filters and district navigation', async ({
   await expect(page.getByText('Consulta histórica · objetivo iniciado')).toBeVisible();
   await expect(page.locator('.priorities tbody tr')).toHaveCount(3);
   await expect(page.locator('.leaflet-interactive').first()).toBeVisible();
+  // Only what the API publishes: three regional indicators, and a series only for a chosen district.
+  await expect(page.getByLabel('Indicadores de la región Piura').locator('.card')).toHaveCount(3);
+  await expect(page.locator('body')).not.toContainText('Incidencia por 100 000');
+  await expect(page.locator('body')).not.toContainText('Serie regional');
+  await expect(page.getByRole('heading', { name: /^Serie temporal/ })).toHaveCount(0);
+  await expect(page.getByRole('note', { name: 'Alcance de los filtros' })).not.toContainText(
+    'cuatro',
+  );
   if (process.env.WEB_SCREENSHOT_DIR)
     await page.screenshot({
       path: `${process.env.WEB_SCREENSHOT_DIR}/${testInfo.project.name}-dashboard.png`,
@@ -102,4 +110,38 @@ test('navigation and assets remain usable at the target viewport', async ({ page
       path: `${process.env.WEB_SCREENSHOT_DIR}/${testInfo.project.name}-alerts.png`,
       fullPage: true,
     });
+});
+
+test('the three regional indicators fill their row without gaps', async ({ page }, info) => {
+  await page.goto('/?horizonte=2');
+  const group = page.getByLabel('Indicadores de la región Piura');
+  await expect(group.locator('.card')).toHaveCount(3);
+  const outer = (await group.boundingBox())!;
+  const boxes = await Promise.all(
+    [0, 1, 2].map((i) => group.locator('.card').nth(i).boundingBox()),
+  );
+  const [a, b, c] = boxes.map((box) => box!);
+  const right = (box: { x: number; width: number }) => box.x + box.width;
+  if (info.project.name === 'mobile') {
+    expect(Math.abs(a.y - b.y)).toBeLessThan(1);
+    expect(Math.abs(right(b) - (outer.x + outer.width))).toBeLessThan(2);
+    expect(Math.abs(c.width - outer.width)).toBeLessThan(2);
+  } else {
+    expect(Math.abs(a.y - b.y) + Math.abs(b.y - c.y)).toBeLessThan(1);
+    expect(Math.abs(right(c) - (outer.x + outer.width))).toBeLessThan(2);
+  }
+});
+
+test('the dashboard bottom row uses the whole width until a district is chosen', async ({
+  page,
+}, info) => {
+  await page.goto('/?horizonte=2');
+  await expect(page.locator('.dashboard-bottom .card').first()).toBeVisible();
+  const bottom = (await page.locator('.dashboard-bottom').boundingBox())!;
+  const stack = (await page.locator('.dashboard-bottom .stack').boundingBox())!;
+  expect(Math.abs(stack.width - bottom.width)).toBeLessThan(2);
+  await page.getByLabel('Distrito', { exact: true }).selectOption('200101');
+  await expect(page.getByRole('heading', { name: 'Serie temporal · Piura' })).toBeVisible();
+  const after = (await page.locator('.dashboard-bottom .stack').boundingBox())!;
+  if (info.project.name !== 'mobile') expect(after.width).toBeLessThan(bottom.width - 100);
 });
