@@ -303,3 +303,66 @@ test('unavailable model horizons show an explicit state and allow another horizo
     page.locator('.horizon-performance tbody tr').filter({ hasText: '3 semanas' }),
   ).toContainText('No disponible');
 });
+
+test('the V4 acceptance block is labelled, its fit rule shown and the shared booster noted', async ({
+  page,
+}) => {
+  const selected = await versions(page, 2);
+  for (const model of selected)
+    await page.route(`**/api/v1/modelos/${model.id_version}`, async (route) => {
+      const response = await route.fetch();
+      const data = await response.json();
+      data.metricas = {
+        procedencia: 'Predicciones retrospectivas de b3 por temporada.',
+        bloques: {
+          temporada_2026: { n: 3445 },
+          temporadas_2022_2026: { n: 16965 },
+        },
+      };
+      data.reproducibilidad = {
+        entrenamiento_inicio: '2005-01-02',
+        entrenamiento_corte: '2026-10-17',
+        filas_entrenamiento: 73775,
+        calibracion: 'Platt y peso de la mezcla por horizonte',
+        nota_importancias:
+          'Clasificador y regresor del mismo horizonte comparten booster; sus importancias son idénticas',
+        particion_temporal: {
+          bloques: {
+            temporada_2026: {
+              corte_ajuste: '2025-08-02',
+              primera_semana_objetivo: '2025-08-24',
+              ultima_semana_objetivo: '2026-08-23',
+            },
+            temporadas_2022_2026: {
+              corte_ajuste: null,
+              regla_ajuste: 'Cada temporada se ajusta una vez, en su primer origen',
+              cortes_por_temporada: { '2022': '2021-08-07', '2026': '2025-08-02' },
+            },
+          },
+        },
+      };
+      await route.fulfill({ response, json: data });
+    });
+  await page.goto('/modelo?horizonte=2&modelo_bloque=temporadas_2022_2026');
+  await expect(page.getByLabel('Bloque de evaluación')).toHaveValue('temporadas_2022_2026');
+  await expect(page.getByLabel('Bloque de evaluación').locator('option:checked')).toHaveText(
+    'Temporadas 2022–2026 (aceptación)',
+  );
+  await expect(page.getByLabel('Bloque de evaluación')).not.toContainText('temporadas_2022_2026');
+  await expect(card(page, 'Clasificación de brotes')).toContainText(
+    'Temporadas 2022–2026 (aceptación)',
+  );
+  const protocol = card(page, 'Protocolo temporal y reproducibilidad');
+  await expect(protocol).toContainText('Regla de ajuste del bloque');
+  await expect(protocol).toContainText('Cada temporada se ajusta una vez, en su primer origen');
+  await expect(protocol).toContainText('2022: 07/08/2021');
+  await expect(protocol).not.toContainText('Corte de entrenamiento del bloque');
+  // Rows the version does not publish are left out instead of saying "No disponible".
+  await expect(protocol).not.toContainText('Primera semana objetivo del bloque');
+  await expect(protocol).not.toContainText('No disponible');
+  await expect(page.locator('.importance-data')).toContainText('comparten booster');
+  await page.getByLabel('Bloque de evaluación').selectOption('temporada_2026');
+  await expect(protocol).toContainText('Corte de entrenamiento del bloque');
+  await expect(protocol).toContainText('02/08/2025');
+  await expect(protocol).toContainText('Última semana objetivo del bloque');
+});

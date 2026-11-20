@@ -899,6 +899,31 @@ export interface components {
              * @enum {string}
              */
             estado_cobertura: "verificado" | "sin_registro" | "pendiente";
+            /**
+             * Temp Media Era5 Land C
+             * @description Temperatura media semanal (°C) de ERA5-Land; null si la fuente aún no la publica
+             */
+            temp_media_era5_land_c?: number | null;
+            /**
+             * Humedad Era5 Land Pct
+             * @description Humedad relativa media semanal (%) de ERA5-Land; null si la fuente aún no la publica
+             */
+            humedad_era5_land_pct?: number | null;
+            /**
+             * Lluvia Chirps Mm
+             * @description Precipitación total semanal (mm) de CHIRPS v3; null si la fuente aún no la publica
+             */
+            lluvia_chirps_mm?: number | null;
+            /**
+             * Fecha Era5 Land Disponible
+             * @description Fecha desde la que ERA5-Land publica esta semana; null si no se conoce
+             */
+            fecha_era5_land_disponible?: string | null;
+            /**
+             * Fecha Chirps Disponible
+             * @description Fecha desde la que CHIRPS v3 publica esta semana; null si no se conoce
+             */
+            fecha_chirps_disponible?: string | null;
         };
         /**
          * Pagina[AlertaRespuesta]

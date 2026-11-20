@@ -122,7 +122,7 @@ preparada en esa ruta, usa `npm run dev:demo:v2`.
 - Estados de carga, ausencia, error y reintento por consulta. Un resultado fallido no conserva datos
   anteriores en pantalla. Un cambio de horizonte no reutiliza predicciones de otro horizonte.
 - Vista móvil a 390 px, navegación inferior, tabla alternativa al gráfico y movimiento reducido.
-- Tipos generados del contrato 1.1.0; código y comentarios en inglés, interfaz en español.
+- Tipos generados del contrato 1.2.0; código y comentarios en inglés, interfaz en español.
 - Assets originales locales de Figma; mapas y gráficos dinámicos desde la API.
 
 ## Límites y siguientes entregas
@@ -133,8 +133,8 @@ preparada en esa ruta, usa `npm run dev:demo:v2`.
   OpenStreetMap con atribución y conexión, sujeto a su
   [política de teselas](https://operations.osmfoundation.org/policies/tiles/).
   Si no cargan las teselas, los marcadores permanecen sobre el fondo del mapa.
-- La API no publica serie regional ni incidencia: esos componentes explican su ausencia.
-  Seleccionar un distrito muestra su serie real; no se inventan curvas ni poblaciones.
+- La API no publica serie regional ni incidencia, así que el tablero no las muestra: solo hay serie al elegir un
+  distrito, con su serie real; no se inventan curvas ni poblaciones.
 - Desempeño muestra métricas por bloque, comparación con persistencia, importancias y trazabilidad
   de cada versión. Ayuda incluye búsqueda, leyenda vigente y un manual PDF descargable de seis
   páginas (`tools/build_manual.py`, a partir de `./src/content/help.json`). El soporte es por correo a Rosa Rodríguez y
