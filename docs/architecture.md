@@ -253,6 +253,7 @@ data/
 │   ├── epi_cases.py            # CSV de notificaciones, casos confirmados (V4) -> silver semanal
 │   ├── epi_cases_legacy.py     # Excel de notificados de v0-v3 (restaurado de model/v3) -> silver semanal
 │   ├── epi_sala.py             # normalización y conciliación de la Sala
+│   ├── case_source.py          # fuente efectiva de los casos de cada semana y si tiene registro (fuente_casos, estado_cobertura)
 │   └── merge.py                # merges meteo + socio + epi y relleno selectivo
 └── validation/
     ├── integrated_expectations.py  # cobertura y validación del integrado + suite GX silver_integrado
@@ -323,7 +324,7 @@ src/denguekay/db/
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito
+└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito; 0012_v4 fuente `datos_abiertos_confirmados`
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
 ├── settings.py               # paquete a publicar, CORS, selección experimental y almacenamiento (config.yaml; el entorno los reemplaza)
