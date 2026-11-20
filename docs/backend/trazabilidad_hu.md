@@ -72,7 +72,7 @@ vistas son `apps/web/` (Vitest y Playwright en `apps/web/src/` y `apps/web/e2e/`
 | Escenario | Endpoint / módulo | Test o ejecución | Estado |
 |---|---|---|---|
 | HU0010-1 Consulta de probabilidad de brote | `GET /predicciones`; `serving/risk.py` | `tests/serving/test_policies.py` · `test_bordes_de_riesgo`; `tests/api/test_api.py` · `test_predicciones_vigentes_experimentales`; `apps/web/src/lib/format.test.ts` | cumplido |
-| HU0010-2 Horizontes operativos (2 mínimo; 3 y 4 meta) | `GET /predicciones?horizonte=`; `DashboardPage` (anticipación efectiva) | `apps/web/src/lib/dashboard.test.ts`; `tests/api/test_api.py` · `test_predicciones_retrospectivas_y_h3`; `tests/serving/test_v4_acceptance.py` · `test_the_six_v4_versions_are_validated` | cumplido |
+| HU0010-2 Horizontes operativos (2 mínimo; 3 y 4 meta) | `GET /predicciones?horizonte=`; `DashboardPage` y `PublicationNotice` (horizonte contado desde el corte) | `apps/web/src/content/noEffectiveAnticipation.test.ts`; `apps/web/src/lib/dashboard.test.ts`; `tests/api/test_api.py` · `test_predicciones_retrospectivas_y_h3`; `tests/serving/test_v4_acceptance.py` · `test_the_six_v4_versions_are_validated` | cumplido |
 | HU0010-3 Horizontes de tres y cuatro semanas (meta) | — | — | retirado el 17/11/2026: se fusionó con HU0010-2, que cubre los horizontes de 2, 3 y 4 semanas; el caso no validado está en HU0007-5 |
 | HU0010-4 Predicción no disponible | `GET /predicciones`, `/mapa-riesgo` | `tests/serving/test_inference.py` · `test_sin_version_utilizable_queda_no_disponible`; `apps/web/e2e/dashboard.spec.ts` | cumplido |
 | HU0011-1 Consulta de magnitud estimada | `GET /predicciones` (`casos_estimados`) | `tests/api/test_api.py` · `test_predicciones_vigentes_experimentales` | cumplido |

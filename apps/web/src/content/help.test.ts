@@ -45,7 +45,6 @@ describe('help and manual content', () => {
     for (const word of [
       'semana de corte',
       'semana objetivo',
-      'anticipación efectiva',
       'fecha de actualización',
     ])
       expect(time).toContain(word);

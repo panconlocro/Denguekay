@@ -41,8 +41,8 @@ test('local v2 predictions, horizon switching and district series', async ({ pag
   }
   await expect(page.getByRole('heading', { name: 'Sin avisos experimentales' })).toBeVisible();
   await expect(
-    page.getByRole('region', { name: 'Vigencia y anticipación de las predicciones' }),
-  ).toContainText('Sin anticipación');
+    page.getByRole('region', { name: 'Corte, objetivo y emisión de las predicciones' }),
+  ).toContainText('Emisión del pronóstico');
   await expect(page.locator('.leaflet-interactive').first()).toBeVisible();
   expect(
     await page
@@ -167,8 +167,8 @@ test('partial magnitudes and absent counts never become a complete regional tota
     'No disponible',
   ]);
   await expect(
-    page.getByRole('region', { name: 'Vigencia y anticipación de las predicciones' }),
-  ).toContainText('No alcanza el mínimo de 2 semanas');
+    page.getByRole('region', { name: 'Corte, objetivo y emisión de las predicciones' }),
+  ).not.toContainText('anticipación');
   await expect(page.locator('.priorities tbody tr')).toHaveCount(9);
   await expect(page.locator('body')).not.toContainText('≈ No disponible');
 });

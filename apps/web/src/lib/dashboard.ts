@@ -72,15 +72,10 @@ export function regionalForecast(summary: Dashboard, rows?: Prediction[]) {
 export function emissionTiming(rows: Prediction[]) {
   const available = rows.filter((p) => p.disponible);
   if (!available.length) return null;
-  const timings = available.map((p) => ({
-    generated: Date.parse(p.fecha_generacion),
-    // Epidemiological weeks start at midnight in Piura (UTC-5), not UTC midnight.
-    target: Date.parse(`${p.semana_objetivo.fecha_inicio}T00:00:00-05:00`),
-  }));
-  if (timings.some((p) => !Number.isFinite(p.generated) || !Number.isFinite(p.target))) return null;
+  const generated = available.map((p) => Date.parse(p.fecha_generacion));
+  if (generated.some((time) => !Number.isFinite(time))) return null;
   return {
-    first: new Date(Math.min(...timings.map((p) => p.generated))).toISOString(),
-    last: new Date(Math.max(...timings.map((p) => p.generated))).toISOString(),
-    minimumWeeks: Math.min(...timings.map((p) => (p.target - p.generated) / (7 * 86400000))),
+    first: new Date(Math.min(...generated)).toISOString(),
+    last: new Date(Math.max(...generated)).toISOString(),
   };
 }

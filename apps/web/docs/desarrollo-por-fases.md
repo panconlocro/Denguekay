@@ -39,8 +39,8 @@ prepararon por separado en `chore/web-ci`.
 - **Fase 2.** Se preparó una demo local de v2 con el constructor existente del backend y el gold regenerado: una SQLite
   y artefactos nuevos, separados de la base antigua. El informe registra la integración, las verificaciones y sus
   límites.
-- **Fase 3.** Paginación completa, comprobación de magnitud regional, alcance de los filtros y vigencia y anticipación
-  desde la emisión real. Solo cambió el frontend: sin reentrenar, sin inferencias y sin cambios en la API ni en la base
+- **Fase 3.** Paginación completa, comprobación de magnitud regional, alcance de los filtros y corte, objetivo y fecha de
+  emisión. Solo cambió el frontend: sin reentrenar, sin inferencias y sin cambios en la API ni en la base
   de demo.
 - **Fase 4.** Selección geográfica, comparación de horizontes, observaciones del corte y series con umbrales históricos
   y rangos configurables, sobre la misma API y demo.

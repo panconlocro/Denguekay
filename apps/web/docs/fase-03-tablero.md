@@ -24,18 +24,17 @@ entrenó, ejecutó inferencia ni modificaron endpoints, datos o bases.
 - Cada consulta fallida oculta su resultado y permite reintentar; las otras secciones continúan
   disponibles. El contador pendiente/fallido de avisos muestra «—», no cero.
 
-## Vigencia y anticipación
+## Corte, objetivo y emisión
 
-Conforme al punto 6 de OE2, se muestran corte, semana objetivo con fechas, emisión y anticipación
-efectiva mínima entre los distritos con predicción disponible. Se usa `fecha_generacion`, no la
-actualización general de la API, y el inicio del objetivo a medianoche en Piura (UTC−5).
-La comparación con dos semanas usa el intervalo sin redondear (14 días). La cifra positiva visible
-se trunca a una décima: 1,99 semanas no aparece como dos. Una fecha ausente produce «No disponible»;
-una emisión coincidente con el inicio del objetivo o posterior produce «Sin anticipación».
+Se muestran la semana de corte, la semana objetivo con fechas y la emisión del pronóstico. Se usa
+`fecha_generacion`, no la actualización general de la API. El horizonte h = 2, 3 o 4 se cuenta desde
+la semana de corte (último dato publicado); no se calcula ningún plazo desde la fecha de generación, porque
+la fecha en que el MINSA publica los datos es una limitación externa (decisión del 20/11/2026). Una
+fecha ausente produce «No disponible».
 
 El objetivo se identifica como histórico desde su **inicio**, en lugar de esperar al fin de semana.
 El encabezado dice «Consulta histórica · objetivo iniciado». El estado no experimental se denomina
-«Validado», evitando afirmar «Operativo» sin comprobar anticipación. La demo mantiene «Experimental»
+«Validado», evitando afirmar «Operativo» sin validación. La demo mantiene «Experimental»
 para los tres horizontes.
 
 ## Datos y evidencia
@@ -53,12 +52,12 @@ La fuente mantiene corte **27/12/2025** y las cifras de fase 2:
 | 3 semanas | 2026-S02 | 65                       | 13,12             | 0               |
 | 4 semanas | 2026-S03 | 65                       | 15,58             | 0               |
 
-La emisión local fue el 04/11/2026: los tres objetivos son históricos y sin anticipación desde esa
-emisión. No se añadieron cifras ni avisos para llenar el diseño.
+La emisión local fue el 04/11/2026: los tres objetivos ya habían comenzado en esa
+emisión y se muestran como consulta histórica. No se añadieron cifras ni avisos para llenar el diseño.
 
 Pasaron 18 pruebas unitarias, ESLint, TypeScript, build y 20 recorridos de navegador (12 con v2 y 8 con
 fixtures), a 1440 y 390 px. Se verifican las 65 posiciones, estabilidad de indicadores al filtrar,
-falta de magnitud, conteos ausentes, anticipación inferior a dos semanas, errores independientes,
+falta de magnitud, conteos ausentes, errores independientes,
 selección inválida y recuperación. Los datos alterados solo se inyectan en respuestas del navegador
 de pruebas; no se modifican las bases.
 

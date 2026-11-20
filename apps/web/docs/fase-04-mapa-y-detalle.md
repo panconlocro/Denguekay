@@ -31,7 +31,7 @@ modelo y ayuda conservan su implementación inicial.
 - La magnitud mantiene hasta dos decimales. El intervalo requiere ambos límites ordenados y un nivel
   nominal válido; ausencias no se convierten en cero. Se informa que el intervalo es orientativo y
   no calibrado.
-- Corte, emisión, objetivo y anticipación efectiva se muestran para el distrito, reutilizando el
+- Corte, emisión y objetivo se muestran para el distrito, reutilizando el
   componente de vigencia de fase 3 con su alcance explícito.
 - El contexto observado consulta exactamente la semana de corte: casos, umbral histórico, clima,
   fuente y cobertura. No se presenta como SHAP, contribución causal ni agregado de vecinos.

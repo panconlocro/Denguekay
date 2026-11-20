@@ -131,7 +131,7 @@
     {
       "id": "tiempo",
       "title": "Horizonte, corte y emisión",
-      "summary": "La distancia desde el corte no garantiza anticipación real.",
+      "summary": "El horizonte se cuenta desde la semana de corte (último dato publicado).",
       "keywords": [
         "fecha",
         "vigencia",
@@ -144,8 +144,8 @@
       "page": 3,
       "paragraphs": [
         "La semana de corte identifica hasta dónde llegan los datos usados. La semana objetivo es aquella para la que se estima el resultado. El horizonte cuenta las semanas entre corte y objetivo; la fecha de emisión indica cuándo se generó el pronóstico. La fecha de actualización de los datos es otra fecha y no reemplaza la emisión.",
-        "Comprueba la anticipación efectiva desde la emisión hasta el inicio de la semana objetivo. Si se emitió al inicio o después, está sin anticipación. Si el objetivo ya comenzó, se presenta como consulta histórica, aunque sea el último corte publicado. Un horizonte nominal no garantiza semanas útiles desde la emisión.",
-        "El proyecto requiere al menos dos semanas efectivas de anticipación y tiene cuatro como objetivo principal. Revisa por separado disponibilidad, vigencia y validación."
+        "El horizonte h (2, 3 o 4 semanas) se cuenta desde la semana de corte, es decir, desde el último dato publicado. La fecha en que el MINSA publica sus datos es una limitación de la fuente que el proyecto no controla. Si la semana objetivo ya comenzó, se presenta como consulta histórica, aunque sea el último corte publicado.",
+        "El proyecto evalúa los horizontes de 2, 3 y 4 semanas, y los tres cuentan. Revisa por separado disponibilidad, vigencia y validación."
       ],
       "steps": []
     },
@@ -285,7 +285,7 @@
       },
       {
         "question": "¿El objetivo ya empezó?",
-        "answer": "Revisa emisión y anticipación efectiva; puede ser una consulta histórica.",
+        "answer": "Revisa el corte, el objetivo y la emisión; puede ser una consulta histórica.",
         "topic": "tiempo"
       },
       {
