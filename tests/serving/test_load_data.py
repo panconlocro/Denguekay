@@ -5,6 +5,7 @@ from datetime import date
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from sqlalchemy import func, select
 
@@ -64,6 +65,22 @@ class TestCargaOE2(unittest.TestCase):
             self.assertEqual(o2025.id_ejecucion, ejecucion.id_ejecucion)
             # Fase 4: load_data ya no siembra la selección; la fila la crea vacía la migración 0006_v1.
             self.assertEqual(s.get(SystemParameter, "seleccion_experimental").valor, {})
+
+    def test_cambiar_la_transformacion_reescribe_las_etiquetas_ya_cargadas(self):
+        """Same inputs, new TRANSFORMATION: the load is not reused and the labels of the first load are rewritten."""
+        with patch.object(carga, "TRANSFORMATION", 4):
+            self.cargar()
+        relabelled = [{**o, "fuente_casos": "datos_abiertos_confirmados", "estado_cobertura": "sin_registro"}
+                      if o["id_semana"] < 202501 else o for o in self.data.observaciones]
+        with patch.object(carga, "TRANSFORMATION", 4):   # unchanged transformation: the second load is reused
+            self.assertTrue(self.cargar(replace(self.data, observaciones=relabelled))["reutilizada"])
+        with transaction(self.motor) as s:
+            self.assertEqual(s.get(WeeklyObservation, ("200101", 201720)).fuente_casos, "excel_historico")
+        with patch.object(carga, "TRANSFORMATION", 5):
+            self.assertFalse(self.cargar(replace(self.data, observaciones=relabelled))["reutilizada"])
+        with transaction(self.motor) as s:
+            o = s.get(WeeklyObservation, ("200101", 201720))
+            self.assertEqual((o.fuente_casos, o.estado_cobertura), ("datos_abiertos_confirmados", "sin_registro"))
 
     def test_ceros_se_conservan_y_casos_de_gold_coinciden(self):
         self.cargar()

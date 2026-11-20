@@ -123,15 +123,15 @@ def prepare_load(options):
     cutoff = observed.semana_inicio.max().date() + timedelta(days=6)
     weeks = loader.prepare_weeks(date(2017, 1, 1), cutoff + timedelta(days=371))
     # The count stays as the merge left it (0 without a record); only the labels depend on the source record.
-    labels = case_labels(observed, _read(history_path), sala)
+    case_info = case_labels(observed, _read(history_path), sala)
     records = []
     for position, row in enumerate(observed.itertuples()):
         records.append({
             "ubigeo": row.ubigeo, "id_semana": loader.week_id(row.anio, row.semana),
             "casos_dengue": int(row.casos_Dengue), "casos_solo_confirmados": True,
             "umbral_brote_casos": round(float(row.umbral_brote_casos), 2), "brote": bool(row.brote),
-            "fuente_casos": labels.fuente_casos.iat[position],
-            "estado_cobertura": labels.estado_cobertura.iat[position],
+            "fuente_casos": case_info.fuente_casos.iat[position],
+            "estado_cobertura": case_info.estado_cobertura.iat[position],
             **{destination: loader._optional(getattr(row, source), loader.CLIMATE_DECIMALS[destination])
                for source, destination in loader.CLIMATE.items()},
             "temp_media_era5_land_c": loader._optional(row.temp_media_era5_land_c, None),

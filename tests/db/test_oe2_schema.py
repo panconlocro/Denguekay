@@ -221,6 +221,28 @@ class EsquemaOE2:
         with self.assertRaises(StatementError):
             self.insertar(WeeklyObservation, **self.fila_observacion(estado_cobertura="desconocido"))
 
+    def test_migracion_0012_fuente_datos_abiertos_y_reversible(self):
+        """0012_v4 admite datos_abiertos_confirmados; el downgrade reasigna esas filas a excel_historico y lo rechaza."""
+        nueva = self.fila_observacion(fuente_casos="datos_abiertos_confirmados", estado_cobertura="sin_registro",
+                                      casos_dengue=0)
+        self.insertar(WeeklyObservation, **nueva)
+
+        def fuente():
+            with transaction(self.motor) as s:
+                return s.scalar(select(WeeklyObservation.fuente_casos).where(WeeklyObservation.id_semana == 202552))
+
+        self.assertEqual(fuente(), "datos_abiertos_confirmados")
+        bajar_una_revision(self.motor, "0011_v4")
+        self.assertEqual(fuente(), "excel_historico")   # the row and its zero survive; only the label goes back
+        crudo = self.fila_observacion(id_semana=202551, fuente_casos="datos_abiertos_confirmados")
+        with self.assertRaises((IntegrityError, DBAPIError)) as error, transaction(self.motor) as s:
+            s.execute(text("INSERT INTO observacion_semanal (" + ", ".join(crudo) + ") VALUES ("
+                           + ", ".join(f":{c}" for c in crudo) + ")"), crudo)
+        self.assertRegex(str(error.exception.orig), r"fuente_casos_t")
+        migrar(self.motor)
+        self.insertar(WeeklyObservation, **self.fila_observacion(id_semana=202551, fuente_casos="datos_abiertos_confirmados"))
+        self.assertEqual(fuente(), "excel_historico")
+
     def test_checks_de_version_modelo(self):
         casos = [("horizonte_valido", {"horizonte": 5}), ("umbral_valido", {"umbral_probabilidad": 1.5}),
                  ("activa_cumple_umbrales", {"estado": "activa", "cumple_umbrales": False})]
@@ -329,28 +351,6 @@ class TestEsquemaOE2SQLite(EsquemaOE2, unittest.TestCase):
         migrar(self.motor)
         self.assertLessEqual(TABLAS_OE2, set(inspect(self.motor).get_table_names()))
         self.setUp()  # el downgrade borró los datos de apoyo
-
-    def test_migracion_0012_fuente_datos_abiertos_y_reversible(self):
-        """0012_v4 admite datos_abiertos_confirmados; el downgrade reasigna esas filas a excel_historico y lo rechaza."""
-        nueva = self.fila_observacion(fuente_casos="datos_abiertos_confirmados", estado_cobertura="sin_registro",
-                                      casos_dengue=0)
-        self.insertar(WeeklyObservation, **nueva)
-
-        def fuente():
-            with transaction(self.motor) as s:
-                return s.scalar(select(WeeklyObservation.fuente_casos).where(WeeklyObservation.id_semana == 202552))
-
-        self.assertEqual(fuente(), "datos_abiertos_confirmados")
-        bajar_una_revision(self.motor, "0011_v4")
-        self.assertEqual(fuente(), "excel_historico")   # the row and its zero survive; only the label goes back
-        crudo = self.fila_observacion(id_semana=202551, fuente_casos="datos_abiertos_confirmados")
-        with self.assertRaises((IntegrityError, DBAPIError)) as error, transaction(self.motor) as s:
-            s.execute(text("INSERT INTO observacion_semanal (" + ", ".join(crudo) + ") VALUES ("
-                           + ", ".join(f":{c}" for c in crudo) + ")"), crudo)
-        self.assertRegex(str(error.exception.orig), r"fuente_casos_t")
-        migrar(self.motor)
-        self.insertar(WeeklyObservation, **self.fila_observacion(id_semana=202551, fuente_casos="datos_abiertos_confirmados"))
-        self.assertEqual(fuente(), "excel_historico")
 
     def test_migracion_0004_solo_datos_y_reversible(self):
         """0004_v1 siembra horizonte_por_defecto y su downgrade lo quita sin tocar el esquema."""
