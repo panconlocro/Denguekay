@@ -100,8 +100,8 @@ semilla»**: no se generaliza ni se lee como efecto causal. La v3 y las anterior
 ## Metadatos de publicación (19/11/2026)
 
 La publicación de la V4 registra, además del paquete, las importancias SHAP por horizonte y la partición temporal de la
-evaluación (`reproducibilidad.particion_temporal`); el modelo y sus predicciones no cambian y quedan **pendientes de
-republicar en producción**. La matriz de entrenamiento se reconstruye con los insumos del Release y debe dar las 73 775
+evaluación (`reproducibilidad.particion_temporal`); el modelo y sus predicciones no cambian. Se **republicó en
+producción el 20/11/2026** (ejecución 25; versiones `v4-*-2`, que reemplazan a las `-1` en la selección). La matriz de entrenamiento se reconstruye con los insumos del Release y debe dar las 73 775
 filas, las 16 columnas de `b3_obs` y las dispersiones NB2 del paquete (`refit_v4.frozen_training_matrix`); el clasificador
 y el regresor de un horizonte comparten booster, así que sus importancias son idénticas. El corte de ajuste de cada bloque
 es el primer origen de su temporada (coincide con el `ajustes.csv` del archivo del estudio en todos los bloques); el bloque
