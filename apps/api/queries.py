@@ -76,7 +76,11 @@ def observation_dtos(session, rows):
              "casos_dengue": o.casos_dengue, "brote": o.brote, "umbral_brote_casos": o.umbral_brote_casos,
              "temp_media_c": o.temp_media_c, "temp_min_c": o.temp_min_c, "temp_max_c": o.temp_max_c,
              "precip_total_mm": o.precip_total_mm, "hum_rel_media_pct": o.hum_rel_media_pct,
-             "fuente_casos": o.fuente_casos, "estado_cobertura": o.estado_cobertura} for o in rows]
+             "fuente_casos": o.fuente_casos, "estado_cobertura": o.estado_cobertura,
+             "temp_media_era5_land_c": o.temp_media_era5_land_c, "humedad_era5_land_pct": o.humedad_era5_land_pct,
+             "lluvia_chirps_mm": o.lluvia_chirps_mm,
+             "fecha_era5_land_disponible": o.fecha_era5_land_disponible,
+             "fecha_chirps_disponible": o.fecha_chirps_disponible} for o in rows]
 
 
 def observations_query(ubigeo=None, start=None, end=None):
