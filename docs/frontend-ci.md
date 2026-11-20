@@ -1,44 +1,17 @@
-# CI del frontend — soporte de fase 7
+# CI del frontend
 
-Este cambio prepara `.github/workflows/frontend.yml` sin modificar `apps/web/` ni el CI backend.
-La rama `chore/web-ci` parte de `origin/develop`; en su base solo existe el README del plan:
-**falta `apps/web/package.json`**. La implementación está en `feat/web-dashboard`.
-El alcance de soporte se mantiene en tres archivos: el workflow, `docs/architecture.md` y esta guía.
+`.github/workflows/frontend.yml` valida el frontend integrado en `apps/web/`: contrato, lint,
+formato, pruebas unitarias, build y recorridos E2E contra una API temporal de fixtures.
 
-## Entrega completa y orden de integración
-
-**Estado de entrega:** el usuario decidió mantener todo local. `chore/web-delivery` reúne los commits
-de implementación y soporte; no se publicó ninguna rama ni se abrió un PR. Los pasos de publicación
-de esta guía describen una integración futura, no una operación ya realizada ni autorizada ahora.
-
-La fase 7 se presenta para revisión mediante una **rama de entrega desde `origin/develop`** y un
-**PR borrador hacia `develop`**. Se conserva la separación de los commits de implementación y soporte:
-
-1. Guardar los cambios de frontend y soporte en sus ramas respectivas.
-2. Crear la rama de entrega desde `origin/develop` e incorporar `feat/web-dashboard` y
-   `chore/web-ci`, cada una con un merge commit (`--no-ff`). Las dos ramas originales conservan
-   sus puntas e historia; no se reescriben ni se mezclan sus alcances.
-3. Publicar el PR borrador desde la rama de entrega hacia `develop`. Así el checkout del PR
-   contiene paquete y workflow, y permite ejecutar el CI real **sin fusionar todavía `develop`**.
-
-El snapshot completo debe aportar `package.json`, `package-lock.json`, tipos versionados,
-configuración de Playwright y `e2e/serve_api.py`. Con `hasweb=true`, se ejecuta el job completo
-automáticamente en el PR. No hace falta una variable de habilitación ni otro cambio de CI.
-Rosa revisará los resultados antes de decidir la integración mediante merge commit.
-Hasta contar con una ejecución completa y satisfactoria del CI del PR no se afirma que esté verde;
-el cierre de fase 7 requiere además la revisión de Rosa.
-
-Como alternativa, el soporte puede entrar antes que el frontend por un PR separado a `develop`.
-Mientras falte `package.json`, `detectar` publica `hasweb=false`, un aviso y un resumen; `pruebas`
-queda **skipped**. No se instalan dependencias ni se simulan comprobaciones aprobadas.
-Al llegar el paquete, el CI se ejecuta en su PR y en los pushes a las ramas permanentes.
-La omisión previa no certifica la entrega del frontend.
+El paquete, su lockfile y el servidor de fixtures son obligatorios. El job arranca directamente:
+se retiró el detector transitorio que permitía omitir todo el CI cuando todavía no existía el frontend.
+Si falta alguno de esos archivos, la ejecución falla en su paso correspondiente.
 
 No se emplean filtros por rutas: cualquier PR puede afectar el contrato o las fixtures. También
 se ejecuta por push a `main`/`develop` y `workflow_dispatch`. Los PR prueban el checkout de
 integración predeterminado de GitHub; no se usa `pull_request_target`.
 
-## Qué ejecuta cuando existe el paquete
+## Qué ejecuta
 
 - Ubuntu, Node 22 y Python 3.12; permisos `contents: read`, sin credenciales persistidas ni secretos.
   Concurrencia por workflow/ref, cancelando la ejecución anterior. El backend conserva su workflow.
@@ -57,8 +30,8 @@ integración predeterminado de GitHub; no se usa `pull_request_target`.
   acotada de `/api/v1/salud` y `npm run test:e2e`. Si el proceso muere o no llega a salud,
   falla con su log; un trap detiene y espera el proceso al terminar, incluso tras fallos.
 - Playwright arranca su Vite en 5174, con dos workers y perfiles escritorio/móvil. Su configuración
-  retiene trazas y capturas de fallos. La rama frontend incorpora axe y recorridos de accesibilidad
-  para seis vistas; su ejecución queda pendiente del snapshot integrado. Si el job falla, se
+  retiene trazas y capturas de fallos. Los recorridos incluyen axe y comprobaciones de accesibilidad
+  para seis vistas. Si el job falla, se
   conservan `test-results/`,
   `playwright-report/` si existe, log de API y respuesta de salud durante 14 días. No se archivan
   la BD temporal, storage, modelos ni datos del proyecto.
@@ -86,7 +59,7 @@ silver/gold completos ni escribe `data/`. No se usa la BD ni el storage del ento
 El perfil local `demo-v2` es independiente: abre una demo previamente preparada en
 `models/serving/demo/`, por el puerto 18001 y `WEB_TEST_SOURCE=demo-v2`; queda fuera de este CI.
 
-## Validar el workflow localmente sin copiar el frontend
+## Validar la sintaxis del workflow localmente
 
 Desde la raíz, con PyYAML disponible en el entorno Python del proyecto:
 
@@ -119,13 +92,12 @@ fi
 git diff --check
 ```
 
-Esto comprueba sintaxis; no ejecuta los pasos ni emula GitHub Actions. La rama de soporte no
-copia `apps/web/`: el paquete llega al snapshot de entrega mediante el merge de la rama frontend.
-Repetir estas comprobaciones sobre ese snapshot y ejecutar la secuencia siguiente. Revisar
+Esto comprueba sintaxis; no ejecuta los pasos ni emula GitHub Actions. Ejecutar además la
+secuencia siguiente para validar el frontend integrado. Revisar
 `npm run test:e2e -- --list` para confirmar que `accessibility.spec.ts` entra en el perfil
 de fixtures y cubre las seis vistas, además de los recorridos funcionales.
 
-## Comandos locales pendientes con el frontend integrado
+## Comandos locales con el frontend integrado
 
 Ejecutar en un checkout que ya tenga el paquete. Usar un entorno Python 3.12 del proyecto y
 Node 22. En macOS, XGBoost requiere OpenMP; `playwright --with-deps` corresponde al runner Linux.
@@ -174,7 +146,10 @@ en `apps/web/src/content/help.json` y el generador en `apps/web/tools/build_manu
 Regenerarlo requiere `reportlab` y `pypdf`, más revisión visual; este CI no lo regenera.
 Los SVG locales y su procedencia van en `apps/web/public/assets/` y su `README.md`.
 
-## Evidencia de este cambio de soporte
+## Registro histórico del soporte de fase 7
+
+La evidencia siguiente corresponde al checkout inicial, anterior a la integración del frontend.
+Describe el detector transitorio y los resultados de aquel momento; no es el estado del workflow actual.
 
 En el checkout inicial de soporte se comprobó la estructura del workflow, sintaxis de sus bloques
 Bash, ruta de omisión con el paquete realmente ausente, whitespace y alcance del diff.

@@ -40,20 +40,26 @@ class TestAlreadyEmitted(LiveCase):
             self.assertFalse(emissions.already_emitted(session, self.cutoff + 1))
 
 
-class TestArchive(LiveCase):
-    def setUp(self):
-        super().setUp()
+class TestArchive(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # These four tests only read the archive: emit once, keep every assertion, then clean up the owner.
+        environment = LiveCase()
+        cls.addClassCleanup(environment.doCleanups)
+        environment.setUp()
         manifest = json.loads(V4_DATA_MANIFEST.read_text(encoding="utf-8"))
         files = {f["ruta"]: f["sha256"] for item in manifest["paquetes"] for f in item["archivos"]}
         same, other = "data/silver/confirmados/epi_piura_semanal.csv", "data/silver/confirmados/epi_sala_semanal.csv"
-        self.current = self.batch_with_hashes({same: files[same], other: "0" * 64, "data/silver/operativo/x.csv": "1" * 64})
-        self.report = self.run_weekly()
-        self.assertEqual(self.report["estado"], "emitida", self.report)
-        self.folder = self.base / "emisiones" / str(self.cutoff)
-
-    def batch_with_hashes(self, hashes):
         from dataclasses import replace
-        return replace(self.current, hashes={**self.current.hashes, **hashes})
+        environment.current = replace(environment.current, hashes={
+            **environment.current.hashes, same: files[same], other: "0" * 64,
+            "data/silver/operativo/x.csv": "1" * 64})
+        cls.report = environment.run_weekly()
+        if cls.report["estado"] != "emitida":
+            raise AssertionError(cls.report)
+        cls.motor, cls.base = environment.motor, environment.base
+        cls.cutoff, cls.published, cls.districts = environment.cutoff, environment.published, environment.districts
+        cls.folder = cls.base / "emisiones" / str(cls.cutoff)
 
     def emission(self):
         folders = list(self.folder.iterdir())

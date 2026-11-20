@@ -369,6 +369,29 @@ Los tests usan SQLite temporal y, si existe `DENGUEKAY_PG_PRUEBAS_URL`, repiten 
 inferencia en esa BD (la devuelven a `base` al terminar). Nunca usan `DATABASE_URL`. El benchmark
 con `--incluir-escrituras` agrega ejecuciones: úselo sobre una copia o la BD de pruebas.
 
+En CI, la suite completa y los umbrales de cobertura se conservan en Linux, Windows y macOS.
+El job adicional de PostgreSQL ejecuta solamente sus casos de esquema, permisos e inferencia,
+incluidas las dos guardas de esquemas históricos. La selección se comprueba contra los tests
+declarados para PostgreSQL en `tests/test_workflows.py`, para detectar casos que se dejen fuera.
+Para reproducir ese job con una BD desechable configurada:
+
+```powershell
+.\.venv\Scripts\python -m unittest discover -s tests -v --durations 20 -k PostgreSQL -k postgresql_schema_matches_baseline
+```
+
+`--durations 20` también se usa en la suite completa del CI: muestra los veinte casos más lentos
+sin cambiar qué pruebas se ejecutan ni los mínimos de cobertura.
+
+Las fixtures SQLite copian una plantilla vacía migrada con Alembic una vez por proceso. Cada
+test mantiene su propio archivo y motor; las pruebas de migraciones y las guardas históricas
+siguen ejecutando sus upgrades y downgrades reales. Los cuatro tests de lectura del archivo de
+emisión comparten una sola emisión sintética; sus aserciones y los entornos de los tests que
+escriben permanecen separados.
+
+Medición puntual en macOS ARM64, Python 3.12 y con cobertura: los mismos cuatro tests de lectura
+del archivo de emisión pasaron de 34,088 s (base `76a3987`) a 8,583 s con la preparación compartida.
+Son tiempos de esa prueba local, no una garantía del tiempo total de los runners de GitHub.
+
 **Benchmark con la v2 (fase 4, 29/10/2026).**
 - **Cómo se midió:** sobre una copia de la BD de demostración (65 distritos, v2 con h=2, 3 y 4), uvicorn local
   por HTTP real, CPU, 20 repeticiones con 2 de calentamiento, escrituras incluidas

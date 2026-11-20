@@ -1,12 +1,15 @@
 """Fixtures reales y migración de una BD temporal para las pruebas del backend."""
 
 from contextlib import contextmanager
+from functools import cache
 import hashlib
 import os
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from alembic import command
 from alembic.config import Config
-from sqlalchemy.engine import make_url
+from sqlalchemy.engine import URL, make_url
 import pandas as pd
 
 from denguekay.db.session import make_engine
@@ -55,12 +58,28 @@ def url_pg_pruebas():
     return url
 
 
-def motor_temporal(carpeta):
-    """SQLite aislado, con claves foráneas activas."""
-    from sqlalchemy.engine import URL
+@cache
+def _empty_sqlite_schema():
+    """Migrate once per process and retain only the closed, empty database bytes."""
+    with TemporaryDirectory() as folder:
+        path = Path(folder) / "schema.db"
+        engine = make_engine(URL.create("sqlite", database=str(path)))
+        try:
+            migrar(engine)
+        finally:
+            engine.dispose()
+        return path.read_bytes()
 
-    motor = make_engine(URL.create("sqlite", database=str(carpeta / "pruebas.db")))
-    migrar(motor)
+
+def motor_temporal(carpeta):
+    """Independent SQLite copy with foreign keys enabled; migration tests still run Alembic directly."""
+    path = carpeta / "pruebas.db"
+    existing = path.exists()
+    if not existing:
+        path.write_bytes(_empty_sqlite_schema())
+    motor = make_engine(URL.create("sqlite", database=str(path)))
+    if existing:
+        migrar(motor)
     return motor
 
 
