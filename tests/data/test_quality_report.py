@@ -18,7 +18,8 @@ WEEKS = pd.date_range("2024-01-07", periods=4, freq="W-SUN")   # 65 districts x 
 
 def panel(cases=2):
     rows = [{"ubigeo": u, "anio": 2024, "semana": i + 1, "semana_inicio": w.date().isoformat(), "casos_Dengue": cases,
-             "temp_media": 25.0, "precip_total_mm": 1.0, "hum_rel_media": 60.0, "poblacion": 1000}
+             "temp_media": 25.0, "temp_min": 20.0, "temp_max": 30.0, "precip_total_mm": 1.0, "hum_rel_media": 60.0,
+             "poblacion": 1000}
             for u in DISTRICTS for i, w in enumerate(WEEKS)]
     return pd.DataFrame(rows)
 
@@ -48,7 +49,7 @@ class Inputs:
     def report(self):
         return qr.build_report(self.folder / "panel.csv", self.folder / "notificaciones.csv", self.folder / "sala.csv",
                                history_path=self.folder / "historia.csv", meteo_path=self.folder / "no_hay_meteo.csv",
-                               socio_path=self.folder / "no_hay_socio.csv",
+                               socio_path=self.folder / "no_hay_socio.csv", weeks=WEEKS,
                                climate={"enso": self.folder / "a", "chirps_ee": self.folder / "b",
                                         "chirps_final": self.folder / "c", "chirps_prelim": self.folder / "d",
                                         "era5_recent": self.folder / "e", "historical": {}, "frozen": "2026-11-12"})
@@ -85,6 +86,15 @@ class TestCompleteness(unittest.TestCase):
         self.assertEqual(report["estado"], "no conforme")
         self.assertEqual(report["no_conformidades"][0]["variables_afectadas"], ["temp_media"])
         self.assertEqual(report["completitud"]["por_variable"]["temp_media"]["nulos"], 30)
+
+    def test_a_null_minimum_or_maximum_temperature_makes_the_report_non_conforming_and_names_it(self):
+        for column in ("temp_min", "temp_max"):
+            with self.subTest(column=column):
+                frame = panel()
+                frame.loc[frame.index[:30], column] = None
+                report = self.build(frame)
+                self.assertEqual(report["estado"], "no conforme")
+                self.assertEqual(report["no_conformidades"][0]["variables_afectadas"], [column])
 
     def test_a_missing_row_counts_against_every_variable_and_duplicates_are_reported(self):
         frame = pd.concat([panel().iloc[1:], panel().iloc[[5]]], ignore_index=True)

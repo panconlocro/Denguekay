@@ -259,6 +259,7 @@ data/
     ├── integrated_expectations.py  # cobertura y validación del integrado + suite GX silver_integrado
     ├── gold_expectations.py        # suite GX gold_h2 (esquema, llave, rangos, sin fuga temporal)
     ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
+    ├── completeness_criterion.py   # criterio de completitud de la V4 (HU0005-5): columnas obligatorias y calendario contractual fijo
     ├── quality_report.py           # reporte de calidad y completitud de la V4 (HU0005-4/5), solo lectura; escribe en docs/backend/evidencia/
     ├── duplicates.py               # resultado del control de llaves repetidas de la fuente epidemiológica (HU0001-3)
     ├── climate_provenance.py       # fuente, producto y fecha de extracción de cada fuente climática (HU0002-1)
