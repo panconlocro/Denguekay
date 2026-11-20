@@ -7,10 +7,11 @@ from pathlib import PurePosixPath, PureWindowsPath
 
 import numpy as np
 import pandas as pd
+from xgboost import XGBRegressor
 
 from denguekay.config.paths import ROOT, V4_DATA_MANIFEST, V4_FROZEN, V4_GEOGRAPHY
 from denguekay.features.b3 import GEO, climate_vector
-from denguekay.serving.artifacts import InvalidArtifact, sha256_bytes
+from denguekay.serving.artifacts import InvalidArtifact, json_fingerprint, sha256_bytes
 from denguekay.serving.package import package_code
 from denguekay.serving.predictors import v2_e3_s4 as v2, v3_l5a_d3 as v3, v4_b3_obs as frozen
 from denguekay.serving.predictors.base import BuiltPackage, InferenceUnavailable
@@ -99,8 +100,63 @@ def package_folder(options):
     return ROOT / options["paquete_dir"] if options.get("paquete_dir") else V4_FROZEN
 
 
+IMPORTANCE_NOTE = ("Clasificador y regresor del mismo horizonte comparten booster; sus importancias son idénticas")
+PARTITION_SCHEME = ("Entrenamiento con las etiquetas cerradas al corte del paquete; calibración (Platt y peso de la "
+                    "mezcla) con las predicciones fuera de muestra cerradas a ese corte; prueba fuera de muestra por "
+                    "temporada: cada temporada se ajusta una vez, en su primer origen, y se evalúa en sus semanas "
+                    "objetivo")
+NO_INTERVAL = ("Sin intervalo de casos: el paquete V4 no declara nivel de intervalo; publica el conteo mezclado y la "
+               "probabilidad calibrada")
+
+
+def training_importances(folder, config, booster):
+    """SHAP importances per horizon and the facts of the matrix the booster was fitted with.
+
+    A refit package carries them (``refit_v4.IMPORTANCES_FILE``, hash-checked with the rest of the package). The
+    frozen V4 of the Release does not, so its training matrix is rebuilt from the Release inputs and verified
+    (``refit_v4.frozen_training_matrix``); no other matrix, and not the booster's gain, is ever used."""
+    from denguekay.model import refit_v4 as refit
+
+    if refit.IMPORTANCES_FILE in config["archivos"]:
+        payload = refit.read_importances(folder, config)
+        return {**payload, "origen": f"Archivo {refit.IMPORTANCES_FILE} del paquete: |SHAP| medio sobre la matriz "
+                                     f"del ajuste ({payload['filas']} filas)"}
+    if folder != V4_FROZEN:
+        raise ValueError(f"El paquete de reajuste no trae {refit.IMPORTANCES_FILE}; reajústalo de nuevo "
+                         "(python -m denguekay.model.refit_v4)")
+    regressor = XGBRegressor()
+    regressor.load_model(bytearray(booster))
+    train = refit.frozen_training_matrix(config, regressor)
+    payload = refit.importances_payload(regressor, train, config["columnas"][refit.ARM])
+    return {**payload, "importancias": {int(h): rows for h, rows in payload["importancias"].items()},
+            "origen": f"|SHAP| medio sobre la matriz de entrenamiento reconstruida con los insumos del Release "
+                      f"({payload['filas']} filas; filas, columnas y dispersiones NB2 verificadas contra el paquete)"}
+
+
+def reproducibility(origin, config, importances, partition, horizon):
+    """What ``version_modelo.reproducibilidad`` carries for one horizon, besides the package's origin."""
+    seed = config["semilla_demo"]
+    record = config["modelos"][f"b3_obs_s{seed}"]["por_horizonte"][str(horizon)]
+    platt = record["platt"]
+    return {
+        **origin,
+        "entrenamiento_inicio": importances["inicio"], "filas_entrenamiento": importances["filas"],
+        "calibracion": ("Platt y peso de la mezcla del conteo por horizonte, ajustados al congelar el modelo con las "
+                        f"predicciones fuera de muestra de b3_obs (semilla {seed}) cuya etiqueta cerró al "
+                        f"{platt['ultimo_cierre']} ({platt['filas']} filas): "
+                        f"h={horizon}, a={platt['a']:.4f}, b={platt['b']:.4f}, w={record['peso_modelo']:.2f}"),
+        "calibracion_parametros": {"platt": {key: platt[key] for key in ("a", "b", "filas", "ultimo_cierre")},
+                                   "peso_modelo": record["peso_modelo"]},
+        "intervalo": NO_INTERVAL,
+        "tipo_importancia": v2.IMPORTANCE, "nota_importancias": IMPORTANCE_NOTE,
+        "origen_importancias": importances["origen"],
+        "particion_temporal": {"esquema": PARTITION_SCHEME, "bloques": partition[horizon]},
+    }
+
+
 def prepare(horizons, options):
-    from denguekay.serving.demo_b3_v4 import read_bundle, prepare_observations, build_package
+    from denguekay.serving.demo_b3_v4 import (
+        build_package, joined_predictions, prepare_observations, read_bundle, temporal_partition)
 
     folder = package_folder(options)
     manifest_path = folder / "paquete.json"
@@ -117,13 +173,24 @@ def prepare(horizons, options):
     _geography(geography)
     _, observations = prepare_observations(folder, config, digest)
     archived = build_package(folder, config, digest, observations)
+    # Metadata only: nothing below touches the booster, the parameters or the forecasts.
+    importances = training_importances(folder, config, archived.files[frozen.BOOSTER])
+    partition = temporal_partition(*joined_predictions(folder, observations, config["semilla_demo"]))
     files = {name: data for name, data in archived.files.items() if name != frozen.SNAPSHOT}
     files[GEOGRAPHY] = geography
     origin = {**archived.oos_detail, "alcance": "V4 B3 para pronósticos con observaciones de Piura al corte"}
-    versions = [replace(spec, data={**spec.data, "reproducibilidad": origin}) for spec in archived.versions]
+    versions = [replace(spec, importances=importances["importancias"][spec.horizonte],
+                        data={**spec.data, "reproducibilidad": reproducibility(origin, config, importances, partition,
+                                                                               spec.horizonte)})
+                for spec in archived.versions]
     report = {**archived.report, **origin, "experimento": "serving_v4_b3"}
+    # The manifest hash identifies a version (``save_versions`` reuses the one with the same package and dataset), and
+    # the files alone do not change when only this metadata does: its hash goes into the options, so a republication
+    # with new importances or partition registers new versions instead of silently keeping the old ones.
+    metadata = json_fingerprint([[spec.tarea, spec.horizonte, spec.data["reproducibilidad"], spec.importances]
+                                 for spec in versions])
     built = replace(archived, kind=KIND, code=package_code("v4", files), files=files, versions=versions,
-                    oos_detail=origin, report=report)
+                    options={**archived.options, "huella_metadatos": metadata}, oos_detail=origin, report=report)
     return Prepared(built, {manifest_path.relative_to(ROOT).as_posix(): digest,
                             V4_GEOGRAPHY.relative_to(ROOT).as_posix(): geo_digest})
 

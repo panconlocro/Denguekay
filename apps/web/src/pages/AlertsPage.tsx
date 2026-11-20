@@ -238,11 +238,6 @@ export function AlertsPage() {
           <strong className="metric-value">{number(retiredRows?.length)}</strong>
           <p className="metric-note">Historial filtrado completo, no solo el último lote.</p>
         </Card>
-        <Card className="unavailable-card">
-          <p className="metric-label">Próxima actualización</p>
-          <strong className="metric-value muted">No disponible</strong>
-          <p className="metric-note">No hay una fecha de publicación confirmada.</p>
-        </Card>
       </div>
       <div id="alerts-list" tabIndex={-1}>
         <Card

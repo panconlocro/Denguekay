@@ -14,33 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  detectar:
-    name: Detectar paquete del frontend
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      hasweb: ${{ steps.web.outputs.hasweb }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - name: Detectar apps/web/package.json
-        id: web
-        shell: bash
-        run: |
-          if [[ -f apps/web/package.json ]]; then
-            echo "hasweb=true" >> "$GITHUB_OUTPUT"
-            echo "Paquete frontend presente; se ejecutará su CI." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "hasweb=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::CI frontend omitido: falta apps/web/package.json; integrar la rama frontend para ejecutar las comprobaciones."
-            echo "CI frontend OMITIDO: falta apps/web/package.json. No se ejecutaron instalación, contrato, lint, formato, tests, build ni E2E. Esta omisión no valida el frontend." >> "$GITHUB_STEP_SUMMARY"
-          fi
-
   pruebas:
     name: Node 22 / Python 3.12 / Chromium (fixtures)
-    needs: detectar
-    if: needs.detectar.outputs.hasweb == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     defaults:

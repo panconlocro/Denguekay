@@ -95,7 +95,7 @@ export function DashboardPage() {
         </strong>
         .
         {(province || district) &&
-          ' Los filtros geográficos no modifican los cuatro indicadores regionales.'}
+          ' Los filtros geográficos no modifican los tres indicadores regionales.'}
       </div>
       {summary.isError ? (
         <Card>
@@ -187,37 +187,15 @@ export function DashboardPage() {
             ))}
         </Card>
       </div>
-      <div className="dashboard-bottom">
-        <Card
-          title={
-            district
-              ? `Serie temporal · ${districts.find((d) => d.ubigeo === district)?.nombre || district}`
-              : 'Serie regional: casos observados y pronosticados'
-          }
-          subtitle={
-            district
-              ? 'Casos por semana epidemiológica · observado frente a pronosticado'
-              : 'Disponibilidad de la serie histórica regional'
-          }
-        >
-          {district ? (
-            geographicState || <SeriesChart ubigeo={district} horizon={horizon} />
-          ) : (
-            <div className="regional-unavailable">
-              <div className="chart-placeholder" aria-hidden="true">
-                <div />
-                <div />
-                <div />
-                <div />
-              </div>
-              <Empty title="Serie regional no disponible">
-                La API actual publica series por distrito. Selecciona un distrito en los filtros o
-                en el mapa para explorar su serie; no se estima una curva regional con datos
-                incompletos.
-              </Empty>
-            </div>
-          )}
-        </Card>
+      <div className={district ? 'dashboard-bottom' : 'dashboard-bottom dashboard-bottom-alone'}>
+        {district && (
+          <Card
+            title={`Serie temporal · ${districts.find((d) => d.ubigeo === district)?.nombre || district}`}
+            subtitle="Casos por semana epidemiológica · observado frente a pronosticado"
+          >
+            {geographicState || <SeriesChart ubigeo={district} horizon={horizon} />}
+          </Card>
+        )}
         <div className="stack">
           <Card
             title={experimental ? 'Avisos experimentales' : 'Alertas tempranas activas'}
@@ -341,14 +319,6 @@ function Indicators({ summary, predictions }: { summary: Dashboard; predictions?
           {magnitude.value == null ? 'No disponible' : `≈ ${number(magnitude.value, 2)}`}
         </strong>
         <p className="metric-note">{magnitude.reason}</p>
-      </Card>
-      <Card className="unavailable-card">
-        <DataTag observed />
-        <p className="metric-label">Incidencia por 100 000 habitantes</p>
-        <strong className="metric-value muted">No disponible</strong>
-        <p className="metric-note">
-          La API no publica incidencia ni la población del periodo necesaria para calcularla.
-        </p>
       </Card>
       <div className="indicators-note">
         Alcance regional · corte de observación: {weekLabel(summary.semana_corte)} · objetivo:{' '}

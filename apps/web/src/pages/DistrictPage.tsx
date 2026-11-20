@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import type { AppContext } from '../App';
 import type { Configuration, District, Prediction } from '../api/types';
@@ -5,6 +6,7 @@ import { useDistrictAlerts, useDistrictPrediction, useObservations } from '../ap
 import { SeriesChartView } from '../components/Visuals';
 import { PublicationNotice } from '../components/PublicationNotice';
 import { Card, DataTag, Empty, Failure, Loading, RiskChip } from '../components/ui';
+import { climateReading } from '../lib/climate';
 import { districtPath, intervalText } from '../lib/district';
 import { date, number, percent, weekLabel } from '../lib/format';
 
@@ -158,9 +160,6 @@ function DistrictDetail({ district, context }: { district: District; context: Ap
                     ? `${intervalText(prediction)}. Rango orientativo, no calibrado.`
                     : prediction.motivo_intervalo || 'Sin intervalo publicado.'}
                 </p>
-                <p className="metric-note">
-                  Umbral de la semana objetivo: no publicado por la API.
-                </p>
               </Card>
             </>
           )}
@@ -225,24 +224,26 @@ function DistrictDetail({ district, context }: { district: District; context: Ap
                     ? 'No disponible'
                     : `${number(observation.umbral_brote_casos, 2)} casos`}
                 </dd>
-                <dt>Temperatura media</dt>
-                <dd>
-                  {observation.temp_media_c == null
-                    ? 'No disponible'
-                    : `${number(observation.temp_media_c, 2)} °C`}
-                </dd>
-                <dt>Humedad relativa media</dt>
-                <dd>
-                  {observation.hum_rel_media_pct == null
-                    ? 'No disponible'
-                    : `${number(observation.hum_rel_media_pct, 2)} %`}
-                </dd>
-                <dt>Precipitación total</dt>
-                <dd>
-                  {observation.precip_total_mm == null
-                    ? 'No disponible'
-                    : `${number(observation.precip_total_mm, 2)} mm`}
-                </dd>
+                {(
+                  [
+                    ['Temperatura media', 'temperature'],
+                    ['Humedad relativa media', 'humidity'],
+                    ['Precipitación total', 'rain'],
+                  ] as const
+                ).map(([label, kind]) => {
+                  const reading = climateReading(observation, kind);
+                  return (
+                    <Fragment key={kind}>
+                      <dt>{label}</dt>
+                      <dd>
+                        {reading.text}
+                        {reading.source && (
+                          <small className="fact-source">Fuente: {reading.source}</small>
+                        )}
+                      </dd>
+                    </Fragment>
+                  );
+                })}
                 <dt>Fuente epidemiológica</dt>
                 <dd>
                   {observation.fuente_casos === 'sala_situacional'
@@ -262,7 +263,10 @@ function DistrictDetail({ district, context }: { district: District; context: Ap
               </dl>
               <p className="footnote">
                 Valores de la semana de corte; no son agregados de variables ni explicaciones
-                individuales del modelo. El umbral observado no se extrapola al objetivo.{' '}
+                individuales del modelo. El umbral observado no se extrapola al objetivo. El clima
+                es el de ERA5-Land (temperatura y humedad) y CHIRPS v3 (lluvia) cuando ya están
+                publicados; si no, el del panel Open-Meteo, que termina en 2025. «Pendiente de
+                publicación» indica que la fuente aún no publica esa semana.{' '}
                 {observation.estado_cobertura !== 'verificado' &&
                   'Un cero sin cobertura verificada no certifica ausencia de casos.'}
               </p>
@@ -276,16 +280,6 @@ function DistrictDetail({ district, context }: { district: District; context: Ap
             prediction={available ? prediction : undefined}
             search={search}
           />
-          <Card title="Alcance de la interpretación">
-            <p className="muted">
-              La API no expone contribuciones individuales ni agregados de vecinos para este
-              distrito. Las variables observadas y las importancias globales describen asociaciones;
-              no se interpretan como causas.
-            </p>
-            <Link className="text-link" to={`/modelo${search}`}>
-              Ver desempeño del modelo →
-            </Link>
-          </Card>
         </div>
       </div>
     </>

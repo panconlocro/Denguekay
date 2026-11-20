@@ -10,13 +10,13 @@ import {
   baselineRatio,
   blockIds,
   blockLabel,
-  blocks,
   importances,
   metrics,
+  provenanceRows,
   record,
   selectedModel,
+  sharedBoosterNote,
   textValue,
-  valueAt,
 } from '../lib/modelMetrics';
 import '../models.css';
 
@@ -444,6 +444,8 @@ function HorizonRow({
 
 function Variables({ model }: { model?: Model }) {
   const query = useModelVariables(model?.id_version);
+  const detail = useModelDetail(model?.id_version);
+  const shared = detail.isError ? null : sharedBoosterNote(detail.data);
   if (!model)
     return (
       <Empty title="Versión no disponible">Elige una tarea con una versión única publicada.</Empty>
@@ -460,6 +462,7 @@ function Variables({ model }: { model?: Model }) {
       <p className="scope-note">
         {query.data.nota || 'La API no especifica el método de importancia.'}
       </p>
+      {shared && <p className="footnote">{shared.replace(/\.$/, '')}.</p>}
       {!rows.length ? (
         <Empty title="Sin importancias publicadas">
           No hay valores numéricos válidos para esta versión.
@@ -498,40 +501,24 @@ function Variables({ model }: { model?: Model }) {
 
 function Provenance({ detail, block }: { detail: ModelDetail; block: string }) {
   const repro = record(detail.reproducibilidad);
-  const publishedBlock = record(blocks(detail)[block]);
-  const temporal = Object.keys(publishedBlock).length
-    ? record(valueAt(repro, 'particion_temporal', 'bloques', block))
-    : {};
   const source = textValue(detail.metricas.procedencia);
-  const rows = [
-    ['Inicio del ajuste de servicio', repro.entrenamiento_inicio],
-    ['Corte del ajuste de servicio', repro.entrenamiento_corte],
-    ['Calibración', repro.calibracion],
-    ['Intervalo', repro.intervalo],
-    ['Corte de entrenamiento del bloque', publishedBlock.corte_ajuste ?? temporal.corte_ajuste],
-    [
-      'Primera semana objetivo del bloque',
-      publishedBlock.primera_semana_objetivo ?? temporal.primera_semana_objetivo,
-    ],
-    [
-      'Última semana objetivo del bloque',
-      publishedBlock.ultima_semana_objetivo ?? temporal.ultima_semana_objetivo,
-    ],
-  ];
+  const rows = provenanceRows(detail, block);
   return (
     <>
       <p>{source || 'Procedencia de las métricas no publicada.'}</p>
-      <dl className="provenance-facts">
-        {rows.map(([label, value]) => (
-          <div key={String(label)}>
-            <dt>{String(label)}</dt>
-            <dd>{textValue(value) || unavailable}</dd>
-          </div>
-        ))}
-      </dl>
+      {rows.length > 0 && (
+        <dl className="provenance-facts">
+          {rows.map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
       <p className="footnote">
-        Las fechas ausentes de cada bloque no se deducen de su nombre ni de las fechas del ajuste de
-        servicio.
+        Solo se muestra lo que la versión publica: las fechas ausentes de un bloque no se deducen de
+        su nombre ni de las fechas del ajuste de servicio.
       </p>
       <details>
         <summary>Ver ficha técnica y huellas</summary>

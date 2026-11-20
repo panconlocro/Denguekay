@@ -96,7 +96,8 @@ test('published alert history remains factual for the actual connected API', asy
   await page.goto('/alertas?horizonte=2');
   const stats = page.getByLabel('Resumen de registros filtrados');
   await expect(stats.locator('.metric-value').first()).toHaveText(String(data.total));
-  await expect(stats.locator('.card').last()).toContainText('No disponible');
+  await expect(stats.locator('.card')).toHaveCount(3);
+  await expect(stats).not.toContainText('Próxima actualización');
   await expect(page.locator('.target-field')).toContainText('SE ');
   if (data.total) {
     await expect(page.locator('.alerts-table tbody tr')).toHaveCount(Math.min(10, data.total));
@@ -276,4 +277,26 @@ test('invalid filters are explicit and a deep link aligns to its own record', as
   await expect(
     page.getByRole('heading', { name: 'Sin registros para esta selección', exact: true }),
   ).toBeVisible();
+});
+
+test('the three alert indicators fill their row without gaps', async ({ page }, info) => {
+  await page.goto('/alertas?horizonte=2');
+  const stats = page.getByLabel('Resumen de registros filtrados');
+  await expect(stats.locator('.card')).toHaveCount(3);
+  const group = (await stats.boundingBox())!;
+  const cards = await Promise.all(
+    [0, 1, 2].map((i) => stats.locator('.card').nth(i).boundingBox()),
+  );
+  const [a, b, c] = cards.map((box) => box!);
+  const right = (box: { x: number; width: number }) => box.x + box.width;
+  if (info.project.name === 'mobile') {
+    // Two columns: the third card takes the whole last row.
+    expect(Math.abs(a.y - b.y)).toBeLessThan(1);
+    expect(Math.abs(right(b) - (group.x + group.width))).toBeLessThan(2);
+    expect(c.y).toBeGreaterThan(a.y + a.height - 1);
+    expect(Math.abs(c.width - group.width)).toBeLessThan(2);
+  } else {
+    expect(Math.abs(a.y - b.y) + Math.abs(b.y - c.y)).toBeLessThan(1);
+    expect(Math.abs(right(c) - (group.x + group.width))).toBeLessThan(2);
+  }
 });

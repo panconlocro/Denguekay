@@ -79,6 +79,11 @@ const observation: Observation = {
   temp_max_c: 34,
   precip_total_mm: 0,
   hum_rel_media_pct: 63,
+  temp_media_era5_land_c: null,
+  humedad_era5_land_pct: null,
+  lluvia_chirps_mm: null,
+  fecha_era5_land_disponible: null,
+  fecha_chirps_disponible: null,
   fuente_casos: 'sala_situacional',
   estado_cobertura: 'verificado',
 };

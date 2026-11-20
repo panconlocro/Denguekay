@@ -1,11 +1,14 @@
-"""Workflows of the weekly update and of the monthly drift review (HU0019-1 and HU0009-2).
+"""Scheduled maintenance workflows and the database-specific CI selection.
 
 They only read the YAML: the behaviour of ``v4_weekly`` and ``drift`` is proved by their own tests. What is checked
 here is what the files promise: the schedule, the commands, the minimum permissions and that, without secrets, the
 jobs end with a notice instead of failing."""
 
+import ast
+from fnmatch import fnmatchcase
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -44,6 +47,44 @@ def steps_of(workflow):
 
 def commands(workflow):
     return "\n".join(step.get("run", "") for step in steps_of(workflow))
+
+
+class TestDatabaseCISelection(unittest.TestCase):
+    def test_the_ci_selection_keeps_every_postgresql_case_without_repeating_the_full_suite(self):
+        job = load("backend.yml")["jobs"]["postgresql"]
+        command = next(step["run"] for step in job["steps"] if "unittest discover" in step.get("run", ""))
+        tokens = shlex.split(command)
+        patterns = [tokens[i + 1] for i, token in enumerate(tokens[:-1]) if token == "-k"]
+        self.assertTrue(patterns, "PostgreSQL must select database-specific cases, not repeat the full suite")
+
+        # Discover the real cases, including inherited methods, without running any test or opening a database.
+        def case_ids(suite):
+            for item in suite:
+                if isinstance(item, unittest.TestSuite):
+                    yield from case_ids(item)
+                else:
+                    yield item.id()
+
+        directory = ROOT / "tests"
+        ids = set(case_ids(unittest.TestLoader().discover(str(directory))))
+        prefixes = []
+        for path in directory.rglob("test*.py"):
+            module = ".".join(path.relative_to(directory).with_suffix("").parts)
+            for cls in ast.parse(path.read_text(encoding="utf-8")).body:
+                if not isinstance(cls, ast.ClassDef):
+                    continue
+                for node in (cls, *cls.body):
+                    if not isinstance(node, (ast.ClassDef, ast.FunctionDef)):
+                        continue
+                    uses_pg = any(isinstance(part, ast.Name) and part.id == "url_pg_pruebas"
+                                  for decorator in node.decorator_list for part in ast.walk(decorator))
+                    if uses_pg:
+                        suffix = "." if node is cls else "." + node.name
+                        prefixes.append(f"{module}.{cls.name}{suffix}")
+        expected = {case for case in ids if any(case.startswith(prefix) for prefix in prefixes)}
+        self.assertTrue(expected, "No PostgreSQL cases were discovered")
+        selected = {case for case in ids if any(fnmatchcase(case, p if "*" in p else f"*{p}*") for p in patterns)}
+        self.assertEqual(selected, expected, f"Missing: {sorted(expected - selected)}; repeated: {sorted(selected - expected)}")
 
 
 class TestWeekly(unittest.TestCase):

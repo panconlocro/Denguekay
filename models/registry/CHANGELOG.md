@@ -13,6 +13,17 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
 
+## 2026-11-19 · Metadatos de publicación de la V4 (importancias SHAP y partición temporal)
+
+- La publicación de la V4 registra las importancias SHAP por horizonte (`GET /modelos/{id}/variables`) y la partición
+  temporal en `reproducibilidad` (`GET /modelos/{id}`: inicio y corte del entrenamiento, calibración, intervalo, y por
+  bloque la primera y última semana objetivo, `n_prueba` y `corte_ajuste`). **El modelo y sus predicciones no cambian**:
+  mismo booster, mismos parámetros, mismas probabilidades, casos y métricas.
+- La matriz de entrenamiento se reconstruye con los insumos del Release (`refit_v4.frozen_training_matrix`) y la
+  publicación se detiene si no da las 73 775 filas, las columnas de `columnas.b3_obs` y las dispersiones NB2 del paquete.
+  Un paquete de reajuste lleva sus propias importancias (`importancias_b3_s17.json`).
+- Pendiente de republicar en producción (la fecha real se anota aquí al hacerlo).
+
 ## 2026-11-17 · Comando de reentrenamiento de la V4
 
 - `python -m denguekay.model.refit_v4` vuelve a ajustar el **mismo modelo** (la V4: `b3_obs`, semilla 17, misma

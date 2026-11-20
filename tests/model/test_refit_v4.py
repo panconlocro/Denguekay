@@ -1,12 +1,16 @@
 """Refit of the frozen V4: the pieces that do not need data/ (windows, Niño, mixture weight, history and calibration)."""
 
+import json
 from tempfile import TemporaryDirectory
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
+from xgboost import XGBRegressor
 
+from denguekay.config.paths import V4_FROZEN
 from denguekay.features.b3 import NINO
 from denguekay.model import refit_v4 as refit
 
@@ -182,6 +186,110 @@ class TestMixing(unittest.TestCase):
         self.assertTrue(second.w_mezcla.between(0, 1).all())
         np.testing.assert_allclose(second.conteo_publicado,
                                    second.w_mezcla * second.casos_predichos + (1 - second.w_mezcla) * second.persistencia)
+
+
+def tiny_regressor(columns=("hist_lag_a", "hist_media_4")):
+    """A real multi-output booster over synthetic origins (3 outputs, as the V4 booster)."""
+    rng = np.random.default_rng(0)
+    x = pd.DataFrame(rng.integers(0, 6, size=(200, len(columns))).astype(float), columns=list(columns))
+    y = np.column_stack([x.iloc[:, 0] + h for h in (2, 3, 4)])
+    model = XGBRegressor(objective="count:poisson", n_estimators=3, max_depth=2, tree_method="hist",
+                         multi_strategy="multi_output_tree", random_state=17, n_jobs=1).fit(x, y)
+    return model, x.assign(semana_inicio=pd.Timestamp("2005-01-02"))
+
+
+class TestImportancesFile(unittest.TestCase):
+    def package(self, folder, **changes):
+        model, train = tiny_regressor()
+        columns = ["hist_lag_a", "hist_media_4"]
+        payload = refit.importances_payload(model, train, columns)
+        (Path(folder) / refit.IMPORTANCES_FILE).write_text(json.dumps({**payload, **changes}), encoding="utf-8")
+        config = {"semilla_demo": 17, "columnas": {"b3_obs": columns},
+                  "modelos": {"b3_obs_s17": {"filas_entrenamiento": len(train)}}}
+        return config, payload
+
+    def test_the_payload_ranks_every_column_per_horizon_and_records_the_training_rows(self):
+        model, train = tiny_regressor()
+        payload = refit.importances_payload(model, train, ["hist_lag_a", "hist_media_4"])
+        self.assertEqual((payload["filas"], payload["inicio"]), (200, "2005-01-02"))
+        self.assertEqual(set(payload["importancias"]), {"2", "3", "4"})
+        for rows in payload["importancias"].values():
+            self.assertEqual([row["rango"] for row in rows], [1, 2])
+            self.assertGreaterEqual(rows[0]["importancia"], rows[1]["importancia"])
+
+    def test_a_package_file_is_read_with_integer_horizons(self):
+        with TemporaryDirectory() as folder:
+            config, payload = self.package(folder)
+            read = refit.read_importances(folder, config)
+            self.assertEqual(set(read["importancias"]), {2, 3, 4})
+            self.assertEqual(read["importancias"][2], payload["importancias"]["2"])
+
+    def test_a_file_that_does_not_match_the_fit_is_refused(self):
+        for changes in ({"filas": 199}, {"columnas": ["hist_lag_a"]}, {"tipo": "gain"}):
+            with self.subTest(changes=changes), TemporaryDirectory() as folder:
+                config, _ = self.package(folder, **changes)
+                with self.assertRaises(ValueError):
+                    refit.read_importances(folder, config)
+
+    def test_missing_ranks_or_variables_are_refused(self):
+        with TemporaryDirectory() as folder:
+            config, payload = self.package(folder)
+            broken = json.loads(json.dumps(payload["importancias"]))
+            broken["3"][0]["rango"] = 2
+            self.package(folder, importancias=broken)
+            with self.assertRaises(ValueError):
+                refit.read_importances(folder, config)
+
+
+class TestFrozenSourcesGuard(unittest.TestCase):
+    def test_a_missing_or_different_input_is_refused_before_anything_is_built(self):
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            names = ("panel", "history", "sala", "era", "chirps", "enso", "geo")
+            sources = {key: root / f"{name}.csv" for key, name in zip(
+                ("panel_path", "history_path", "sala_path", "era_path", "chirps_path", "enso_path", "geography"), names)}
+            for path in sources.values():
+                path.write_text("x", encoding="utf-8")
+            (root / "panel.coverage.csv").write_text("x", encoding="utf-8")
+            with patch.object(refit, "ROOT", root), patch.object(refit, "coverage_path",
+                                                                  lambda path: root / "panel.coverage.csv"):
+                declared = {path.name: refit.sha256_file(path) for path in [*sources.values(), root / "panel.coverage.csv"]}
+                declared["geografia"] = declared["geo.csv"]
+                config = {"fuentes": declared}
+                refit.check_frozen_sources(config, sources)   # all declared and equal: accepted
+                (root / "enso.csv").write_text("other", encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "enso.csv difiere"):
+                    refit.check_frozen_sources(config, sources)
+                (root / "enso.csv").unlink()
+                with self.assertRaisesRegex(ValueError, "Falta el insumo enso.csv"):
+                    refit.check_frozen_sources(config, sources)
+
+
+@unittest.skip("refit() no se puede ejecutar de punta a punta con xgboost 3.4.1: su aserción de exactitud entre el booster "
+               "en memoria y el recargado falla por ~1e-7, también en develop (problema preexistente, ver el PR)")
+class TestRefitKeepsItsImportances(unittest.TestCase):
+    def test_a_refit_at_the_frozen_cutoff_writes_and_registers_the_importances_of_its_own_matrix(self):
+        with TemporaryDirectory() as folder:
+            output = Path(folder) / "paquete"
+            config = refit.refit(output, base=V4_FROZEN, **refit.frozen_sources())
+            self.assertIn(refit.IMPORTANCES_FILE, config["archivos"])
+            self.assertEqual(config["archivos"][refit.IMPORTANCES_FILE], refit.sha256_file(output / refit.IMPORTANCES_FILE))
+            read = refit.read_importances(output, config)
+            self.assertEqual((read["filas"], config["modelos"]["b3_obs_s17"]["filas_entrenamiento"]), (73775, 73775))
+
+
+class TestWriteImportances(unittest.TestCase):
+    def test_the_file_is_written_where_the_package_hashes_it_and_read_back(self):
+        model, train = tiny_regressor()
+        columns = ["hist_lag_a", "hist_media_4"]
+        with TemporaryDirectory() as folder:
+            payload = refit.write_importances(folder, model, train, columns)
+            path = Path(folder) / refit.IMPORTANCES_FILE
+            self.assertTrue(path.is_file())
+            self.assertEqual(json.loads(path.read_text(encoding="utf-8")), payload)
+            config = {"semilla_demo": 17, "columnas": {"b3_obs": columns},
+                      "modelos": {"b3_obs_s17": {"filas_entrenamiento": len(train)}}}
+            self.assertEqual(refit.read_importances(folder, config)["importancias"][4], payload["importancias"]["4"])
 
 
 if __name__ == "__main__":

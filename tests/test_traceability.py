@@ -21,6 +21,10 @@ SCENARIOS = (
     "HU0019-2 HU0019-3 HU0019-4 HU0019-5").split()
 RETIRED = {"HU0002-3", "HU0010-3", "HU0011-2"}
 RETROSPECTIVE = {"HU0007-4"}
+# Met in the code and its tests, but the V4 versions in production only carry the importances and the temporal
+# partition once the V4 is republished (docs/backend/trazabilidad_hu.md, «Fuente y estados»).
+AWAITING_REPUBLICATION = {"HU0008-3", "HU0008-4"}
+REPUBLICATION_NOTE = " (efectivo en producción tras republicar la V4)"
 STATES = ("cumplido", "cumplido retrospectivo", "retirado")
 ROOTS = (ROOT, ROOT / "src" / "denguekay", ROOT / "docs" / "backend", ROOT / "docs", ROOT / "apps" / "web",
          ROOT / "apps")
@@ -76,14 +80,16 @@ class TestTraceabilityTable(unittest.TestCase):
                     for reserve in ("2022–2024", "una semilla", "después de ver los resultados"):
                         self.assertIn(reserve, state)
                 else:
-                    self.assertTrue(state == "cumplido", state)
+                    expected = "cumplido" + (REPUBLICATION_NOTE if scenario in AWAITING_REPUBLICATION else "")
+                    self.assertEqual(state, expected)
                     self.assertTrue(cells[1] and cells[2] and "—" != cells[2])
 
     def test_no_state_depends_on_the_operation_or_on_the_oe4(self):
         text = TABLE.read_text(encoding="utf-8")
         for word in ("se cumple en el OE4", "por verificar"):
             self.assertNotIn(word, text)
-        states = {cells[3].split(":")[0].split(" el ")[0] for cells in self.rows.values()}
+        states = {cells[3].replace(REPUBLICATION_NOTE, "").split(":")[0].split(" el ")[0]
+                  for cells in self.rows.values()}
         self.assertTrue(states <= {"cumplido", "cumplido retrospectivo", "retirado"}, states)
 
     def test_every_cited_file_exists_and_every_cited_test_is_defined(self):
