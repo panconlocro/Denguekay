@@ -31,8 +31,9 @@ from denguekay.config.paths import (DISTRICT_BOUNDARIES, DISTRICT_COORDS, GOLD, 
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
 # Version of this transformation; part of the ingestion fingerprint. 3: humidity is no longer rounded (M5).
-# 4: ERA5-Land temperature (0007_v3).
-TRANSFORMATION = 4
+# 4: ERA5-Land temperature (0007_v3). 5: V4 case source and coverage state from the source record (0012_v4);
+# the next load rewrites the observations that earlier loads labelled by year.
+TRANSFORMATION = 5
 ERA5_LAND_COLUMN = "temp_media_era5_land_c"
 SEASON_START_WEEK = 35  # same rule as the modelling (src/denguekay/model/train.py)
 COVERAGE = {"verified": "verificado", "missing": "sin_registro", "no_record": "sin_registro"}

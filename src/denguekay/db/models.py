@@ -32,7 +32,7 @@ class Base(DeclarativeBase):
 
 
 # ENUM values of the DDL. The order is kept: on PostgreSQL it defines the type's order.
-CASE_SOURCE = ("excel_historico", "sala_situacional")
+CASE_SOURCE = ("excel_historico", "datos_abiertos_confirmados", "sala_situacional")
 COVERAGE = ("verificado", "sin_registro", "pendiente")
 TASK = ("clasificacion", "regresion")
 VERSION_STATUS = ("candidata", "activa", "archivada", "rechazada")

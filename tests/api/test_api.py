@@ -118,6 +118,21 @@ class TestAPIReal(unittest.TestCase):
         todos = self.get("/observaciones?tamano_pagina=100")["elementos"]
         self.assertIn(0, [o["casos_dengue"] for o in todos])
 
+    def test_observaciones_devuelve_la_fuente_y_la_cobertura_tal_como_se_cargaron(self):
+        """Contract 1.3.0: ``datos_abiertos_confirmados`` and ``sin_registro`` come out as stored, with 0 cases."""
+        ruta = "/observaciones?ubigeo=200101&desde=2025-12-01&hasta=2025-12-31"
+        with transaction(self.motor) as s:
+            fila = s.get(WeeklyObservation, ("200101", 202551))
+            fila.fuente_casos, fila.estado_cobertura, fila.casos_dengue = "datos_abiertos_confirmados", "sin_registro", 0
+        respuesta = self.cliente.get("/api/v1" + ruta, headers={"Cache-Control": "no-cache"})
+        self.assertEqual(respuesta.status_code, 200, respuesta.text)
+        self.assertEqual(respuesta.headers["X-Version-Contrato"], "1.3.0")
+        semanas = {o["semana"]["id_semana"]: o for o in respuesta.json()["elementos"]}
+        cambiada, otra = semanas[202551], semanas[202550]
+        self.assertEqual((cambiada["fuente_casos"], cambiada["estado_cobertura"], cambiada["casos_dengue"]),
+                         ("datos_abiertos_confirmados", "sin_registro", 0))   # a count of 0, never null
+        self.assertEqual((otra["fuente_casos"], otra["estado_cobertura"]), ("sala_situacional", "verificado"))
+
     def test_observaciones_clima_de_la_v4_sin_ceros_ficticios(self):
         """Contract 1.2.0: the V4 weather columns come out as stored, and null when the row has none."""
         nuevos = ("temp_media_era5_land_c", "humedad_era5_land_pct", "lluvia_chirps_mm",

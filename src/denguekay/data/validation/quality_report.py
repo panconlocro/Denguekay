@@ -37,6 +37,7 @@ from denguekay.config.paths import (BACKEND_EVIDENCE, BRONZE_EPI_CSV, DATA, UBIG
                                     V4_RELEASE_HISTORY, V4_RELEASE_INTEGRATED, V4_RELEASE_SALA, V4_SOCIO)
 from denguekay.data.keys import normalize
 from denguekay.data.processing import epi_sala
+from denguekay.data.processing.case_source import has_source_record
 from denguekay.data.processing.epi_cases import RAW_COLUMNS, deduplicate_cases_with_report
 from denguekay.data.processing.epi_sala import SALA_FIRST_YEAR, load_ubigeo_catalog
 from denguekay.data.processing.merge import V4_NAME_ALIASES, diagnose_unmatched_districts
@@ -107,19 +108,15 @@ def completeness(panel, districts):
                         "distritos": int(grid.get_level_values("ubigeo").nunique())}}
 
 
-def coverage_by_district(panel, coverage, districts):
-    """Per district: weeks of the period present, complete rows, non-null share per variable and verified cases."""
+def coverage_by_district(panel, history, sala, districts):
+    """Per district: weeks of the period present, complete rows, non-null share per variable and the share of weeks
+    with a case record in the effective source (``casos_verificados``; None without the history)."""
     grid = expected_grid(panel, districts)
     weeks = grid.get_level_values("semana_inicio").nunique()
     variables = [c for c in MANDATORY.values() if c not in ("ubigeo", "semana_inicio")]
     panel = panel.drop_duplicates(["ubigeo", "semana_inicio"])
     complete = panel[list(MANDATORY.values())].notna().all(axis=1)
-    verified = pd.Series(False, index=panel.index)
-    if coverage is not None:
-        keys = coverage.assign(ubigeo=coverage.ubigeo.astype("string").str.zfill(6))
-        keys = keys.loc[keys.source.eq("verified"), ["ubigeo", "anio", "semana"]].drop_duplicates().assign(_ok=True)
-        merged = panel[["ubigeo", "anio", "semana"]].merge(keys, on=["ubigeo", "anio", "semana"], how="left")
-        verified = pd.Series(merged["_ok"].eq(True).to_numpy(), index=panel.index)
+    verified = has_source_record(panel, history, sala) if history is not None else None
     result = {}
     for ubigeo in sorted(districts):
         mask = panel.ubigeo.eq(ubigeo)
@@ -127,7 +124,7 @@ def coverage_by_district(panel, coverage, districts):
             "semanas_presentes": int(mask.sum()), "semanas_esperadas": int(weeks),
             "filas_completas": int(complete[mask].sum()),
             "completitud": round(float(complete[mask].sum()) / weeks, 6),
-            "casos_verificados": round(float(verified[mask].sum()) / weeks, 6) if coverage is not None else None,
+            "casos_verificados": round(float(verified[mask].sum()) / weeks, 6) if verified is not None else None,
             "no_nulos": {column: round(float(panel.loc[mask, column].notna().sum()) / weeks, 6)
                          for column in variables}}
     return result
@@ -142,19 +139,14 @@ def duplicates(panel):
 def cases_with_source_record(panel, history, sala):
     """How many district-weeks have a case count in the source and how many got a zero in the merge.
 
-    ``merge_with_epi`` assigns 0 to the district-weeks of the covered years without notifications (the coverage file
-    marks them verified). The integrated silver therefore has no null cases, so this is the only view of the cases
-    before that assignment."""
-    keys = ["ubigeo", "anio", "semana"]
-    history = history.assign(ubigeo=history.ubigeo.astype("string").str.zfill(6))
-    sala = sala.assign(ubigeo=sala.ubigeo.astype("string").str.zfill(6))
-    source = pd.concat([history.loc[history.anio.lt(SALA_FIRST_YEAR), keys], sala.loc[sala.anio.ge(SALA_FIRST_YEAR), keys]])
-    present = panel[keys].merge(source.drop_duplicates().assign(_ok=True), on=keys, how="left")["_ok"].eq(True)
-    n, with_record = len(panel), int(present.sum())
+    ``merge_with_epi`` assigns 0 to the district-weeks of the covered years without notifications (the coverage file of
+    the Release marks them verified; the database loads them as ``sin_registro`` with 0 cases). The integrated silver
+    therefore has no null cases, so this is the only view of the cases before that assignment."""
+    n, with_record = len(panel), int(has_source_record(panel, history, sala).sum())
     return {"filas": n, "con_registro_de_casos_en_la_fuente": with_record, "cero_asignado_en_la_union": n - with_record,
             "proporcion_con_registro": round(with_record / n, 6),
             "nota": "Las semanas de un distrito sin notificaciones reciben cero en la unión (relleno selectivo; el "
-                    "archivo de cobertura las marca verificadas). La completitud de `casos` del panel es 100 % por "
+                    "archivo de cobertura del Release las marca verificadas; la BD las carga como `sin_registro` con 0 casos). La completitud de `casos` del panel es 100 % por "
                     "construcción; esta es la proporción con un conteo en la fuente antes de esa asignación. Es un "
                     "criterio de lectura a confirmar: un cero verificado de vigilancia no se trata como dato faltante."}
 
@@ -272,7 +264,7 @@ def build_report(panel_path=V4_RELEASE_INTEGRATED, notifications_path=BRONZE_EPI
         "entradas": {"panel": Path(panel_path).name, "cobertura": coverage_path.name if coverage is not None else None,
                      "notificaciones": Path(notifications_path).name, "sala": Path(sala_path).name},
         "columnas_obligatorias": MANDATORY, "completitud": measure,
-        "cobertura_por_distrito": coverage_by_district(panel, coverage, districts),
+        "cobertura_por_distrito": coverage_by_district(panel, history_frame, sala_frame, districts),
         "duplicados": duplicates(panel), "control_duplicados_fuente_epidemiologica": duplicate_controls,
         "correspondencia_territorial": territorial, "fuentes_climaticas": climate_sources(**(climate or {})),
         "valores_faltantes": measure["por_variable"],

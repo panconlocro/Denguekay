@@ -1,4 +1,4 @@
-# Contrato de la API (Tabla 2 del documento OE2) · v1.2.0
+# Contrato de la API (Tabla 2 del documento OE2) · v1.3.0
 
 Base: `/api/v1`. **Contrato congelado:** [openapi_v1.json](openapi_v1.json) (sin ejemplos; lo vigila
 `tests/test_contract_v1_guards.py`). **Con ejemplos reales:** [openapi.json](openapi.json) (mismo contrato,
@@ -9,11 +9,11 @@ decisiones del contrato v1: [api_v1_decisiones.md](api_v1_decisiones.md). Guía 
 
 ## Versión del contrato (semver)
 
-- `info.version` del OpenAPI es la **versión del contrato** (hoy `1.2.0`), y cada respuesta la trae en la
+- `info.version` del OpenAPI es la **versión del contrato** (hoy `1.3.0`), y cada respuesta la trae en la
   cabecera `X-Version-Contrato`. `version_api` de `/salud` es la versión de la **aplicación** (`2.0.0`); las
   dos se mueven por separado (decisión C5).
 - **Cambio aditivo** (ruta nueva, campo opcional nuevo, valor nuevo de un campo que el cliente ya trata como
-  texto): sube la minor (`1.2.0`), se anota en el changelog de abajo y se regenera `openapi_v1.json` a
+  texto): sube la minor (`1.3.0`), se anota en el changelog de abajo y se regenera `openapi_v1.json` a
   propósito: `.\.venv\Scripts\python -m apps.api.tools.export_openapi --contrato`.
 - **Cambio que rompe** (renombrar o quitar un campo o una ruta, cambiar un tipo, volver obligatorio un campo
   opcional): no se permite en `/api/v1`. Va en `/api/v2`, con un commit `feat(api)!`.
@@ -117,6 +117,7 @@ en SQLite y PostgreSQL ([benchmark_postgresql.json](benchmark_postgresql.json)).
 
 | Versión | Fecha | Cambios |
 |---|---|---|
+| 1.3.0 | 20/11/2026 | Aditivo: `fuente_casos` de `GET /observaciones` admite el valor nuevo `datos_abiertos_confirmados` (semanas de la V4 anteriores a 2025, CSV de casos confirmados); `excel_historico` queda para v0 a v3. `estado_cobertura` pasa a significar «la semana tiene registro en la fuente» (`verificado`) o no (`sin_registro`, con 0 casos por la regla del proyecto). Ningún campo ni ruta cambia; las descripciones de ambos campos se completan. Migración `0012_v4`. |
 | 1.2.0 | 19/11/2026 | Aditivo: `GET /observaciones` suma cinco campos opcionales (default `null`) con el clima de la V4: `temp_media_era5_land_c`, `humedad_era5_land_pct`, `lluvia_chirps_mm`, `fecha_era5_land_disponible` y `fecha_chirps_disponible`. Los campos existentes no cambian ni se rellenan con las fuentes nuevas. |
 | 1.1.0 | 29/10/2026 | Solo textos, ningún esquema: el summary de `GET /modelos/{identificador}/variables` y la descripción de `VariablesRespuesta` dejan de decir «gain» y quedan neutros («importancias de la versión; el método va en `nota`»), porque la v2 guarda importancias SHAP. El `nota` de la respuesta explica el método de cada versión. |
 | 1.0.0 | 29/10/2026 | Primera versión congelada (decisiones C1–C5 de `api_v1_decisiones.md`). Respecto del contrato de TB1 (`info.version` 2.0.0, que era la versión de la aplicación): horizontes 2, 3 y 4 con los disponibles leídos de la BD y motivo genérico «sin modelo para h=N»; nueva extensión `GET /configuracion`; campos anulables `casos_intervalo_inferior`, `casos_intervalo_superior`, `nivel_intervalo` y `motivo_intervalo` en las predicciones y en el mapa; GeoJSON tipado (`Point`, `Polygon`, `MultiPolygon`) y leyenda tipada; cabecera `X-Version-Contrato`; 503 `parametros_no_configurados` también en lecturas. Ningún campo existente se renombró ni se quitó. |

@@ -246,9 +246,13 @@ function DistrictDetail({ district, context }: { district: District; context: Ap
                 })}
                 <dt>Fuente epidemiológica</dt>
                 <dd>
-                  {observation.fuente_casos === 'sala_situacional'
-                    ? 'Sala situacional'
-                    : 'Histórico epidemiológico'}
+                  {
+                    {
+                      sala_situacional: 'Sala situacional',
+                      datos_abiertos_confirmados: 'Datos abiertos: casos confirmados',
+                      excel_historico: 'Histórico epidemiológico',
+                    }[observation.fuente_casos]
+                  }
                 </dd>
                 <dt>Cobertura</dt>
                 <dd>

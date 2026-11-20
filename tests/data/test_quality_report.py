@@ -101,7 +101,11 @@ class TestCompleteness(unittest.TestCase):
         self.assertEqual(set(coverage), set(DISTRICTS))
         self.assertEqual(coverage["200101"]["semanas_presentes"], 4)
         self.assertEqual(coverage["200101"]["completitud"], 1.0)
-        self.assertEqual(coverage["200101"]["casos_verificados"], 1.0)
+        # The coverage file marks every row verified; the report counts the weeks with a record in the source instead:
+        # 200101 has one of its four weeks in the history, and the others (e.g. 200201) have none.
+        self.assertEqual(coverage["200101"]["casos_verificados"], 0.25)
+        self.assertEqual(coverage["200201"]["casos_verificados"], 0.0)
+        self.assertEqual(report["casos_antes_de_asignar_ceros"]["con_registro_de_casos_en_la_fuente"], 1)
 
 
 class TestTraceability(unittest.TestCase):

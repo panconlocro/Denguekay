@@ -38,14 +38,16 @@ Tipos de desviación:
 | f′ | Permisos de `rol_pipeline` (D2; aprobada por Rosa el 29/10/2026) | Amplía la decisión f: `rol_pipeline` recibe además INSERT y UPDATE en `prediccion` (migración `0005_v1`) para las predicciones OOS de cada paquete. La inferencia vigente la hace la API (`rol_api`), no la publicación | Corrección del documento |
 | — | Paquete de modelo (M2; aprobada por Rosa el 29/10/2026) | `version_modelo.ruta_artefacto` apunta al manifiesto `modelos/<codigo_paquete>/manifest.json` y `sha256_artefacto` es su SHA-256. El manifiesto declara el tipo de predictor, horizontes, variables, nivel del intervalo y el SHA-256 de cada archivo; la inferencia verifica todos al cargar (409 `artefacto_invalido`). Sin columnas nuevas | Extensión (uso) |
 | — | Versión del contrato (C5) | `info.version` del OpenAPI = versión del contrato (semver; `1.1.0` desde la fase 4), cabecera `X-Version-Contrato` en todas las respuestas; `version_api` de `/salud` sigue siendo la versión de la aplicación | Extensión |
+| — | Fuente de casos de la V4 (auditoría del 20/11/2026; contrato 1.3.0) | `fuente_casos_t` suma el valor `datos_abiertos_confirmados` (migración `0012_v4`, aditiva): las semanas de la V4 anteriores a 2025 vienen del CSV «Vigilancia epidemiológica de dengue» (casos confirmados) y `excel_historico` queda para v0 a v3. `estado_cobertura` pasa a ser `verificado` si la semana tiene registro en la fuente efectiva y `sin_registro` si no (con 0 casos, por la regla del proyecto). No hay columna nueva. | Extensión |
 | — | Geometría del mapa (C4, HU0014-1) | El contrato admite `Point`, `Polygon` y `MultiPolygon`. Desde la migración `0010_v4` el endpoint sirve el `Polygon` o `MultiPolygon` de cada distrito y, si falta, su centroide (`Point`). Columna nueva `distrito.geometria` (JSON anulable; JSONB en PostgreSQL), cargada por `--inicial` y `load_data` desde `data/reference/distritos_piura_limites.geojson` con una simplificación de Douglas-Peucker de 0,0005° y 5 decimales (de unos 2,4 MB a unos 0,2 MB; no sirve para medir áreas). **Fuente y licencia:** Instituto Geográfico Nacional (IGN) del Perú, publicado por OCHA en HDX (COD-AB de Perú, https://data.humdata.org/dataset/cod-ab-per), CC BY-IGO 3.0: permite redistribuir con atribución, que el mapa muestra. La licencia se comprueba contra el paquete de HDX al descargar (`district_boundaries.py`); GADM no se usa porque no permite redistribuir. **Riesgo:** su publicación en un servicio desplegado se decide antes del despliegue; no se desplegó nada. El OpenAPI exportado no cambia (su descripción de `Feature.geometry` y del endpoint sigue diciendo «hoy Point»; se corrige en el próximo cambio de versión menor del contrato). La atribución viaja en la interfaz y en estos documentos, no dentro del GeoJSON versionado | Extensión |
 
 ## 2. Observaciones de datos (no son desviaciones de diseño)
 
-- **`estado_cobertura`.** Las 30 485 filas del integrado tienen `source = verified` y ningún
-  `casos_Dengue` nulo; con los datos actuales `estado_cobertura` vale siempre `verificado`.
-  El EDA ya señaló (P5 en `research/01_eda/docs/problemas_y_decisiones.md`) que la cobertura no
-  distingue cero notificado de sin registro.
+- **`estado_cobertura`.** Las 30 485 filas del integrado tienen `source = verified` en el archivo de cobertura del
+  Release (que no se modifica) y ningún `casos_Dengue` nulo. Desde la migración `0012_v4` la carga de la V4 no usa ese
+  archivo para la etiqueta: calcula `verificado` si la semana tiene registro en la fuente efectiva y `sin_registro` si
+  no. El EDA ya señaló (P5 en `research/01_eda/docs/problemas_y_decisiones.md`) que la cobertura no distinguía cero
+  notificado de sin registro.
 - **Semana 53 de 2025.** El calendario MMWR la incluye (inicia 2025-12-28) y va a
   `semana_epidemiologica`; el panel termina en la semana 52 (inicio 2025-12-21), así que no
   tiene observaciones.

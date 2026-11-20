@@ -891,11 +891,13 @@ export interface components {
             hum_rel_media_pct: number | null;
             /**
              * Fuente Casos
+             * @description Fuente efectiva de los casos: excel_historico (v0 a v3), datos_abiertos_confirmados (V4, semanas anteriores a 2025, CSV de casos confirmados) o sala_situacional (desde 2025)
              * @enum {string}
              */
-            fuente_casos: "excel_historico" | "sala_situacional";
+            fuente_casos: "excel_historico" | "datos_abiertos_confirmados" | "sala_situacional";
             /**
              * Estado Cobertura
+             * @description verificado: la semana tiene registro en la fuente; sin_registro: no lo tiene y los casos son 0 por la regla del proyecto (no es un cero notificado)
              * @enum {string}
              */
             estado_cobertura: "verificado" | "sin_registro" | "pendiente";
