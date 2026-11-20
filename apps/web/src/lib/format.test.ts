@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { horizonStatus, number, percent, riskRange, targetStarted } from './format';
+import { horizonStatus, number, percent, riskRange } from './format';
 
 describe('presentation invariants', () => {
   it('keeps risk boundaries unambiguous', () => {
@@ -19,19 +19,5 @@ describe('presentation invariants', () => {
     expect(horizonStatus(h)).toBe('Experimental');
     expect(horizonStatus({ ...h, experimental: false })).toBe('Validado');
     expect(horizonStatus({ ...h, disponible: false })).toBe('No disponible');
-  });
-  it('does not confuse the latest publication with a future target', () => {
-    const week = {
-      id_semana: 202601,
-      anio: 2026,
-      semana: 1,
-      fecha_inicio: '2026-01-04',
-      fecha_fin: '2026-01-10',
-    };
-    expect(targetStarted(week, new Date('2026-11-04T12:00:00Z'))).toBe(true);
-    expect(targetStarted(week, new Date('2026-01-10T12:00:00Z'))).toBe(true);
-    expect(targetStarted(week, new Date('2026-01-04T04:59:59Z'))).toBe(false);
-    expect(targetStarted(week, new Date('2026-01-04T05:00:00Z'))).toBe(true);
-    expect(targetStarted(null)).toBe(false);
   });
 });

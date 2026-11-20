@@ -17,7 +17,7 @@ test('local v2 predictions, horizon switching and district series', async ({ pag
   expect(config.horizontes_disponibles).toEqual([2, 3, 4]);
   await page.goto('/');
   await expect(page.getByText('Demo local v2 · experimental', { exact: true })).toBeVisible();
-  await expect(page.getByText('Consulta histórica · objetivo iniciado')).toBeVisible();
+  await expect(page.getByText(/objetivo iniciado/i)).toHaveCount(0);
   await expect(page.getByRole('note', { name: 'Procedencia de los datos' })).toContainText(
     'Corte de datos: 27/12/2025',
   );

@@ -19,6 +19,9 @@ const forbidden = [
   /minimumWeeks/,
   /effective lead/i,
   /sin anticipaci[oó]n/i,
+  /objetivo iniciado/i,
+  /objetivo ya empez/i,
+  /semana objetivo iniciada/i,
 ];
 
 describe('no effective anticipation', () => {

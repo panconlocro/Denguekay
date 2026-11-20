@@ -135,7 +135,6 @@
       "keywords": [
         "fecha",
         "vigencia",
-        "histórica",
         "objetivo",
         "anticipación",
         "actualización",
@@ -144,7 +143,7 @@
       "page": 3,
       "paragraphs": [
         "La semana de corte identifica hasta dónde llegan los datos usados. La semana objetivo es aquella para la que se estima el resultado. El horizonte cuenta las semanas entre corte y objetivo; la fecha de emisión indica cuándo se generó el pronóstico. La fecha de actualización de los datos es otra fecha y no reemplaza la emisión.",
-        "El horizonte h (2, 3 o 4 semanas) se cuenta desde la semana de corte, es decir, desde el último dato publicado. La fecha en que el MINSA publica sus datos es una limitación de la fuente que el proyecto no controla. Si la semana objetivo ya comenzó, se presenta como consulta histórica, aunque sea el último corte publicado.",
+        "El horizonte h (2, 3 o 4 semanas) se cuenta desde la semana de corte, es decir, desde el último dato publicado. La fecha en que el MINSA publica sus datos es una limitación de la fuente que el proyecto no controla.",
         "El proyecto evalúa los horizontes de 2, 3 y 4 semanas, y los tres cuentan. Revisa por separado disponibilidad, vigencia y validación."
       ],
       "steps": []
@@ -265,7 +264,7 @@
       "page": 6,
       "paragraphs": [
         "No disponible, Sin datos y los huecos en una serie indican ausencia de información utilizable para esa consulta. No se rellenan con ceros: un cero epidemiológico registrado expresa otra situación y se conserva separado del faltante. Nunca se presenta una predicción anterior como vigente.",
-        "Causas posibles. (1) Los filtros no dejan ningún distrito o aviso. (2) El horizonte no tiene modelo disponible. (3) El distrito no tiene predicción porque al corte faltaba su historial confirmado, su geografía o el clima ya publicado; el motivo se muestra en el distrito. (4) Aún no hay una semana nueva publicada por la fuente, así que se mantiene el último corte. (5) Falló la carga del componente o el servicio no responde. (6) El objetivo ya empezó y la consulta es histórica."
+        "Causas posibles. (1) Los filtros no dejan ningún distrito o aviso. (2) El horizonte no tiene modelo disponible. (3) El distrito no tiene predicción porque al corte faltaba su historial confirmado, su geografía o el clima ya publicado; el motivo se muestra en el distrito. (4) Aún no hay una semana nueva publicada por la fuente, así que se mantiene el último corte. (5) Falló la carga del componente o el servicio no responde."
       ],
       "steps": [
         "Revisa filtros, alcance y estado del horizonte. Si corresponde, limpia los filtros o elige otro horizonte.",
@@ -282,11 +281,6 @@
         "question": "¿No hay datos o falla la carga?",
         "answer": "Revisa la selección y usa Reintentar si aparece un error.",
         "topic": "datos"
-      },
-      {
-        "question": "¿El objetivo ya empezó?",
-        "answer": "Revisa el corte, el objetivo y la emisión; puede ser una consulta histórica.",
-        "topic": "tiempo"
       },
       {
         "question": "¿Qué significa el color?",

@@ -32,8 +32,7 @@ la semana de corte (último dato publicado); no se calcula ningún plazo desde l
 la fecha en que el MINSA publica los datos es una limitación externa (decisión del 20/11/2026). Una
 fecha ausente produce «No disponible».
 
-El objetivo se identifica como histórico desde su **inicio**, en lugar de esperar al fin de semana.
-El encabezado dice «Consulta histórica · objetivo iniciado». El estado no experimental se denomina
+El estado no experimental se denomina
 «Validado», evitando afirmar «Operativo» sin validación. La demo mantiene «Experimental»
 para los tres horizontes.
 
@@ -52,8 +51,7 @@ La fuente mantiene corte **27/12/2025** y las cifras de fase 2:
 | 3 semanas | 2026-S02 | 65                       | 13,12             | 0               |
 | 4 semanas | 2026-S03 | 65                       | 15,58             | 0               |
 
-La emisión local fue el 04/11/2026: los tres objetivos ya habían comenzado en esa
-emisión y se muestran como consulta histórica. No se añadieron cifras ni avisos para llenar el diseño.
+La emisión local fue el 04/11/2026. No se añadieron cifras ni avisos para llenar el diseño.
 
 Pasaron 18 pruebas unitarias, ESLint, TypeScript, build y 20 recorridos de navegador (12 con v2 y 8 con
 fixtures), a 1440 y 390 px. Se verifican las 65 posiciones, estabilidad de indicadores al filtrar,

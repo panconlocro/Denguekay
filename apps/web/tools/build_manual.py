@@ -196,6 +196,12 @@ def build_manual() -> None:
     for contact in content["support"]["contacts"]:
         if f'mailto:{contact["email"]}' not in links:
             raise ValueError(f"Missing mailto link: {contact['email']}")
+    # The project has no "effective anticipation" and no rule that marks a started target as historical.
+    everything = compact(" ".join(page.extract_text() for page in reader.pages)).lower()
+    for forbidden in ("anticipación efectiva", "semanas efectivas", "desde la emisión", "objetivo iniciado",
+                      "objetivo ya empez"):
+        if forbidden in everything:
+            raise ValueError(f"The manual mentions a concept the project dropped: {forbidden}")
     print(f"Created {OUTPUT} ({len(reader.pages)} pages; shared text verified)")
 
 

@@ -22,7 +22,7 @@ import {
   sortAlerts,
 } from '../lib/alerts';
 import { districtPath, intervalText } from '../lib/district';
-import { dateTime, number, percent, targetStarted, weekLabel } from '../lib/format';
+import { dateTime, number, percent, weekLabel } from '../lib/format';
 
 const pageSize = 10;
 
@@ -365,8 +365,7 @@ export function AlertsPage() {
             registro. No identifican por sí solos un lote de actualización.
           </p>
           <p>
-            Los avisos experimentales no son alertas operativas ni generan notificaciones. Un
-            registro activo con objetivo iniciado se consulta como histórico.
+            Los avisos experimentales no son alertas operativas ni generan notificaciones.
           </p>
         </Card>
       </div>
@@ -391,9 +390,6 @@ function AlertRow({ alert: a, search }: { alert: Alert; search: string }) {
       <td data-label="Semana objetivo">
         {weekLabel(a.prediccion.semana_objetivo)}
         <small>h = {a.horizonte} semanas</small>
-        {targetStarted(a.prediccion.semana_objetivo) && (
-          <small>Objetivo iniciado · histórico</small>
-        )}
       </td>
       <td data-label="Generación / retiro">
         {dateTime(a.fecha_generacion)}
@@ -501,7 +497,6 @@ export function AlertDetailPage() {
           <p className="scope-note">
             {a.estado === 'retirada' ? 'Retirado' : 'Activo en el registro'} ·{' '}
             {weekLabel(p.semana_objetivo)}
-            {targetStarted(p.semana_objetivo) ? ' · Objetivo iniciado: consulta histórica' : ''}
           </p>
         </div>
         <Link className="button" to={back}>

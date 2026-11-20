@@ -8,7 +8,7 @@ import {
   regionalForecast,
   sortPredictions,
 } from '../lib/dashboard';
-import { date, horizonStatus, number, percent, targetStarted, weekLabel } from '../lib/format';
+import { date, horizonStatus, number, percent, weekLabel } from '../lib/format';
 import { PriorityTable } from '../components/PriorityTable';
 import { PublicationNotice } from '../components/PublicationNotice';
 import { AppLink, Card, DataTag, Empty, Failure, Loading, RiskChip } from '../components/ui';
@@ -325,9 +325,6 @@ function Indicators({ summary, predictions }: { summary: Dashboard; predictions?
         Alcance regional · corte de observación: {weekLabel(summary.semana_corte)} · objetivo:{' '}
         {weekLabel(summary.semana_objetivo)} · actualización de la API:{' '}
         {date(summary.fecha_actualizacion)}
-        {targetStarted(summary.semana_objetivo)
-          ? ' · Semana objetivo iniciada; consulta histórica.'
-          : ''}
       </div>
     </div>
   );
