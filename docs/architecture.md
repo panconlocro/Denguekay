@@ -325,7 +325,7 @@ src/denguekay/db/
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito; 0012_v4 fuente `datos_abiertos_confirmados`
+└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito; 0012_v4 fuente `datos_abiertos_confirmados`; 0013_v4 tabla `emision_prediccion` (primera emisión, solo inserción)
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
 ├── settings.py               # paquete a publicar, CORS, selección experimental y almacenamiento (config.yaml; el entorno los reemplaza)
@@ -346,6 +346,7 @@ src/denguekay/serving/
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 ├── emissions.py              # actualización semanal de la V4: emisión ya hecha, archivo de cada emisión, puntajes prospectivos y aviso de reentrenamiento
 ├── geometries.py             # límites distritales para el mapa (HU0014-1): lectura, validación y simplificación de data/reference/distritos_piura_limites.geojson
+├── first_emission_backfill.py # relleno inicial de emision_prediccion (primera emisión) desde el archivo local o la fila actual; solo inserta
 ├── drift.py                  # monitoreo de deriva (HU0009-2): semanas cerradas de las emisiones frente a la referencia de la HU0007-4; CLI mensual a mano; solo registra
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/

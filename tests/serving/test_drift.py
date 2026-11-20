@@ -9,7 +9,7 @@ from unittest.mock import patch
 from sqlalchemy import select
 
 from backend_support import motor_temporal
-from denguekay.db.models import ModelVersion, Prediction, Run, WeeklyObservation, utc_now
+from denguekay.db.models import FirstEmission, ModelVersion, Prediction, Run, WeeklyObservation, utc_now
 from denguekay.db.session import transaction
 from denguekay.serving import drift, emissions, load_data
 from denguekay.serving import parameters as parametros
@@ -60,6 +60,11 @@ class DriftCase(LiveCase):
                 session.add(Prediction(ubigeo=ubigeo, id_semana_corte=target - horizon, id_semana_objetivo=target,
                                        horizonte=horizon, probabilidad_brote=p, nivel_riesgo="medio",
                                        casos_estimados=expected, estado="disponible", id_ejecucion=run.id_ejecucion))
+                # The first emission that the drift review reads: its target was not yet published by the Sala.
+                session.add(FirstEmission(ubigeo=ubigeo, id_semana_corte=target - horizon, id_semana_objetivo=target,
+                                          horizonte=horizon, probabilidad_brote=p, nivel_riesgo="medio",
+                                          casos_estimados=expected, estado="disponible", id_ejecucion=run.id_ejecucion,
+                                          fecha_emision=utc_now(), ultima_semana_sala_publicada=target - 1))
                 session.add(WeeklyObservation(ubigeo=ubigeo, id_semana=target, casos_dengue=observed, brote=outbreak,
                                               **source))
         session.flush()

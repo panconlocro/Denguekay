@@ -405,10 +405,13 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
                 ingestion = steps_persist(sesion, data)
                 if emit:
                     stage = "inferencia"
+                    emitted_at = emissions.now_utc()
                     results = emit_horizons(sesion, cutoff, storage, cfg)
+                    first = emissions.record_first_emission(sesion, results, last_published=last_published,
+                                                            emitted_at=emitted_at)
                     archive = emissions.archive_emission(
                         sesion, cutoff=cutoff, ingestion=ingestion, results=results, load=data,
-                        emitted_at=emissions.now_utc(), reissue=emitted, last_published=last_published,
+                        emitted_at=emitted_at, reissue=emitted, last_published=last_published,
                         provisional=provisional, captures=steps.captures(),
                         code_fingerprint=steps.code_fingerprint(), package_version=steps.package_version(),
                         frozen_manifest=json.loads(V4_DATA_MANIFEST.read_text(encoding="utf-8")),
@@ -434,6 +437,7 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
                     report.setdefault("advertencias", []).append(
                         f"La emisión quedó en la BD pero su archivo no se copió al Storage ({type(error).__name__}); "
                         f"consérvelo desde {archive.relative_to(base).as_posix()}")
+            report["primera_emision"] = first
             report["disponibles"] = record["predicciones"]["disponibles"]
             report["ejecuciones"] = record["ejecuciones"]
             reasons = unavailable_reasons(archive / "predicciones.csv")

@@ -222,7 +222,8 @@ ERA5-Land, CHIRPS y Niño 1+2. (5) Carga y emite en **una sola transacción**: s
 ni observación nuevas, el pronóstico anterior sigue vigente y el fallo queda en `ejecucion`. La excepción es la primera
 corrida con `--inicial`: `publish` registra el paquete y confirma su propia carga de datos antes, así que si la emisión
 falla esa carga y el paquete quedan (en una BD nueva), pero no se publica ningún pronóstico. Hay una emisión por semana
-de corte: la primera es la que vale para la evaluación prospectiva.
+de corte: la primera es la que vale para la evaluación prospectiva, y queda guardada en la tabla de solo inserción
+`emision_prediccion` (ver «Primera emisión» más abajo).
 
 | Estado | Significa | Salida |
 |---|---|---|
@@ -245,11 +246,36 @@ de corte: la primera es la que vale para la evaluación prospectiva.
   seguimiento prospectivo y el aviso de reentrenamiento), `logs/` y `en_curso.lock`. Nada de esto se versiona.
 
 **Seguimiento prospectivo.** El informe trae, por horizonte, `n`, brotes observados, suma de probabilidades, Brier y MAE
-de los casos de las emisiones cuya semana objetivo ya está cargada. No lleva interpretación ni umbrales: con pocos
-brotes no se concluye nada.
+de los casos de las **primeras emisiones elegibles** cuya semana objetivo ya está cargada. No lleva interpretación ni
+umbrales: con pocos brotes no se concluye nada.
+
+**Primera emisión (`emision_prediccion`).** `prediccion` se sobrescribe cuando se reemite un corte (UPSERT), así que no
+sirve para medir lo que se pronosticó la primera vez. La actualización semanal inserta, en la misma transacción que la
+emisión, cada pronóstico en `emision_prediccion` con «insertar si no existe» sobre `(ubigeo, id_semana_corte,
+horizonte)`: una reemisión no la modifica, y ningún rol tiene UPDATE ni DELETE sobre ella (`rol_pipeline` inserta;
+`rol_api` y `rol_pipeline` leen). La tabla guarda las columnas del pronóstico, `fecha_emision`, la última semana que la
+Sala había publicado al emitir (`ultima_semana_sala_publicada`) y la `procedencia` de la fila. **Elegibilidad:** cuenta un
+pronóstico si es la primera emisión de su distrito, corte y horizonte y su semana objetivo todavía no estaba publicada en la
+Sala al emitirlo (`id_semana_objetivo` posterior a `ultima_semana_sala_publicada`). No interviene el plazo desde la
+emisión ni el inicio de la semana objetivo. Si la Sala ya publica la semana objetivo de un horizonte (por ejemplo, h = 2
+con dos semanas provisionales), ese pronóstico no entra a la evaluación prospectiva ni a la deriva.
+
+*Relleno inicial.* Para las emisiones anteriores a la tabla existe un comando que la llena sin sobrescribir nada (no lo
+corra contra producción sin revisar antes con `--sin-escribir`):
+
+```powershell
+.\.venv\Scripts\python -m denguekay.serving.first_emission_backfill --sin-escribir   # informa lo que insertaría
+.\.venv\Scripts\python -m denguekay.serving.first_emission_backfill --carpeta <carpeta con <corte>/<marca>/>
+```
+
+Por cada corte sin primera emisión usa la emisión archivada **más antigua** (`procedencia = archivo`, con su instante y su
+última semana publicada). Si el corte no tiene archivo, usa la fila actual de `prediccion` de origen semanal
+(`procedencia = prediccion_actual`, con la última semana publicada desconocida): puede ser ya una reemisión, así que
+nunca es elegible. Para usar el archivo que el runner copió al Storage, baje `reportes/emisiones/` y pásela con
+`--carpeta`.
 
 **Monitoreo de deriva (HU0009-2).** El informe trae también `monitoreo_deriva`: para cada horizonte compara las
-semanas cerradas de las emisiones archivadas con las métricas de referencia del mismo horizonte (el bloque agregado de
+semanas cerradas de las primeras emisiones elegibles (las mismas del seguimiento prospectivo) con las métricas de referencia del mismo horizonte (el bloque agregado de
 la HU0007-4, `temporadas_2022_2026`, de las versiones servidas). Calcula Precision, Recall y F1 (alerta con p ≥ 0,50) y
 MAE y RMSE de los casos. Degradación relativa: Recall y F1, (referencia − periodo) / referencia; MAE y RMSE,
 (periodo − referencia) / referencia. Con **8 semanas cerradas o más** (por horizonte) se marcan las métricas con
@@ -258,8 +284,8 @@ relativa. Precision se informa con su referencia pero el criterio no define su d
 El resultado es un registro para revisión del Ingeniero de Datos / ML: **no reentrena ni cambia la versión en uso**.
 Registrar el resultado agrega una fila de `ejecucion`, y `fecha_actualizacion` de las respuestas y `ultima_ejecucion`
 de `/salud` salen de la última ejecución exitosa de cualquier tipo: cada registro mensual las mueve (lo mismo que ya
-hace una activación). Las semanas cerradas se cuentan por semana objetivo, y las predicciones salen de la BD (con `--reemitir` el
-UPSERT reemplaza la predicción, mientras el archivo en disco conserva la primera emisión). Si el periodo no tiene
+hace una activación). Las semanas cerradas se cuentan por semana objetivo, y las predicciones salen de `emision_prediccion` (con `--reemitir` el
+UPSERT reemplaza la predicción de `prediccion`, pero la primera emisión no cambia). Si el periodo no tiene
 brotes observados, Recall y F1 quedan en `null`. Para correrlo a mano (mensual, desde la raíz y con `DATABASE_URL` apuntando a la BD que se use):
 
 ```powershell
