@@ -22,7 +22,11 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 - La matriz de entrenamiento se reconstruye con los insumos del Release (`refit_v4.frozen_training_matrix`) y la
   publicación se detiene si no da las 73 775 filas, las columnas de `columnas.b3_obs` y las dispersiones NB2 del paquete.
   Un paquete de reajuste lleva sus propias importancias (`importancias_b3_s17.json`).
-- Pendiente de republicar en producción (la fecha real se anota aquí al hacerlo).
+- **Republicada en producción el 20/11/2026** (ejecución 25, con el código de `main` en `15f1a57`): seis versiones
+  nuevas, `v4-clf-h{2,3,4}-2` y `v4-reg-h{2,3,4}-2`, con 16 importancias SHAP cada una y la partición temporal, y la
+  selección experimental pasó a ellas. Las 18 525 predicciones de producción (incluido el corte 202645) son idénticas
+  a las de antes; las del corte vigente siguen ligadas a las versiones `-1` hasta la siguiente emisión semanal. No se
+  borró nada. Verificado en la API de producción: `GET /modelos/activo`, `/modelos/{id}/variables` y `/modelos/{id}`.
 
 ## 2026-11-17 · Comando de reentrenamiento de la V4
 
