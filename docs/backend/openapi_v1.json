@@ -3,7 +3,7 @@
   "info": {
     "title": "Denguekay: pronóstico distrital de dengue",
     "description": "API del documento OE2 (Tabla 2) sobre datos agregados de Piura. Contrato v1, independiente del modelo: los horizontes disponibles salen de la BD (GET /configuracion). Las predicciones de versiones que no cumplen los umbrales se marcan experimental: true (demo; desviación temporal documentada). Cada respuesta lleva la versión del contrato en X-Version-Contrato.",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "paths": {
     "/api/v1/salud": {
@@ -3281,6 +3281,68 @@
               "pendiente"
             ],
             "title": "Estado Cobertura"
+          },
+          "temp_media_era5_land_c": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temp Media Era5 Land C",
+            "description": "Temperatura media semanal (°C) de ERA5-Land; null si la fuente aún no la publica"
+          },
+          "humedad_era5_land_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Humedad Era5 Land Pct",
+            "description": "Humedad relativa media semanal (%) de ERA5-Land; null si la fuente aún no la publica"
+          },
+          "lluvia_chirps_mm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lluvia Chirps Mm",
+            "description": "Precipitación total semanal (mm) de CHIRPS v3; null si la fuente aún no la publica"
+          },
+          "fecha_era5_land_disponible": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Era5 Land Disponible",
+            "description": "Fecha desde la que ERA5-Land publica esta semana; null si no se conoce"
+          },
+          "fecha_chirps_disponible": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Chirps Disponible",
+            "description": "Fecha desde la que CHIRPS v3 publica esta semana; null si no se conoce"
           }
         },
         "additionalProperties": false,

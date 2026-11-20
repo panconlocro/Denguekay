@@ -1,6 +1,7 @@
 """Contrato HTTP de la Tabla 2 (OE2) con SQLite migrada, filas reales y boosters XGBoost reales."""
 
 from dataclasses import replace
+from datetime import date
 from pathlib import Path
 import shutil
 import subprocess
@@ -16,7 +17,7 @@ from backend_support import datos_muestra, entorno_bd, motor_temporal
 from serving_support import preparar_muestra, publish_sample
 from apps.api.cache import ReadCache
 from apps.api.main import create_app
-from denguekay.db.models import Alert, District, Run, Prediction, ModelVersion
+from denguekay.db.models import Alert, District, Run, Prediction, ModelVersion, WeeklyObservation
 from denguekay.db.session import make_engine, transaction
 from denguekay.serving.storage import LocalStorage
 from denguekay.serving.load_data import persist_load
@@ -116,6 +117,39 @@ class TestAPIReal(unittest.TestCase):
         self.assertIsNotNone(semana["temp_media_c"])
         todos = self.get("/observaciones?tamano_pagina=100")["elementos"]
         self.assertIn(0, [o["casos_dengue"] for o in todos])
+
+    def test_observaciones_clima_de_la_v4_sin_ceros_ficticios(self):
+        """Contract 1.2.0: the V4 weather columns come out as stored, and null when the row has none."""
+        nuevos = ("temp_media_era5_land_c", "humedad_era5_land_pct", "lluvia_chirps_mm",
+                  "fecha_era5_land_disponible", "fecha_chirps_disponible")
+        ruta = "/observaciones?ubigeo=200101&desde=2025-12-01&hasta=2025-12-31"
+        antes = {o["semana"]["id_semana"]: o for o in self.get(ruta)["elementos"]}
+        for o in antes.values():
+            self.assertTrue(all(campo in o for campo in nuevos))
+            # The sample rows come from the v3 loader: only the ERA5-Land temperature is filled.
+            self.assertIsNone(o["humedad_era5_land_pct"])
+            self.assertIsNone(o["lluvia_chirps_mm"])
+            self.assertIsNone(o["fecha_era5_land_disponible"])
+            self.assertIsNone(o["fecha_chirps_disponible"])
+        with transaction(self.motor) as s:
+            fila = s.get(WeeklyObservation, ("200101", 202551))
+            fila.humedad_era5_land_pct, fila.lluvia_chirps_mm = 61.5, 0.0  # a real zero is data
+            fila.fecha_era5_land_disponible, fila.fecha_chirps_disponible = date(2026, 1, 3), date(2026, 1, 9)
+            esperado_temp = fila.temp_media_era5_land_c
+        # The edit does not create a run, so the read cache would still hold the previous page.
+        respuesta = self.cliente.get("/api/v1" + ruta, headers={"Cache-Control": "no-cache"})
+        self.assertEqual(respuesta.status_code, 200, respuesta.text)
+        despues = {o["semana"]["id_semana"]: o for o in respuesta.json()["elementos"]}
+        con_valor, sin_valor = despues[202551], despues[202550]
+        self.assertEqual((con_valor["humedad_era5_land_pct"], con_valor["lluvia_chirps_mm"]), (61.5, 0.0))
+        self.assertEqual((con_valor["fecha_era5_land_disponible"], con_valor["fecha_chirps_disponible"]),
+                         ("2026-01-03", "2026-01-09"))
+        self.assertEqual(con_valor["temp_media_era5_land_c"], esperado_temp)
+        self.assertIsNone(sin_valor["lluvia_chirps_mm"])  # null, never a made-up zero
+        self.assertIsNone(sin_valor["humedad_era5_land_pct"])
+        # The legacy fields are untouched by the new sources.
+        for campo in ("temp_media_c", "hum_rel_media_pct", "precip_total_mm"):
+            self.assertEqual(con_valor[campo], antes[202551][campo])
 
     def test_predicciones_vigentes_experimentales(self):
         r = self.get("/predicciones?horizonte=4")

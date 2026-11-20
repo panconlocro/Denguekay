@@ -12,8 +12,14 @@ What it computes, for one seed (17, the one the service serves):
 - Platt and the count mixture per horizon, fitted with the history whose label closed by the cutoff;
 - the origin vectors, the observations and the demo out-of-sample file the package builder reads.
 
-The package carries its own history (``historial_oos_b3_s17.csv.gz``) so the next refit continues from it. Nothing is
-written to ``data/``; the output folder must be new. See ``docs/modeling/reentrenamiento.md``.
+The package carries its own history (``historial_oos_b3_s17.csv.gz``) so the next refit continues from it. It also
+carries the SHAP importances of its booster (``importancias_b3_s17.json``), computed with the matrix it was fitted
+with, so that publishing never has to rebuild that matrix. Nothing is written to ``data/``; the output folder must be
+new. See ``docs/modeling/reentrenamiento.md``.
+
+The frozen V4 of the Release has no such file: ``frozen_training_matrix`` rebuilds its matrix from the Release inputs
+(the same ``build_origins`` and selection as a fit), without fitting, and refuses to go on unless the rows, the
+columns and the NB2 dispersions it implies equal the ones the package recorded.
 """
 
 import argparse
@@ -28,8 +34,8 @@ import pandas as pd
 from xgboost import XGBRegressor
 
 from denguekay.config.paths import (
-    MODELS, OPERATIONAL_CHIRPS, OPERATIONAL_ENSO, OPERATIONAL_ERA5_LAND, OPERATIONAL_SALA, ROOT, V4_FROZEN,
-    V4_GEOGRAPHY, V4_HISTORY, V4_INTEGRATED,
+    MODELS, OPERATIONAL_CHIRPS, OPERATIONAL_ENSO, OPERATIONAL_ERA5_LAND, OPERATIONAL_SALA, ROOT, V4_CHIRPS, V4_ENSO,
+    V4_ERA5_LAND, V4_FROZEN, V4_GEOGRAPHY, V4_HISTORY, V4_INTEGRATED, V4_SALA,
 )
 from denguekay.data.loading import load_integrated
 from denguekay.data.processing.district_locations import read_v4_era5
@@ -50,6 +56,8 @@ ARM = "b3_obs"
 FIRST_REFIT_SEASON = 2027      # the seasons up to 2026 are archived with the V4
 REPLACED_BLOCK = "posterior_2026"   # the partial block of the archive (season 2027), regenerated here
 HISTORY_FILE = "historial_oos_b3_s17.csv.gz"
+IMPORTANCES_FILE = f"importancias_{ARM}_s{SEED}.json"
+DISPERSION_RTOL = 1e-6   # the alphas of the freeze were computed on another machine; 1e-9 is what was observed
 ARCHIVE_HISTORY = MODELS / "experimentos" / "mejora_modelo" / "v3_confirmados" / "controles_espaciales" / "b3_obs_s17"
 W_GRID = np.round(np.linspace(0, 1, 101), 2)
 CLIMATE_SOURCE = {"hum_rel_media": "era", "precip_total_mm": "rain", "temp_media": "era"}
@@ -105,6 +113,120 @@ def build_origins(inputs, geography, rain, era, enso):
         origins = origins.merge(fields, on=["ubigeo", "semana_origen"], how="left", validate="many_to_one")
     origins[NINO] = nino_at_origins(origins, enso)
     return origins.reset_index(drop=True)
+
+
+class Training(SimpleNamespace):
+    """What a fit reads: the long inputs, the training origins and the source tables behind their climate columns."""
+
+
+def load_origins(*, panel_path, history_path, sala_path, era_path, chirps_path, enso_path, geography):
+    """Read the sources of a fit and build its training origins, validating the confirmed panel first."""
+    panel = load_integrated(panel_path)
+    validate_confirmed_panel(panel, load_case_coverage(coverage_path(panel_path)))
+    sala = read(sala_path)
+    if not sala.tipo_dx.eq("C").all():
+        raise ValueError("La Sala debe ser la serie de casos confirmados")
+    inputs = long_inputs(panel, era_path, sala=sala, history_path=history_path, include_d3=False)
+    geo = read(geography)
+    rain = read(chirps_path, ("semana_inicio", "fecha_disponible"))
+    era = read_v4_era5(era_path)
+    enso = pd.read_csv(enso_path, parse_dates=["fecha_disponible"])
+    return Training(inputs=inputs, origins=build_origins(inputs, geo, rain, era, enso), geo=geo, rain=rain, era=era,
+                    enso=enso)
+
+
+def training_rows(origins, cutoff):
+    """The origins a fit at ``cutoff`` trains on (the three targets closed by it), without fitting."""
+    return v2.service_rows(SimpleNamespace(origins=origins), cutoff)
+
+
+# --- importances of the booster -------------------------------------------------------------------
+
+def importances_payload(regressor, train, columns):
+    """Mean |SHAP| of each output (horizon) of ``regressor`` over ``train``: the file a package keeps."""
+    rows = v2.importances(regressor, train[list(columns)])
+    return {"tipo": v2.IMPORTANCE, "filas": int(len(train)), "columnas": list(columns),
+            "inicio": str(pd.to_datetime(train.semana_inicio).min().date()),
+            "importancias": {str(h): rows[h] for h in HORIZONS}}
+
+
+def write_importances(folder, regressor, train, columns):
+    """Save the importances next to the package files (before the manifest hashes them)."""
+    payload = importances_payload(regressor, train, columns)
+    (Path(folder) / IMPORTANCES_FILE).write_text(
+        json.dumps(payload, indent=1, ensure_ascii=False, allow_nan=False) + "\n", encoding="utf-8")
+    return payload
+
+
+def read_importances(folder, config):
+    """The importances a package carries, checked against its own record (rows and columns of the fit)."""
+    payload = json.loads((Path(folder) / IMPORTANCES_FILE).read_text(encoding="utf-8"))
+    record = config["modelos"][f"{ARM}_s{config['semilla_demo']}"]
+    columns = config["columnas"][ARM]
+    if (payload.get("tipo") != v2.IMPORTANCE or payload.get("columnas") != columns
+            or payload.get("filas") != record["filas_entrenamiento"] or set(payload.get("importancias", {})) != {"2", "3", "4"}):
+        raise ValueError("Las importancias del paquete no corresponden a su ajuste")
+    for rows in payload["importancias"].values():
+        if sorted(row["variable"] for row in rows) != sorted(columns) or [row["rango"] for row in rows] != list(
+                range(1, len(columns) + 1)):
+            raise ValueError("Las importancias del paquete no cubren las variables del modelo")
+    return {**payload, "importancias": {int(h): rows for h, rows in payload["importancias"].items()}}
+
+
+# --- the matrix of the frozen V4 --------------------------------------------------------------------------
+
+def frozen_sources():
+    """Inputs of the Release copy, the ones the freeze read (never the weekly ``operativo`` files)."""
+    return dict(panel_path=V4_INTEGRATED, history_path=V4_HISTORY, sala_path=V4_SALA, era_path=V4_ERA5_LAND,
+                chirps_path=V4_CHIRPS, enso_path=V4_ENSO, geography=V4_GEOGRAPHY)
+
+
+def check_frozen_sources(config, sources):
+    """Every input is the file the package declares in ``fuentes`` (by repo path, file name or ``geografia``)."""
+    declared = config["fuentes"]
+    files = {**{key: Path(path) for key, path in sources.items() if key != "geography"},
+             "coverage": coverage_path(sources["panel_path"])}
+    expected = {name: declared.get(path.relative_to(ROOT).as_posix()) or declared.get(path.name)
+                for name, path in files.items()}
+    expected["geography"] = declared.get("geografia")
+    files["geography"] = Path(sources["geography"])
+    for name, path in files.items():
+        if not path.is_file():
+            raise ValueError(f"Falta el insumo {path.name} de la V4 congelada; en un clon limpio: python -m "
+                             "denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip modelo_v4.zip")
+        if expected[name] is None or sha256_file(path) != expected[name]:
+            raise ValueError(f"El insumo {path.name} difiere del que declara el paquete V4")
+
+
+def frozen_training_matrix(config, regressor):
+    """The matrix the frozen booster was fitted with, rebuilt from the Release inputs and verified.
+
+    It stops (``ValueError``) unless the rows equal ``filas_entrenamiento``, the columns of ``columnas.b3_obs`` exist
+    and are finite, the last label closes at the recorded date and the NB2 dispersions of the frozen booster on this
+    matrix equal the package's ``alphas`` (``DISPERSION_RTOL``): the same booster over the same matrix."""
+    record = config["modelos"][f"{ARM}_s{config['semilla_demo']}"]
+    columns = config["columnas"][ARM]
+    sources = frozen_sources()
+    check_frozen_sources(config, sources)
+    origins = load_origins(**sources).origins
+    cutoff = pd.Timestamp(config["corte"])
+    train = training_rows(origins, cutoff)
+    if len(train) != record["filas_entrenamiento"]:
+        raise ValueError(f"La matriz reconstruida tiene {len(train)} filas y el paquete registra "
+                         f"{record['filas_entrenamiento']}")
+    if (any(column not in train for column in columns) or not np.isfinite(train[columns].to_numpy(float)).all()
+            or regressor.get_booster().feature_names != columns):
+        raise ValueError("Las columnas de la matriz reconstruida no son las de columnas.b3_obs")
+    if str((train.semana_inicio_h4.max() + 6 * DAY).date()) != record["ultimo_cierre_h4"]:
+        raise ValueError("El último cierre de la matriz reconstruida no es el del paquete")
+    kind = sp.FORMULATIONS[FORMULATION]["conteo"]
+    margin = sp.e3_margin(origins, FORMULATION)[train.index.to_numpy()]
+    mu = sp.predict_count(regressor, train[columns], kind, margin)
+    alphas = [sp.negative_binomial_dispersion(mu[:, j], train[f"casos_Dengue_h{h}"].to_numpy(float))
+              for j, h in enumerate(HORIZONS)]
+    if not np.allclose(alphas, record["alphas"], rtol=DISPERSION_RTOL, atol=0):
+        raise ValueError("Las dispersiones del booster sobre la matriz reconstruida no son las del paquete")
+    return train
 
 
 # --- out-of-sample blocks and calibration --------------------------------------------------------
@@ -224,21 +346,14 @@ def refit(output, *, base, cutoff=None, geography=V4_GEOGRAPHY, history=None, pa
     config = json.loads((Path(base) / "paquete.json").read_text(encoding="utf-8"))
     columns = config["columnas"][ARM]
     hyperparameters = config["hiperparametros"]
-    panel = load_integrated(panel_path)
-    validate_confirmed_panel(panel, load_case_coverage(coverage_path(panel_path)))
-    sala = read(sala_path)
-    if not sala.tipo_dx.eq("C").all():
-        raise ValueError("La Sala debe ser la serie de casos confirmados")
-    inputs = long_inputs(panel, era_path, sala=sala, history_path=history_path, include_d3=False)
+    loaded = load_origins(panel_path=panel_path, history_path=history_path, sala_path=sala_path, era_path=era_path,
+                          chirps_path=chirps_path, enso_path=enso_path, geography=geography)
+    inputs, origins, geo, rain, era, enso = (loaded.inputs, loaded.origins, loaded.geo, loaded.rain, loaded.era,
+                                             loaded.enso)
     last_closed = pd.Timestamp(inputs["ultima_semana"]) + 6 * DAY
     cutoff = last_closed if cutoff is None else pd.Timestamp(cutoff)
     if cutoff > last_closed or cutoff.dayofweek != 5:
         raise ValueError(f"El corte debe ser un sábado no posterior al último cierre validado ({last_closed.date()})")
-    geo = read(geography)
-    rain = read(chirps_path, ("semana_inicio", "fecha_disponible"))
-    era = read_v4_era5(era_path)
-    enso = pd.read_csv(enso_path, parse_dates=["fecha_disponible"])
-    origins = build_origins(inputs, geo, rain, era, enso)
     train = origins[(origins.semana_inicio_h4 + 6 * DAY).le(cutoff)]
     if train.empty or not np.isfinite(train[columns].to_numpy(float)).all():
         raise ValueError("Variables de entrenamiento incompletas")
@@ -288,6 +403,7 @@ def refit(output, *, base, cutoff=None, geography=V4_GEOGRAPHY, history=None, pa
     snap_margin = sp.e3_margin(snapshot.reset_index(), FORMULATION)
     np.testing.assert_array_equal(sp.predict_count(fit.regressor, snapshot[columns], kind, snap_margin),
                                   sp.predict_count(restored, snapshot[columns], kind, snap_margin))
+    write_importances(output, restored, fit.train, columns)
     write_csv_gz(table, output / HISTORY_FILE)
     write_csv_gz(previous[["ubigeo", "semana_inicio", "horizonte", "bloque", "origen_cierre", "probabilidad_calibrada",
                            "conteo_publicado"]], output / f"oos_b3_s{seed}.csv.gz")

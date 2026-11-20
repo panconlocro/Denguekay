@@ -80,6 +80,16 @@ class ObservacionRespuesta(Esquema):
     hum_rel_media_pct: float | None
     fuente_casos: Literal["excel_historico", "sala_situacional"]
     estado_cobertura: Literal["verificado", "sin_registro", "pendiente"]
+    temp_media_era5_land_c: float | None = Field(
+        default=None, description="Temperatura media semanal (°C) de ERA5-Land; null si la fuente aún no la publica")
+    humedad_era5_land_pct: float | None = Field(
+        default=None, description="Humedad relativa media semanal (%) de ERA5-Land; null si la fuente aún no la publica")
+    lluvia_chirps_mm: float | None = Field(
+        default=None, description="Precipitación total semanal (mm) de CHIRPS v3; null si la fuente aún no la publica")
+    fecha_era5_land_disponible: date | None = Field(
+        default=None, description="Fecha desde la que ERA5-Land publica esta semana; null si no se conoce")
+    fecha_chirps_disponible: date | None = Field(
+        default=None, description="Fecha desde la que CHIRPS v3 publica esta semana; null si no se conoce")
 
 
 class PrediccionRespuesta(Disponibilidad):

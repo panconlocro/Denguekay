@@ -42,7 +42,9 @@ export function dateTime(value: string | null | undefined) {
 export function horizonStatus(h: Configuration['horizontes'][number]) {
   return !h.disponible ? 'No disponible' : h.experimental ? 'Experimental' : 'Validado';
 }
+export function limaToday(now = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(now);
+}
 export function targetStarted(week: Week | null | undefined, now = new Date()) {
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(now);
-  return !!week && week.fecha_inicio <= today;
+  return !!week && week.fecha_inicio <= limaToday(now);
 }

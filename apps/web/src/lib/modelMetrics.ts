@@ -1,4 +1,5 @@
 import type { Model, ModelDetail } from '../api/types';
+import { date, number } from './format';
 
 export function record(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -41,7 +42,60 @@ export function blockIds(...details: (ModelDetail | undefined)[]) {
 }
 
 export function blockLabel(id: string) {
+  const pooled = id.match(/^temporadas_(\d{4})_(\d{4})$/);
+  if (pooled) return `Temporadas ${pooled[1]}–${pooled[2]} (aceptación)`;
   return id.replace(/^temporada_/, 'Temporada ').replace(/^calendario_/, 'Calendario ');
+}
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+function shownDate(value: string | null) {
+  return value && ISO_DATE.test(value) ? date(value) : value;
+}
+
+// Rows of the temporal protocol that the version publishes. What it does not publish is left out, never filled in
+// with a placeholder or deduced from the name of the block or from the dates of the service fit.
+export function provenanceRows(detail: ModelDetail, block: string): [string, string][] {
+  const repro = record(detail.reproducibilidad);
+  const published = record(blocks(detail)[block]);
+  const temporal = Object.keys(published).length
+    ? record(valueAt(repro, 'particion_temporal', 'bloques', block))
+    : {};
+  const pick = (key: string) => textValue(published[key] ?? temporal[key]);
+  const cutoff = pick('corte_ajuste');
+  const rule = pick('regla_ajuste');
+  const bySeason = Object.entries(record(temporal.cortes_por_temporada)).flatMap(
+    ([season, value]) => {
+      const text = textValue(value);
+      return text ? [`${season}: ${shownDate(text)}`] : [];
+    },
+  );
+  const rows: [string, string | null][] = [
+    ['Inicio del ajuste de servicio', shownDate(textValue(repro.entrenamiento_inicio))],
+    ['Corte del ajuste de servicio', shownDate(textValue(repro.entrenamiento_corte))],
+    [
+      'Filas del ajuste de servicio',
+      finite(repro.filas_entrenamiento) === null ? null : number(finite(repro.filas_entrenamiento)),
+    ],
+    ['Calibración', textValue(repro.calibracion)],
+    ['Intervalo', textValue(repro.intervalo)],
+    // A cutoff that is not a date is the rule the version publishes for that block.
+    [
+      cutoff && !ISO_DATE.test(cutoff)
+        ? 'Regla de ajuste del bloque'
+        : 'Corte de entrenamiento del bloque',
+      shownDate(cutoff),
+    ],
+    ['Regla de ajuste del bloque', cutoff && !ISO_DATE.test(cutoff) ? null : rule],
+    ['Corte de cada temporada', bySeason.length ? bySeason.join(' · ') : null],
+    ['Primera semana objetivo del bloque', shownDate(pick('primera_semana_objetivo'))],
+    ['Última semana objetivo del bloque', shownDate(pick('ultima_semana_objetivo'))],
+  ];
+  return rows.flatMap(([label, value]) => (value ? [[label, value] as [string, string]] : []));
+}
+
+// The sentence in which the API says that the classifier and the regressor of a horizon share one booster.
+export function sharedBoosterNote(detail?: ModelDetail) {
+  return textValue(record(detail?.reproducibilidad).nota_importancias);
 }
 
 export function metrics(detail: ModelDetail | undefined, id: string) {

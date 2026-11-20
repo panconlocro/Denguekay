@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { number, percent } from '../src/lib/format';
 import { shiftWeeks } from '../src/lib/series';
 import AxeBuilder from '@axe-core/playwright';
@@ -41,9 +41,8 @@ test('keyboard map selection opens coherent district details and all horizons', 
   await page.getByRole('link', { name: 'Ver detalle y serie temporal →' }).click();
   await expect(page).toHaveURL(/\/distritos\/200101/);
   await expect(page.locator('.detail-indicators')).toContainText(percent(p.probabilidad_brote));
-  await expect(page.locator('.detail-indicators')).toContainText(
-    'Umbral de la semana objetivo: no publicado',
-  );
+  await expect(page.locator('body')).not.toContainText('Umbral de la semana objetivo');
+  await expect(page.locator('body')).not.toContainText('Alcance de la interpretación');
   await expect(page.getByRole('heading', { name: 'Contexto observado en el corte' })).toBeVisible();
   await expect(page.locator('.horizon-comparison tbody tr')).toHaveCount(config.horizontes.length);
   await expect(page.locator('.district-bottom .district-facts')).toBeVisible();
@@ -216,4 +215,79 @@ test('district prediction and series errors clear separately and recover without
   await expect(page.locator('.detail-indicators .metric-value')).toHaveCount(2);
   await expect(series.locator('.chart')).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
+});
+
+test.describe('climate of the cutoff week', () => {
+  type Row = Record<string, unknown>;
+  const mockObservations = async (page: Page, change: (row: Row) => void) => {
+    await page.route('**/api/v1/observaciones?**', async (route) => {
+      const response = await route.fetch();
+      const data = await response.json();
+      for (const row of data.elementos) change(row);
+      await route.fulfill({ response, json: data });
+    });
+  };
+  const fact = (page: Page, label: string) =>
+    page.locator('.district-bottom .district-facts').locator(`dt:text-is("${label}") + dd`);
+
+  test('uses ERA5-Land and CHIRPS v3 when the API publishes them and names the source', async ({
+    page,
+  }) => {
+    await mockObservations(page, (row) => {
+      Object.assign(row, {
+        temp_media_c: null,
+        hum_rel_media_pct: null,
+        precip_total_mm: null,
+        temp_media_era5_land_c: 27.5,
+        humedad_era5_land_pct: 58.25,
+        lluvia_chirps_mm: 0,
+      });
+    });
+    await page.goto('/distritos/200101?horizonte=2');
+    await expect(fact(page, 'Temperatura media')).toContainText('27,5 °C');
+    await expect(fact(page, 'Temperatura media')).toContainText('Fuente: ERA5-Land');
+    await expect(fact(page, 'Humedad relativa media')).toContainText('58,25 %');
+    await expect(fact(page, 'Precipitación total')).toContainText('0 mm');
+    await expect(fact(page, 'Precipitación total')).toContainText('Fuente: CHIRPS v3');
+  });
+
+  test('keeps the older values when the API does not send the new fields yet', async ({ page }) => {
+    await mockObservations(page, (row) => {
+      for (const key of [
+        'temp_media_era5_land_c',
+        'humedad_era5_land_pct',
+        'lluvia_chirps_mm',
+        'fecha_era5_land_disponible',
+        'fecha_chirps_disponible',
+      ])
+        delete row[key];
+      Object.assign(row, { temp_media_c: 24, hum_rel_media_pct: 63, precip_total_mm: 1.5 });
+    });
+    await page.goto('/distritos/200101?horizonte=2');
+    await expect(fact(page, 'Temperatura media')).toContainText('24 °C');
+    await expect(fact(page, 'Humedad relativa media')).toContainText('63 %');
+    await expect(fact(page, 'Precipitación total')).toContainText('1,5 mm');
+  });
+
+  test('says pending, or not available, but never shows a zero for a missing value', async ({
+    page,
+  }) => {
+    await mockObservations(page, (row) => {
+      Object.assign(row, {
+        temp_media_c: null,
+        hum_rel_media_pct: null,
+        precip_total_mm: null,
+        temp_media_era5_land_c: null,
+        humedad_era5_land_pct: null,
+        lluvia_chirps_mm: null,
+        fecha_era5_land_disponible: '2000-01-01',
+        fecha_chirps_disponible: '2999-01-01',
+      });
+    });
+    await page.goto('/distritos/200101?horizonte=2');
+    await expect(fact(page, 'Temperatura media')).toHaveText('No disponible');
+    await expect(fact(page, 'Humedad relativa media')).toHaveText('No disponible');
+    await expect(fact(page, 'Precipitación total')).toHaveText('Pendiente de publicación');
+    await expect(page.locator('.district-bottom .district-facts')).not.toContainText('0 mm');
+  });
 });

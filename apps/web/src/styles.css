@@ -525,7 +525,7 @@ small {
 }
 .indicators {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 .indicators .card {
@@ -608,6 +608,14 @@ small {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.85fr);
   gap: 16px;
+}
+.dashboard-bottom-alone {
+  grid-template-columns: minmax(0, 1fr);
+}
+.dashboard-bottom-alone .stack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
 }
 .stack {
   display: flex;
@@ -851,29 +859,6 @@ td a {
   font-size: 11px;
   font-weight: 500;
 }
-.regional-unavailable {
-  min-height: 310px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.chart-placeholder {
-  position: absolute;
-  inset: 15px 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  opacity: 0.6;
-}
-.chart-placeholder div {
-  border-bottom: 1px solid var(--border);
-}
-.regional-unavailable .empty {
-  position: relative;
-  max-width: 390px;
-  background: #fffffff5;
-}
 .empty {
   text-align: center;
   padding: 30px 16px;
@@ -1072,6 +1057,11 @@ td a {
   text-align: right;
   font-weight: 600;
   overflow-wrap: anywhere;
+}
+.district-facts .fact-source {
+  display: block;
+  color: var(--muted);
+  font-weight: 400;
 }
 .panel-actions {
   display: grid;
@@ -1286,7 +1276,7 @@ td a {
 }
 .alert-indicators {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 .alert-indicators .metric-label {
@@ -1402,6 +1392,9 @@ td a {
   .alert-indicators {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+  }
+  .alert-indicators .card:nth-child(3) {
+    grid-column: 1 / -1;
   }
   .alert-indicators .metric-value {
     font-size: 24px;
@@ -1750,6 +1743,9 @@ td a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
+  .indicators .card:nth-child(3) {
+    grid-column: 1 / -1;
+  }
   .metric-value {
     font-size: 24px;
   }
@@ -1834,9 +1830,6 @@ td a {
   }
   .empty {
     padding: 24px 10px;
-  }
-  .regional-unavailable {
-    min-height: 280px;
   }
   .pagination {
     flex-wrap: wrap;

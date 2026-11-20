@@ -88,7 +88,8 @@ $env:DENGUEKAY_XGB_DEVICE = "cpu"; $env:DENGUEKAY_XGB_NJOBS = "2"; $env:OMP_NUM_
   cierre validado (`--corte` admite uno anterior). Regenera las predicciones fuera de muestra de las temporadas posteriores
   a las archivadas (cada temporada se ajusta en su primer origen, como en el [protocolo](protocolo_v3.md)), recalcula
   Platt y la mezcla de conteo por horizonte con el historial cuya etiqueta ya cerró, y deja en la carpeta nueva el
-  paquete completo: `paquete.json`, el booster, `origen.csv`, `observaciones.csv.gz`, `oos_b3_s17.csv.gz` y su propio
+  paquete completo: `paquete.json`, el booster, `origen.csv`, `observaciones.csv.gz`, `oos_b3_s17.csv.gz`, las importancias SHAP de su booster
+  (`importancias_b3_s17.json`, calculadas con la matriz con que se ajustó; la publicación las registra tal cual) y su propio
   historial (`historial_oos_b3_s17.csv.gz`), del que parte el reentrenamiento siguiente. No toca `data/` ni sustituye
   el paquete anterior (la carpeta de salida debe ser nueva).
 - **Primera vez.** Necesita el historial archivado de la V4. Si no está en

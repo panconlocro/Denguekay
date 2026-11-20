@@ -82,6 +82,7 @@ jobs:
           python -m denguekay.features.gold_v4 --desde-release
           python -m denguekay.pipelines.run_all --version v4 --solo-verificar --desde-release
           python -m unittest discover -s tests -p test_gold_v4_equivalence.py
+          python -m unittest discover -s tests -p test_v4_publication_metadata.py
 
   postgresql:
     # Los contenedores de servicio de GitHub Actions solo existen en Linux.
