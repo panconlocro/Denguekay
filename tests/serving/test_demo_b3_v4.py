@@ -19,6 +19,7 @@ from denguekay.config.paths import UBIGEO_CATALOG
 from denguekay.data.calendar import mmwr_epi_week
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.db.session import make_engine
+from denguekay.model import refit_v4
 from denguekay.serving import demo_database
 from denguekay.serving.settings import service_settings
 from denguekay.serving.storage import LocalStorage
@@ -38,6 +39,10 @@ def synthetic_bundle(folder):
                          multi_strategy="multi_output_tree", random_state=SEED, n_jobs=1)
     model.fit(vectors, np.column_stack([cases + h for h in HORIZONS]), base_margin=margin)
     model.save_model(folder / f"b3_obs_s{SEED}.ubj")
+    # The importances a refit package keeps (refit_v4.IMPORTANCES_FILE), over this tiny training matrix.
+    training = vectors.assign(semana_inicio=pd.Timestamp("2024-12-01"))
+    (folder / refit_v4.IMPORTANCES_FILE).write_text(
+        json.dumps(refit_v4.importances_payload(model, training, ["hist_lag_a"])), encoding="utf-8")
     vectors.assign(ubigeo=districts, umbral_h2=2, umbral_h3=3, umbral_h4=4).to_csv(
         folder / "origen.csv", index=False,
     )
@@ -64,8 +69,9 @@ def synthetic_bundle(folder):
         "formulacion": "E3", "hiperparametros": {"n_estimators": 2}, "validaciones": {},
         "columnas": {"b3_obs": ["hist_lag_a"]},
         "modelos": {f"b3_obs_s{SEED}": {
-            "alphas": [0.7, 1.0, 1.3],
-            "por_horizonte": {str(h): {"platt": {"a": 1.0, "b": 0.0}, "peso_modelo": 0.75} for h in HORIZONS},
+            "alphas": [0.7, 1.0, 1.3], "filas_entrenamiento": len(vectors), "ultimo_cierre_h4": CUTOFF.isoformat(),
+            "por_horizonte": {str(h): {"platt": {"a": 1.0, "b": 0.0, "filas": 100, "ultimo_cierre": CUTOFF.isoformat()},
+                                       "peso_modelo": 0.75} for h in HORIZONS},
         }},
         "archivos": {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in folder.iterdir()},
     }

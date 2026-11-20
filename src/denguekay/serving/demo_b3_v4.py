@@ -88,16 +88,50 @@ def block_metrics(block, group):
     }
 
 
-def archived_predictions(folder, data, seed):
-    prior = pd.read_csv(folder / f"oos_b3_s{seed}.csv.gz", dtype={"ubigeo": str},
-                        parse_dates=["semana_inicio", "origen_cierre"])
-    prior = prior.dropna(subset=["probabilidad_calibrada"]).rename(
+def joined_predictions(folder, data, seed):
+    """The archived out-of-sample file (as read) and its calibrated rows joined to the observed panel and to the
+    persistence of their origin week: the table every block metric and the temporal partition are computed from."""
+    archive = pd.read_csv(folder / f"oos_b3_s{seed}.csv.gz", dtype={"ubigeo": str},
+                          parse_dates=["semana_inicio", "origen_cierre"])
+    prior = archive.dropna(subset=["probabilidad_calibrada"]).rename(
         columns={"probabilidad_calibrada": "probabilidad_brote", "conteo_publicado": "casos_estimados"})
     table = prior.merge(data, on=["ubigeo", "semana_inicio"], validate="many_to_one")
     origin = data[["ubigeo", "semana_inicio", "casos_Dengue"]].assign(
         origen_cierre=lambda d: d.semana_inicio + pd.Timedelta(days=6))
     table = table.merge(origin[["ubigeo", "origen_cierre", "casos_Dengue"]].rename(
         columns={"casos_Dengue": "persistencia"}), on=["ubigeo", "origen_cierre"], validate="many_to_one")
+    return archive, table
+
+
+def temporal_partition(archive, table):
+    """Per horizon and block of ``archived_predictions``: target weeks, test rows and the cutoff of the fit.
+
+    The protocol fits each season once, at its first origin (``refit_v4.block_predictions``: the earliest origin among
+    the three horizons, ``horizon_strategies._common_cutoffs``), so that cutoff is the earliest ``origen_cierre`` of
+    the block in the archived file. Against the ``ajustes.csv`` of the V4 archive it matches in every block (the seasons
+    2008 to 2026 and the partial one after them). The pooled acceptance block has no single fit: it publishes the rule and each season's cutoff."""
+    seasons = table[table.bloque.isin(SEASON_BLOCKS)]
+    cutoffs = archive[archive.bloque.isin(SEASON_BLOCKS)].groupby("bloque").origen_cierre.min()
+    day = lambda value: str(pd.Timestamp(value).date())
+    summary = lambda group: {"primera_semana_objetivo": day(group.semana_inicio.min()),
+                             "ultima_semana_objetivo": day(group.semana_inicio.max()), "n_prueba": int(len(group))}
+    result = {}
+    for (h, block), group in seasons.groupby(["horizonte", "bloque"]):
+        result.setdefault(int(h), {})[block] = {"bloque": block, "tipo": "temporada", **summary(group),
+                                                "corte_ajuste": day(cutoffs[block])}
+    for h, group in seasons[seasons.bloque.isin(ACCEPTANCE_SEASONS)].groupby("horizonte"):
+        used = sorted(group.bloque.unique())
+        result[int(h)][ACCEPTANCE_BLOCK] = {
+            "bloque": ACCEPTANCE_BLOCK, "tipo": "agregado", **summary(group), "corte_ajuste": None,
+            "regla_ajuste": "Sin un único ajuste: cada temporada se ajusta una vez, en su primer origen, con las "
+                            "etiquetas cerradas a esa fecha; el bloque junta las semanas de prueba de "
+                            f"{', '.join(b.removeprefix('temporada_') for b in used)}",
+            "cortes_por_temporada": {b.removeprefix("temporada_"): day(cutoffs[b]) for b in used}}
+    return result
+
+
+def archived_predictions(folder, data, seed):
+    _, table = joined_predictions(folder, data, seed)
     results = {}
     # Use the archived seasonal blocks within the validated observed panel.
     seasons = table[table.bloque.isin(SEASON_BLOCKS)]
