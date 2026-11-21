@@ -266,10 +266,10 @@ export function DashboardPage() {
               ))}
             </div>
             <p className="footnote">
-              La validación del modelo y la vigencia del pronóstico son distintas. El horizonte h
-              se cuenta desde la semana de corte (el último dato publicado); la fecha en que el
-              MINSA publica los datos no depende del proyecto. Los avisos experimentales no son
-              alertas operativas ni generan notificaciones.
+              La validación del modelo y la vigencia del pronóstico son distintas. El horizonte h se
+              cuenta desde la semana de corte (el último dato publicado); la fecha en que el MINSA
+              publica los datos no depende del proyecto. Los avisos experimentales no son alertas
+              operativas ni generan notificaciones.
             </p>
           </Card>
         </div>

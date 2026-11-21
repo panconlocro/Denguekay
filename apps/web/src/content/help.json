@@ -132,14 +132,7 @@
       "id": "tiempo",
       "title": "Horizonte, corte y emisión",
       "summary": "El horizonte se cuenta desde la semana de corte (último dato publicado).",
-      "keywords": [
-        "fecha",
-        "vigencia",
-        "objetivo",
-        "anticipación",
-        "actualización",
-        "corte"
-      ],
+      "keywords": ["fecha", "vigencia", "objetivo", "anticipación", "actualización", "corte"],
       "page": 3,
       "paragraphs": [
         "La semana de corte identifica hasta dónde llegan los datos usados. La semana objetivo es aquella para la que se estima el resultado. El horizonte cuenta las semanas entre corte y objetivo; la fecha de emisión indica cuándo se generó el pronóstico. La fecha de actualización de los datos es otra fecha y no reemplaza la emisión.",

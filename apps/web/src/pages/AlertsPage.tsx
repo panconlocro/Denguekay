@@ -364,9 +364,7 @@ export function AlertsPage() {
             Los cambios «Nueva», «Se mantiene», «Sube de nivel» y «Baja de nivel» describen cada
             registro. No identifican por sí solos un lote de actualización.
           </p>
-          <p>
-            Los avisos experimentales no son alertas operativas ni generan notificaciones.
-          </p>
+          <p>Los avisos experimentales no son alertas operativas ni generan notificaciones.</p>
         </Card>
       </div>
     </>

@@ -37,8 +37,8 @@ export function PublicationNotice({
             : 'No disponible'}
         </p>
         <small>
-          Fecha de generación; distinta de la actualización de la API. El horizonte se cuenta desde la
-          semana de corte.
+          Fecha de generación; distinta de la actualización de la API. El horizonte se cuenta desde
+          la semana de corte.
         </small>
       </div>
     </section>
