@@ -12,7 +12,7 @@ from sqlalchemy import select
 from v4_weekly_support import FIRST_CUTOFF, LiveCase
 from denguekay.config.paths import V4_DATA_MANIFEST
 from denguekay.data.calendar import mmwr_epi_week
-from denguekay.db.models import Prediction, Run, WeeklyObservation, utc_now
+from denguekay.db.models import FirstEmission, Prediction, Run, WeeklyObservation, utc_now
 from denguekay.db.session import transaction
 from denguekay.pipelines import v4_weekly
 from denguekay.serving import emissions, load_data
@@ -117,6 +117,14 @@ class TestArchive(unittest.TestCase):
 class TestProspectiveScores(LiveCase):
     SOURCE = {"fuente_casos": "sala_situacional", "estado_cobertura": "verificado", "fecha_extraccion": utc_now()}
 
+    def first(self, run, ubigeo, target, *, p=None, cases=None, state="disponible", published=None, level="medio"):
+        """A first emission; ``published`` is the last week the Sala had published when it was emitted."""
+        return FirstEmission(
+            ubigeo=ubigeo, id_semana_corte=self.cutoff, id_semana_objetivo=target, horizonte=2, probabilidad_brote=p,
+            nivel_riesgo=level if state == "disponible" else None, casos_estimados=cases, estado=state,
+            motivo_no_disponible=None if state == "disponible" else "sin historial", id_ejecucion=run.id_ejecucion,
+            fecha_emision=utc_now(), ultima_semana_sala_publicada=target - 1 if published is None else published)
+
     def test_brier_mae_and_counts_are_computed_by_hand(self):
         with transaction(self.motor) as session:
             load_data.persist_load(session, self.current)
@@ -132,23 +140,27 @@ class TestProspectiveScores(LiveCase):
                 (self.districts[0], 0.8, 3.0, True, 5), (self.districts[1], 0.2, 1.0, False, 0),
                 (self.districts[2], 0.5, 2.0, False, 2)]
             for ubigeo, probability, cases, outbreak, observed in rows:
-                session.add(Prediction(ubigeo=ubigeo, id_semana_corte=self.cutoff, id_semana_objetivo=target,
-                                       horizonte=2, probabilidad_brote=probability, nivel_riesgo="medio",
-                                       casos_estimados=cases, estado="disponible", id_ejecucion=weekly.id_ejecucion))
+                session.add(self.first(weekly, ubigeo, target, p=probability, cases=cases))
                 session.add(WeeklyObservation(ubigeo=ubigeo, id_semana=target, casos_dengue=observed, brote=outbreak,
                                               **source))
-            # Ignored: another origin, an unavailable prediction and a target week without observation.
+            # Ignored: a prediction that is not a first emission (another origin), an unavailable first emission, a
+            # target week without observation, a target the Sala had already published, and an unknown publication.
             session.add(Prediction(ubigeo=self.districts[3], id_semana_corte=self.cutoff, id_semana_objetivo=target,
                                    horizonte=2, probabilidad_brote=0.9, nivel_riesgo="alto", casos_estimados=9.0,
                                    estado="disponible", id_ejecucion=other.id_ejecucion))
             session.add(WeeklyObservation(ubigeo=self.districts[3], id_semana=target, casos_dengue=0, brote=False,
                                           **source))
-            session.add(Prediction(ubigeo=self.districts[4], id_semana_corte=self.cutoff, id_semana_objetivo=target,
-                                   horizonte=2, estado="no_disponible", motivo_no_disponible="sin historial",
-                                   id_ejecucion=weekly.id_ejecucion))
-            session.add(Prediction(ubigeo=self.districts[5], id_semana_corte=self.cutoff, id_semana_objetivo=target + 1,
-                                   horizonte=2, probabilidad_brote=0.4, nivel_riesgo="bajo", casos_estimados=1.0,
-                                   estado="disponible", id_ejecucion=weekly.id_ejecucion))
+            session.add(self.first(weekly, self.districts[4], target, state="no_disponible"))
+            session.add(self.first(weekly, self.districts[5], target + 1, p=0.4, cases=1.0))
+            for ubigeo, published in ((self.districts[6], target), (self.districts[7], target + 3)):
+                session.add(self.first(weekly, ubigeo, target, p=0.9, cases=9.0, published=published))
+                session.add(WeeklyObservation(ubigeo=ubigeo, id_semana=target, casos_dengue=0, brote=False, **source))
+            session.add(self.first(weekly, self.districts[8], target, p=0.9, cases=9.0, published=None))
+            session.flush()
+            session.execute(FirstEmission.__table__.update().where(
+                FirstEmission.ubigeo == self.districts[8]).values(ultima_semana_sala_publicada=None))
+            session.add(WeeklyObservation(ubigeo=self.districts[8], id_semana=target, casos_dengue=0, brote=False,
+                                          **source))
             session.flush()
             scores = emissions.prospective_scores(session)
         self.assertEqual(scores["2"], {"n": 3, "brotes_observados": 1, "suma_probabilidades": 1.5,

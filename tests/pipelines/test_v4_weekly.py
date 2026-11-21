@@ -7,6 +7,7 @@ from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 import json
 import os
+import shutil
 from unittest.mock import patch
 
 from sqlalchemy import func, select
@@ -138,7 +139,15 @@ class TestFullRuns(LiveCase):
         self.assertEqual(len(weekly_inferences(self.motor)), 3)
 
 
-class TestRunnerWithoutState(LiveCase):
+class RemoteArchiveMixin:
+    def remote_status(self):
+        """``archivo_remoto`` of the horizon-2 inference of the only emission."""
+        runs = [run for run in weekly_inferences(self.motor) if run.detalle["horizonte"] == 2]
+        (run,) = runs
+        return run.detalle["archivo_remoto"]
+
+
+class TestRunnerWithoutState(RemoteArchiveMixin, LiveCase):
     """GitHub Actions starts with an empty machine: it prepares itself, keeps the archive in the Storage and says
     clearly when the refit package it is asked to serve is not there."""
 
@@ -177,6 +186,8 @@ class TestRunnerWithoutState(LiveCase):
             self.assertTrue(self.storage.exists(path))
         stored = json.loads(self.storage.read(f"reportes/emisiones/{relative}/emision.json"))
         self.assertEqual(stored["id_semana_corte"], self.cutoff)
+        self.assertEqual(report["archivo_remoto"], "subido")
+        self.assertEqual(self.remote_status()["estado"], "subido")   # also written to ejecucion.detalle
 
     def test_with_the_local_backend_the_archive_is_not_duplicated_in_the_storage(self):
         report = self.run_weekly(Options(inicial=True))
@@ -190,6 +201,56 @@ class TestRunnerWithoutState(LiveCase):
         self.assertTrue(report["archivo_en_storage"].startswith("fallido"))
         self.assertTrue(any("Storage" in w for w in report["advertencias"]))
         self.assertEqual(len(weekly_inferences(self.motor)), 3)   # the forecast stays published
+        status = self.remote_status()
+        self.assertEqual((status["estado"], status["intentos"]), ("fallido", 1))
+        self.assertIn("OSError: sin red", status["error"])
+        self.assertEqual(report["archivo_remoto"], "fallido")
+        # The retry uploads it from the local folder and leaves it as ``subido``; a second retry has nothing to do.
+        retry = v4_weekly.retry_archive(self.motor, self.cfg, self.storage, self.base)
+        self.assertEqual((retry["estado"], retry["pendientes"], retry["subidos"]),
+                         ("archivo_al_dia", 1, [status["ruta"]]))
+        after = self.remote_status()
+        self.assertEqual((after["estado"], after["intentos"]), ("subido", 2))
+        for name in emissions.ARCHIVE_FILES:
+            self.assertTrue(self.storage.exists(f"reportes/emisiones/{status['ruta']}/{name}"))
+        self.assertEqual(v4_weekly.retry_archive(self.motor, self.cfg, self.storage, self.base)["pendientes"], 0)
+
+    def test_a_retry_that_fails_again_or_has_no_local_folder_stays_pending_with_its_reason(self):
+        self.cfg = replace(self.cfg, almacenamiento="supabase")
+        with patch.object(emissions, "upload_archive", side_effect=OSError("sin red")):
+            self.run_weekly(Options(inicial=True))
+            retry = v4_weekly.retry_archive(self.motor, self.cfg, self.storage, self.base)
+        self.assertEqual((retry["estado"], retry["pendientes"]), ("fallida", 1))
+        self.assertIn("sin red", next(iter(retry["fallidos"].values())))
+        self.assertEqual(self.remote_status()["intentos"], 2)
+        shutil.rmtree(self.base / "emisiones")
+        gone = v4_weekly.retry_archive(self.motor, self.cfg, self.storage, self.base)
+        self.assertEqual(gone["estado"], "fallida")
+        self.assertIn("no está la carpeta local", next(iter(gone["fallidos"].values())))
+        self.assertEqual(self.remote_status()["estado"], "fallido")
+
+    def test_the_retry_flag_of_the_command_line_runs_only_the_retry(self):
+        fake_engine = type("Engine", (), {"dispose": lambda self: None})()
+        with patch.object(v4_weekly, "retry_archive", return_value={"estado": "archivo_al_dia"}) as retry,                 patch.object(v4_weekly, "run") as run, patch.object(v4_weekly, "make_engine", return_value=fake_engine),                 patch("denguekay.serving.storage.storage_from_environment", return_value=object()):
+            self.assertEqual(v4_weekly.main(["--reintentar-archivo"]), 0)
+        retry.assert_called_once()
+        run.assert_not_called()
+
+    def test_the_emission_archives_the_utc_extraction_of_each_capture(self):
+        captures = {"sala": {"2025": {"archivo": "2025_20261120T071341806116Z",
+                                      "extraido_utc": "2026-11-20T07:13:41.806116+00:00", "precision": "instante"}},
+                    "era5_land_reciente": {"archivo": "2026-11-15", "extraido_utc": "2026-11-20T07:30:00+00:00",
+                                           "precision": "instante"},
+                    "chirps": None, "enso": {"archivo": "sstoi_20261120.indices", "extraido_utc": "2026-11-20",
+                                             "precision": "dia"}}
+        report = self.run_weekly(Options(inicial=True), captures=lambda: captures)
+        record = json.loads((self.base / report["emision"] / "emision.json").read_text(encoding="utf-8"))
+        self.assertEqual(record["capturas"], captures)
+
+    def test_with_the_local_backend_the_retry_has_nothing_to_upload(self):
+        self.run_weekly(Options(inicial=True))
+        retry = v4_weekly.retry_archive(self.motor, self.cfg, self.storage, self.base)
+        self.assertEqual(retry["estado"], "archivo_al_dia")
 
     def test_the_dry_run_plans_the_release_extraction_for_the_prepare_flag(self):
         missing = [v4_weekly.ROOT / "data" / "falta.csv"]
@@ -338,6 +399,8 @@ class TestPreflightAndLock(LiveCase):
         self.assertEqual((report["estado"], report["etapa"]), ("fallida", "preflight"))
         self.assertIn("en curso", report["error"])
         self.assertTrue(lock.exists())   # the other run's lock is not ours to remove
+        with transaction(self.motor) as session:   # a run that did not start is not a failed run
+            self.assertEqual(session.scalar(select(func.count()).select_from(Run).where(Run.estado == "fallida")), 0)
         old = (datetime.now(timezone.utc) - timedelta(hours=v4_weekly.LOCK_STALE_HOURS + 1)).timestamp()
         os.utime(lock, (old, old))
         self.assertEqual(self.run_weekly(Options(inicial=True))["estado"], "emitida")
@@ -349,6 +412,13 @@ class TestPreflightAndLock(LiveCase):
         self.assertEqual((report["estado"], report["etapa"]), ("fallida", "preflight"))
         self.assertIn("DENGUEKAY_DATA_DIR", report["error"])
         self.assertEqual(self.calls, [])
+        # HU0019-4: the failed preflight is a failed run with its reason, and nothing was published.
+        with transaction(self.motor) as session:
+            (failed,) = session.scalars(select(Run).where(Run.estado == "fallida")).all()
+            self.assertIn("DENGUEKAY_DATA_DIR", failed.mensaje_error)
+            self.assertEqual((failed.detalle["origen"], failed.detalle["etapa"]), (emissions.ORIGIN.replace(
+                "actualizacion_semanal", "actualizacion_semanal"), "preflight"))
+        self.assertEqual((counts(self.motor)["predicciones"], len(weekly_inferences(self.motor))), (0, 0))
 
     def test_a_configuration_other_than_the_operational_one_is_rejected(self):
         for change in ({"perfil_datos": "release"}, {"sala": "data/silver/confirmados/epi_sala_semanal.csv"},

@@ -199,13 +199,61 @@ o fallar por el límite horario (la siguiente la retoma desde los cachés).
 **Archivo de emisiones (HU0019-5).** Con `STORAGE_BACKEND=supabase`, tras confirmar la transacción cada emisión se copia al
 Storage en `reportes/emisiones/<corte>/<sello>/` (`emision.json`, `predicciones.csv`, `vectores.csv`; clave
 `archivo_en_storage` del informe). Si esa copia falla, la emisión ya está en la BD: queda una advertencia en el informe
-y el artefacto del workflow (`actualizacion-semanal-<id>`, 90 días) conserva la carpeta. Con el Storage local no se copia:
+y el artefacto del workflow (`actualizacion-semanal-<id>`, 90 días) conserva la carpeta.
+**Alcance de la transacción:** la carga, la inferencia de h2–h4 y el registro de la primera emisión se confirman juntos;
+la copia al Storage es posterior y recuperable. Su resultado queda en `ejecucion.detalle.archivo_remoto` de la inferencia
+de h2 de esa emisión (`estado` = `subido` o `fallido` con el `error`, la `ruta` de la carpeta y los `intentos`), y
+`python -m denguekay.pipelines.v4_weekly --reintentar-archivo` sube desde la carpeta local las emisiones que sigan
+`fallido` (no descarga ni emite; el workflow lo corre después de cada actualización y, si sigue fallando, avisa y deja la
+carpeta como artefacto). **Alcance del reintento:** sube desde la carpeta local de emisiones, así que en el runner efímero de
+Actions solo alcanza lo que esa misma ejecución dejó pendiente; una emisión que quedó `fallido` en una ejecución anterior se
+recupera a mano: baje el artefacto `actualizacion-semanal-<id>` (90 días), copie su carpeta `emisiones/` a
+`models/serving/actualizacion_semanal/emisiones/` y corra `--reintentar-archivo` desde su PC. Con el Storage local no se copia:
 la carpeta de `models/serving/actualizacion_semanal/emisiones/` ya es el archivo.
 
 **Paquete servido.** Hoy `config.yaml` no define `paquete_dir`, así que el runner sirve el paquete congelado del Release
 `model/v4`. Si un reajuste (`refit_v4`) se sirve con `serving.paquete.opciones.paquete_dir`, esa carpeta está fuera de
-Git y el runner no la tiene: la corrida se detiene en `preflight` con un mensaje que lo dice. Mientras no se agregue la
-descarga de esa carpeta desde el Storage al workflow, un reajuste se opera desde el PC con los `.ps1`.
+Git y el runner no la tiene: antes de la comprobación inicial el workflow (y `v4_weekly`) la **descarga del Storage**
+(`modelos/reajustes/<carpeta>/`) y verifica el SHA-256 de cada archivo contra el `paquete.json` del paquete; un archivo
+alterado o faltante se rechaza (la corrida queda `fallida` en `preflight`, registrada en `ejecucion`) y no se deja nada en la
+carpeta. Después de reajustar (`refit_v4`) y antes de servirlo, súbalo una vez con
+`python -m denguekay.serving.refit_package --subir` (con las credenciales del Storage). Si el paquete no está en el
+Storage, la corrida se detiene en `preflight` con el mensaje de siempre.
+
+**Fallos de la comprobación inicial.** Un fallo de `preflight` (entorno, archivos congelados, paquete reajustado) queda
+como una ejecución `fallida` en `ejecucion`, con su motivo y la etapa, y no publica nada. No se registra el candado ocupado
+(otra corrida sigue en curso) ni una BD sin esquema (no hay dónde escribir).
+
+**Límite: el panel congelado no se corrige (revisiones de la Sala).** En la operación semanal el panel 2017–2025 de la copia
+congelada **no se modifica**: la carga toma de la Sala solo las semanas que el panel no tiene (`sala_after_panel`). Si la
+Sala corrige una semana que el panel ya trae (por ejemplo, Piura 200101, SE 1 de 2025, de 4 a 5 casos), esa corrección se
+**ignora por regla** y la BD conserva el valor del panel. La corrección de una semana posterior al panel (por ejemplo, de
+2026) sí es válida: la siguiente carga la aplica.
+
+- **Por qué.** Ese panel es el que se usó para entrenar y calibrar la V4 (los boosters, la calibración Platt, el historial fuera
+  de muestra y las etiquetas salen de sus casos) y está verificado por SHA-256 contra el Release `model/v4`
+  (`panel_congelado` en `emision.json`). Dejar que la Sala lo sobrescriba separaría la BD de los datos del modelo sin que el
+  paquete lo supiera.
+- **Registro.** Cada carga compara la Sala con el panel y guarda las revisiones ignoradas en `ejecucion.detalle.revisiones_ignoradas`
+  de la ingesta y en `revisiones_ignoradas` de `emision.json`: `total`, `mostradas`, `limite` (50) y la lista
+  `revisiones` con `ubigeo`, `anio`, `semana`, `casos_panel` y `casos_sala` (si hay más de 50, el total y las primeras 50,
+  ordenadas por año, semana y distrito). El informe de la corrida trae `revisiones_ignoradas` (el total) y una advertencia
+  cuando es mayor que 0.
+- **Expectativa (no un hecho comprobado).** A fines de 2026 se espera que la Sala ya no corrija semanas de 2025: las capturas
+  de 2025 del 17/11 (tres) y del 20/11 de 2026 coinciden con el panel en las 3 380 llaves, y ninguna cambió respecto de la
+  anterior. El registro permite detectarlo si ocurre: hoy el total es 0.
+- **Cómo corregir el histórico.** Las revisiones registradas se incorporan en el **reentrenamiento anual**, con un panel y un
+  Release nuevos que ya traigan los valores corregidos ([`docs/modeling/reentrenamiento.md`](../modeling/reentrenamiento.md)):
+  la carga semanal nunca sobrescribe el panel. Mientras tanto la lista de `emision.json` es la evidencia de qué semanas
+  difieren.
+
+**Fecha de extracción de cada captura.** La emisión archiva en `emision.json` (`capturas`) el nombre de la última captura
+de cada fuente y su fecha de extracción en UTC: la Sala y CHIRPS llevan el instante en el nombre de su captura, NOAA el
+día UTC (`sstoi_AAAAMMDD`) y ERA5-Land el instante en `AAAA-MM-DD.captura.json`, junto a la carpeta, que se nombra por su
+último día de datos y no por la extracción. Límite del sello de ERA5-Land: es el instante en que la corrida encontró la carpeta completa; una carpeta que ya estaba
+completa y sin sidecar (descargada antes de este registro) queda sellada por la primera corrida que la encuentra, así que para
+ella es una cota superior de la extracción y no la extracción. Los cachés históricos no tienen fecha de extracción registrada y no se
+inventa: el reporte de calidad los muestra con la fecha de congelamiento del Release, marcada como tal.
 
 | Bandera | Efecto |
 |---|---|
@@ -222,7 +270,8 @@ ERA5-Land, CHIRPS y Niño 1+2. (5) Carga y emite en **una sola transacción**: s
 ni observación nuevas, el pronóstico anterior sigue vigente y el fallo queda en `ejecucion`. La excepción es la primera
 corrida con `--inicial`: `publish` registra el paquete y confirma su propia carga de datos antes, así que si la emisión
 falla esa carga y el paquete quedan (en una BD nueva), pero no se publica ningún pronóstico. Hay una emisión por semana
-de corte: la primera es la que vale para la evaluación prospectiva.
+de corte: la primera es la que vale para la evaluación prospectiva, y queda guardada en la tabla de solo inserción
+`emision_prediccion` (ver «Primera emisión» más abajo).
 
 | Estado | Significa | Salida |
 |---|---|---|
@@ -245,11 +294,42 @@ de corte: la primera es la que vale para la evaluación prospectiva.
   seguimiento prospectivo y el aviso de reentrenamiento), `logs/` y `en_curso.lock`. Nada de esto se versiona.
 
 **Seguimiento prospectivo.** El informe trae, por horizonte, `n`, brotes observados, suma de probabilidades, Brier y MAE
-de los casos de las emisiones cuya semana objetivo ya está cargada. No lleva interpretación ni umbrales: con pocos
-brotes no se concluye nada.
+de los casos de las **primeras emisiones elegibles** cuya semana objetivo ya está cargada. No lleva interpretación ni
+umbrales: con pocos brotes no se concluye nada.
+
+**Primera emisión (`emision_prediccion`).** `prediccion` se sobrescribe cuando se reemite un corte (UPSERT), así que no
+sirve para medir lo que se pronosticó la primera vez. La actualización semanal inserta, en la misma transacción que la
+emisión, cada pronóstico en `emision_prediccion` con «insertar si no existe» sobre `(ubigeo, id_semana_corte,
+horizonte)`: una reemisión no la modifica, y ningún rol tiene UPDATE ni DELETE sobre ella (`rol_pipeline` inserta;
+`rol_api` y `rol_pipeline` leen). La tabla guarda las columnas del pronóstico, `fecha_emision`, la última semana que la
+Sala había publicado al emitir (`ultima_semana_sala_publicada`) y la `procedencia` de la fila. **Elegibilidad:** cuenta un
+pronóstico si es la primera emisión de su distrito, corte y horizonte y su semana objetivo todavía no estaba publicada en la
+Sala al emitirlo (`id_semana_objetivo` posterior a `ultima_semana_sala_publicada`). No interviene el plazo desde la
+emisión ni el inicio de la semana objetivo. Si la Sala ya publica la semana objetivo de un horizonte (por ejemplo, h = 2
+con dos semanas provisionales), ese pronóstico no entra a la evaluación prospectiva ni a la deriva.
+
+*Relleno inicial.* Para las emisiones anteriores a la tabla existe un comando que la llena sin sobrescribir nada (no lo
+corra contra producción sin revisar antes con `--sin-escribir`):
+
+```powershell
+.\.venv\Scripts\python -m denguekay.serving.first_emission_backfill --sin-escribir   # informa lo que insertaría
+.\.venv\Scripts\python -m denguekay.serving.first_emission_backfill --carpeta <carpeta con <corte>/<marca>/>
+```
+
+Por cada corte sin primera emisión usa la emisión archivada **más antigua** (`procedencia = archivo`, con su instante y su
+última semana publicada). Si el corte no tiene archivo, usa la fila actual de `prediccion` de origen semanal
+(`procedencia = prediccion_actual`, con la última semana publicada desconocida): puede ser ya una reemisión, así que
+nunca es elegible. Para usar el archivo que el runner copió al Storage, baje `reportes/emisiones/` y pásela con
+`--carpeta`.
+
+**Orden: primero el relleno.** Corra el relleno justo después de migrar a `0013_v4` y antes de cualquier `--reemitir`: el
+relleno decide por corte, y una reemisión hecha antes de rellenar quedaría guardada como la primera de ese corte (con
+`procedencia = emision`), con lo que la emisión original dejaría de contar. La garantía de «solo inserción» son los permisos
+(ningún rol de la aplicación tiene UPDATE ni DELETE); el dueño de la tabla y el rol con el que se corren las migraciones
+(en Supabase, `postgres`) conservan esos privilegios, y SQLite (solo pruebas) no tiene protección alguna.
 
 **Monitoreo de deriva (HU0009-2).** El informe trae también `monitoreo_deriva`: para cada horizonte compara las
-semanas cerradas de las emisiones archivadas con las métricas de referencia del mismo horizonte (el bloque agregado de
+semanas cerradas de las primeras emisiones elegibles (las mismas del seguimiento prospectivo) con las métricas de referencia del mismo horizonte (el bloque agregado de
 la HU0007-4, `temporadas_2022_2026`, de las versiones servidas). Calcula Precision, Recall y F1 (alerta con p ≥ 0,50) y
 MAE y RMSE de los casos. Degradación relativa: Recall y F1, (referencia − periodo) / referencia; MAE y RMSE,
 (periodo − referencia) / referencia. Con **8 semanas cerradas o más** (por horizonte) se marcan las métricas con
@@ -258,8 +338,8 @@ relativa. Precision se informa con su referencia pero el criterio no define su d
 El resultado es un registro para revisión del Ingeniero de Datos / ML: **no reentrena ni cambia la versión en uso**.
 Registrar el resultado agrega una fila de `ejecucion`, y `fecha_actualizacion` de las respuestas y `ultima_ejecucion`
 de `/salud` salen de la última ejecución exitosa de cualquier tipo: cada registro mensual las mueve (lo mismo que ya
-hace una activación). Las semanas cerradas se cuentan por semana objetivo, y las predicciones salen de la BD (con `--reemitir` el
-UPSERT reemplaza la predicción, mientras el archivo en disco conserva la primera emisión). Si el periodo no tiene
+hace una activación). Las semanas cerradas se cuentan por semana objetivo, y las predicciones salen de `emision_prediccion` (con `--reemitir` el
+UPSERT reemplaza la predicción de `prediccion`, pero la primera emisión no cambia). Si el periodo no tiene
 brotes observados, Recall y F1 quedan en `null`. Para correrlo a mano (mensual, desde la raíz y con `DATABASE_URL` apuntando a la BD que se use):
 
 ```powershell

@@ -23,7 +23,6 @@ o rango personalizado. Los umbrales históricos se consultan por semana; no se e
 
 La [fase 5](docs/fase-05-avisos.md) completa avisos: activos y retirados, filtros y página en la URL,
 orden sobre todos los registros cargados y detalle por identificador con estado, fechas y motivo.
-Un registro activo con objetivo iniciado se identifica como histórico.
 
 La [fase 6](docs/fase-06-desempeno-y-ayuda.md) completa desempeño y ayuda con métricas por bloque,
 persistencia, importancias y manual. La [fase 7](docs/fase-07-validacion-entrega.md) valida la entrega,
@@ -122,7 +121,7 @@ preparada en esa ruta, usa `npm run dev:demo:v2`.
 - Estados de carga, ausencia, error y reintento por consulta. Un resultado fallido no conserva datos
   anteriores en pantalla. Un cambio de horizonte no reutiliza predicciones de otro horizonte.
 - Vista móvil a 390 px, navegación inferior, tabla alternativa al gráfico y movimiento reducido.
-- Tipos generados del contrato 1.2.0; código y comentarios en inglés, interfaz en español.
+- Tipos generados del contrato 1.3.0; código y comentarios en inglés, interfaz en español.
 - Assets originales locales de Figma; mapas y gráficos dinámicos desde la API.
 
 ## Límites y siguientes entregas
@@ -147,7 +146,7 @@ preparada en esa ruta, usa `npm run dev:demo:v2`.
   indican «cobertura distrital no informada»: el valor de la API no certifica cobertura de los 65 distritos.
 - Los modelos experimentales llevan banda visible. Sus avisos no son alertas operativas ni generan
   notificaciones. Disponible no significa validado.
-- Si el objetivo ya pasó se marca «Consulta histórica». Los intervalos son orientativos y no calibrados.
+- Los intervalos son orientativos y no calibrados.
 
 ## Estructura
 

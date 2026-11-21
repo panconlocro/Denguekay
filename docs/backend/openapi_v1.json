@@ -3,7 +3,7 @@
   "info": {
     "title": "Denguekay: pronóstico distrital de dengue",
     "description": "API del documento OE2 (Tabla 2) sobre datos agregados de Piura. Contrato v1, independiente del modelo: los horizontes disponibles salen de la BD (GET /configuracion). Las predicciones de versiones que no cumplen los umbrales se marcan experimental: true (demo; desviación temporal documentada). Cada respuesta lleva la versión del contrato en X-Version-Contrato.",
-    "version": "1.2.0"
+    "version": "1.3.0"
   },
   "paths": {
     "/api/v1/salud": {
@@ -3269,9 +3269,11 @@
             "type": "string",
             "enum": [
               "excel_historico",
+              "datos_abiertos_confirmados",
               "sala_situacional"
             ],
-            "title": "Fuente Casos"
+            "title": "Fuente Casos",
+            "description": "Fuente efectiva de los casos: excel_historico (v0 a v3), datos_abiertos_confirmados (V4, semanas anteriores a 2025, CSV de casos confirmados) o sala_situacional (desde 2025)"
           },
           "estado_cobertura": {
             "type": "string",
@@ -3280,7 +3282,8 @@
               "sin_registro",
               "pendiente"
             ],
-            "title": "Estado Cobertura"
+            "title": "Estado Cobertura",
+            "description": "verificado: la semana tiene registro en la fuente; sin_registro: no lo tiene y los casos son 0 por la regla del proyecto (no es un cero notificado)"
           },
           "temp_media_era5_land_c": {
             "anyOf": [

@@ -31,8 +31,9 @@ from denguekay.config.paths import (DISTRICT_BOUNDARIES, DISTRICT_COORDS, GOLD, 
                              SILVER_INTEGRATED, SILVER_SALA, UBIGEO_CATALOG)
 
 # Version of this transformation; part of the ingestion fingerprint. 3: humidity is no longer rounded (M5).
-# 4: ERA5-Land temperature (0007_v3).
-TRANSFORMATION = 4
+# 4: ERA5-Land temperature (0007_v3). 5: V4 case source and coverage state from the source record (0012_v4);
+# the next load rewrites the observations that earlier loads labelled by year.
+TRANSFORMATION = 5
 ERA5_LAND_COLUMN = "temp_media_era5_land_c"
 SEASON_START_WEEK = 35  # same rule as the modelling (src/denguekay/model/train.py)
 COVERAGE = {"verified": "verificado", "missing": "sin_registro", "no_record": "sin_registro"}
@@ -55,6 +56,8 @@ class LoadBatch:
     validacion_gx: dict
     fecha_corte_datos: date
     nino12: list[dict] = field(default_factory=list)
+    # Sala corrections of weeks the frozen panel has: ignored by rule and recorded (``long_history.ignored_sala_revisions``).
+    revisiones_ignoradas: dict = field(default_factory=dict)
 
 
 def source_hashes():
@@ -290,6 +293,7 @@ def persist_load(sesion, data):
     run.fin = utc_now()
     run.detalle = {"huella": fingerprint, "hashes_entrada": data.hashes,
                          "validacion_gx": data.validacion_gx, "resumen": summary,
+                         "revisiones_ignoradas": data.revisiones_ignoradas,
                          "fecha_extraccion": instant.isoformat()}
     sesion.flush()
     return {**summary, "id_ejecucion": run.id_ejecucion, "reutilizada": False}

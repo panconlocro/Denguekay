@@ -194,6 +194,13 @@ y Niño 1+2. La geografía fija viene del paquete; la API consulta las observaci
    producción. La migración `0008_v4` agrega datos crudos y fechas de disponibilidad de B3,
    además de la serie mensual Niño 1+2. La `0010_v4` agrega `distrito.geometria` (los polígonos se llenan en la siguiente carga) y la `0009_v4` solo cambia los valores de `umbrales_aceptacion` (US v1.4);
    después de migrar, republica el paquete (`publish --seleccionar-experimental`) para recalcular `cumple_umbrales`.
+   La `0012_v4` agrega el valor `datos_abiertos_confirmados` a `fuente_casos_t` (contrato 1.3.0) y la `0013_v4` crea
+   `emision_prediccion`, la primera emisión de cada pronóstico (solo inserción: `rol_pipeline` inserta, `rol_api` y
+   `rol_pipeline` leen). Justo después de migrar a la `0013_v4` y **antes de cualquier `--reemitir`**, corre el relleno
+   (`python -m denguekay.serving.first_emission_backfill --sin-escribir` y luego sin la bandera; ver `operacion.md`).
+   Si sirves un reajuste (`paquete_dir`), sube su carpeta una vez con `python -m denguekay.serving.refit_package --subir`:
+   el workflow semanal la descarga del Storage (`modelos/reajustes/`) y verifica el SHA-256 de cada archivo antes de la
+   comprobación inicial.
 2. En la PC de publicación, instala las dependencias y descarga
    `python -m denguekay.data.ingestion.release_bundles --version v4 --solo datos_v4.zip modelo_v4.zip`.
    Si ya hay archivos de otra versión, usa un clon dedicado para conservarlos.

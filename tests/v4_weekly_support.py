@@ -73,6 +73,8 @@ class LiveCase(unittest.TestCase):
         stack.enter_context(patch.object(v4, "prepare_load", side_effect=lambda options: self.current))
         stack.enter_context(patch.object(v4, "source_hashes", side_effect=lambda options: self.current.hashes))
         stack.enter_context(patch("denguekay.serving.publish.log_report", return_value="test"))
+        # ``publish`` writes its report under ``models/serving/ejecuciones/<huella>/``: the tests use their own folder.
+        stack.enter_context(patch("denguekay.serving.publish.SERVING_RUNS", self.root / "ejecuciones"))
         self.cutoff = week_of(FIRST_CUTOFF)
         self.published = self.cutoff + 2   # the Sala has two provisional weeks more than the cutoff
         self.calls = []

@@ -45,6 +45,3 @@ export function horizonStatus(h: Configuration['horizontes'][number]) {
 export function limaToday(now = new Date()) {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(now);
 }
-export function targetStarted(week: Week | null | undefined, now = new Date()) {
-  return !!week && week.fecha_inicio <= limaToday(now);
-}

@@ -19,8 +19,9 @@ HEADER = "YR MON  NINO1+2   ANOM   NINO3    ANOM   NINO4    ANOM NINO3.4    ANOM
 
 
 def download_sstoi(target_dir: Path = BRONZE_ENSO, today: dt.date | None = None) -> Path:
-    """Save the current ``sstoi.indices`` as ``sstoi_<YYYYMMDD>.indices`` (refuses to overwrite)."""
-    today = today or dt.date.today()
+    """Save the current ``sstoi.indices`` as ``sstoi_<YYYYMMDD>.indices``, the UTC day of the download (refuses to
+    overwrite)."""
+    today = today or dt.datetime.now(dt.timezone.utc).date()
     path = target_dir / f"sstoi_{today:%Y%m%d}.indices"
     if path.exists():
         raise FileExistsError(f"Ya existe {path.name}: bronze no se sobrescribe.")

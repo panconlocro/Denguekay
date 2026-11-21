@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-*Actualizado: 17/11/2026. Se actualiza en cada release `develop → main`.*
+*Actualizado: 20/11/2026. Se actualiza en cada release `develop → main`.*
 
 ## Etapa
 
@@ -30,7 +30,7 @@ regenerar desde las fuentes está en [docs/reproducibilidad.md](docs/reproducibi
 
 ## Producto
 
-- **API:** FastAPI, contrato `1.1.0` (`api/v1.1.0`). Esquema hasta la migración `0010_v4` (`0009` fija los umbrales de la US v1.4; `0010` guarda la geometría de cada distrito).
+- **API:** FastAPI, contrato `1.3.0` (el tag `api/v1.3.0` se pone en el release `develop → main` que lo publique; hoy `main` tiene el `1.2.0`). Esquema hasta la migración `0013_v4`: `0009` fija los umbrales de la US v1.4, `0010` guarda la geometría de cada distrito, `0011` da a `rol_pipeline` los permisos sobre las alertas, `0012` agrega la fuente `datos_abiertos_confirmados` y `0013` crea `emision_prediccion` (la primera emisión de cada pronóstico, solo inserción).
 - **Frontend:** `apps/web/` con las fases 1–7 cerradas (tablero, mapa y detalle, avisos, desempeño y ayuda,
   validación con auditorías de accesibilidad). Demos locales con v2, v3 y v4 (`npm run dev:demo` abre la v4). El mapa
   muestra los límites distritales (COD-AB de Perú, IGN, OCHA/HDX, CC BY-IGO 3.0) con el centroide como respaldo.
@@ -40,7 +40,7 @@ regenerar desde las fuentes está en [docs/reproducibilidad.md](docs/reproducibi
   HU0007-4; no reentrenan (HU0009-2). La revisión mensual corre en `.github/workflows/drift_monthly.yml` y la actualización
   semanal en `weekly_v4.yml` (lunes y jueves), ambas con secrets de GitHub (sin ellos terminan con un aviso).
 - **Trazabilidad:** [trazabilidad_hu.md](docs/backend/trazabilidad_hu.md) (los 76 escenarios de los criterios de aceptación finales, HU0001 a HU0019).
-- **Despliegue:** el repo está preparado para Render, Supabase y Vercel; no hay nada desplegado.
+- **Despliegue:** la aplicación está desplegada: el frontend en Vercel (`denguekay-prod.vercel.app`), la API en Render y la BD y el Storage en Supabase. La actualización semanal corre en GitHub Actions con los secrets cargados: la ejecución programada del 19/11/2026 (20:16 UTC, `main`) terminó con éxito. El 20/11/2026 se republicó la V4 en producción (ejecución 25) con las importancias SHAP y la partición temporal; las predicciones existentes siguen ligadas a las versiones `-1` hasta una emisión nueva ([CHANGELOG](models/registry/CHANGELOG.md)). Las correcciones de la revisión de trazabilidad (contrato 1.3.0, migraciones `0012` y `0013`) van en un PR a `develop` (rama `fix/traceability-audit-corrections`) y llegan a producción con el release `develop → main`.
 
 ## Investigación
 
@@ -54,8 +54,12 @@ la congelación de la v4 y la transferencia a Lambayeque y Tumbes.
   ([operación](docs/backend/operacion.md#actualización-semanal-v4)).
 - Reentrenamiento anual de la V4 al cierre de la temporada 2027: el comando `denguekay.model.refit_v4` ya existe y está
   verificado contra la V4; se corre a mano ([política y procedimiento](docs/modeling/reentrenamiento.md)).
-- Decisión sobre publicar los polígonos distritales (CC BY-IGO 3.0) antes del despliegue.
-- Despliegue: desplegar en Render, Supabase y Vercel y cargar los secrets de GitHub Actions (`DATABASE_URL`,
-  `SUPABASE_URL`, `SUPABASE_SECRET_KEY`; ver [despliegue](docs/backend/despliegue.md)). Si se sirve un reajuste con
-  `paquete_dir`, falta que el workflow semanal baje esa carpeta del Storage (hoy se detiene con un aviso). Open-Meteo
-  gratuito limita por IP: una corrida desde GitHub puede esperar o fallar por el límite horario.
+- Decisión sobre publicar los polígonos distritales (CC BY-IGO 3.0) (los límites ya se sirven en producción).
+- Release `develop → main` con las correcciones de la revisión: aplicar `alembic upgrade head` (`0012` y `0013`), correr el relleno
+  de `emision_prediccion` **antes de cualquier `--reemitir`**, registrar la persistencia en MLflow y poner el tag `api/v1.3.0`
+  (comandos en [operación](docs/backend/operacion.md)).
+- Si se sirve un reajuste con `paquete_dir`: subir su carpeta con `python -m denguekay.serving.refit_package --subir` (el workflow
+  la descarga del Storage y verifica su SHA-256). Open-Meteo gratuito limita por IP: una corrida desde GitHub puede esperar o
+  fallar por el límite horario.
+- Las pruebas E2E del perfil `demo-v2` (`apps/web/e2e/demo-v2.spec.ts`) fallan con la demo local aunque ya fallaban antes de la
+  auditoría; no entran al CI y quedan sin investigar.

@@ -17,7 +17,7 @@ import { Filters } from './components/Filters';
 import { SourceNotice } from './components/SourceNotice';
 import { Card, Failure, Icon, Loading } from './components/ui';
 import { dataSource, demoVersion, verifyDemo } from './lib/dataSource';
-import { date, targetStarted, weekLabel } from './lib/format';
+import { date, weekLabel } from './lib/format';
 import { DashboardPage } from './pages/DashboardPage';
 import { MapPage } from './pages/MapPage';
 import { DistrictPage } from './pages/DistrictPage';
@@ -212,9 +212,6 @@ function Layout() {
                 : 'Conectando con la API'}
             </span>
             <span>Objetivo: {weekLabel(currentSummary?.semana_objetivo)}</span>
-            {targetStarted(currentSummary?.semana_objetivo) && (
-              <strong className="historical-pill">Consulta histórica · objetivo iniciado</strong>
-            )}
           </div>
         </header>
         <SourceNotice

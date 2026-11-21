@@ -49,7 +49,7 @@ esta vista previa. No se cambiaron `.env`, la configuración global ni las ficha
 
 ## Datos y vigencia
 
-El corte es **27/12/2025**, aunque la generación local se hizo el 04/11/2026. No se ingirieron datos de 2026. La interfaz muestra el corte y «Consulta histórica · objetivo pasado».
+El corte es **27/12/2025**, aunque la generación local se hizo el 04/11/2026. No se ingirieron datos de 2026. La interfaz muestra el corte de datos.
 
 | Horizonte | Semana objetivo | Predicciones disponibles | Casos estimados regionales (API) | Probabilidad máxima | Avisos actuales |
 | --------- | --------------- | ------------------------ | -------------------------------- | ------------------- | --------------- |

@@ -13,6 +13,16 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
 
+## 2026-11-20 · Persistencia determinista de la V4 en `temporadas_2022_2026` (HU0007-1)
+
+- La ficha de la V4 suma la línea base de persistencia por horizonte (Precision, Recall, F1, MAE y RMSE) sobre las
+  mismas 16 965 semanas distritales y 2 478 positivos por horizonte. Se calcula con `denguekay.model.persistence_baseline`,
+  que comprueba que las razones MAE y RMSE de la V4 frente a ella reproducen las de la ficha (0,868 / 0,824 / 0,806 y
+  0,861 / 0,819 / 0,787) con 0,001 de tolerancia; las diferencias fueron de 0,0004 o menos. **Las métricas de la V4 no
+  cambian.** La persistencia probabilística calibrada del paper es otro comparador.
+- El reporte de la V4 a MLflow dejaba sin variantes ni folds cada horizonte (`horizontes.<h>.variantes` vacío); ahora cada
+  horizonte lleva la variante `b3_obs_s17` con un fold por temporada y por el bloque agregado.
+
 ## 2026-11-19 · Metadatos de publicación de la V4 (importancias SHAP y partición temporal)
 
 - La publicación de la V4 registra las importancias SHAP por horizonte (`GET /modelos/{id}/variables`) y la partición

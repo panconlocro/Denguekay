@@ -78,8 +78,12 @@ class ObservacionRespuesta(Esquema):
     temp_max_c: float | None
     precip_total_mm: float | None
     hum_rel_media_pct: float | None
-    fuente_casos: Literal["excel_historico", "sala_situacional"]
-    estado_cobertura: Literal["verificado", "sin_registro", "pendiente"]
+    fuente_casos: Literal["excel_historico", "datos_abiertos_confirmados", "sala_situacional"] = Field(
+        description="Fuente efectiva de los casos: excel_historico (v0 a v3), datos_abiertos_confirmados (V4, semanas "
+                    "anteriores a 2025, CSV de casos confirmados) o sala_situacional (desde 2025)")
+    estado_cobertura: Literal["verificado", "sin_registro", "pendiente"] = Field(
+        description="verificado: la semana tiene registro en la fuente; sin_registro: no lo tiene y los casos son 0 "
+                    "por la regla del proyecto (no es un cero notificado)")
     temp_media_era5_land_c: float | None = Field(
         default=None, description="Temperatura media semanal (°C) de ERA5-Land; null si la fuente aún no la publica")
     humedad_era5_land_pct: float | None = Field(

@@ -1,6 +1,6 @@
 import type { Prediction } from '../api/types';
 import { emissionTiming } from '../lib/dashboard';
-import { date, number, weekLabel } from '../lib/format';
+import { date, weekLabel } from '../lib/format';
 
 export function PublicationNotice({
   rows,
@@ -15,7 +15,7 @@ export function PublicationNotice({
   return (
     <section
       className="publication-notice"
-      aria-label="Vigencia y anticipación de las predicciones"
+      aria-label="Corte, objetivo y emisión de las predicciones"
     >
       <div>
         <strong>Corte y objetivo · {scopeLabel}</strong>
@@ -36,28 +36,9 @@ export function PublicationNotice({
               : `${date(timing.first)} – ${date(timing.last)}`
             : 'No disponible'}
         </p>
-        <small>Fecha de generación; distinta de la actualización de la API.</small>
-      </div>
-      <div>
-        <strong>Anticipación efectiva mínima</strong>
-        <p>
-          {!timing
-            ? 'No disponible'
-            : timing.minimumWeeks <= 0
-              ? 'Sin anticipación'
-              : timing.minimumWeeks < 0.1
-                ? 'Menos de 0,1 semanas'
-                : `${number(Math.floor(timing.minimumWeeks * 10) / 10, 1)} semanas`}
-        </p>
         <small>
-          Entre los distritos con predicción disponible.{' '}
-          {!timing
-            ? 'Faltan fechas de emisión.'
-            : timing.minimumWeeks <= 0
-              ? 'La emisión ocurrió al inicio o después del inicio de la semana objetivo.'
-              : timing.minimumWeeks < 2
-                ? 'No alcanza el mínimo de 2 semanas desde la emisión.'
-                : 'Alcanza 2 semanas desde la emisión; el estado de validación del modelo se indica aparte.'}
+          Fecha de generación; distinta de la actualización de la API. El horizonte se cuenta desde
+          la semana de corte.
         </small>
       </div>
     </section>

@@ -8,7 +8,7 @@ import {
   regionalForecast,
   sortPredictions,
 } from '../lib/dashboard';
-import { date, horizonStatus, number, percent, targetStarted, weekLabel } from '../lib/format';
+import { date, horizonStatus, number, percent, weekLabel } from '../lib/format';
 import { PriorityTable } from '../components/PriorityTable';
 import { PublicationNotice } from '../components/PublicationNotice';
 import { AppLink, Card, DataTag, Empty, Failure, Loading, RiskChip } from '../components/ui';
@@ -266,9 +266,10 @@ export function DashboardPage() {
               ))}
             </div>
             <p className="footnote">
-              La validación del modelo y la vigencia del pronóstico son distintas. Para anticipar
-              una intervención se requieren al menos 2 semanas efectivas desde la emisión. Los
-              avisos experimentales no son alertas operativas ni generan notificaciones.
+              La validación del modelo y la vigencia del pronóstico son distintas. El horizonte h se
+              cuenta desde la semana de corte (el último dato publicado); la fecha en que el MINSA
+              publica los datos no depende del proyecto. Los avisos experimentales no son alertas
+              operativas ni generan notificaciones.
             </p>
           </Card>
         </div>
@@ -324,9 +325,6 @@ function Indicators({ summary, predictions }: { summary: Dashboard; predictions?
         Alcance regional · corte de observación: {weekLabel(summary.semana_corte)} · objetivo:{' '}
         {weekLabel(summary.semana_objetivo)} · actualización de la API:{' '}
         {date(summary.fecha_actualizacion)}
-        {targetStarted(summary.semana_objetivo)
-          ? ' · Semana objetivo iniciada; consulta histórica.'
-          : ''}
       </div>
     </div>
   );

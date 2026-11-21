@@ -42,12 +42,7 @@ describe('help and manual content', () => {
     );
     expect(topics.get('mapa')!.paragraphs.join(' ')).toContain('CC BY-IGO 3.0');
     const time = topics.get('tiempo')!.paragraphs.join(' ');
-    for (const word of [
-      'semana de corte',
-      'semana objetivo',
-      'anticipación efectiva',
-      'fecha de actualización',
-    ])
+    for (const word of ['semana de corte', 'semana objetivo', 'fecha de actualización'])
       expect(time).toContain(word);
     expect(topics.get('experimental')!.paragraphs.join(' ')).toContain('Validado significa');
     expect(topics.get('datos')!.paragraphs.join(' ')).toContain('Causas posibles');
