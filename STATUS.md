@@ -56,7 +56,7 @@ la congelación de la v4 y la transferencia a Lambayeque y Tumbes.
   verificado contra la V4; se corre a mano ([política y procedimiento](docs/modeling/reentrenamiento.md)).
 - Decisión sobre publicar los polígonos distritales (CC BY-IGO 3.0) (los límites ya se sirven en producción).
 - Release `develop → main` con las correcciones de la revisión: aplicar `alembic upgrade head` (`0012` y `0013`), correr el relleno
-  de `emision_prediccion` **antes de cualquier `--reemitir`**, registrar la persistencia en MLflow y poner el tag `api/v1.3.0`
+  de `emision_prediccion` **antes de cualquier `--reemitir`** y poner el tag `api/v1.3.0`
   (comandos en [operación](docs/backend/operacion.md)).
 - Si se sirve un reajuste con `paquete_dir`: subir su carpeta con `python -m denguekay.serving.refit_package --subir` (el workflow
   la descarga del Storage y verifica su SHA-256). Open-Meteo gratuito limita por IP: una corrida desde GitHub puede esperar o
