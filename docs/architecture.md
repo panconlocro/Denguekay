@@ -326,7 +326,7 @@ src/denguekay/db/
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito; 0012_v4 fuente `datos_abiertos_confirmados`; 0013_v4 tabla `emision_prediccion` (primera emisión, solo inserción)
+└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito; 0011_v4 permisos de `rol_pipeline` sobre las alertas; 0012_v4 fuente `datos_abiertos_confirmados`; 0013_v4 tabla `emision_prediccion` (primera emisión, solo inserción)
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
 ├── settings.py               # paquete a publicar, CORS, selección experimental y almacenamiento (config.yaml; el entorno los reemplaza)

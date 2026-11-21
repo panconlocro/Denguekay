@@ -21,7 +21,8 @@ SCENARIOS = (
     "HU0019-2 HU0019-3 HU0019-4 HU0019-5").split()
 RETIRED = {"HU0002-3", "HU0010-3", "HU0011-2"}
 RETROSPECTIVE = {"HU0007-4"}
-STATES = ("cumplido", "cumplido retrospectivo", "retirado")
+WITH_RESERVATION = {"HU0002-1", "HU0002-4"}   # the historical extraction dates of the climate were never recorded
+STATES = ("cumplido", "cumplido con salvedad", "cumplido retrospectivo", "retirado")
 ROOTS = (ROOT, ROOT / "src" / "denguekay", ROOT / "docs" / "backend", ROOT / "docs", ROOT / "apps" / "web",
          ROOT / "apps")
 EXTENSIONS = (".py", ".yml", ".md", ".json", ".ps1", ".mjs", ".ts", ".yaml")
@@ -71,6 +72,9 @@ class TestTraceabilityTable(unittest.TestCase):
                 self.assertTrue(state.startswith(STATES), state)
                 if scenario in RETIRED:
                     self.assertTrue(state.startswith("retirado") and len(state) > 40, "falta el motivo del retiro")
+                elif scenario in WITH_RESERVATION:
+                    self.assertTrue(state.startswith("cumplido con salvedad"), state)
+                    self.assertIn("fechas históricas de extracción", state)
                 elif scenario in RETROSPECTIVE:
                     self.assertTrue(state.startswith("cumplido retrospectivo"))
                     for reserve in ("2022–2024", "una semilla", "después de ver los resultados"):
@@ -84,7 +88,7 @@ class TestTraceabilityTable(unittest.TestCase):
         for word in ("se cumple en el OE4", "por verificar"):
             self.assertNotIn(word, text)
         states = {cells[3].split(":")[0].split(" el ")[0] for cells in self.rows.values()}
-        self.assertTrue(states <= {"cumplido", "cumplido retrospectivo", "retirado"}, states)
+        self.assertTrue(states <= set(STATES), states)
 
     def test_every_cited_file_exists_and_every_cited_test_is_defined(self):
         defined = test_names_in_the_tree()

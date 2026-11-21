@@ -1,8 +1,11 @@
 """First emission of each forecast (``emision_prediccion``): the prospective evaluation never reads a re-emission."""
 
+from contextlib import redirect_stdout
 from datetime import datetime, timedelta, timezone
+import io
 import json
 import shutil
+from unittest.mock import patch
 
 from sqlalchemy import delete, select
 
@@ -163,6 +166,27 @@ class TestBackfill(LiveCase):
                             for r in rows))
         with transaction(self.motor) as session:   # never eligible: its publication state is unknown
             self.assertTrue(emissions.prospective_frame(session).empty)
+
+    def command(self, *arguments):
+        """The command line, on the temporary database, and the JSON it prints."""
+        with patch.object(first_emission_backfill, "make_engine", return_value=self.motor),                 redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(first_emission_backfill.main(list(arguments)), 0)
+        return json.loads(output.getvalue())
+
+    def test_the_command_reports_without_writing_from_a_folder_of_fixtures(self):
+        report = self.command("--carpeta", str(self.archive), "--sin-escribir")
+        self.assertEqual(report["cortes"], {str(self.cutoff): "archivo"})
+        self.assertEqual(report["filas"], {"archivo": 65 * 3, "prediccion_actual": 0})
+        self.assertEqual(self.rows(), [])     # --sin-escribir inserts nothing
+
+    def test_the_command_without_an_archive_inserts_the_current_row_marked_prediccion_actual(self):
+        report = self.command("--carpeta", str(self.root / "no_hay_archivo"))
+        self.assertEqual(report["cortes"], {str(self.cutoff): "prediccion_actual"})
+        self.assertEqual(report["filas"], {"archivo": 0, "prediccion_actual": 65 * 3})
+        rows = self.rows()
+        self.assertEqual({(r.procedencia, r.ultima_semana_sala_publicada) for r in rows}, {("prediccion_actual", None)})
+        self.assertEqual(self.command("--carpeta", str(self.root / "no_hay_archivo"))["cortes"],
+                         {str(self.cutoff): "ya tenía primera emisión"})   # a second run changes nothing
 
     def test_it_is_idempotent_and_can_report_without_writing(self):
         self.assertEqual(self.run_backfill(write=False)["filas"]["archivo"], 65 * 3)

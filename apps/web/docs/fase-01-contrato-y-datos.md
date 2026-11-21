@@ -2,7 +2,7 @@
 
 Revisión del 04/11/2026. Se relacionan los componentes del punto 6 de OE2 v1.3 y los
 [mockups de Figma](https://www.figma.com/design/YntyrKwEpxRMCkAoLLhdC6) con las 14 lecturas del
-[contrato OpenAPI 1.1.0](../../../docs/backend/openapi_v1.json).
+[contrato OpenAPI 1.1.0, vigente en esta fase; hoy es el 1.3.0](../../../docs/backend/openapi_v1.json).
 Se distingue que un campo exista en el contrato, que haya datos utilizables y que la interfaz ya lo implemente.
 El diseño define la presentación; sus cifras ilustrativas no constituyen datos de la aplicación.
 

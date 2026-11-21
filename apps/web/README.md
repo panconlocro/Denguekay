@@ -121,7 +121,7 @@ preparada en esa ruta, usa `npm run dev:demo:v2`.
 - Estados de carga, ausencia, error y reintento por consulta. Un resultado fallido no conserva datos
   anteriores en pantalla. Un cambio de horizonte no reutiliza predicciones de otro horizonte.
 - Vista móvil a 390 px, navegación inferior, tabla alternativa al gráfico y movimiento reducido.
-- Tipos generados del contrato 1.2.0; código y comentarios en inglés, interfaz en español.
+- Tipos generados del contrato 1.3.0; código y comentarios en inglés, interfaz en español.
 - Assets originales locales de Figma; mapas y gráficos dinámicos desde la API.
 
 ## Límites y siguientes entregas
