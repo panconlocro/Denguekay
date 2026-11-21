@@ -298,6 +298,7 @@ model/
 ├── future_rows.py           # filas futuras en memoria, sin fuga ni escritura en data/
 ├── frozen_configs.py        # configuraciones congeladas V1/V2/V3 y su fingerprint() de comportamiento (D1)
 ├── reproduce.py             # CLI: reentrena v0/v1/v2 con los datos de su Release y compara huella o métricas
+├── persistence_baseline.py  # CLI: persistencia determinista de la V4 en temporadas_2022_2026 (verifica las razones de la ficha; --registrar la lleva a MLflow)
 ├── refit_v4.py              # CLI: reajusta la V4 (mismo modelo) con datos nuevos y deja un paquete en una carpeta nueva, con sus importancias SHAP; también reconstruye y verifica la matriz de la V4 congelada para la publicación (docs/modeling/reentrenamiento.md)
 └── variable_dictionary.py   # diccionario de las variables de la V4 (genera docs/modeling/diccionario_variables.md)
 ```

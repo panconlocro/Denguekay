@@ -59,6 +59,38 @@
         "rmse_sobre_persistencia": 0.787
       }
     },
-    "alcance": "retrospectivo, una semilla (17); el agregado descansa en 2022-2024 (94 % de las semanas elevadas); 2025 y 2026 no cumplen por separado"
+    "alcance": "retrospectivo, una semilla (17); el agregado descansa en 2022-2024 (94 % de las semanas elevadas); 2025 y 2026 no cumplen por separado",
+    "persistencia_determinista": {
+      "bloque": "temporadas_2022_2026",
+      "semilla": 17,
+      "filas_por_horizonte": 16965,
+      "positivos_por_horizonte": 2478,
+      "regla": "alerta = 1 si casos(t-h) > umbral de brote de t y casos(t-h) >= 2; regresión: casos(t-h)",
+      "comparador": "persistencia determinista (último conteo al corte); la persistencia probabilística calibrada del paper es otro comparador",
+      "reproduccion": "python -m denguekay.model.persistence_baseline (verifica las razones de la ficha con 0,001 de tolerancia)",
+      "por_horizonte": {
+        "2": {
+          "precision": 0.812,
+          "recall": 0.79,
+          "f1": 0.801,
+          "mae_casos": 3.79,
+          "rmse_casos": 23.417
+        },
+        "3": {
+          "precision": 0.79,
+          "recall": 0.764,
+          "f1": 0.776,
+          "mae_casos": 4.943,
+          "rmse_casos": 31.567
+        },
+        "4": {
+          "precision": 0.76,
+          "recall": 0.724,
+          "f1": 0.742,
+          "mae_casos": 5.967,
+          "rmse_casos": 37.837
+        }
+      }
+    }
   }
 }
