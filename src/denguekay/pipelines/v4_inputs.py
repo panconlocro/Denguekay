@@ -50,7 +50,11 @@ def era5_capture_file(folder):
 
 
 def record_era5_capture(folder, last_day):
-    """Write, once, the UTC instant at which the cache folder was complete (the real extraction date)."""
+    """Write, once, the UTC instant at which the cache folder was complete (the real extraction date).
+
+    Limit: the stamp is the moment of this call. A folder that was already complete without a sidecar (downloaded before
+    this record existed) is stamped by the first run that finds it, so for it the date is an upper bound of the extraction,
+    not the extraction itself."""
     path = era5_capture_file(folder)
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)

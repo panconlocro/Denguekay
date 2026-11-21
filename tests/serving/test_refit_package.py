@@ -1,8 +1,11 @@
 """The refit package of ``paquete_dir`` between the PC and the Storage: complete, hash-checked and never half-written."""
 
+from contextlib import redirect_stderr, redirect_stdout
 import hashlib
+import io
 import json
 from pathlib import Path
+import shutil
 from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
@@ -106,6 +109,61 @@ class TestWeeklyStep(unittest.TestCase):
         self.assertEqual(error.exception.step, "preflight")
         self.assertIn("rechazado", str(error.exception))
         self.assertFalse((self.root / "otra_raiz" / RELATIVE).exists())
+
+
+class TestCommandLine(unittest.TestCase):
+    """``python -m denguekay.serving.refit_package`` with a configuration and a Storage of its own."""
+
+    def setUp(self):
+        directory = TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        self.storage = LocalStorage(self.root / "storage")
+        self.package = make_package(self.root / RELATIVE)
+
+    def run_command(self, *arguments, options=None):
+        class Settings:
+            opciones = {"paquete_dir": RELATIVE} if options is None else options
+            almacenamiento = "local"
+
+        out, err = io.StringIO(), io.StringIO()
+        with patch.object(refit, "ROOT", self.root),                 patch("denguekay.serving.settings.service_settings", return_value=Settings()),                 patch("denguekay.serving.storage.storage_from_environment", return_value=self.storage),                 redirect_stdout(out), redirect_stderr(err):
+            code = refit.main(list(arguments))
+        return code, out.getvalue(), err.getvalue()
+
+    def test_without_paquete_dir_it_does_nothing(self):
+        code, out, _ = self.run_command("--descargar", options={})
+        self.assertEqual((code, json.loads(out)["estado"]), (0, "no_aplica"))
+
+    def test_upload_then_download_on_an_empty_machine(self):
+        code, out, _ = self.run_command("--subir")
+        self.assertEqual((code, json.loads(out)["estado"]), (0, "subido"))
+        shutil.rmtree(self.package)
+        code, out, _ = self.run_command("--descargar")
+        self.assertEqual((code, json.loads(out)["estado"]), (0, "descargado"))
+        self.assertEqual((self.package / "booster.json").read_bytes(), FILES["booster.json"])
+        self.assertEqual(self.run_command("--descargar")[1].count("ya_estaba"), 1)   # a second run finds it there
+
+    def test_a_package_that_is_not_in_the_storage_exits_with_1_and_says_how_to_upload_it(self):
+        shutil.rmtree(self.package)
+        code, out, _ = self.run_command("--descargar")
+        self.assertEqual((code, json.loads(out)["estado"]), (1, "no_esta_en_el_storage"))
+        self.assertIn("refit_package --subir", out)
+
+    def test_an_altered_package_exits_with_1_and_leaves_nothing(self):
+        self.run_command("--subir")
+        shutil.rmtree(self.package)
+        self.storage.save("modelos/reajustes/ajuste_prueba/origen.csv", b"alterado")
+        code, _, err = self.run_command("--descargar")
+        self.assertEqual(code, 1)
+        self.assertIn("rechazado", err)
+        self.assertFalse(self.package.exists())
+
+    def test_a_local_folder_that_does_not_match_its_manifest_is_not_uploaded(self):
+        (self.package / "origen.csv").write_bytes(b"cambiado")
+        code, _, err = self.run_command("--subir")
+        self.assertEqual(code, 1)
+        self.assertIn("origen.csv", err)
 
 
 if __name__ == "__main__":

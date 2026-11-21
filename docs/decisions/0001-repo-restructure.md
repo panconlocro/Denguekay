@@ -169,7 +169,7 @@ la ficha de V0 y en `docs/backend/operacion.md`.
 ### Otros ajustes aceptados
 
 - `mlflow.db` y `mlartifacts/` se quedan en la raíz: los 20 experimentos y sus runs guardan
-  `artifact_location` absolutos (`file:///C:/Users/Rosa/.../mlartifacts/...`).
+  `artifact_location` absolutos (`file:///<ruta local>/.../mlartifacts/...`).
 - Las cachés `.pkl` de investigación (`models/experimentos/arquitectura_horizontes/cache/`) no se
   migran: guardan referencias a módulos y se regeneran desde el tag del estudio.
 - Un test busca restos de `src.`/`src/` en el producto al cierre de la fase 3 (además de los imports,

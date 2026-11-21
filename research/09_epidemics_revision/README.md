@@ -19,6 +19,16 @@ python research/09_epidemics_revision/paper/reproducibility/reproduce.py --main-
 
 El script verifica el SHA-256 de las predicciones y coteja las tablas II y S16 y la sensibilidad sin 2026 con los textos del artículo. El notebook `01_reproduction_check` usa el mismo paquete mediante `PAPER_BUNDLE`, definido en [src/denguekay/config/paths.py](../../src/denguekay/config/paths.py).
 
+## Versiones del manuscrito y su commit
+
+Qué versión del artículo corresponde a qué estado del estudio (commit, tablas y notebooks). Los archivos de `paper/` no se
+modifican: esta tabla solo los relaciona.
+
+| Versión del manuscrito | Commit del estudio | Tablas y notebooks que la respaldan |
+|---|---|---|
+| Manuscrito de la corrida original (`paper/main.tex` y `paper/supplement.tex`; el manuscrito IEEE del 12/11/2026) | `8f8df62` (16/11/2026; añade `paper/`; el estudio nace en `0cf13d0`, 15/11/2026) | Tablas II y S16 y la sensibilidad sin 2026: `paper/reproducibility/reproduce.py` y el notebook `01_reproduction_check` |
+| *Epidemics*, `submission_revised` y su suplemento (18/11/2026) | `8f8df62`: los resultados públicos del estudio coinciden con el texto redondeado del artículo. Los archivos del manuscrito *Epidemics* **no están en el repositorio**: la correspondencia se verificó contra las cifras que cita la revisión, no contra su texto | Contraste principal de Brier a 4 semanas, **+0,04 % (IC 95 % de −2,31 % a +1,70 %)**, en 18 temporadas (2009–2026), mediana de cinco semillas, con 10 de 18 temporadas a favor del clima: `RESULTS.md` (hallazgo 1) y `RESULTS_TABLES.md` (secciones «E1 · Climate effect…»), generadas por `code/write_results.py` desde el notebook `02_E1_main_comparison` (resumen en `10_summary`) |
+
 ## Run
 
 El reentrenamiento necesita además los insumos de los estudios previos en `data/`. El [Release model/v4](https://github.com/panconlocro/Denguekay/releases/tag/model/v4) distribuye los paquetes de V4 y su manifiesto; consultar su `LEEME_V4.md` y las instrucciones del [estudio 08](../08_v3_confirmed_cases/README.md). El responsable de los datos debe preparar los insumos antes del análisis. `common.check_sources()` coteja las fuentes con el manifiesto de V4 (la geografía se reconstruye por separado); las sensibilidades adicionales usan también los insumos indicados en sus notebooks. Los experimentos no deben copiar ni sobrescribir `data/`.

@@ -250,7 +250,9 @@ Sala corrige una semana que el panel ya trae (por ejemplo, Piura 200101, SE 1 de
 **Fecha de extracción de cada captura.** La emisión archiva en `emision.json` (`capturas`) el nombre de la última captura
 de cada fuente y su fecha de extracción en UTC: la Sala y CHIRPS llevan el instante en el nombre de su captura, NOAA el
 día UTC (`sstoi_AAAAMMDD`) y ERA5-Land el instante en `AAAA-MM-DD.captura.json`, junto a la carpeta, que se nombra por su
-último día de datos y no por la extracción. Los cachés históricos no tienen fecha de extracción registrada y no se
+último día de datos y no por la extracción. Límite del sello de ERA5-Land: es el instante en que la corrida encontró la carpeta completa; una carpeta que ya estaba
+completa y sin sidecar (descargada antes de este registro) queda sellada por la primera corrida que la encuentra, así que para
+ella es una cota superior de la extracción y no la extracción. Los cachés históricos no tienen fecha de extracción registrada y no se
 inventa: el reporte de calidad los muestra con la fecha de congelamiento del Release, marcada como tal.
 
 | Bandera | Efecto |

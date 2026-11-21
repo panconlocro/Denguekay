@@ -125,7 +125,7 @@ def main(argv=None):
         if args.subir:
             result = {"estado": "subido", "archivos": upload(storage, ROOT / options["paquete_dir"])}
         else:
-            result = ensure(storage, options)
+            result = ensure(storage, options, root=ROOT)
     except (RefitPackageError, OSError) as error:
         print(f"Paquete reajustado rechazado: {type(error).__name__}: {error}", file=sys.stderr)
         return 1
