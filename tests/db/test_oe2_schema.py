@@ -531,7 +531,7 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
                 conexion.execute(text("SET LOCAL ROLE rol_pipeline"))
                 self.assertEqual(conexion.execute(insertar, fila).rowcount, 1)
                 self.assertEqual(conexion.execute(insertar, {**fila, "probabilidad_brote": 0.1}).rowcount, 0)
-                self.assertEqual(conexion.execute(text("SELECT probabilidad_brote FROM emision_prediccion")).scalar(),
+                self.assertEqual(float(conexion.execute(text("SELECT probabilidad_brote FROM emision_prediccion")).scalar()),
                                  0.6)
                 with self.assertRaises(DBAPIError) as error, conexion.begin_nested():
                     conexion.execute(text("UPDATE emision_prediccion SET probabilidad_brote = 0.1"))
