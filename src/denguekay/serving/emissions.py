@@ -135,6 +135,7 @@ def archive_emission(sesion, *, cutoff, ingestion, results, load, emitted_at, re
         "ejecuciones": {"ingesta": ingestion["id_ejecucion"],
                         "inferencias": {str(h): runs[h]["id_ejecucion"] for h in sorted(runs)}},
         "insumos": load.hashes,
+        "revisiones_ignoradas": getattr(load, "revisiones_ignoradas", {}),
         "panel_congelado": frozen_comparison(load.hashes, frozen_manifest),
         "capturas": captures,
         "huella_codigo": code_fingerprint,

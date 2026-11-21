@@ -12,7 +12,7 @@ from denguekay.data.processing.district_locations import read_v4_era5
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.data.validation.integrated_expectations import coverage_path, load_case_coverage
 from denguekay.data.validation.v4_panel import validate_confirmed_panel
-from denguekay.features.long_history import long_case_series, long_labels, sala_after_panel
+from denguekay.features.long_history import ignored_sala_revisions, long_case_series, long_labels, sala_after_panel
 from denguekay.serving import load_data as loader
 from denguekay.serving.artifacts import sha256_bytes
 from denguekay.serving.geometries import read_boundaries
@@ -145,4 +145,5 @@ def prepare_load(options):
     nino = _nino12(paths["nino12"])
     if hashes != source_hashes(options):
         raise ValueError("Los insumos cambiaron mientras se preparaba la carga V4")
-    return loader.LoadBatch(provinces, districts, weeks, records, hashes, quality, cutoff, nino)
+    return loader.LoadBatch(provinces, districts, weeks, records, hashes, quality, cutoff, nino,
+                            revisiones_ignoradas=ignored_sala_revisions(panel, sala))

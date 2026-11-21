@@ -221,6 +221,29 @@ Storage, la corrida se detiene en `preflight` con el mensaje de siempre.
 como una ejecución `fallida` en `ejecucion`, con su motivo y la etapa, y no publica nada. No se registra el candado ocupado
 (otra corrida sigue en curso) ni una BD sin esquema (no hay dónde escribir).
 
+**Límite: el panel congelado no se corrige (revisiones de la Sala).** En la operación semanal el panel 2017–2025 de la copia
+congelada **no se modifica**: la carga toma de la Sala solo las semanas que el panel no tiene (`sala_after_panel`). Si la
+Sala corrige una semana que el panel ya trae (por ejemplo, Piura 200101, SE 1 de 2025, de 4 a 5 casos), esa corrección se
+**ignora por regla** y la BD conserva el valor del panel. La corrección de una semana posterior al panel (por ejemplo, de
+2026) sí es válida: la siguiente carga la aplica.
+
+- **Por qué.** Ese panel es el que se usó para entrenar y calibrar la V4 (los boosters, la calibración Platt, el historial fuera
+  de muestra y las etiquetas salen de sus casos) y está verificado por SHA-256 contra el Release `model/v4`
+  (`panel_congelado` en `emision.json`). Dejar que la Sala lo sobrescriba separaría la BD de los datos del modelo sin que el
+  paquete lo supiera.
+- **Registro.** Cada carga compara la Sala con el panel y guarda las revisiones ignoradas en `ejecucion.detalle.revisiones_ignoradas`
+  de la ingesta y en `revisiones_ignoradas` de `emision.json`: `total`, `mostradas`, `limite` (50) y la lista
+  `revisiones` con `ubigeo`, `anio`, `semana`, `casos_panel` y `casos_sala` (si hay más de 50, el total y las primeras 50,
+  ordenadas por año, semana y distrito). El informe de la corrida trae `revisiones_ignoradas` (el total) y una advertencia
+  cuando es mayor que 0.
+- **Expectativa (no un hecho comprobado).** A fines de 2026 se espera que la Sala ya no corrija semanas de 2025: las capturas
+  de 2025 del 17/11 (tres) y del 20/11 de 2026 coinciden con el panel en las 3 380 llaves, y ninguna cambió respecto de la
+  anterior. El registro permite detectarlo si ocurre: hoy el total es 0.
+- **Cómo corregir el histórico.** Las revisiones registradas se incorporan en el **reentrenamiento anual**, con un panel y un
+  Release nuevos que ya traigan los valores corregidos ([`docs/modeling/reentrenamiento.md`](../modeling/reentrenamiento.md)):
+  la carga semanal nunca sobrescribe el panel. Mientras tanto la lista de `emision.json` es la evidencia de qué semanas
+  difieren.
+
 **Fecha de extracción de cada captura.** La emisión archiva en `emision.json` (`capturas`) el nombre de la última captura
 de cada fuente y su fecha de extracción en UTC: la Sala y CHIRPS llevan el instante en el nombre de su captura, NOAA el
 día UTC (`sstoi_AAAAMMDD`) y ERA5-Land el instante en `AAAA-MM-DD.captura.json`, junto a la carpeta, que se nombra por su

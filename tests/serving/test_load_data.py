@@ -82,6 +82,18 @@ class TestCargaOE2(unittest.TestCase):
             o = s.get(WeeklyObservation, ("200101", 201720))
             self.assertEqual((o.fuente_casos, o.estado_cobertura), ("datos_abiertos_confirmados", "sin_registro"))
 
+    def test_una_correccion_de_una_semana_ya_cargada_se_aplica_en_la_siguiente_carga(self):
+        """A revised count of a week already in the database (here the last one) replaces it when the inputs change."""
+        self.cargar()
+        last = self.data.observaciones[-1]
+        revised = [{**o, "casos_dengue": o["casos_dengue"] + 3} if (o["ubigeo"], o["id_semana"]) ==
+                   (last["ubigeo"], last["id_semana"]) else o for o in self.data.observaciones]
+        data = replace(self.data, observaciones=revised, hashes={**self.data.hashes, "sala_operativa": "corregida"})
+        self.assertFalse(self.cargar(data)["reutilizada"])
+        with transaction(self.motor) as s:
+            row = s.get(WeeklyObservation, (last["ubigeo"], last["id_semana"]))
+            self.assertEqual(row.casos_dengue, last["casos_dengue"] + 3)
+
     def test_ceros_se_conservan_y_casos_de_gold_coinciden(self):
         self.cargar()
         silver = leer_muestra()["silver"]

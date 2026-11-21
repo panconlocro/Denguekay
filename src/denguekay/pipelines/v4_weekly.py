@@ -494,6 +494,12 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
                         f"reintente con --reintentar-archivo o consérvelo desde {archive.relative_to(base).as_posix()}")
                 mark_archive(motor, record["ejecuciones"]["inferencias"][str(min(HORIZONS))], status, report)
             report["primera_emision"] = first
+            ignored = record.get("revisiones_ignoradas") or {}
+            report["revisiones_ignoradas"] = ignored.get("total", 0)
+            if ignored.get("total"):
+                report.setdefault("advertencias", []).append(
+                    f"La Sala corrige {ignored['total']} semanas del panel congelado; la carga las ignora por regla y "
+                    "quedan registradas en emision.json (docs/backend/operacion.md)")
             report["disponibles"] = record["predicciones"]["disponibles"]
             report["ejecuciones"] = record["ejecuciones"]
             reasons = unavailable_reasons(archive / "predicciones.csv")

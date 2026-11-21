@@ -56,6 +56,8 @@ class LoadBatch:
     validacion_gx: dict
     fecha_corte_datos: date
     nino12: list[dict] = field(default_factory=list)
+    # Sala corrections of weeks the frozen panel has: ignored by rule and recorded (``long_history.ignored_sala_revisions``).
+    revisiones_ignoradas: dict = field(default_factory=dict)
 
 
 def source_hashes():
@@ -291,6 +293,7 @@ def persist_load(sesion, data):
     run.fin = utc_now()
     run.detalle = {"huella": fingerprint, "hashes_entrada": data.hashes,
                          "validacion_gx": data.validacion_gx, "resumen": summary,
+                         "revisiones_ignoradas": data.revisiones_ignoradas,
                          "fecha_extraccion": instant.isoformat()}
     sesion.flush()
     return {**summary, "id_ejecucion": run.id_ejecucion, "reutilizada": False}
