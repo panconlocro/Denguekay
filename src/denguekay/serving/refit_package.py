@@ -74,6 +74,8 @@ def download(storage, destination):
                 content = storage.read(storage_path(destination, name), digest)
             except FileNotFoundError as error:
                 raise RefitPackageError(f"Falta {name} del paquete reajustado en el Storage") from error
+            except ValueError as error:   # a name of the manifest that is not a valid Storage path
+                raise RefitPackageError(f"Nombre inválido en el manifiesto del paquete reajustado: {name}") from error
             if sha256_bytes(content) != digest:
                 raise RefitPackageError(f"{name} del Storage no coincide con el SHA-256 de su manifiesto: se rechaza")
             (staged / name).write_bytes(content)

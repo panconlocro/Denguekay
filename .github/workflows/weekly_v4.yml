@@ -96,14 +96,16 @@ jobs:
           python -m denguekay.pipelines.v4_weekly $banderas
       # La copia del archivo de la emisión al Storage ocurre después de confirmar la transacción: si falló, la emisión ya
       # está publicada y queda registrada como pendiente en ejecucion.detalle.archivo_remoto. Se reintenta aquí; si sigue
-      # fallando, el paso avisa y el archivo se conserva como artefacto (siguiente paso).
+      # fallando, el paso avisa y el archivo se conserva como artefacto (siguiente paso). El runner es efímero: el reintento solo
+      # alcanza lo que esta misma ejecución dejó pendiente; una emisión pendiente de una ejecución anterior se recupera a mano
+      # desde su artefacto (docs/backend/operacion.md).
       - name: Reintentar la copia del archivo de las emisiones al Storage
         id: reintento
         if: always() && steps.secretos.outputs.configurados == 'true' && inputs.dry_run != true
         shell: bash
         run: |
           if ! python -m denguekay.pipelines.v4_weekly --reintentar-archivo; then
-            echo "::warning::Quedan emisiones sin copiar al Storage; el archivo se conserva como artefacto de esta ejecución (actualizacion-semanal-${{ github.run_id }}) y se reintenta en la próxima."
+            echo "::warning::Quedan emisiones sin copiar al Storage; el archivo se conserva como artefacto de esta ejecución (actualizacion-semanal-${{ github.run_id }}); recupérelo a mano (docs/backend/operacion.md)."
             echo "Archivo de emisiones PENDIENTE de copiar al Storage: conservado como artefacto." >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Resumen de la ejecución

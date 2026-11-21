@@ -205,7 +205,10 @@ la copia al Storage es posterior y recuperable. Su resultado queda en `ejecucion
 de h2 de esa emisión (`estado` = `subido` o `fallido` con el `error`, la `ruta` de la carpeta y los `intentos`), y
 `python -m denguekay.pipelines.v4_weekly --reintentar-archivo` sube desde la carpeta local las emisiones que sigan
 `fallido` (no descarga ni emite; el workflow lo corre después de cada actualización y, si sigue fallando, avisa y deja la
-carpeta como artefacto) Con el Storage local no se copia:
+carpeta como artefacto). **Alcance del reintento:** sube desde la carpeta local de emisiones, así que en el runner efímero de
+Actions solo alcanza lo que esa misma ejecución dejó pendiente; una emisión que quedó `fallido` en una ejecución anterior se
+recupera a mano: baje el artefacto `actualizacion-semanal-<id>` (90 días), copie su carpeta `emisiones/` a
+`models/serving/actualizacion_semanal/emisiones/` y corra `--reintentar-archivo` desde su PC. Con el Storage local no se copia:
 la carpeta de `models/serving/actualizacion_semanal/emisiones/` ya es el archivo.
 
 **Paquete servido.** Hoy `config.yaml` no define `paquete_dir`, así que el runner sirve el paquete congelado del Release

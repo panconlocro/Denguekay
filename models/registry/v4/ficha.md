@@ -116,8 +116,9 @@ horizontes un Recall y un F1 algo mayores que los de la V4 (V4: 0,769 / 0,723 / 
 una Precision mayor (0,824 / 0,827 / 0,820); frente a la persistencia, la V4 reduce el error de los conteos (razones de
 arriba). Los criterios de aceptación de la V4 son umbrales absolutos para el clasificador y relativos a la persistencia
 solo para el regresor. **La persistencia calibrada (probabilística) del paper es otro comparador**; esta es la regla
-determinista del protocolo. Las métricas de la V4 no cambian. Hay un run de MLflow identificable,
-`persistencia · V4 · temporadas_2022_2026` (`python -m denguekay.model.persistence_baseline --registrar`).
+determinista del protocolo. Las métricas de la V4 no cambian. El comando
+`python -m denguekay.model.persistence_baseline --registrar` registra un run de MLflow identificable,
+`persistencia · V4 · temporadas_2022_2026` (cuando se corre; al 20/11/2026 todavía no está registrado en `mlflow.db`).
 
 ## Metadatos de publicación (19/11/2026)
 
