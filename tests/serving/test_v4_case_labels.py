@@ -37,32 +37,37 @@ def sala():
     return pd.DataFrame([{"ubigeo": u, "anio": y, "semana": w, "casos_Dengue": 0, "tipo_dx": "C"} for u, y, w in rows])
 
 
+def run_prepare(panel_frame=None, history_frame=None, sala_frame=None):
+    """``prepare_load`` on fixtures: the heavy readers are replaced, the rest runs for real."""
+    with TemporaryDirectory() as folder:
+        root = Path(folder)
+        (panel() if panel_frame is None else panel_frame).to_csv(root / "panel.csv", index=False)
+        (history() if history_frame is None else history_frame).to_csv(root / "history.csv", index=False)
+        (sala() if sala_frame is None else sala_frame).to_csv(root / "sala.csv", index=False)
+        pd.DataFrame({"lat": [0]}).to_csv(root / "coords.csv", index=False)
+        options = {"perfil_datos": "fuentes", "semanas_provisionales": 0, "sala": str(root / "sala.csv"),
+                   "era5_land": str(root / "x"), "chirps": str(root / "x"), "nino12": str(root / "x")}
+        climate = pd.DataFrame({"ubigeo": DISTRICTS, "semana_inicio": pd.Timestamp("2024-12-15"),
+                                "temp_media_era5_land_c": 24.0, "humedad_era5_land_pct": 60.0, "lluvia_chirps_mm": 0.5,
+                                "fecha_era5_land_disponible": pd.NaT, "fecha_chirps_disponible": pd.NaT})
+        with patch.multiple(v4_load, V4_INTEGRATED=root / "panel.csv", V4_HISTORY=root / "history.csv",
+                            DISTRICT_COORDS=root / "coords.csv", source_hashes=lambda options: {"x": "1"},
+                            validate_confirmed_panel=lambda *a: None, load_case_coverage=lambda *a: None,
+                            coverage_path=lambda path: root / "none.csv",
+                            load_ubigeo_catalog=lambda path: pd.DataFrame({"ubigeo": DISTRICTS}),
+                            long_case_series=lambda recent, history_path: recent,
+                            long_labels=lambda cases: cases.assign(brote=0, umbral_brote_casos=1.5),
+                            _weekly_climate=lambda paths, panel: climate, _nino12=lambda path: [],
+                            read_boundaries=lambda: {}), \
+                patch("denguekay.data.validation.gx_quality.validate_integrated_gx", return_value={"exito": True}), \
+                patch.object(v4_load.loader, "prepare_districts", return_value=([], [])), \
+                patch.object(v4_load.loader, "census_population_2017", return_value={}):
+            return v4_load.prepare_load(options)
+
+
 class TestPrepareLoadLabels(unittest.TestCase):
     def prepare(self):
-        with TemporaryDirectory() as folder:
-            root = Path(folder)
-            panel().to_csv(root / "panel.csv", index=False)
-            history().to_csv(root / "history.csv", index=False)
-            sala().to_csv(root / "sala.csv", index=False)
-            pd.DataFrame({"lat": [0]}).to_csv(root / "coords.csv", index=False)
-            options = {"perfil_datos": "fuentes", "semanas_provisionales": 0, "sala": str(root / "sala.csv"),
-                       "era5_land": str(root / "x"), "chirps": str(root / "x"), "nino12": str(root / "x")}
-            climate = pd.DataFrame({"ubigeo": DISTRICTS, "semana_inicio": pd.Timestamp("2024-12-15"),
-                                    "temp_media_era5_land_c": 24.0, "humedad_era5_land_pct": 60.0, "lluvia_chirps_mm": 0.5,
-                                    "fecha_era5_land_disponible": pd.NaT, "fecha_chirps_disponible": pd.NaT})
-            with patch.multiple(v4_load, V4_INTEGRATED=root / "panel.csv", V4_HISTORY=root / "history.csv",
-                                DISTRICT_COORDS=root / "coords.csv", source_hashes=lambda options: {"x": "1"},
-                                validate_confirmed_panel=lambda *a: None, load_case_coverage=lambda *a: None,
-                                coverage_path=lambda path: root / "none.csv",
-                                load_ubigeo_catalog=lambda path: pd.DataFrame({"ubigeo": DISTRICTS}),
-                                long_case_series=lambda recent, history_path: recent,
-                                long_labels=lambda cases: cases.assign(brote=0, umbral_brote_casos=1.5),
-                                _weekly_climate=lambda paths, panel: climate, _nino12=lambda path: [],
-                                read_boundaries=lambda: {}), \
-                    patch("denguekay.data.validation.gx_quality.validate_integrated_gx", return_value={"exito": True}), \
-                    patch.object(v4_load.loader, "prepare_districts", return_value=([], [])), \
-                    patch.object(v4_load.loader, "census_population_2017", return_value={}):
-                return v4_load.prepare_load(options)
+        return run_prepare()
 
     def test_each_observation_is_labelled_from_the_source_record_and_keeps_its_count(self):
         records = {(r["ubigeo"], r["id_semana"]): r for r in self.prepare().observaciones}
