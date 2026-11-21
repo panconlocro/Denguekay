@@ -144,6 +144,24 @@ def archived_predictions(folder, data, seed):
     return table.loc[table.semana_inicio.ge(FIRST_WEEK), OOS_COLUMNS], results
 
 
+def mlflow_horizons(by_horizon, seed):
+    """The ``horizontes`` of the report that ``tracking.log_report`` walks: per horizon, the variant ``b3_obs_s<seed>`` with
+    one fold per block (each season and the pooled acceptance block).
+
+    ``log_report`` logs one child run per horizon x variant and one per fold; a report without ``variantes`` leaves the
+    horizons empty in MLflow. The folds are the block metrics already computed (nothing is recalculated); the persistence
+    block keeps its ``persistencia`` section, which MLflow logs with the ``pers_`` prefix."""
+    variant = f"b3_obs_s{seed}"
+    horizons = {}
+    for horizon, blocks in by_horizon.items():
+        folds = [{**metrics, "horizonte": int(horizon), "variante": variant, "bloque": block,
+                  "tipo": "agregado" if block == ACCEPTANCE_BLOCK else "prueba",
+                  **({"n_prueba": metrics["n"]} if "n" in metrics else {})}
+                 for block, metrics in blocks.items()]
+        horizons[str(horizon)] = {"variantes": {variant: {"folds": folds}}}
+    return horizons
+
+
 def build_package(folder, config, manifest_hash, data):
     seed = config["semilla_demo"]
     model_name = f"b3_obs_s{seed}"
@@ -179,7 +197,7 @@ def build_package(folder, config, manifest_hash, data):
         options={"configuracion": "v4-b3", "formulacion": config["formulacion"]}, versions=versions, oos=forecasts,
         oos_detail=origin, fingerprint=manifest_hash,
         report={"experimento": "demo_v4_b3", "parametros": config["hiperparametros"], **origin,
-                "horizontes": {str(h): {"variantes": {}} for h in horizons}},
+                "horizontes": mlflow_horizons({h: by_horizon[h] for h in horizons}, seed)},
     )
 
 

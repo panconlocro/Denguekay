@@ -13,6 +13,16 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 | v1 | reemplazada por la v2 | `model/v1` (`d6bd0be`) | [v1/ficha.md](v1/ficha.md) |
 | v0 | registrada (se sirvió hasta la fase 4 de la API v1) | `model/v0` (`3d59090`) | [v0/ficha.md](v0/ficha.md) |
 
+## 2026-11-20 · Persistencia determinista de la V4 en `temporadas_2022_2026` (HU0007-1)
+
+- La ficha de la V4 suma la línea base de persistencia por horizonte (Precision, Recall, F1, MAE y RMSE) sobre las
+  mismas 16 965 semanas distritales y 2 478 positivos por horizonte. Se calcula con `denguekay.model.persistence_baseline`,
+  que comprueba que las razones MAE y RMSE de la V4 frente a ella reproducen las de la ficha (0,868 / 0,824 / 0,806 y
+  0,861 / 0,819 / 0,787) con 0,001 de tolerancia; las diferencias fueron de 0,0004 o menos. **Las métricas de la V4 no
+  cambian.** La persistencia probabilística calibrada del paper es otro comparador.
+- El reporte de la V4 a MLflow dejaba sin variantes ni folds cada horizonte (`horizontes.<h>.variantes` vacío); ahora cada
+  horizonte lleva la variante `b3_obs_s17` con un fold por temporada y por el bloque agregado.
+
 ## 2026-11-19 · Metadatos de publicación de la V4 (importancias SHAP y partición temporal)
 
 - La publicación de la V4 registra las importancias SHAP por horizonte (`GET /modelos/{id}/variables`) y la partición
@@ -22,7 +32,11 @@ versionan: viven en `models/storage/` y `models/experimentos/`.
 - La matriz de entrenamiento se reconstruye con los insumos del Release (`refit_v4.frozen_training_matrix`) y la
   publicación se detiene si no da las 73 775 filas, las columnas de `columnas.b3_obs` y las dispersiones NB2 del paquete.
   Un paquete de reajuste lleva sus propias importancias (`importancias_b3_s17.json`).
-- Pendiente de republicar en producción (la fecha real se anota aquí al hacerlo).
+- **Republicada en producción el 20/11/2026** (ejecución 25, con el código de `main` en `15f1a57`): seis versiones
+  nuevas, `v4-clf-h{2,3,4}-2` y `v4-reg-h{2,3,4}-2`, con 16 importancias SHAP cada una y la partición temporal, y la
+  selección experimental pasó a ellas. Las 18 525 predicciones de producción (incluido el corte 202645) son idénticas
+  a las de antes; las del corte vigente siguen ligadas a las versiones `-1` hasta la siguiente emisión semanal. No se
+  borró nada. Verificado en la API de producción: `GET /modelos/activo`, `/modelos/{id}/variables` y `/modelos/{id}`.
 
 ## 2026-11-17 · Comando de reentrenamiento de la V4
 

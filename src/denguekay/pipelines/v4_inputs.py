@@ -35,6 +35,35 @@ from denguekay.features.long_history import week_grid
 from denguekay.pipelines.versions import V4_CUTOFF, clip_enso, clip_sala, clip_weekly
 
 
+def utc_today():
+    """The UTC day: the date that names a capture and tells when it was extracted (never the local date of the PC)."""
+    return datetime.now(timezone.utc).date()
+
+
+ERA5_CAPTURE_SUFFIX = ".captura.json"
+
+
+def era5_capture_file(folder):
+    """Sidecar of a recent ERA5-Land cache folder (named by its last day of data, not by the extraction)."""
+    folder = Path(folder)
+    return folder.with_name(folder.name + ERA5_CAPTURE_SUFFIX)
+
+
+def record_era5_capture(folder, last_day):
+    """Write, once, the UTC instant at which the cache folder was complete (the real extraction date).
+
+    Limit: the stamp is the moment of this call. A folder that was already complete without a sidecar (downloaded before
+    this record existed) is stamped by the first run that finds it, so for it the date is an upper bound of the extraction,
+    not the extraction itself."""
+    path = era5_capture_file(folder)
+    if not path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {"extraido_utc": datetime.now(timezone.utc).isoformat(), "ultimo_dia_de_datos": last_day,
+                   "producto": "ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land)"}
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
 def write_silver(frame, output, *, line_ending="\r\n"):
     output.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=output.parent) as folder:
@@ -84,6 +113,8 @@ def download_era5_land(*, max_hourly_waits=None):
                                          cache_dir=folder, daily_vars=openmeteo.ERA5_LAND_DAILY_VARS, **limit)
         if pending:
             raise RuntimeError(f"Incomplete ERA5-Land cache {folder.name}; resume V4 at step 02")
+        if folder == CACHE_METEO_ERA5_LAND_RECENT / end:   # the folder is named by its last day of data
+            record_era5_capture(folder, end)
     return {"distritos": len(districts), "caches": len(ranges)}
 
 
@@ -151,7 +182,7 @@ def _download_chirps(ee_final):
     if not seed.exists():
         chirps.download_final("2000-01-01", "2000-01-01")
     ref = chirps_prelim.reference_grid()
-    today = date.today()
+    today = utc_today()
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     with chirps_prelim.FtpSource() as source, TemporaryDirectory(prefix="denguekay-chirps-") as scratch:
         final_days = sorted(day for year in range(first.year, today.year + 1)
@@ -181,7 +212,7 @@ def climate_silver(*, offline=False, cutoff=V4_CUTOFF, enso_output=None, chirps_
             raise FileNotFoundError("No NOAA CPC raw snapshot in bronze")
         raw = enso_candidates[-1]
     else:
-        raw = BRONZE_ENSO / f"sstoi_{date.today():%Y%m%d}.indices"
+        raw = BRONZE_ENSO / f"sstoi_{utc_today():%Y%m%d}.indices"
         if not raw.exists():
             raw = download_sstoi()
     enso = nino12_monthly(raw.read_text(encoding="utf-8"))

@@ -7,11 +7,12 @@ import pandas as pd
 
 from denguekay.config.paths import (DISTRICT_BOUNDARIES, DISTRICT_COORDS, ROOT, UBIGEO_CATALOG, V4_CHIRPS, V4_ENSO, V4_ERA5_LAND,
                                     V4_HISTORY, V4_INTEGRATED, V4_SALA)
+from denguekay.data.processing.case_source import case_labels
 from denguekay.data.processing.district_locations import read_v4_era5
 from denguekay.data.processing.epi_sala import load_ubigeo_catalog
 from denguekay.data.validation.integrated_expectations import coverage_path, load_case_coverage
 from denguekay.data.validation.v4_panel import validate_confirmed_panel
-from denguekay.features.long_history import long_case_series, long_labels, sala_after_panel
+from denguekay.features.long_history import ignored_sala_revisions, long_case_series, long_labels, sala_after_panel
 from denguekay.serving import load_data as loader
 from denguekay.serving.artifacts import sha256_bytes
 from denguekay.serving.geometries import read_boundaries
@@ -121,14 +122,16 @@ def prepare_load(options):
         catalog, pd.read_csv(DISTRICT_COORDS), loader.census_population_2017(panel), read_boundaries())
     cutoff = observed.semana_inicio.max().date() + timedelta(days=6)
     weeks = loader.prepare_weeks(date(2017, 1, 1), cutoff + timedelta(days=371))
+    # The count stays as the merge left it (0 without a record); only the labels depend on the source record.
+    case_info = case_labels(observed, _read(history_path), sala)
     records = []
-    for row in observed.itertuples():
+    for position, row in enumerate(observed.itertuples()):
         records.append({
             "ubigeo": row.ubigeo, "id_semana": loader.week_id(row.anio, row.semana),
             "casos_dengue": int(row.casos_Dengue), "casos_solo_confirmados": True,
             "umbral_brote_casos": round(float(row.umbral_brote_casos), 2), "brote": bool(row.brote),
-            "fuente_casos": "sala_situacional" if row.anio >= 2025 else "excel_historico",
-            "estado_cobertura": "verificado",
+            "fuente_casos": case_info.fuente_casos.iat[position],
+            "estado_cobertura": case_info.estado_cobertura.iat[position],
             **{destination: loader._optional(getattr(row, source), loader.CLIMATE_DECIMALS[destination])
                for source, destination in loader.CLIMATE.items()},
             "temp_media_era5_land_c": loader._optional(row.temp_media_era5_land_c, None),
@@ -142,4 +145,5 @@ def prepare_load(options):
     nino = _nino12(paths["nino12"])
     if hashes != source_hashes(options):
         raise ValueError("Los insumos cambiaron mientras se preparaba la carga V4")
-    return loader.LoadBatch(provinces, districts, weeks, records, hashes, quality, cutoff, nino)
+    return loader.LoadBatch(provinces, districts, weeks, records, hashes, quality, cutoff, nino,
+                            revisiones_ignoradas=ignored_sala_revisions(panel, sala))

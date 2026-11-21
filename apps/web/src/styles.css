@@ -296,11 +296,6 @@ small {
   border-radius: 50%;
   background: #3f9a62;
 }
-.historical-pill {
-  color: #7a5a0b;
-  font-size: 10px;
-  font-weight: 500;
-}
 .filters {
   background: white;
   border: 1px solid var(--border);
@@ -490,7 +485,7 @@ small {
 }
 .publication-notice {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   padding: 14px 18px;
   background: var(--surface-muted);
@@ -1665,10 +1660,6 @@ td a {
     color: white;
     border-color: #315256;
   }
-  .historical-pill {
-    color: #f0d99c;
-    font-size: 9px;
-  }
   .filters {
     padding: 12px;
     gap: 10px;
@@ -1856,8 +1847,5 @@ td a {
   }
   .freshness > * {
     max-width: 100%;
-  }
-  .historical-pill {
-    white-space: normal;
   }
 }

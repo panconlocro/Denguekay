@@ -253,11 +253,13 @@ data/
 │   ├── epi_cases.py            # CSV de notificaciones, casos confirmados (V4) -> silver semanal
 │   ├── epi_cases_legacy.py     # Excel de notificados de v0-v3 (restaurado de model/v3) -> silver semanal
 │   ├── epi_sala.py             # normalización y conciliación de la Sala
+│   ├── case_source.py          # fuente efectiva de los casos de cada semana y si tiene registro (fuente_casos, estado_cobertura)
 │   └── merge.py                # merges meteo + socio + epi y relleno selectivo
 └── validation/
     ├── integrated_expectations.py  # cobertura y validación del integrado + suite GX silver_integrado
     ├── gold_expectations.py        # suite GX gold_h2 (esquema, llave, rangos, sin fuga temporal)
     ├── gx_quality.py               # contexto GX, ejecución de suites, Data Docs y CLI
+    ├── completeness_criterion.py   # criterio de completitud de la V4 (HU0005-5): columnas obligatorias y calendario contractual fijo
     ├── quality_report.py           # reporte de calidad y completitud de la V4 (HU0005-4/5), solo lectura; escribe en docs/backend/evidencia/
     ├── duplicates.py               # resultado del control de llaves repetidas de la fuente epidemiológica (HU0001-3)
     ├── climate_provenance.py       # fuente, producto y fecha de extracción de cada fuente climática (HU0002-1)
@@ -296,6 +298,7 @@ model/
 ├── future_rows.py           # filas futuras en memoria, sin fuga ni escritura en data/
 ├── frozen_configs.py        # configuraciones congeladas V1/V2/V3 y su fingerprint() de comportamiento (D1)
 ├── reproduce.py             # CLI: reentrena v0/v1/v2 con los datos de su Release y compara huella o métricas
+├── persistence_baseline.py  # CLI: persistencia determinista de la V4 en temporadas_2022_2026 (verifica las razones de la ficha; --registrar la lleva a MLflow)
 ├── refit_v4.py              # CLI: reajusta la V4 (mismo modelo) con datos nuevos y deja un paquete en una carpeta nueva, con sus importancias SHAP; también reconstruye y verifica la matriz de la V4 congelada para la publicación (docs/modeling/reentrenamiento.md)
 └── variable_dictionary.py   # diccionario de las variables de la V4 (genera docs/modeling/diccionario_variables.md)
 ```
@@ -323,7 +326,7 @@ src/denguekay/db/
 ├── session.py                # motores, claves foráneas, transacciones y UPSERT portable
 ├── models.py                 # esquema OE2 (docs/backend/ddl_oe2.sql) portable
 ├── export_migration_sql.py   # evidencia alembic upgrade --sql sin conexión
-└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito
+└── migrations/               # Alembic: 0003_oe2 = esquema OE2; 0004_v1 horizonte_por_defecto; 0005_v1 intervalo, humedad y permisos; 0006_v1 permiso de selección; 0007_v3 temperatura de ERA5-Land; 0008_v4 clima y Niño 1+2 de B3; 0009_v4 umbrales de aceptación de la US v1.4; 0010_v4 geometría del distrito; 0011_v4 permisos de `rol_pipeline` sobre las alertas; 0012_v4 fuente `datos_abiertos_confirmados`; 0013_v4 tabla `emision_prediccion` (primera emisión, solo inserción)
 src/denguekay/serving/
 ├── load_data.py              # ingesta: provincia, distrito, calendario, observaciones
 ├── settings.py               # paquete a publicar, CORS, selección experimental y almacenamiento (config.yaml; el entorno los reemplaza)
@@ -344,6 +347,8 @@ src/denguekay/serving/
 ├── publish.py                # CLI: carga, paquete, MLflow, versiones y OOS (--inferir: inferencia vigente)
 ├── emissions.py              # actualización semanal de la V4: emisión ya hecha, archivo de cada emisión, puntajes prospectivos y aviso de reentrenamiento
 ├── geometries.py             # límites distritales para el mapa (HU0014-1): lectura, validación y simplificación de data/reference/distritos_piura_limites.geojson
+├── refit_package.py          # paquete de un reajuste (paquete_dir) entre el PC y el Storage: --subir y --descargar con SHA-256 verificado
+├── first_emission_backfill.py # relleno inicial de emision_prediccion (primera emisión) desde el archivo local o la fila actual; solo inserta
 ├── drift.py                  # monitoreo de deriva (HU0009-2): semanas cerradas de las emisiones frente a la referencia de la HU0007-4; CLI mensual a mano; solo registra
 └── demo_database.py          # CLI: BD SQLite de demostración para el frontend (models/serving/demo/)
 src/denguekay/pipelines/

@@ -95,9 +95,15 @@ $env:DENGUEKAY_XGB_DEVICE = "cpu"; $env:DENGUEKAY_XGB_NJOBS = "2"; $env:OMP_NUM_
 - **Primera vez.** Necesita el historial archivado de la V4. Si no está en
   `models/experimentos/mejora_modelo/v3_confirmados/controles_espaciales/b3_obs_s17/`, se baja del Release `model/v4`:
   `release_bundles` con `only=["predicciones_v4.zip"]` y ese prefijo.
+- **Revisiones de la Sala.** La actualización semanal ignora las correcciones que la Sala hace a semanas del panel
+  congelado y las registra (`revisiones_ignoradas` en `emision.json` y en `ejecucion.detalle`; ver `docs/backend/operacion.md`).
+  Antes de reentrenar, revise esas listas: un panel y un Release nuevos deben traer los valores corregidos, y el reajuste debe
+  hacerse sobre ellos, no sobre el panel anterior.
 - **Servirlo.** En `configs/config.yaml`, `serving.paquete.opciones.paquete_dir: <la carpeta>` y luego
   `python -m denguekay.serving.publish --seleccionar-experimental`. `publish` guarda el paquete en el Storage configurado
-  (local, o Supabase al desplegar). La actualización semanal siguiente ya emite con el ajuste nuevo, y el aviso de
+  (local, o Supabase al desplegar). Para que la actualización semanal de GitHub Actions lo use, suba además la carpeta del
+  reajuste con `python -m denguekay.serving.refit_package --subir`: el workflow la descarga y verifica el SHA-256 de cada
+  archivo contra su `paquete.json` antes de la comprobación inicial. La actualización semanal siguiente ya emite con el ajuste nuevo, y el aviso de
   reentrenamiento toma el corte de etiquetas de ese paquete (`paquete.json`), así que se apaga solo.
 - **Sigue siendo la V4:** el paquete base es el del Release y su `paquete.json` conserva `version: v4-b3`; el reajuste
   registra además `tipo: reentrenamiento`, el paquete del que parte y los hashes de sus insumos.

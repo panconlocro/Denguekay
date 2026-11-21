@@ -32,7 +32,7 @@ class Base(DeclarativeBase):
 
 
 # ENUM values of the DDL. The order is kept: on PostgreSQL it defines the type's order.
-CASE_SOURCE = ("excel_historico", "sala_situacional")
+CASE_SOURCE = ("excel_historico", "datos_abiertos_confirmados", "sala_situacional")
 COVERAGE = ("verificado", "sin_registro", "pendiente")
 TASK = ("clasificacion", "regresion")
 VERSION_STATUS = ("candidata", "activa", "archivada", "rechazada")
@@ -296,6 +296,53 @@ class Prediction(WithUbigeo, Base):
                                                        server_default=func.now())
     version_clasificador: Mapped[ModelVersion | None] = relationship(foreign_keys=[id_version_clasificador])
     version_regresor: Mapped[ModelVersion | None] = relationship(foreign_keys=[id_version_regresor])
+
+    @validates("horizonte")
+    def validate_horizon(self, _, value):
+        if value not in HORIZONS or isinstance(value, bool):
+            raise ValueError("horizonte debe ser 2, 3 o 4")
+        return value
+
+
+FIRST_EMISSION_ORIGIN = ("emision", "archivo", "prediccion_actual")
+
+
+class FirstEmission(WithUbigeo, Base):
+    """First emission of each (district, cutoff, horizon) of the weekly update; insert-only (migration 0013_v4).
+
+    ``prediccion`` is overwritten when a cutoff is re-emitted; this table never is, so the prospective evaluation and the
+    drift review read what was forecast the first time, before the outcome was known. A forecast is eligible when its
+    target week was not yet published by the Sala when it was emitted (``id_semana_objetivo`` after
+    ``ultima_semana_sala_publicada``)."""
+    __tablename__ = "emision_prediccion"
+    __table_args__ = (
+        CheckConstraint("horizonte IN (2, 3, 4)", name="horizonte_valido"),
+        CheckConstraint("probabilidad_brote BETWEEN 0 AND 1", name="probabilidad_valida"),
+        CheckConstraint("casos_estimados >= 0", name="casos_no_negativos"),
+        CheckConstraint(
+            "(estado = 'disponible' AND probabilidad_brote IS NOT NULL AND nivel_riesgo IS NOT NULL)"
+            " OR (estado = 'no_disponible' AND probabilidad_brote IS NULL AND nivel_riesgo IS NULL"
+            " AND motivo_no_disponible IS NOT NULL)", name="estado_coherente"),
+        CheckConstraint("procedencia IN ('emision', 'archivo', 'prediccion_actual')", name="procedencia_valida"),
+        Index("ix_emision_objetivo", "id_semana_objetivo", "horizonte"),
+    )
+    ubigeo: Mapped[str] = mapped_column(CHAR(6), ForeignKey("distrito.ubigeo"), primary_key=True)
+    id_semana_corte: Mapped[int] = mapped_column(ForeignKey("semana_epidemiologica.id_semana"), primary_key=True)
+    horizonte: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    id_semana_objetivo: Mapped[int] = mapped_column(ForeignKey("semana_epidemiologica.id_semana"))
+    probabilidad_brote: Mapped[float | None] = mapped_column(Numeric(5, 4, asdecimal=False))
+    nivel_riesgo: Mapped[str | None] = mapped_column(enum(RISK_LEVEL, "nivel_riesgo_t"))
+    casos_estimados: Mapped[float | None] = mapped_column(Numeric(10, 2, asdecimal=False))
+    estado: Mapped[str] = mapped_column(enum(PREDICTION_STATUS, "estado_prediccion_t"))
+    motivo_no_disponible: Mapped[str | None] = mapped_column(Text)
+    id_ejecucion: Mapped[int] = mapped_column(ForeignKey("ejecucion.id_ejecucion"))
+    fecha_emision: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    # Last week the Sala had published when this was emitted (id_semana); NULL when it is unknown (a backfill without
+    # archive), and then the forecast is not eligible.
+    ultima_semana_sala_publicada: Mapped[int | None] = mapped_column(Integer)
+    # emision: written by the weekly update; archivo: backfilled from the oldest archived emission of the cutoff;
+    # prediccion_actual: backfilled from the current row of ``prediccion`` (no archive: it may be a re-emission).
+    procedencia: Mapped[str] = mapped_column(String(20), default="emision", server_default="emision")
 
     @validates("horizonte")
     def validate_horizon(self, _, value):

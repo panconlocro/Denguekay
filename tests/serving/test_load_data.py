@@ -5,6 +5,7 @@ from datetime import date
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from sqlalchemy import func, select
 
@@ -64,6 +65,34 @@ class TestCargaOE2(unittest.TestCase):
             self.assertEqual(o2025.id_ejecucion, ejecucion.id_ejecucion)
             # Fase 4: load_data ya no siembra la selección; la fila la crea vacía la migración 0006_v1.
             self.assertEqual(s.get(SystemParameter, "seleccion_experimental").valor, {})
+
+    def test_cambiar_la_transformacion_reescribe_las_etiquetas_ya_cargadas(self):
+        """Same inputs, new TRANSFORMATION: the load is not reused and the labels of the first load are rewritten."""
+        with patch.object(carga, "TRANSFORMATION", 4):
+            self.cargar()
+        relabelled = [{**o, "fuente_casos": "datos_abiertos_confirmados", "estado_cobertura": "sin_registro"}
+                      if o["id_semana"] < 202501 else o for o in self.data.observaciones]
+        with patch.object(carga, "TRANSFORMATION", 4):   # unchanged transformation: the second load is reused
+            self.assertTrue(self.cargar(replace(self.data, observaciones=relabelled))["reutilizada"])
+        with transaction(self.motor) as s:
+            self.assertEqual(s.get(WeeklyObservation, ("200101", 201720)).fuente_casos, "excel_historico")
+        with patch.object(carga, "TRANSFORMATION", 5):
+            self.assertFalse(self.cargar(replace(self.data, observaciones=relabelled))["reutilizada"])
+        with transaction(self.motor) as s:
+            o = s.get(WeeklyObservation, ("200101", 201720))
+            self.assertEqual((o.fuente_casos, o.estado_cobertura), ("datos_abiertos_confirmados", "sin_registro"))
+
+    def test_una_correccion_de_una_semana_ya_cargada_se_aplica_en_la_siguiente_carga(self):
+        """A revised count of a week already in the database (here the last one) replaces it when the inputs change."""
+        self.cargar()
+        last = self.data.observaciones[-1]
+        revised = [{**o, "casos_dengue": o["casos_dengue"] + 3} if (o["ubigeo"], o["id_semana"]) ==
+                   (last["ubigeo"], last["id_semana"]) else o for o in self.data.observaciones]
+        data = replace(self.data, observaciones=revised, hashes={**self.data.hashes, "sala_operativa": "corregida"})
+        self.assertFalse(self.cargar(data)["reutilizada"])
+        with transaction(self.motor) as s:
+            row = s.get(WeeklyObservation, (last["ubigeo"], last["id_semana"]))
+            self.assertEqual(row.casos_dengue, last["casos_dengue"] + 3)
 
     def test_ceros_se_conservan_y_casos_de_gold_coinciden(self):
         self.cargar()

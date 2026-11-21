@@ -7,8 +7,11 @@ module holds what that needs from the database and the disk, apart from the orch
 - ``archive_emission``: the record of one emission (date, inputs, forecasts and origin vectors), written before the
   outcomes are known, as the prospective evaluation of ``research/08_v3_confirmed_cases/congelamiento_b3_v4.md``
   requires;
-- ``prospective_frame`` and ``prospective_scores``: the emissions whose target week is already observed, and their Brier,
-  observed outbreaks and MAE (the drift review of ``denguekay.serving.drift`` reads the same frame);
+- ``record_first_emission``: copies the forecasts of an emission into ``emision_prediccion`` (insert-only) unless that
+  (district, cutoff, horizon) already has its first emission; a re-emission never modifies it;
+- ``prospective_frame`` and ``prospective_scores``: the first emissions that were eligible (their target week was not yet
+  published by the Sala when they were emitted) and whose target week is already observed, and their Brier, observed
+  outbreaks and MAE (the drift review of ``denguekay.serving.drift`` reads the same frame);
 - ``retraining_due``: whether the cutoff reached the close of the next season (a notice, never a training).
 
 It writes nothing to ``data/`` and trains nothing.
@@ -23,7 +26,8 @@ import pandas as pd
 from sqlalchemy import select
 
 from denguekay.config.paths import SERVING_WEEKLY
-from denguekay.db.models import EpiWeek, Prediction, Run, WeeklyObservation
+from denguekay.db.models import EpiWeek, FirstEmission, Prediction, Run, WeeklyObservation
+from denguekay.db.session import upsert
 from denguekay.features.long_history import week_grid
 from denguekay.serving.inference import package_of, select_versions
 from denguekay.serving.inputs import build_inputs
@@ -131,6 +135,7 @@ def archive_emission(sesion, *, cutoff, ingestion, results, load, emitted_at, re
         "ejecuciones": {"ingesta": ingestion["id_ejecucion"],
                         "inferencias": {str(h): runs[h]["id_ejecucion"] for h in sorted(runs)}},
         "insumos": load.hashes,
+        "revisiones_ignoradas": getattr(load, "revisiones_ignoradas", {}),
         "panel_congelado": frozen_comparison(load.hashes, frozen_manifest),
         "capturas": captures,
         "huella_codigo": code_fingerprint,
@@ -148,23 +153,61 @@ def archive_emission(sesion, *, cutoff, ingestion, results, load, emitted_at, re
     return folder
 
 
-# --- prospective follow-up ---------------------------------------------------------
+# --- first emission and prospective follow-up -----------------------------------------
+
+FIRST_EMISSION_KEY = ["ubigeo", "id_semana_corte", "horizonte"]
+
+
+def record_first_emission(sesion, results, *, last_published, emitted_at):
+    """Insert the forecasts of an emission into ``emision_prediccion`` unless they already have a first emission.
+
+    ``results`` are the inferences of the emission (``infer``), ``last_published`` the last week (``id_semana``) the Sala
+    had published when it was emitted and ``emitted_at`` the instant of the emission. It runs in the caller's
+    transaction (the one that emits), so the first emission and the emission commit together. Insert-only: a cutoff that
+    is emitted again keeps its first rows; it returns how many rows this call inserted and how many already existed."""
+    run_ids = [result["id_ejecucion"] for result in results]
+    rows = sesion.execute(select(Prediction).where(Prediction.id_ejecucion.in_(run_ids))).scalars().all()
+    records = [{"ubigeo": row.ubigeo, "id_semana_corte": row.id_semana_corte, "horizonte": row.horizonte,
+                "id_semana_objetivo": row.id_semana_objetivo, "probabilidad_brote": row.probabilidad_brote,
+                "nivel_riesgo": row.nivel_riesgo, "casos_estimados": row.casos_estimados, "estado": row.estado,
+                "motivo_no_disponible": row.motivo_no_disponible, "id_ejecucion": row.id_ejecucion,
+                "fecha_emision": emitted_at, "ultima_semana_sala_publicada": last_published,
+                "procedencia": "emision"} for row in rows]
+    upsert(sesion, FirstEmission.__table__, records, FIRST_EMISSION_KEY, update=())
+    inserted = len(sesion.execute(select(FirstEmission.ubigeo).where(FirstEmission.id_ejecucion.in_(run_ids))).all())
+    return {"insertadas": inserted, "ya_existian": len(records) - inserted}
+
+
+def set_archive_status(sesion, run_id, status):
+    """Record in ``ejecucion.detalle.archivo_remoto`` of an inference run whether its archive reached the Storage."""
+    run = sesion.get(Run, run_id)
+    run.detalle = {**(run.detalle or {}), "archivo_remoto": status}
+
+
+def pending_archives(sesion):
+    """[(run id, status)] of the weekly emissions whose copy to the Storage is still ``fallido``."""
+    runs = sesion.scalars(select(Run).where(Run.tipo == "inferencia", Run.estado == "exitosa").order_by(Run.id_ejecucion))
+    return [(run.id_ejecucion, run.detalle["archivo_remoto"]) for run in runs
+            if (run.detalle or {}).get("origen") == ORIGIN
+            and (run.detalle.get("archivo_remoto") or {}).get("estado") == "fallido"]
+
 
 def prospective_frame(sesion):
-    """One row per available prediction of the weekly update whose target week already has an observation loaded.
+    """One row per eligible first emission whose target week already has an observation loaded.
 
-    The weeks that the load treats as provisional are never loaded, so they never appear here. Columns: ``horizonte``,
+    Eligible: the first emission of the (district, cutoff, horizon), available, and emitted while its target week was
+    not yet published by the Sala (``id_semana_objetivo`` after ``ultima_semana_sala_publicada``; unknown counts as not
+    eligible). Nothing about the lead time or the start of the target week enters. Columns: ``horizonte``,
     ``id_semana_objetivo``, ``p`` (probability), ``casos_estimados``, ``brote`` and ``casos`` (observed)."""
-    query = select(Prediction.horizonte, Prediction.id_semana_objetivo, Prediction.probabilidad_brote,
-                   Prediction.casos_estimados, WeeklyObservation.brote, WeeklyObservation.casos_dengue,
-                   Run.detalle).join(
-        Run, Run.id_ejecucion == Prediction.id_ejecucion).join(
-        WeeklyObservation, (WeeklyObservation.ubigeo == Prediction.ubigeo)
-        & (WeeklyObservation.id_semana == Prediction.id_semana_objetivo)).where(
-        Prediction.estado == "disponible", WeeklyObservation.brote.is_not(None))
-    rows = [row for row in sesion.execute(query).all() if (row.detalle or {}).get("origen") == ORIGIN]
-    return pd.DataFrame(rows, columns=["horizonte", "id_semana_objetivo", "p", "casos_estimados", "brote", "casos",
-                                       "detalle"]).drop(columns="detalle")
+    query = select(FirstEmission.horizonte, FirstEmission.id_semana_objetivo, FirstEmission.probabilidad_brote,
+                   FirstEmission.casos_estimados, WeeklyObservation.brote, WeeklyObservation.casos_dengue).join(
+        WeeklyObservation, (WeeklyObservation.ubigeo == FirstEmission.ubigeo)
+        & (WeeklyObservation.id_semana == FirstEmission.id_semana_objetivo)).where(
+        FirstEmission.estado == "disponible", WeeklyObservation.brote.is_not(None),
+        FirstEmission.ultima_semana_sala_publicada.is_not(None),
+        FirstEmission.id_semana_objetivo > FirstEmission.ultima_semana_sala_publicada)
+    return pd.DataFrame(sesion.execute(query).all(),
+                        columns=["horizonte", "id_semana_objetivo", "p", "casos_estimados", "brote", "casos"])
 
 
 def prospective_scores(sesion):

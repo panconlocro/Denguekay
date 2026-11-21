@@ -97,11 +97,35 @@ persistencia). Sin 2023 el agregado falla la razón de error en los tres horizon
 semilla»**: no se generaliza ni se lee como efecto causal. La v3 y las anteriores no traen el bloque agregado y quedan
 `experimental`. El detalle por temporada sigue en las métricas de cada versión.
 
+### Persistencia determinista como comparador (HU0007-1, 20/11/2026)
+
+Línea base de persistencia sobre **las mismas semanas distritales** que la V4 en `temporadas_2022_2026` (16 965 filas y
+2 478 positivos por horizonte, semilla 17, con las predicciones y observaciones del paquete congelado). Clasificación:
+alerta = 1 si casos(t − h) > umbral de brote de t y casos(t − h) ≥ 2. Regresión: casos(t − h). Se calcula con
+`python -m denguekay.model.persistence_baseline`, que antes comprueba que las razones de la V4 frente a esta persistencia
+reproducen las de la tabla de arriba (diferencias de 0,0004 o menos, dentro de la tolerancia de 0,001).
+
+| h | Precision | Recall | F1 | MAE (casos) | RMSE (casos) |
+|---|---|---|---|---|---|
+| 2 | 0,812 | 0,790 | 0,801 | 3,790 | 23,417 |
+| 3 | 0,790 | 0,764 | 0,776 | 4,943 | 31,567 |
+| 4 | 0,760 | 0,724 | 0,742 | 5,967 | 37,837 |
+
+Es una observación sobre este bloque retrospectivo, sin lectura causal: la regla de persistencia obtiene en los tres
+horizontes un Recall y un F1 algo mayores que los de la V4 (V4: 0,769 / 0,723 / 0,666 y 0,795 / 0,772 / 0,735), y la V4
+una Precision mayor (0,824 / 0,827 / 0,820); frente a la persistencia, la V4 reduce el error de los conteos (razones de
+arriba). Los criterios de aceptación de la V4 son umbrales absolutos para el clasificador y relativos a la persistencia
+solo para el regresor. **La persistencia calibrada (probabilística) del paper es otro comparador**; esta es la regla
+determinista del protocolo. Las métricas de la V4 no cambian. El comando
+`python -m denguekay.model.persistence_baseline --registrar` registra un run de MLflow identificable,
+`persistencia · V4 · temporadas_2022_2026`. Está registrado en el `mlflow.db` local, experimento `denguekay/persistencia_v4`,
+run id `1c08f2b356d640b0a74803ce8cb27ab2`.
+
 ## Metadatos de publicación (19/11/2026)
 
 La publicación de la V4 registra, además del paquete, las importancias SHAP por horizonte y la partición temporal de la
-evaluación (`reproducibilidad.particion_temporal`); el modelo y sus predicciones no cambian y quedan **pendientes de
-republicar en producción**. La matriz de entrenamiento se reconstruye con los insumos del Release y debe dar las 73 775
+evaluación (`reproducibilidad.particion_temporal`); el modelo y sus predicciones no cambian. Se **republicó en
+producción el 20/11/2026** (ejecución 25; versiones `v4-*-2`, que reemplazan a las `-1` en la selección). La matriz de entrenamiento se reconstruye con los insumos del Release y debe dar las 73 775
 filas, las 16 columnas de `b3_obs` y las dispersiones NB2 del paquete (`refit_v4.frozen_training_matrix`); el clasificador
 y el regresor de un horizonte comparten booster, así que sus importancias son idénticas. El corte de ajuste de cada bloque
 es el primer origen de su temporada (coincide con el `ajustes.csv` del archivo del estudio en todos los bloques); el bloque

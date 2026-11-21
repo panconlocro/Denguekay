@@ -100,14 +100,12 @@ describe('regional forecast coverage', () => {
 });
 
 describe('publication timing and priority', () => {
-  it('uses actual emission timestamps and midnight in Piura for the minimum effective lead', () => {
-    expect(emissionTiming(rows)?.minimumWeeks).toBe(2);
+  it('reports only the first and last emission timestamps, with no lead-time calculation', () => {
     const late = prediction({ fecha_generacion: '2025-12-21T05:00:01Z' });
-    expect(emissionTiming([...rows, late])!.minimumWeeks).toBeLessThan(2);
-    expect(
-      emissionTiming([prediction({ fecha_generacion: summary.fecha_actualizacion! })])!
-        .minimumWeeks,
-    ).toBeLessThan(0);
+    const timing = emissionTiming([...rows, late])!;
+    expect(timing.last).toBe('2025-12-21T05:00:01.000Z');
+    expect(Date.parse(timing.first)).toBeLessThan(Date.parse(timing.last));
+    expect(Object.keys(timing).sort()).toEqual(['first', 'last']);
   });
   it('keeps missing timing unavailable and excludes unavailable predictions', () => {
     expect(emissionTiming([prediction({ fecha_generacion: 'invalid' })])).toBeNull();

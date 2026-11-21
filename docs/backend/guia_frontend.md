@@ -10,9 +10,10 @@ pantallas está en [apps/web/README.md](../../apps/web/README.md).
   verdad para el frontend: un test del CI falla si la API se aparta de él.
 - **Con ejemplos reales:** [openapi.json](openapi.json) (el mismo contrato, más un ejemplo por lectura
   sacado de la BD de demostración).
-- **Reglas y versiones:** [contrato_api.md](contrato_api.md). La versión del contrato es **1.2.0** y viaja
-  en la cabecera `X-Version-Contrato` de cada respuesta. Un cambio aditivo sube la minor (1.2.0, …) y nunca
-  rompe lo que ya funciona; un cambio que rompe iría en `/api/v2`. La 1.2.0 agrega a `GET /observaciones` el clima de
+- **Reglas y versiones:** [contrato_api.md](contrato_api.md). La versión del contrato es **1.3.0** y viaja
+  en la cabecera `X-Version-Contrato` de cada respuesta. Un cambio aditivo sube la minor (1.3.0, …) y nunca
+  rompe lo que ya funciona; un cambio que rompe iría en `/api/v2`. La 1.3.0 admite el valor `datos_abiertos_confirmados` en
+  `fuente_casos` de `GET /observaciones` (semanas de la V4 anteriores a 2025). La 1.2.0 agrega a `GET /observaciones` el clima de
   la V4 (`temp_media_era5_land_c`, `humedad_era5_land_pct`, `lluvia_chirps_mm` y sus fechas de disponibilidad); un
   frontend que no los conoce sigue funcionando con los campos de siempre.
 - **URL base en desarrollo:** `http://127.0.0.1:8000/api/v1`. La documentación interactiva está en

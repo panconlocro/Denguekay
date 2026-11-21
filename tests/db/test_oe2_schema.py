@@ -24,7 +24,7 @@ from sqlalchemy.schema import CreateTable
 from backend_support import migrar, url_pg_pruebas
 from denguekay.db.models import (Alert, Base, District, Run, VariableImportance,
                             WeeklyObservation, SystemParameter, Prediction, Province,
-                            EpiWeek, ModelVersion)
+                            EpiWeek, FirstEmission, ModelVersion)
 from denguekay.db.session import make_engine, transaction
 from denguekay.serving.inference import update_alerts
 
@@ -34,7 +34,7 @@ TABLAS_0002 = {"carga_datos", "distrito", "ejecucion_prediccion", "version_model
                "activacion_modelo", "importancia_variable", "observacion_semanal",
                "prediccion", "alerta"}
 # Orden de borrado que respeta las claves foráneas; parametro_sistema conserva sus semillas.
-ORDEN_LIMPIEZA = (Alert, Prediction, VariableImportance, ModelVersion, WeeklyObservation,
+ORDEN_LIMPIEZA = (FirstEmission, Alert, Prediction, VariableImportance, ModelVersion, WeeklyObservation,
                   Run, EpiWeek, District, Province)
 SHA = "a" * 64
 # Motivos esperados en el mensaje del motor (SQLite y PostgreSQL).
@@ -146,7 +146,8 @@ class EsquemaOE2:
                 diferencias = compare_metadata(MigrationContext.configure(conexion), Base.metadata)
         self.assertEqual(diferencias, [])
         tablas = set(inspect(self.motor).get_table_names())
-        self.assertEqual(tablas, TABLAS_OE2 | {"importancia_variable", "observacion_nino12", "alembic_version"})
+        self.assertEqual(tablas, TABLAS_OE2 | {"importancia_variable", "observacion_nino12", "emision_prediccion",
+                                               "alembic_version"})
         indices = {i["name"] for t in tablas for i in inspect(self.motor).get_indexes(t)}
         self.assertLessEqual({"ix_pred_objetivo", "ix_alerta_estado", "ix_obs_semana",
                               "ix_ejecucion_tipo_inicio", "ux_version_activa"}, indices)
@@ -220,6 +221,51 @@ class EsquemaOE2:
         self.assertRegex(str(error.exception.orig), r"fuente_casos_t")
         with self.assertRaises(StatementError):
             self.insertar(WeeklyObservation, **self.fila_observacion(estado_cobertura="desconocido"))
+
+    def test_migracion_0012_fuente_datos_abiertos_y_reversible(self):
+        """0012_v4 admite datos_abiertos_confirmados; el downgrade reasigna esas filas a excel_historico y lo rechaza."""
+        nueva = self.fila_observacion(fuente_casos="datos_abiertos_confirmados", estado_cobertura="sin_registro",
+                                      casos_dengue=0)
+        self.insertar(WeeklyObservation, **nueva)
+
+        def fuente():
+            with transaction(self.motor) as s:
+                return s.scalar(select(WeeklyObservation.fuente_casos).where(WeeklyObservation.id_semana == 202552))
+
+        self.assertEqual(fuente(), "datos_abiertos_confirmados")
+        bajar_una_revision(self.motor, "0011_v4")
+        self.assertEqual(fuente(), "excel_historico")   # the row and its zero survive; only the label goes back
+        crudo = self.fila_observacion(id_semana=202551, fuente_casos="datos_abiertos_confirmados")
+        with self.assertRaises((IntegrityError, DBAPIError)) as error, transaction(self.motor) as s:
+            s.execute(text("INSERT INTO observacion_semanal (" + ", ".join(crudo) + ") VALUES ("
+                           + ", ".join(f":{c}" for c in crudo) + ")"), crudo)
+        self.assertRegex(str(error.exception.orig), r"fuente_casos_t")
+        migrar(self.motor)
+        self.insertar(WeeklyObservation, **self.fila_observacion(id_semana=202551, fuente_casos="datos_abiertos_confirmados"))
+        self.assertEqual(fuente(), "excel_historico")
+
+    def fila_primera_emision(self, **cambios):
+        return {"ubigeo": "200101", "id_semana_corte": 202551, "horizonte": 2, "id_semana_objetivo": 202553,
+                "probabilidad_brote": 0.6, "nivel_riesgo": "alto", "casos_estimados": 4.5, "estado": "disponible",
+                "id_ejecucion": self.id_ejecucion, "fecha_emision": datetime.now(timezone.utc),
+                "ultima_semana_sala_publicada": 202551, "procedencia": "emision", **cambios}
+
+    def test_migracion_0013_primera_emision_con_sus_reglas_y_reversible(self):
+        """0013_v4 crea emision_prediccion (llave única, CHECK como prediccion); el downgrade la quita y vuelve a subir."""
+        self.insertar(FirstEmission, **self.fila_primera_emision())
+        self.assert_rechaza(FirstEmission, UNICA, **self.fila_primera_emision())   # una sola primera emisión por llave
+        self.assert_rechaza(FirstEmission, "horizonte_valido", **self.fila_primera_emision(horizonte=5))
+        self.assert_rechaza(FirstEmission, "probabilidad_valida",
+                            **self.fila_primera_emision(horizonte=3, probabilidad_brote=1.5))
+        self.assert_rechaza(FirstEmission, "estado_coherente", **self.fila_primera_emision(
+            horizonte=4, estado="no_disponible", probabilidad_brote=None, nivel_riesgo=None, casos_estimados=None))
+        self.assert_rechaza(FirstEmission, "procedencia_valida",
+                            **self.fila_primera_emision(horizonte=4, procedencia="otra"))
+        self.assert_rechaza(FirstEmission, FK, **self.fila_primera_emision(ubigeo="209999"))
+        bajar_una_revision(self.motor, "0012_v4")
+        self.assertNotIn("emision_prediccion", inspect(self.motor).get_table_names())
+        migrar(self.motor)
+        self.assertIn("emision_prediccion", inspect(self.motor).get_table_names())
 
     def test_checks_de_version_modelo(self):
         casos = [("horizonte_valido", {"horizonte": 5}), ("umbral_valido", {"umbral_probabilidad": 1.5}),
@@ -439,12 +485,13 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
     def test_rls_politicas_y_roles(self):
         rls = dict(self.consulta("SELECT relname, relrowsecurity FROM pg_class WHERE relkind = 'r' "
                                  "AND relnamespace = 'public'::regnamespace"))
-        for tabla in TABLAS_OE2 | {"importancia_variable", "observacion_nino12"}:
+        for tabla in TABLAS_OE2 | {"importancia_variable", "observacion_nino12", "emision_prediccion"}:
             with self.subTest(tabla=tabla):
                 self.assertTrue(rls[tabla])
         politicas = {r[0] for r in self.consulta("SELECT policyname FROM pg_policies WHERE schemaname = 'public'")}
         self.assertEqual(politicas, {f"servicio_{t}" for t in TABLAS_OE2 | {"importancia_variable", "observacion_nino12"}}
-                         | {"pipeline_seleccion_experimental"})
+                         | {"pipeline_seleccion_experimental", "lectura_emision_prediccion",
+                            "insercion_emision_prediccion"})
         roles = dict(self.consulta("SELECT rolname, rolcanlogin FROM pg_roles WHERE rolname IN ('rol_api', 'rol_pipeline')"))
         self.assertEqual(roles, {"rol_api": False, "rol_pipeline": False})
 
@@ -456,11 +503,41 @@ class TestEsquemaOE2PostgreSQL(EsquemaOE2, unittest.TestCase):
         for tabla in ("observacion_semanal", "ejecucion", "provincia", "distrito",
                       "semana_epidemiologica", "version_modelo", "importancia_variable"):
             self.assertTrue(tiene("rol_pipeline", tabla, "INSERT"))
+        # 0013_v4: la primera emisión es de solo inserción (el pipeline inserta, la API y el pipeline leen).
+        self.assertTrue(tiene("rol_pipeline", "emision_prediccion", "INSERT"))
+        for rol in ("rol_api", "rol_pipeline"):
+            self.assertTrue(tiene(rol, "emision_prediccion", "SELECT"))
+            for privilegio in ("UPDATE", "DELETE"):
+                self.assertFalse(tiene(rol, "emision_prediccion", privilegio), (rol, privilegio))
+        self.assertFalse(tiene("rol_api", "emision_prediccion", "INSERT"))
         self.assertFalse(tiene("rol_api", "version_modelo", "INSERT"))
         self.assertFalse(tiene("rol_api", "observacion_semanal", "INSERT"))
         columnas = self.consulta("SELECT has_column_privilege('rol_api', 'version_modelo', 'estado', 'UPDATE'), "
                                  "has_column_privilege('rol_api', 'version_modelo', 'metricas', 'UPDATE')")[0]
         self.assertEqual(columnas, (True, False))
+
+    def test_pipeline_inserta_la_primera_emision_bajo_rls_y_no_puede_modificarla(self):
+        """0013_v4: rol_pipeline inserta con «insertar si no existe»; una reinserción no cambia nada y UPDATE se niega."""
+        puede = self.consulta("SELECT rolsuper OR pg_has_role(current_user, 'rol_pipeline', 'SET') "
+                              "FROM pg_roles WHERE rolname = current_user")[0][0]
+        if not puede:
+            self.skipTest("El usuario de la BD de pruebas no puede asumir rol_pipeline (en el CI es superusuario)")
+        fila = self.fila_primera_emision()
+        insertar = text("INSERT INTO emision_prediccion (" + ", ".join(fila) + ") VALUES ("
+                        + ", ".join(f":{c}" for c in fila) + ") ON CONFLICT DO NOTHING")
+        with self.motor.connect() as conexion:
+            transaccion = conexion.begin()
+            try:
+                conexion.execute(text("SET LOCAL ROLE rol_pipeline"))
+                self.assertEqual(conexion.execute(insertar, fila).rowcount, 1)
+                self.assertEqual(conexion.execute(insertar, {**fila, "probabilidad_brote": 0.1}).rowcount, 0)
+                self.assertEqual(float(conexion.execute(text("SELECT probabilidad_brote FROM emision_prediccion")).scalar()),
+                                 0.6)
+                with self.assertRaises(DBAPIError) as error, conexion.begin_nested():
+                    conexion.execute(text("UPDATE emision_prediccion SET probabilidad_brote = 0.1"))
+                self.assertRegex(str(error.exception.orig), r"permission denied")
+            finally:
+                transaccion.rollback()
 
     def test_pipeline_solo_actualiza_la_seleccion_experimental(self):
         """0006_v1: rol_pipeline actualiza la fila seleccion_experimental y ninguna otra de parametro_sistema."""

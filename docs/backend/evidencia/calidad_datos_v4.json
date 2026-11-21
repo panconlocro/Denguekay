@@ -1,6 +1,6 @@
 {
   "criterio": "HU0005-4 y HU0005-5 (US v1.4)",
-  "generado_utc": "2026-11-18T02:55:53.040576+00:00",
+  "generado_utc": "2026-11-20T23:55:31.900449+00:00",
   "estado": "conforme",
   "no_conformidades": [],
   "entradas": {
@@ -15,7 +15,9 @@
     "semana": "semana",
     "inicio de semana": "semana_inicio",
     "casos": "casos_Dengue",
-    "temperatura": "temp_media",
+    "temperatura media": "temp_media",
+    "temperatura mínima": "temp_min",
+    "temperatura máxima": "temp_max",
     "precipitación": "precip_total_mm",
     "humedad": "hum_rel_media",
     "población": "poblacion"
@@ -23,6 +25,7 @@
   "completitud": {
     "filas_esperadas": 30485,
     "filas_presentes": 30485,
+    "filas_fuera_del_periodo": 0,
     "filas_ausentes": 0,
     "filas_completas": 30485,
     "completitud": 1.0,
@@ -55,7 +58,17 @@
         "completitud": 1.0
       },
       "temp_media": {
-        "criterio": "temperatura",
+        "criterio": "temperatura media",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "temp_min": {
+        "criterio": "temperatura mínima",
+        "nulos": 0,
+        "completitud": 1.0
+      },
+      "temp_max": {
+        "criterio": "temperatura máxima",
         "nulos": 0,
         "completitud": 1.0
       },
@@ -88,12 +101,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.727079,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -104,12 +119,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.720682,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -120,12 +137,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.5629,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -136,12 +155,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.381663,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -152,12 +173,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.221748,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -168,12 +191,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.4371,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -184,12 +209,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.434968,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -200,12 +227,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.311301,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -216,12 +245,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.665245,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -232,12 +263,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.601279,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -248,12 +281,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.142857,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -264,12 +299,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.1258,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -280,12 +317,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.115139,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -296,12 +335,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.110874,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -312,12 +353,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.110874,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -328,12 +371,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.117271,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -344,12 +389,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.21322,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -360,12 +407,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.119403,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -376,12 +425,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.110874,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -392,12 +443,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.226013,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -408,12 +461,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.215352,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -424,12 +479,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.162047,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -440,12 +497,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.119403,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -456,12 +515,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.138593,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -472,12 +533,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.113006,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -488,12 +551,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.230277,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -504,12 +569,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.115139,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -520,12 +587,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.117271,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -536,12 +605,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.667377,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -552,12 +623,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.379531,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -568,12 +641,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.127932,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -584,12 +659,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.385928,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -600,12 +677,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.447761,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -616,12 +695,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.54371,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -632,12 +713,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.41791,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -648,12 +731,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.153518,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -664,12 +749,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.134328,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -680,12 +767,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.134328,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -696,12 +785,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.486141,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -712,12 +803,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.189765,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -728,12 +821,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.189765,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -744,12 +839,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.309168,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -760,12 +857,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.392324,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -776,12 +875,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.24307,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -792,12 +893,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.236674,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -808,12 +911,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.739872,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -824,12 +929,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.522388,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -840,12 +947,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.353945,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -856,12 +965,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.24307,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -872,12 +983,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.432836,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -888,12 +1001,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.364606,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -904,12 +1019,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.366738,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -920,12 +1037,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.309168,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -936,12 +1055,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.424307,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -952,12 +1073,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.358209,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -968,12 +1091,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.270789,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -984,12 +1109,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.168443,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -1000,12 +1127,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.422175,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -1016,12 +1145,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.394456,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -1032,12 +1163,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.45629,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -1048,12 +1181,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.292111,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -1064,12 +1199,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.311301,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -1080,12 +1217,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.249467,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -1096,12 +1235,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.371002,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -1112,12 +1253,14 @@
       "semanas_esperadas": 469,
       "filas_completas": 469,
       "completitud": 1.0,
-      "casos_verificados": 1.0,
+      "casos_verificados": 0.234542,
       "no_nulos": {
         "anio": 1.0,
         "semana": 1.0,
         "casos_Dengue": 1.0,
         "temp_media": 1.0,
+        "temp_min": 1.0,
+        "temp_max": 1.0,
         "precip_total_mm": 1.0,
         "hum_rel_media": 1.0,
         "poblacion": 1.0
@@ -1193,8 +1336,8 @@
     {
       "fuente": "NOAA CPC",
       "producto": "Niño 1+2: anomalía mensual de la TSM (OISST v2.1, sstoi.indices)",
-      "fecha_extraccion": "2026-11-17",
-      "capturas": 2,
+      "fecha_extraccion": "2026-11-20",
+      "capturas": 3,
       "tipo_de_fecha": "captura registrada",
       "referencia": "fecha del nombre del archivo sstoi_AAAAMMDD.indices (bronze/enso)"
     },
@@ -1217,18 +1360,18 @@
     {
       "fuente": "CHIRPS v3 preliminar (FTP del CHC)",
       "producto": "CHIRPS v3.0 diario preliminar, desagregación sat (GeoTIFF por FTP del CHC)",
-      "fecha_extraccion": "2026-11-17",
-      "capturas": 2,
+      "fecha_extraccion": "2026-11-20",
+      "capturas": 3,
       "tipo_de_fecha": "captura registrada",
       "referencia": "manifiesto_ftp_prelim_*.json (bronze/chirps/v3_sat/prelim)"
     },
     {
       "fuente": "ERA5-Land (semanas recientes)",
       "producto": "ERA5-Land 0,1° vía Open-Meteo (archive API, models=era5_land), variables diarias",
-      "fecha_extraccion": "2026-11-12",
-      "capturas": 2,
-      "tipo_de_fecha": "captura registrada",
-      "referencia": "carpeta con fecha AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente)"
+      "fecha_extraccion": "2026-11-15",
+      "capturas": 3,
+      "tipo_de_fecha": "último día de datos del caché (la fecha real de extracción no se registró)",
+      "referencia": "nombre de la carpeta AAAA-MM-DD (bronze/meteo/cache_meteo_era5_land_reciente)"
     },
     {
       "fuente": "Open-Meteo (clima del panel 2017-2025)",
@@ -1290,7 +1433,17 @@
       "completitud": 1.0
     },
     "temp_media": {
-      "criterio": "temperatura",
+      "criterio": "temperatura media",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "temp_min": {
+      "criterio": "temperatura mínima",
+      "nulos": 0,
+      "completitud": 1.0
+    },
+    "temp_max": {
+      "criterio": "temperatura máxima",
       "nulos": 0,
       "completitud": 1.0
     },
@@ -1429,7 +1582,7 @@
     "con_registro_de_casos_en_la_fuente": 9564,
     "cero_asignado_en_la_union": 20921,
     "proporcion_con_registro": 0.313728,
-    "nota": "Las semanas de un distrito sin notificaciones reciben cero en la unión (relleno selectivo; el archivo de cobertura las marca verificadas). La completitud de `casos` del panel es 100 % por construcción; esta es la proporción con un conteo en la fuente antes de esa asignación. Es un criterio de lectura a confirmar: un cero verificado de vigilancia no se trata como dato faltante."
+    "nota": "Las semanas de un distrito sin notificaciones reciben cero en la unión (relleno selectivo; el archivo de cobertura del Release las marca verificadas; la BD las carga como `sin_registro` con 0 casos). La completitud de `casos` del panel es 100 % por construcción; esta es la proporción con un conteo en la fuente antes de esa asignación. Es un criterio de lectura a confirmar: un cero verificado de vigilancia no se trata como dato faltante."
   },
   "nota_rezagos": "El silver integrado no tiene columnas derivadas: los nulos estructurales de los rezagos no entran en la medida."
 }

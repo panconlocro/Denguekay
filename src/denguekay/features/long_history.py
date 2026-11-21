@@ -68,6 +68,30 @@ def sala_after_panel(panel: pd.DataFrame, sala: pd.DataFrame,
     return s[SERIES_COLUMNS].reset_index(drop=True), dropped
 
 
+IGNORED_REVISIONS_LIMIT = 50
+
+
+def ignored_sala_revisions(panel: pd.DataFrame, sala: pd.DataFrame, limit: int = IGNORED_REVISIONS_LIMIT) -> dict:
+    """The corrections that the Sala makes to weeks the frozen panel already has, which the load ignores.
+
+    ``sala_after_panel`` never takes a key that the panel has (the 2017-2025 panel of the frozen copy is the one the V4 was
+    trained and calibrated with, verified against the Release), so a Sala value that differs from the panel is a revision
+    that is NOT applied. This lists them, as ``{"total", "mostradas", "limite", "revisiones"}``: the total and the first
+    ``limit`` by (year, week, district), each with the key, the panel value and the Sala value."""
+    keys = ["ubigeo", "anio", "semana"]
+
+    def normalised(frame, column):
+        return frame[[*keys, "casos_Dengue"]].assign(ubigeo=frame.ubigeo.astype("string").str.zfill(6)).rename(
+            columns={"casos_Dengue": column})
+
+    merged = normalised(panel, "casos_panel").merge(normalised(sala, "casos_sala"), on=keys, validate="one_to_one")
+    differing = merged[merged.casos_panel.ne(merged.casos_sala)].sort_values(["anio", "semana", "ubigeo"])
+    shown = [{"ubigeo": str(row.ubigeo), "anio": int(row.anio), "semana": int(row.semana),
+              "casos_panel": int(row.casos_panel), "casos_sala": int(row.casos_sala)}
+             for row in differing.head(limit).itertuples()]
+    return {"total": int(len(differing)), "mostradas": len(shown), "limite": limit, "revisiones": shown}
+
+
 def long_case_series(recent: pd.DataFrame, history_path=SILVER_EPI_HISTORICAL, start: int = HISTORY_START,
                      catalog_path=UBIGEO_CATALOG) -> pd.DataFrame:
     """Cases per district-week from ``start``: the historical silver before 2017 (absences as 0) and ``recent``

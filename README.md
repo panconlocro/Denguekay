@@ -23,8 +23,8 @@ El estado actual del proyecto (qué versión se sirve, qué está congelado y qu
   | [v2](models/registry/v2/ficha.md), [v1](models/registry/v1/ficha.md), [v0](models/registry/v0/ficha.md) | reemplazadas; siguen registradas y se pueden reentrenar |
 
 - **Backend:** PostgreSQL con el esquema del documento OE2, carga validada con Great Expectations, seguimiento de
-  experimentos en MLflow y una API FastAPI (contrato `1.1.0`). El repo está preparado para desplegar en Render,
-  Supabase y Vercel ([despliegue](docs/backend/despliegue.md)); el despliegue se hace a mano.
+  experimentos en MLflow y una API FastAPI (contrato `1.3.0`). La aplicación está desplegada: el frontend en Vercel, la API en Render y la BD y el
+  Storage en Supabase ([despliegue](docs/backend/despliegue.md)); el despliegue se hace a mano.
 - **Frontend:** tablero web en [apps/web/](apps/web/README.md) (React, Vite y TypeScript) que solo consume la API.
 
 ## Estructura

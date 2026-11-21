@@ -12,6 +12,13 @@ and the Sala of the per-version pipelines) is another thing and does not change.
 
 Steps: preflight, Sala, is there a new week?, climate, publication (``--inicial`` only), load + inference + archive,
 report. The orchestration takes its steps from a ``Steps`` object so that each one can be replaced in the tests.
+
+What the transaction covers. The load, the inference of the three horizons and the first-emission record commit
+together; the local archive of the emission is written before the commit and removed if the transaction fails. The copy
+of that archive to the Storage happens AFTER the commit, so it can fail with the emission already published: the outcome
+is then written to ``ejecucion.detalle.archivo_remoto`` (``subido`` or ``fallido`` with the error) and
+``--reintentar-archivo`` uploads the emissions that are still pending from the local folder. A failed preflight is also
+recorded in ``ejecucion`` (a failed run with its reason), and publishes nothing.
 """
 
 import argparse
@@ -46,7 +53,7 @@ from denguekay.serving.emissions import HORIZONS, ORIGIN
 
 LOCK_STALE_HOURS = 12
 STALE_SALA_DAYS = 70   # a Sala whose last published week closed that long ago is reported (not an error)
-STATES_OK = ("emitida", "sin_novedad", "cargada_sin_emitir", "dry_run")
+STATES_OK = ("emitida", "sin_novedad", "cargada_sin_emitir", "dry_run", "archivo_al_dia")
 EXPECTED_OPTIONS = {"sala": OPERATIONAL_SALA, "era5_land": OPERATIONAL_ERA5_LAND, "chirps": OPERATIONAL_CHIRPS,
                     "nino12": OPERATIONAL_ENSO}
 INITIAL_COMMAND = "python -m denguekay.pipelines.v4_weekly --inicial"
@@ -55,9 +62,11 @@ INITIAL_COMMAND = "python -m denguekay.pipelines.v4_weekly --inicial"
 class WeeklyError(RuntimeError):
     """A step failed. ``kind`` is the type of run that records it; ``recorded`` is set when it already did."""
 
-    def __init__(self, message, *, kind="ingesta", step=None, recorded=False):
+    def __init__(self, message, *, kind="ingesta", step=None, recorded=False, record=True):
         super().__init__(message)
-        self.kind, self.step, self.recorded = kind, step, recorded
+        # ``record=False``: nothing failed in this run that ``ejecucion`` should keep (another run holds the lock, or the
+        # database itself is not ready, so there is no table to write to).
+        self.kind, self.step, self.recorded, self.record = kind, step, recorded, record
 
 
 @dataclass(frozen=True)
@@ -68,6 +77,7 @@ class Options:
     forzar: bool = False
     reemitir: bool = False
     preparar: bool = False
+    reintentar_archivo: bool = False
 
     @property
     def force(self):
@@ -149,18 +159,58 @@ def step_publish(motor, cfg, storage):
     return publish(motor, cfg=cfg, storage=storage, select_experimental=True, run_inference=False)
 
 
+def utc_from_stamp(text):
+    """ISO UTC instant of a ``%Y%m%dT%H%M%S%fZ`` stamp (the name of a Sala or CHIRPS capture), or ``None``."""
+    try:
+        return datetime.strptime(text, "%Y%m%dT%H%M%S%fZ").replace(tzinfo=timezone.utc).isoformat()
+    except ValueError:
+        return None
+
+
+def capture(name, extracted, precision):
+    """One capture of the archive: its name, when it was extracted (UTC; ``None`` if nothing recorded it) and whether
+    that is an ``instante`` or only the UTC ``dia``."""
+    return None if name is None else {"archivo": name, "extraido_utc": extracted,
+                                      "precision": precision if extracted else "sin_registro"}
+
+
 def step_captures():
-    """The captures a run used (names only), for the archive of the emission."""
+    """The captures a run used, for the archive of the emission: name and UTC extraction time of each source.
+
+    Sala and CHIRPS carry the UTC instant in their names, NOAA the UTC day, and ERA5-Land the instant in its sidecar
+    (its folder is named by the last day of data, not by the extraction)."""
     def latest(paths):
         paths = sorted(paths)
-        return paths[-1].name if paths else None
+        return paths[-1] if paths else None
 
+    sala = {}
+    for year in range(SALA_FIRST_YEAR, datetime.now(timezone.utc).year + 1):
+        path = latest(BRONZE_SALA.glob(f"{year}_*"))
+        sala[str(year)] = None if path is None else capture(path.name, utc_from_stamp(path.name.split("_", 1)[1]),
+                                                           "instante")
+    era5 = latest(CACHE_METEO_ERA5_LAND_RECENT.glob("????-??-??"))
+    era5_instant = None
+    if era5 is not None and v4_inputs.era5_capture_file(era5).is_file():
+        era5_instant = json.loads(v4_inputs.era5_capture_file(era5).read_text(encoding="utf-8")).get("extraido_utc")
+    chirps = latest(V4_CHIRPS_SNAPSHOTS.glob("*.zip"))
+    enso = latest(BRONZE_ENSO.glob("sstoi_????????.indices"))
     return {
-        "sala": {str(year): latest(BRONZE_SALA.glob(f"{year}_*")) for year in range(SALA_FIRST_YEAR, date.today().year + 1)},
-        "era5_land_reciente": latest(CACHE_METEO_ERA5_LAND_RECENT.glob("????-??-??")),
-        "chirps": latest(V4_CHIRPS_SNAPSHOTS.glob("*.zip")),
-        "enso": latest(BRONZE_ENSO.glob("sstoi_????????.indices")),
+        "sala": sala,
+        "era5_land_reciente": None if era5 is None else capture(era5.name, era5_instant, "instante"),
+        "chirps": None if chirps is None else capture(chirps.name, utc_from_stamp(chirps.stem), "instante"),
+        "enso": None if enso is None else capture(
+            enso.name, datetime.strptime(enso.stem.split("_", 1)[1], "%Y%m%d").date().isoformat(), "dia"),
     }
+
+
+def step_ensure_package(cfg, storage):
+    """Download the refit package that ``paquete_dir`` names when it is not on this machine (hash-checked)."""
+    from denguekay.serving import refit_package
+
+    try:
+        return refit_package.ensure(storage, cfg.opciones, root=ROOT)
+    except refit_package.RefitPackageError as error:
+        raise WeeklyError(f"El paquete reajustado del Storage fue rechazado: {error}", step="preflight") from error
 
 
 def step_code_fingerprint():
@@ -180,6 +230,7 @@ class Steps:
     publish: object = step_publish
     prepare_load: object = step_prepare_load
     captures: object = step_captures
+    ensure_package: object = lambda cfg, storage: step_ensure_package(cfg, storage)
     code_fingerprint: object = step_code_fingerprint
     package_version: object = field(default=lambda: package_version())
 
@@ -220,10 +271,10 @@ def check_database(motor):
     try:
         require_schema(motor)
     except ValueError as error:
-        raise WeeklyError(str(error), step="preflight") from error
+        raise WeeklyError(str(error), step="preflight", record=False) from error
     if "observacion_nino12" not in set(inspect(motor).get_table_names()):
         raise WeeklyError("Falta la tabla observacion_nino12 (migración 0008_v4): ejecute alembic upgrade head",
-                          step="preflight")
+                          step="preflight", record=False)
 
 
 def acquire_lock(path, *, now):
@@ -238,7 +289,7 @@ def acquire_lock(path, *, now):
             age = now - datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
             if age < timedelta(hours=LOCK_STALE_HOURS):
                 raise WeeklyError(f"Ya hay una actualización semanal en curso ({path.name}); si no es así, borre el "
-                                  f"candado: {path}", step="preflight") from None
+                                  f"candado: {path}", step="preflight", record=False) from None
             path.unlink(missing_ok=True)
     raise WeeklyError("No se pudo tomar el candado de la actualización semanal", step="preflight")
 
@@ -339,6 +390,7 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
     locked = False
     stage = "preflight"
     try:
+        report["paquete_reajustado"] = steps.ensure_package(cfg, storage)
         check_environment(cfg)
         locked = acquire_lock(base / "en_curso.lock", now=started)
         missing = steps.missing_files()
@@ -405,10 +457,13 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
                 ingestion = steps_persist(sesion, data)
                 if emit:
                     stage = "inferencia"
+                    emitted_at = emissions.now_utc()
                     results = emit_horizons(sesion, cutoff, storage, cfg)
+                    first = emissions.record_first_emission(sesion, results, last_published=last_published,
+                                                            emitted_at=emitted_at)
                     archive = emissions.archive_emission(
                         sesion, cutoff=cutoff, ingestion=ingestion, results=results, load=data,
-                        emitted_at=emissions.now_utc(), reissue=emitted, last_published=last_published,
+                        emitted_at=emitted_at, reissue=emitted, last_published=last_published,
                         provisional=provisional, captures=steps.captures(),
                         code_fingerprint=steps.code_fingerprint(), package_version=steps.package_version(),
                         frozen_manifest=json.loads(V4_DATA_MANIFEST.read_text(encoding="utf-8")),
@@ -427,13 +482,24 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
             record = json.loads((archive / "emision.json").read_text(encoding="utf-8"))
             report["emision"] = archive.relative_to(base).as_posix()
             if cfg.almacenamiento != "local":   # the runner may not survive: keep the archive in the Storage too
+                status = {"ruta": archive.relative_to(base / "emisiones").as_posix(), "intentos": 1}
                 try:
                     report["archivo_en_storage"] = emissions.upload_archive(storage, archive, base / "emisiones")
+                    status.update(estado="subido", archivos=report["archivo_en_storage"])
                 except Exception as error:   # noqa: BLE001 - the emission is already committed; say it, do not undo it
                     report["archivo_en_storage"] = f"fallido: {type(error).__name__}"
+                    status.update(estado="fallido", error=f"{type(error).__name__}: {error}"[:500])
                     report.setdefault("advertencias", []).append(
                         f"La emisión quedó en la BD pero su archivo no se copió al Storage ({type(error).__name__}); "
-                        f"consérvelo desde {archive.relative_to(base).as_posix()}")
+                        f"reintente con --reintentar-archivo o consérvelo desde {archive.relative_to(base).as_posix()}")
+                mark_archive(motor, record["ejecuciones"]["inferencias"][str(min(HORIZONS))], status, report)
+            report["primera_emision"] = first
+            ignored = record.get("revisiones_ignoradas") or {}
+            report["revisiones_ignoradas"] = ignored.get("total", 0)
+            if ignored.get("total"):
+                report.setdefault("advertencias", []).append(
+                    f"La Sala corrige {ignored['total']} semanas del panel congelado; la carga las ignora por regla y "
+                    "quedan registradas en emision.json (docs/backend/operacion.md)")
             report["disponibles"] = record["predicciones"]["disponibles"]
             report["ejecuciones"] = record["ejecuciones"]
             reasons = unavailable_reasons(archive / "predicciones.csv")
@@ -448,13 +514,56 @@ def run(options, *, motor, cfg, storage, steps=None, now=None, base=None):
         report["estado"] = "fallida"
         report["error"] = f"{type(error).__name__}: {error}"
         report["etapa"] = getattr(error, "step", None) or stage
-        if not getattr(error, "recorded", False) and report["etapa"] != "preflight":
+        if not getattr(error, "recorded", False) and getattr(error, "record", True):
             kind = getattr(error, "kind", None) or ("inferencia" if stage == "inferencia" else "ingesta")
             record_failure_safely(motor, kind, error, {"origen": ORIGIN, "etapa": report["etapa"]})
         return finish(report, None, base, None, timer)
     finally:
         if locked:
             (base / "en_curso.lock").unlink(missing_ok=True)
+
+
+def mark_archive(motor, run_id, status, report):
+    """Write the outcome of the copy to the Storage in ``ejecucion.detalle`` (its own transaction, after the commit)."""
+    status = {**status, "actualizado_utc": emissions.now_utc().isoformat()}
+    try:
+        with transaction(motor) as sesion:
+            emissions.set_archive_status(sesion, run_id, status)
+        report["archivo_remoto"] = status["estado"]
+    except SQLAlchemyError as error:   # the emission is published: the report and the warning still say what happened
+        report.setdefault("advertencias", []).append(
+            f"No se pudo registrar el estado del archivo remoto en ejecucion ({type(error).__name__})")
+
+
+def retry_archive(motor, cfg, storage, base=None):
+    """Upload to the Storage the archives of the emissions whose copy is still ``fallido`` (from the local folder)."""
+    base = Path(base) if base is not None else SERVING_WEEKLY
+    report = {"iniciada_utc": emissions.now_utc().isoformat(), "reintento_archivo": True, "subidos": [], "fallidos": {}}
+    if cfg.almacenamiento == "local":
+        report.update(estado="archivo_al_dia", nota="El almacenamiento es local: la carpeta de emisiones es el archivo")
+    else:
+        with transaction(motor) as sesion:
+            pending = [(run_id, dict(status)) for run_id, status in emissions.pending_archives(sesion)]
+        report["pendientes"] = len(pending)
+        for run_id, status in pending:
+            folder = base / "emisiones" / status["ruta"]
+            try:
+                if not folder.is_dir():
+                    raise FileNotFoundError(f"no está la carpeta local {status['ruta']}")
+                paths = emissions.upload_archive(storage, folder, base / "emisiones")
+                status.update(estado="subido", archivos=paths, error=None)
+                report["subidos"].append(status["ruta"])
+            except Exception as error:   # noqa: BLE001 - it stays pending and the report says why
+                status.update(estado="fallido", error=f"{type(error).__name__}: {error}"[:500])
+                report["fallidos"][status["ruta"]] = status["error"]
+            status["intentos"] = status.get("intentos", 1) + 1
+            mark_archive(motor, run_id, status, report)
+        report["estado"] = "fallida" if report["fallidos"] else "archivo_al_dia"
+        if report["fallidos"]:
+            report["error"] = "Quedan emisiones sin copiar al Storage: " + ", ".join(report["fallidos"])
+    report["terminada_utc"] = emissions.now_utc().isoformat()
+    report["informe"] = write_report(report, base).relative_to(base).as_posix()
+    return report
 
 
 def steps_persist(sesion, data):
@@ -530,8 +639,11 @@ def main(argv=None):
     parser.add_argument("--sin-descargas", action="store_true", help="Reanuda desde los cachés, sin red")
     parser.add_argument("--forzar", action="store_true", help="Carga aunque el corte ya esté emitido (sin emitir)")
     parser.add_argument("--reemitir", action="store_true", help="Emite de nuevo un corte ya emitido (implica --forzar)")
+    parser.add_argument("--reintentar-archivo", action="store_true",
+                        help="Sube al Storage el archivo de las emisiones cuya copia quedó fallida; no descarga ni emite")
     args = parser.parse_args(argv)
-    options = Options(args.inicial, args.dry_run, args.sin_descargas, args.forzar, args.reemitir, args.preparar)
+    options = Options(args.inicial, args.dry_run, args.sin_descargas, args.forzar, args.reemitir, args.preparar,
+                      args.reintentar_archivo)
     motor = None
     try:
         from denguekay.serving.settings import service_settings
@@ -539,7 +651,11 @@ def main(argv=None):
 
         cfg = service_settings()
         motor = make_engine()
-        report = run(options, motor=motor, cfg=cfg, storage=storage_from_environment(cfg.almacenamiento))
+        storage = storage_from_environment(cfg.almacenamiento)
+        if options.reintentar_archivo:
+            report = retry_archive(motor, cfg, storage)
+        else:
+            report = run(options, motor=motor, cfg=cfg, storage=storage)
         print(json.dumps(report, ensure_ascii=False, indent=2, default=str))
         return 0 if report["estado"] in STATES_OK else 1
     except (SQLAlchemyError, ValueError, OSError) as error:

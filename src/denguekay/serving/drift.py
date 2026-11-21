@@ -1,11 +1,12 @@
 """Drift monitoring of the weekly emissions (HU0009-2, US v1.4).
 
-It compares the closed weeks of the archived weekly emissions with the reference metrics of the same horizon: the
+It compares the closed weeks of the first emissions of the weekly update with the reference metrics of the same horizon: the
 aggregate block of the HU0007-4 (``parametro_sistema.umbrales_aceptacion.bloque``, ``temporadas_2022_2026`` for the V4)
 stored in the metrics of the served versions.
 
 - Period metrics: Precision, Recall and F1 (alert when p >= 0.50), and MAE and RMSE of the cases, over the available
-  predictions of the weekly update whose target week is already observed (``emissions.prospective_frame``).
+  first emissions of the weekly update that were eligible (their target week was not yet published by the Sala when
+  they were emitted) and whose target week is already observed (``emissions.prospective_frame``, ``emision_prediccion``).
 - Relative degradation: Recall and F1, (reference - period) / reference; MAE and RMSE, (period - reference) / reference.
   Precision is reported with its reference but has no degradation rule in the criterion, so it is never flagged.
 - With 8 closed weeks or more (per horizon), the metrics whose degradation is above 10 % are flagged; with fewer they
