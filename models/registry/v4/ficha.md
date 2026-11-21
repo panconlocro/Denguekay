@@ -118,7 +118,8 @@ arriba). Los criterios de aceptación de la V4 son umbrales absolutos para el cl
 solo para el regresor. **La persistencia calibrada (probabilística) del paper es otro comparador**; esta es la regla
 determinista del protocolo. Las métricas de la V4 no cambian. El comando
 `python -m denguekay.model.persistence_baseline --registrar` registra un run de MLflow identificable,
-`persistencia · V4 · temporadas_2022_2026` (cuando se corre; al 20/11/2026 todavía no está registrado en `mlflow.db`).
+`persistencia · V4 · temporadas_2022_2026`. Está registrado en el `mlflow.db` local, experimento `denguekay/persistencia_v4`,
+run id `1c08f2b356d640b0a74803ce8cb27ab2`.
 
 ## Metadatos de publicación (19/11/2026)
 
