@@ -40,6 +40,11 @@ class TestHorizonsOfTheReport(unittest.TestCase):
         self.assertEqual(params["tipo"], "agregado")
         self.assertEqual(variant_summary(folds).get("validacion_media.n_bloques"), None)   # test blocks, never averaged
 
+    def test_a_block_without_its_size_still_makes_a_fold(self):
+        horizons = mlflow_horizons({2: {"temporada_2022": {"clasificacion": {}, "regresion": {}}}}, 17)
+        (fold,) = variant_folds(horizons["2"]["variantes"]["b3_obs_s17"])
+        self.assertNotIn("n_prueba", fold)
+
     def test_the_block_metrics_are_the_ones_of_the_versions_and_are_not_recalculated(self):
         source = by_horizon()
         folds = variant_folds(mlflow_horizons(source, 17)["3"]["variantes"]["b3_obs_s17"])

@@ -155,7 +155,8 @@ def mlflow_horizons(by_horizon, seed):
     horizons = {}
     for horizon, blocks in by_horizon.items():
         folds = [{**metrics, "horizonte": int(horizon), "variante": variant, "bloque": block,
-                  "tipo": "agregado" if block == ACCEPTANCE_BLOCK else "prueba", "n_prueba": metrics["n"]}
+                  "tipo": "agregado" if block == ACCEPTANCE_BLOCK else "prueba",
+                  **({"n_prueba": metrics["n"]} if "n" in metrics else {})}
                  for block, metrics in blocks.items()]
         horizons[str(horizon)] = {"variantes": {variant: {"folds": folds}}}
     return horizons
